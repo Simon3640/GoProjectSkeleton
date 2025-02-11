@@ -1,9 +1,9 @@
 package infrastructure
 
 import (
-	settings "gingoskeleton/src/application/shared/settings"
-	config "gingoskeleton/src/infrastructure/config"
-	providers "gingoskeleton/src/infrastructure/providers"
+	settings "gormgoskeleton/src/application/shared/settings"
+	config "gormgoskeleton/src/infrastructure/config"
+	providers "gormgoskeleton/src/infrastructure/providers"
 )
 
 func Initialize() {

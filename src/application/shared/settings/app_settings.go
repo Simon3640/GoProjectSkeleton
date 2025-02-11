@@ -19,7 +19,7 @@ type AppSettings struct {
 
 func NewAppSettings() *AppSettings {
 	return &AppSettings{
-		AppName:    "Gingoskeleton",
+		AppName:    "gormgoskeleton",
 		AppEnv:     "development",
 		AppPort:    "8080",
 		AppVersion: "0.0.1",

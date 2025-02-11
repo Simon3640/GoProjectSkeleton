@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"reflect"
 
-	logger "gingoskeleton/src/infrastructure/providers"
+	logger "gormgoskeleton/src/infrastructure/providers"
 )
 
 type Config struct {
 	// Application
-	AppName        string `env:"APP_NAME" envDefault:"Gingoskeleton"`
+	AppName        string `env:"APP_NAME" envDefault:"gormgoskeleton"`
 	AppEnv         string `env:"APP_ENV" envDefault:"development"`
 	AppPort        string `env:"APP_PORT" envDefault:"8080"`
 	AppVersion     string `env:"APP_VERSION" envDefault:"0.0.1"`

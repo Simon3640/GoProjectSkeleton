@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"gingoskeleton/src/application/shared/status"
+	"gormgoskeleton/src/application/shared/status"
 	"strconv"
 )
 

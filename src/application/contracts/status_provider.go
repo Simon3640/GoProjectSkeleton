@@ -1,7 +1,7 @@
 package contracts
 
 import (
-	"gingoskeleton/src/domain/models"
+	"gormgoskeleton/src/domain/models"
 	"time"
 )
 
