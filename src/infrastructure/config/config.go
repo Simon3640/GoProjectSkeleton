@@ -16,6 +16,11 @@ type Config struct {
 	AppDescription string `env:"APP_DESCRIPTION" envDefault:"Description"`
 	EnableLog      string `env:"ENABLE_LOG" envDefault:"true"`
 	DebugLog       string `env:"DEBUG_LOG" envDefault:"true"`
+	DBHost         string `env:"DB_HOST" envDefault:"localhost"`
+	DBPort         string `env:"DB_PORT" envDefault:"5432"`
+	DBUser         string `env:"DB_USER" envDefault:"postgres"`
+	DBPassword     string `env:"DB_PASSWORD" envDefault:"postgres"`
+	DBName         string `env:"DB_NAME" envDefault:"gormgoskeleton"`
 }
 
 func (c *Config) ToMap() map[string]string {
