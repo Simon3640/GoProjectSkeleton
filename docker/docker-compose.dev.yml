@@ -21,5 +21,32 @@ services:
       - seccomp:unconfined
     volumes:
       - ../:/app
+    networks:
+      - gormgoskeleton
     # command: sleep 3600
     command: [ "dlv", "--listen=:40000", "--headless=true", "--api-version=2", "--accept-multiclient", "exec", "/src/main" ]
+
+  db:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    expose:
+      - 5432
+    ports:
+      - "5436:5432"
+    environment:
+      POSTGRES_USER: gormgoskeleton
+      POSTGRES_PASSWORD: gormgoskeleton
+    volumes:
+      - gormgoskeleton-db-data:/var/lib/postgresql/data
+    networks:
+      - gormgoskeleton
+
+
+networks:
+  gormgoskeleton:
+    external: true
+
+volumes:
+  gormgoskeleton-db-data:
+    external: true
