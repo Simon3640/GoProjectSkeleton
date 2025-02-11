@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+  gormgoskeleton:
+    build:
+      context: ..
+      dockerfile: docker/dockerfile.dev
+    ports:
+      - "8080:8080"
+      - "40000:40000" #dlv
+    environment:
+      - APP_NAME = gormgoskeleton
+      - APP_ENV = dev
+      - APP_PORT = 8080
+      - DB_HOST = db
+      - APP_VERSION = 0.0.0
+      - APP_DESCRIPTION = "Gorm Go Skeleton Template"
+    # depends_on:
+    #   - db
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - ../:/app
+    # command: sleep 3600
+    command: [ "dlv", "--listen=:40000", "--headless=true", "--api-version=2", "--accept-multiclient", "exec", "/src/main" ]
