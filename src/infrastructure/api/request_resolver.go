@@ -39,6 +39,13 @@ func (rr *RequestResolver[D]) ResolveDTO(
 ) (*gin.H, int) {
 	content := gin.H{}
 
+	if result.HasError() {
+		content["details"] = result.Error
+		rr.getHeaders(ctx, headersToAdd)
+
+		return &content, rr.statusMapping[result.StatusCode]
+	}
+
 	content["data"] = result.Data
 	content["details"] = result.Details
 	rr.getHeaders(ctx, headersToAdd)

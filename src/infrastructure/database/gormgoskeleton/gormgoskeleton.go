@@ -9,7 +9,7 @@ import (
 
 type GormGoSkeletonDB struct{}
 
-var db *gorm.DB
+var DB *gorm.DB
 
 func (ggsbd GormGoSkeletonDB) SetUp(host string, port string, user string, password string, dbname string, logger contracts.ILoggerProvider) {
 	dsn := "host=" + host + " port=" + port + " user=" + user + " password=" + password + " dbname=" + dbname + " sslmode=disable"
@@ -17,7 +17,7 @@ func (ggsbd GormGoSkeletonDB) SetUp(host string, port string, user string, passw
 	if err != nil {
 		logger.Panic("Error connecting to database", err)
 	}
-	db = db
+	DB = db
 	logger.Info("Database connection established")
 	InitMigrate(db, logger)
 }

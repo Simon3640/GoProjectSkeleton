@@ -8,6 +8,7 @@ type User struct {
 	Email  string `gorm:"type:varchar(100);not null;unique"`
 	Phone  string `gorm:"type:varchar(20);not null;unique"`
 	Status string `gorm:"type:varchar(20);not null"`
+	ID     int    `gorm:"primaryKey"`
 }
 
 func (User) TableName() string {
