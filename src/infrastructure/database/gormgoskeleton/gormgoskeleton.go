@@ -19,6 +19,7 @@ func (ggsbd GormGoSkeletonDB) SetUp(host string, port string, user string, passw
 	}
 	db = db
 	logger.Info("Database connection established")
+	InitMigrate(db, logger)
 }
 
 var Gormgoskeletondb *GormGoSkeletonDB
