@@ -46,6 +46,12 @@ func (rr *RequestResolver[D]) ResolveDTO(
 		return &content, rr.statusMapping[result.StatusCode]
 	}
 
+	if result.Data == nil && !result.HasError() {
+		rr.getHeaders(ctx, headersToAdd)
+
+		return nil, 204
+	}
+
 	content["data"] = result.Data
 	content["details"] = result.Details
 	rr.getHeaders(ctx, headersToAdd)
