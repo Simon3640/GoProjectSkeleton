@@ -19,6 +19,30 @@
             }
         },
         "/api/user": {
+            "get": {
+                "description": "This endpoint Get all users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "This endpoint Get all users",
+                "responses": {
+                    "200": {
+                        "description": "Usuarios",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.User"
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "This endpoint Create a new user",
                 "consumes": [
@@ -89,6 +113,42 @@
                         "schema": {
                             "$ref": "#/definitions/models.User"
                         }
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "This endpoint Delete a user by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "This endpoint Delete a user by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID del usuario",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Usuario eliminado"
                     },
                     "404": {
                         "description": "Usuario no encontrado",
