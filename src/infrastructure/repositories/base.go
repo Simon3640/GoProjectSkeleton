@@ -50,7 +50,17 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id in
 }
 
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll() ([]Model, error) {
-	var entities []Model
+	var entities []DBModel
 	err := rb.DB.Find(&entities).Error
-	return entities, err
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]Model, len(entities))
+
+	for i, entity := range entities {
+		result[i] = *rb.modelConverter.toDomain(&entity)
+	}
+
+	return result, nil
 }
