@@ -15,6 +15,11 @@ services:
       - DB_HOST = db
       - APP_VERSION = 0.0.0
       - APP_DESCRIPTION = "Gorm Go Skeleton Template"
+      - DB_HOST = db
+      - DB_PORT = 5432
+      - DB_USER = gormgoskeleton
+      - DB_PASSWORD = gormgoskeleton
+      - DB_NAME = gormgoskeleton
     # depends_on:
     #   - db
     security_opt:
