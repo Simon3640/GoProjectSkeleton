@@ -1,0 +1,19 @@
+FROM golang:1.23-alpine AS builder
+
+WORKDIR /app
+
+COPY . .
+
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+RUN go mod tidy
+RUN go build -gcflags "all=-N -l" -o /app/main /app/src/infrastructure/api/cmd/main.go
+
+FROM debian:bullseye-slim
+
+WORKDIR /app
+
+# Copia el binario y delve desde la imagen anterior
+COPY --from=builder /app/main /src/main
+COPY --from=builder /go/bin/dlv /usr/local/bin/dlv
+
+EXPOSE 8080 40000
