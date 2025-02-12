@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"go/types"
 	"net/http"
 	"strconv"
 
@@ -107,6 +108,34 @@ func updateUser(c *gin.Context) {
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
 	content, statusCode := api.NewRequestResolver[models.User]().ResolveDTO(c, uc_result, headers)
+
+	c.JSON(statusCode, content)
+}
+
+// DeleteUser
+// @Summary This endpoint Delete a user by ID
+// @Description This endpoint Delete a user by ID
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param id path int true "ID del usuario"
+// @Success 204 {object} nil "Usuario eliminado"
+// @Failure 404 {object} map[string]string "Usuario no encontrado"
+// @Router /api/user/{id} [delete]
+func deleteUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	uc_result := usecases_user.NewDeleteUserUseCase(providers.Logger,
+		repositories.NewUserRepository(database.DB),
+	).Execute(c, locales.EN_US, id)
+	headers := map[api.HTTPHeaderTypeEnum]string{
+		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	}
+	content, statusCode := api.NewRequestResolver[types.Nil]().ResolveDTO(c, uc_result, headers)
 
 	c.JSON(statusCode, content)
 }

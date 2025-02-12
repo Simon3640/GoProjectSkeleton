@@ -7,4 +7,5 @@ func Router(r *gin.RouterGroup) {
 	r.POST("/user", createUser)
 	r.GET("/user/:id", getUser)
 	r.PATCH("/user/:id", updateUser)
+	r.DELETE("/user/:id", deleteUser)
 }
