@@ -10,7 +10,7 @@ import (
 type RepositoryBase[CreateModel any, UpdateModel any, Model any, DBModel any] struct {
 	DB             *gorm.DB
 	logger         contracts.ILoggerProvider
-	modelConverter ModelConverter[CreateModel, Model, DBModel]
+	modelConverter ModelConverter[CreateModel, UpdateModel, Model, DBModel]
 }
 
 var _ contracts_repositories.IRepositoryBase[any, any, any, any] = (*RepositoryBase[any, any, any, any])(nil)
@@ -33,8 +33,16 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetByID(id i
 	return rb.modelConverter.toDomain(&entity), err
 }
 
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(entity UpdateModel) error {
-	return rb.DB.Save(&entity).Error
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id int, entity UpdateModel) (*Model, error) {
+	updateData := rb.modelConverter.toGormUpdate(entity)
+	err := rb.DB.Model(new(DBModel)).Where("id = ?", id).Updates(updateData).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	updatedEntity, _ := rb.GetByID(id)
+	return updatedEntity, nil
 }
 
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id int) error {
