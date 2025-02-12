@@ -1,0 +1,47 @@
+package mocks
+
+import (
+	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	"gormgoskeleton/src/domain/models"
+
+	"github.com/stretchr/testify/mock"
+)
+
+type MockUserRespository struct {
+	mock.Mock
+}
+
+type DBUser struct {
+	Name   string
+	Email  string
+	Phone  string
+	Status string
+	ID     int
+}
+
+var _ contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, DBUser] = (*MockUserRespository)(nil)
+
+func (m *MockUserRespository) Create(input models.UserCreate) (*models.User, error) {
+	args := m.Called(input)
+	return args.Get(0).(*models.User), args.Error(1)
+}
+
+func (m *MockUserRespository) Update(input models.UserUpdate) error {
+	args := m.Called(input)
+	return args.Error(1)
+}
+
+func (m *MockUserRespository) GetByID(id int) (*models.User, error) {
+	args := m.Called(id)
+	return args.Get(0).(*models.User), args.Error(1)
+}
+
+func (m *MockUserRespository) Delete(id int) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockUserRespository) GetAll() ([]models.User, error) {
+	args := m.Called()
+	return args.Get(0).([]models.User), args.Error(1)
+}
