@@ -63,4 +63,31 @@ paths:
       summary: This endpoint Create a new user
       tags:
       - User
+  /api/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: This endpoint Get a user by ID
+      parameters:
+      - description: ID del usuario
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Usuario
+          schema:
+            $ref: '#/definitions/models.User'
+        "404":
+          description: Usuario no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: This endpoint Get a user by ID
+      tags:
+      - User
 swagger: "2.0"
