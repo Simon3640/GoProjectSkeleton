@@ -6,4 +6,5 @@ func Router(r *gin.RouterGroup) {
 	r.GET("/health-check", getHealthCheck)
 	r.POST("/user", createUser)
 	r.GET("/user/:id", getUser)
+	r.PATCH("/user/:id", updateUser)
 }

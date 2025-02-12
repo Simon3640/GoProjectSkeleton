@@ -23,6 +23,17 @@ definitions:
       status:
         type: string
     type: object
+  models.UserUpdateBase:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      status:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -88,6 +99,38 @@ paths:
               type: string
             type: object
       summary: This endpoint Get a user by ID
+      tags:
+      - User
+    patch:
+      consumes:
+      - application/json
+      description: This endpoint Update a user by ID
+      parameters:
+      - description: ID del usuario
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Datos del usuario
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserUpdateBase'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Usuario actualizado
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Error de validación
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: This endpoint Update a user by ID
       tags:
       - User
 swagger: "2.0"

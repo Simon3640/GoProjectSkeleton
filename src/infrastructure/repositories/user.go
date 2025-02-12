@@ -15,7 +15,7 @@ type UserRepository struct {
 
 type UserConverter struct{}
 
-var _ ModelConverter[models.UserCreate, models.User, db_models.User] = (*UserConverter)(nil)
+var _ ModelConverter[models.UserCreate, models.UserUpdate, models.User, db_models.User] = (*UserConverter)(nil)
 
 func (uc *UserConverter) toGormCreate(model models.UserCreate) *db_models.User {
 	return &db_models.User{
@@ -36,6 +36,28 @@ func (uc *UserConverter) toDomain(ormModel *db_models.User) *models.User {
 			Status: ormModel.Status,
 		},
 	}
+}
+
+func (uc *UserConverter) toGormUpdate(model models.UserUpdate) *db_models.User {
+	user := &db_models.User{}
+
+	if model.Name != nil {
+		user.Name = *model.Name
+	}
+
+	if model.Email != nil {
+		user.Email = *model.Email
+	}
+
+	if model.Phone != nil {
+		user.Phone = *model.Phone
+	}
+
+	if model.Status != nil {
+		user.Status = *model.Status
+	}
+	user.ID = model.ID
+	return user
 }
 
 func NewUserRepository(db *gorm.DB) *UserRepository {

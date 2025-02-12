@@ -26,9 +26,9 @@ func (m *MockUserRespository) Create(input models.UserCreate) (*models.User, err
 	return args.Get(0).(*models.User), args.Error(1)
 }
 
-func (m *MockUserRespository) Update(input models.UserUpdate) error {
+func (m *MockUserRespository) Update(id int, input models.UserUpdate) (*models.User, error) {
 	args := m.Called(input)
-	return args.Error(1)
+	return args.Get(1).(*models.User), args.Error(1)
 }
 
 func (m *MockUserRespository) GetByID(id int) (*models.User, error) {

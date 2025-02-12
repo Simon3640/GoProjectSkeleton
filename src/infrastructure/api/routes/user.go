@@ -72,3 +72,41 @@ func getUser(c *gin.Context) {
 
 	c.JSON(statusCode, content)
 }
+
+// UpdateUser
+// @Summary This endpoint Update a user by ID
+// @Description This endpoint Update a user by ID
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param id path int true "ID del usuario"
+// @Param request body models.UserUpdateBase true "Datos del usuario"
+// @Success 200 {object} models.User "Usuario actualizado"
+// @Failure 400 {object} map[string]string "Error de validación"
+// @Router /api/user/{id} [patch]
+func updateUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var userUpdate models.UserUpdate
+
+	if err := c.ShouldBindJSON(&userUpdate); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userUpdate.ID = id
+
+	uc_result := usecases_user.NewUpdateUserUseCase(providers.Logger,
+		repositories.NewUserRepository(database.DB),
+	).Execute(c, locales.EN_US, userUpdate)
+	headers := map[api.HTTPHeaderTypeEnum]string{
+		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	}
+	content, statusCode := api.NewRequestResolver[models.User]().ResolveDTO(c, uc_result, headers)
+
+	c.JSON(statusCode, content)
+}
