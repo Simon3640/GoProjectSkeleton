@@ -15,7 +15,9 @@ import (
 )
 
 func main() {
+	providers.Logger.Info("Initializing infraestructure...")
 	infrastructure.Initialize()
+	providers.Logger.Info("Infraestructure initialized")
 	providers.Logger.Info("Starting server...")
 	providers.Logger.Info("App Name: " + settings.AppSettingsInstance.AppName)
 	providers.Logger.Info("Port: " + settings.AppSettingsInstance.AppPort)
