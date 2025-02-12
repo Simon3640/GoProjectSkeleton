@@ -46,7 +46,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id in
 }
 
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id int) error {
-	return rb.DB.Delete(new(Model), id).Error
+	return rb.DB.Delete(new(DBModel), id).Error
 }
 
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll() ([]Model, error) {
