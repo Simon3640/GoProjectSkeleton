@@ -41,3 +41,26 @@ func TestCreateUserUseCase(t *testing.T) {
 	assert.Equal(result.Data.ID == 1, true)
 	assert.Equal(result.Data.Name == "Test", true)
 }
+
+func TestCreateUserUseCase_InvalidInput(t *testing.T) {
+	assert := assert.New(t)
+
+	ctx := context.Background()
+
+	testLogger := new(mocks.MockLoggerProvider)
+	testUserRepository := new(mocks.MockUserRespository)
+	testUser := models.UserCreate{
+		UserBase: models.UserBase{Name: "Test",
+			Email:  "invalidmail.com",
+			Phone:  "1234567890",
+			Status: "active"},
+	}
+
+	uc := NewCreateUserUseCase(testLogger, testUserRepository)
+
+	result := uc.Execute(ctx, locales.EN_US, testUser)
+
+	assert.NotNil(result)
+
+	assert.Equal(result.HasError(), true)
+}
