@@ -28,9 +28,9 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Create(entit
 }
 
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetByID(id int) (*Model, error) {
-	var entity Model
+	var entity DBModel
 	err := rb.DB.First(&entity, id).Error
-	return &entity, err
+	return rb.modelConverter.toDomain(&entity), err
 }
 
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(entity UpdateModel) error {
