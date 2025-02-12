@@ -1,3 +1,28 @@
+definitions:
+  models.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      phone:
+        type: string
+      status:
+        type: string
+    type: object
+  models.UserCreate:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      status:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -10,4 +35,32 @@ paths:
       responses: {}
       tags:
       - Health Check
+  /api/user:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint Create a new user
+      parameters:
+      - description: Datos del usuario
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Usuario creado
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Error de validación
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: This endpoint Create a new user
+      tags:
+      - User
 swagger: "2.0"
