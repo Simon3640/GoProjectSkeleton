@@ -1,8 +1,8 @@
 package api
 
 import (
-	"gingoskeleton/src/application/shared/status"
-	usecase "gingoskeleton/src/application/shared/use_case"
+	"gormgoskeleton/src/application/shared/status"
+	usecase "gormgoskeleton/src/application/shared/use_case"
 
 	gin "github.com/gin-gonic/gin"
 )

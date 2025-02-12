@@ -3,9 +3,9 @@ package providers
 import (
 	"time"
 
-	"gingoskeleton/src/application/contracts"
-	"gingoskeleton/src/application/shared/settings"
-	"gingoskeleton/src/domain/models"
+	"gormgoskeleton/src/application/contracts"
+	"gormgoskeleton/src/application/shared/settings"
+	"gormgoskeleton/src/domain/models"
 )
 
 type ApiStatusProvider struct{}

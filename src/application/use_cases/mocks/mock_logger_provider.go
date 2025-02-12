@@ -3,7 +3,7 @@ package mocks
 import (
 	"fmt"
 
-	"gingoskeleton/src/application/contracts"
+	"gormgoskeleton/src/application/contracts"
 
 	"github.com/stretchr/testify/mock"
 )

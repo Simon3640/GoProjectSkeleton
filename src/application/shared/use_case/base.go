@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 
-	"gingoskeleton/src/application/shared/locales"
+	"gormgoskeleton/src/application/shared/locales"
 )
 
 type BaseUseCase[Input any, Output any] interface {

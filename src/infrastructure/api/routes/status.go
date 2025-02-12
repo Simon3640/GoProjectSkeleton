@@ -5,11 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"gingoskeleton/src/application/shared/locales"
-	usecases "gingoskeleton/src/application/use_cases"
-	"gingoskeleton/src/domain/models"
-	"gingoskeleton/src/infrastructure/api"
-	"gingoskeleton/src/infrastructure/providers"
+	"gormgoskeleton/src/application/shared/locales"
+	usecases "gormgoskeleton/src/application/use_cases"
+	"gormgoskeleton/src/domain/models"
+	"gormgoskeleton/src/infrastructure/api"
+	"gormgoskeleton/src/infrastructure/providers"
 )
 
 // Health Check
