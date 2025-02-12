@@ -15,6 +15,11 @@ type AppSettings struct {
 	AppDescription string
 	EnableLog      bool
 	DebugLog       bool
+	DBHost         string
+	DBPort         string
+	DBUser         string
+	DBPassword     string
+	DBName         string
 }
 
 func NewAppSettings() *AppSettings {
