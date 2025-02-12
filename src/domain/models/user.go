@@ -11,11 +11,16 @@ type UserCreate struct {
 	UserBase
 }
 
-type UserUpdate struct {
+type UserUpdateBase struct {
 	Name   *string `json:"name"`
 	Email  *string `json:"email"`
 	Phone  *string `json:"phone"`
 	Status *string `json:"status"`
+}
+
+type UserUpdate struct {
+	UserUpdateBase
+	ID int `json:"id"`
 }
 
 type User struct {
