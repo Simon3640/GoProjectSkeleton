@@ -47,6 +47,22 @@ paths:
       tags:
       - Health Check
   /api/user:
+    get:
+      consumes:
+      - application/json
+      description: This endpoint Get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Usuarios
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      summary: This endpoint Get all users
+      tags:
+      - User
     post:
       consumes:
       - application/json
@@ -75,6 +91,30 @@ paths:
       tags:
       - User
   /api/user/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: This endpoint Delete a user by ID
+      parameters:
+      - description: ID del usuario
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Usuario eliminado
+        "404":
+          description: Usuario no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: This endpoint Delete a user by ID
+      tags:
+      - User
     get:
       consumes:
       - application/json
