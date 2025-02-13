@@ -139,3 +139,23 @@ func deleteUser(c *gin.Context) {
 
 	c.JSON(statusCode, content)
 }
+
+// GetAllUser
+// @Summary This endpoint Get all users
+// @Description This endpoint Get all users
+// @Tags User
+// @Accept json
+// @Produce json
+// @Success 200 {object} []models.User "Usuarios"
+// @Router /api/user [get]
+func getAllUser(c *gin.Context) {
+	uc_result := usecases_user.NewGetAllUserUseCase(providers.Logger,
+		repositories.NewUserRepository(database.DB),
+	).Execute(c, locales.EN_US, usecases_user.Nil{})
+	headers := map[api.HTTPHeaderTypeEnum]string{
+		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	}
+	content, statusCode := api.NewRequestResolver[[]models.User]().ResolveDTO(c, uc_result, headers)
+
+	c.JSON(statusCode, content)
+}

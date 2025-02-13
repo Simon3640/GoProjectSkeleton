@@ -8,4 +8,5 @@ func Router(r *gin.RouterGroup) {
 	r.GET("/user/:id", getUser)
 	r.PATCH("/user/:id", updateUser)
 	r.DELETE("/user/:id", deleteUser)
+	r.GET("/user", getAllUser)
 }
