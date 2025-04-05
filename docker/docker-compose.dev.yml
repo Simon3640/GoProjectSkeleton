@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   # gormgoskeleton:
   #   build:
@@ -44,13 +42,13 @@ services:
       POSTGRES_PASSWORD: gormgoskeleton
     volumes:
       - gormgoskeleton-db-data:/var/lib/postgresql/data
-    networks:
-      - gormgoskeleton
+    # networks:
+    #   - gormgoskeleton
 
 
-networks:
-  gormgoskeleton:
-    external: true
+# networks:
+#   gormgoskeleton:
+#     external: true
 
 volumes:
   gormgoskeleton-db-data:

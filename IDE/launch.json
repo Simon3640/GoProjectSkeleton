@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Launch Go Program",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "env": {
+                "APP_NAME": "gormgoskeleton",
+                "APP_ENV": "dev",
+                "APP_PORT": "8080",
+                "DB_HOST": "db",
+                "APP_VERSION": "0.0.0",
+                "APP_DESCRIPTION": "Gorm Go Skeleton Template",
+                "DB_PORT": "5432",
+                "DB_USER": "gormgoskeleton",
+                "DB_PASSWORD": "gormgoskeleton",
+                "DB_NAME": "gormgoskeleton",
+            },
+        }
+    ]
+}
