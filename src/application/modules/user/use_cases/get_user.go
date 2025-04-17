@@ -11,31 +11,31 @@ import (
 	"gormgoskeleton/src/domain/models"
 )
 
-type GetAllUserUseCase struct {
+type GetUserUseCase struct {
 	appMessages *locales.Locale
 	log         contracts.ILoggerProvider
 	repo        contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any]
 	locale      locales.LocaleTypeEnum
 }
 
-type Nil struct{}
-
-var _ usecase.BaseUseCase[Nil, []models.User] = (*GetAllUserUseCase)(nil)
-
-func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
+func (uc *GetUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
 	}
 }
 
-func (uc *GetAllUserUseCase) Execute(
-	ctx context.Context,
+func (uc *GetUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input Nil,
-) *usecase.UseCaseResult[[]models.User] {
-	result := usecase.NewUseCaseResult[[]models.User]()
+	input int,
+) *usecase.UseCaseResult[models.User] {
+	result := usecase.NewUseCaseResult[models.User]()
+	uc.GetUser(ctx, result, input)
 	uc.SetLocale(locale)
-	data, err := uc.repo.GetAll()
+	return result
+}
+
+func (uc *GetUserUseCase) GetUser(ctx context.Context, result *usecase.UseCaseResult[models.User], id int) {
+	res, err := uc.repo.GetByID(id)
 	if err != nil {
 		result.SetError(
 			status.Conflict,
@@ -47,22 +47,18 @@ func (uc *GetAllUserUseCase) Execute(
 	}
 	result.SetData(
 		status.Success,
-		data,
-		uc.appMessages.Get(
-			uc.locale,
-			"success",
-		),
+		*res,
+		"",
 	)
-	return result
 }
 
-func NewGetAllUserUseCase(
+func NewGetUserUseCase(
 	log contracts.ILoggerProvider,
 	repo contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any],
-) *GetAllUserUseCase {
-	return &GetAllUserUseCase{
+) *GetUserUseCase {
+	return &GetUserUseCase{
+		appMessages: locales.NewLocale(locales.EN_US),
 		log:         log,
 		repo:        repo,
-		appMessages: locales.NewLocale(locales.EN_US),
 	}
 }

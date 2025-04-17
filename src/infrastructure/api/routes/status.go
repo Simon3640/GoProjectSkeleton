@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	usecases "gormgoskeleton/src/application/modules/status/use_cases"
 	"gormgoskeleton/src/application/shared/locales"
-	usecases "gormgoskeleton/src/application/use_cases"
 	"gormgoskeleton/src/domain/models"
 	"gormgoskeleton/src/infrastructure/api"
 	"gormgoskeleton/src/infrastructure/providers"

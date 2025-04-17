@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	usecases_user "gormgoskeleton/src/application/modules/user/use_cases"
 	"gormgoskeleton/src/application/shared/locales"
-	usecases_user "gormgoskeleton/src/application/use_cases/user"
 	"gormgoskeleton/src/domain/models"
 	"gormgoskeleton/src/infrastructure/api"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
