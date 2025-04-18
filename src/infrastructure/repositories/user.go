@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/domain/models"
 	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
 
@@ -11,7 +12,12 @@ type UserRepository struct {
 	RepositoryBase[models.UserCreate, models.UserUpdate, models.User, db_models.User]
 }
 
-// var _ contracts_repositories.IUserRepository = (*UserRepository)(nil)
+var _ contracts_repositories.IUserRepository[
+	models.UserCreate,
+	models.UserUpdate,
+	models.User,
+	db_models.User,
+] = (*UserRepository)(nil)
 
 type UserConverter struct{}
 

@@ -2,6 +2,9 @@ package usecases_user
 
 import (
 	"context"
+	"regexp"
+	"strings"
+
 	"gormgoskeleton/src/application/contracts"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/application/shared/locales"
@@ -11,26 +14,38 @@ import (
 	"gormgoskeleton/src/domain/models"
 )
 
-type GetUserUseCase struct {
+type CreateUserUseCase struct {
 	appMessages *locales.Locale
 	log         contracts.ILoggerProvider
 	repo        contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any]
 	locale      locales.LocaleTypeEnum
 }
 
-func (uc *GetUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
+var _ usecase.BaseUseCase[models.UserCreate, models.User] = (*CreateUserUseCase)(nil)
+
+func (uc *CreateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
 	}
 }
 
-func (uc *GetUserUseCase) Execute(ctx context.Context,
+func (uc *CreateUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input int,
+	input models.UserCreate,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
-	res, err := uc.repo.GetByID(input)
+	validation, msg := uc.validate(input)
+
+	if !validation {
+		result.SetError(
+			status.InvalidInput,
+			strings.Join(msg, "\n"),
+		)
+		return result
+	}
+
+	res, err := uc.repo.Create(input)
 
 	if err != nil {
 		result.SetError(
@@ -44,17 +59,32 @@ func (uc *GetUserUseCase) Execute(ctx context.Context,
 	result.SetData(
 		status.Success,
 		*res,
-		"",
+		uc.appMessages.Get(
+			uc.locale,
+			messages.MessageKeysInstance.USER_WAS_CREATED,
+		),
 	)
-
 	return result
 }
 
-func NewGetUserUseCase(
+func (uc *CreateUserUseCase) validate(input models.UserCreate) (bool, []string) {
+	var msgs []string
+
+	if input.Email == "" {
+		msgs = append(msgs, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.SOME_PARAMETERS_ARE_MISSING))
+	}
+	// regex for email validation
+	if !regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`).MatchString(input.Email) {
+		msgs = append(msgs, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.INVALID_EMAIL))
+	}
+	return len(msgs) == 0, msgs
+}
+
+func NewCreateUserUseCase(
 	log contracts.ILoggerProvider,
 	repo contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any],
-) *GetUserUseCase {
-	return &GetUserUseCase{
+) *CreateUserUseCase {
+	return &CreateUserUseCase{
 		appMessages: locales.NewLocale(locales.EN_US),
 		log:         log,
 		repo:        repo,

@@ -5,5 +5,5 @@ type IRepositoryBase[CreateDomainModel any, UpdateDomainModel any, DomainModel a
 	GetByID(id int) (*DomainModel, error)
 	Update(id int, entity UpdateDomainModel) (*DomainModel, error)
 	Delete(id int) error
-	GetAll() ([]DomainModel, error)
+	GetAll(payload *map[string]string, skip *int, limit *int) ([]DomainModel, error)
 }

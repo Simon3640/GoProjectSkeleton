@@ -41,7 +41,7 @@ func (m *MockUserRespository) Delete(id int) error {
 	return args.Error(0)
 }
 
-func (m *MockUserRespository) GetAll() ([]models.User, error) {
+func (m *MockUserRespository) GetAll(payload *map[string]string, skip *int, limit *int) ([]models.User, error) {
 	args := m.Called()
 	return args.Get(0).([]models.User), args.Error(1)
 }

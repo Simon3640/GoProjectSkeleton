@@ -3,7 +3,7 @@ package usecases_user
 import (
 	"context"
 	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/use_cases/mocks"
+	"gormgoskeleton/src/application/shared/mocks"
 	"gormgoskeleton/src/domain/models"
 	"testing"
 
