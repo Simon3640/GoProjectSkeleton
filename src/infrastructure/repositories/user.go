@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"gormgoskeleton/src/application/contracts"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/domain/models"
 	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
@@ -66,13 +67,13 @@ func (uc *UserConverter) toGormUpdate(model models.UserUpdate) *db_models.User {
 	return user
 }
 
-func NewUserRepository(db *gorm.DB) *UserRepository {
+func NewUserRepository(db *gorm.DB, logger contracts.ILoggerProvider) *UserRepository {
 	return &UserRepository{
 		RepositoryBase: RepositoryBase[
 			models.UserCreate,
 			models.UserUpdate,
 			models.User,
 			db_models.User,
-		]{DB: db, modelConverter: &UserConverter{}},
+		]{DB: db, modelConverter: &UserConverter{}, logger: logger},
 	}
 }

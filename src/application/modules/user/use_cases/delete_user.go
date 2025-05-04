@@ -48,7 +48,7 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 		types.Nil{},
 		uc.appMessages.Get(
 			uc.locale,
-			messages.MessageKeysInstance.APPLICATION_STATUS_OK,
+			messages.MessageKeysInstance.USER_DELETE_SUCCESS,
 		),
 	)
 	return result
