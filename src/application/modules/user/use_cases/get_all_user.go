@@ -14,7 +14,7 @@ import (
 type GetAllUserUseCase struct {
 	appMessages *locales.Locale
 	log         contracts.ILoggerProvider
-	repo        contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any]
+	repo        contracts_repositories.IUserRepository
 	locale      locales.LocaleTypeEnum
 }
 
@@ -58,7 +58,7 @@ func (uc *GetAllUserUseCase) Execute(
 
 func NewGetAllUserUseCase(
 	log contracts.ILoggerProvider,
-	repo contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any],
+	repo contracts_repositories.IUserRepository,
 ) *GetAllUserUseCase {
 	return &GetAllUserUseCase{
 		log:         log,

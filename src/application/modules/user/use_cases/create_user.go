@@ -17,7 +17,7 @@ import (
 type CreateUserUseCase struct {
 	appMessages *locales.Locale
 	log         contracts.ILoggerProvider
-	repo        contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any]
+	repo        contracts_repositories.IUserRepository
 	locale      locales.LocaleTypeEnum
 }
 
@@ -82,7 +82,7 @@ func (uc *CreateUserUseCase) validate(input models.UserCreate) (bool, []string) 
 
 func NewCreateUserUseCase(
 	log contracts.ILoggerProvider,
-	repo contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any],
+	repo contracts_repositories.IUserRepository,
 ) *CreateUserUseCase {
 	return &CreateUserUseCase{
 		appMessages: locales.NewLocale(locales.EN_US),

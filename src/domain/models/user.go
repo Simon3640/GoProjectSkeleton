@@ -27,3 +27,8 @@ type User struct {
 	UserBase
 	ID int `json:"id"`
 }
+
+type UserInDB struct {
+	UserBase
+	DBBaseModel
+}

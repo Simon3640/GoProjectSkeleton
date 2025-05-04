@@ -25,3 +25,8 @@ type Role struct {
 	RoleBase
 	ID int `json:"id"`
 }
+
+type RoleInDB struct {
+	RoleBase
+	DBBaseModel
+}
