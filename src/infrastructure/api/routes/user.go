@@ -36,7 +36,7 @@ func createUser(c *gin.Context) {
 	}
 
 	uc_result := usecases_user.NewCreateUserUseCase(providers.Logger,
-		repositories.NewUserRepository(database.DB),
+		repositories.NewUserRepository(database.DB, providers.Logger),
 	).Execute(c, locales.EN_US, userCreate)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
@@ -64,7 +64,7 @@ func getUser(c *gin.Context) {
 	}
 
 	uc_result := usecases_user.NewGetUserUseCase(providers.Logger,
-		repositories.NewUserRepository(database.DB),
+		repositories.NewUserRepository(database.DB, providers.Logger),
 	).Execute(c, locales.EN_US, id)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
@@ -102,7 +102,7 @@ func updateUser(c *gin.Context) {
 	userUpdate.ID = id
 
 	uc_result := usecases_user.NewUpdateUserUseCase(providers.Logger,
-		repositories.NewUserRepository(database.DB),
+		repositories.NewUserRepository(database.DB, providers.Logger),
 	).Execute(c, locales.EN_US, userUpdate)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
@@ -130,7 +130,7 @@ func deleteUser(c *gin.Context) {
 	}
 
 	uc_result := usecases_user.NewDeleteUserUseCase(providers.Logger,
-		repositories.NewUserRepository(database.DB),
+		repositories.NewUserRepository(database.DB, providers.Logger),
 	).Execute(c, locales.EN_US, id)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
@@ -150,7 +150,7 @@ func deleteUser(c *gin.Context) {
 // @Router /api/user [get]
 func getAllUser(c *gin.Context) {
 	uc_result := usecases_user.NewGetAllUserUseCase(providers.Logger,
-		repositories.NewUserRepository(database.DB),
+		repositories.NewUserRepository(database.DB, providers.Logger),
 	).Execute(c, locales.EN_US, usecases_user.Nil{})
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),

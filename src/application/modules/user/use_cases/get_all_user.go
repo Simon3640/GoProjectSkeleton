@@ -50,7 +50,7 @@ func (uc *GetAllUserUseCase) Execute(
 		data,
 		uc.appMessages.Get(
 			uc.locale,
-			"success",
+			messages.MessageKeysInstance.USER_LIST_SUCCESS,
 		),
 	)
 	return result

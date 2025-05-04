@@ -62,10 +62,10 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(paylo
 		}
 	}
 	// Apply pagination
-	if *skip > 0 && skip != nil {
+	if skip != nil && *skip > 0 {
 		rb.DB = rb.DB.Offset(*skip)
 	}
-	if *limit > 0 && limit != nil {
+	if limit != nil && *limit > 0 {
 		rb.DB = rb.DB.Limit(*limit)
 	}
 	// Execute the query
