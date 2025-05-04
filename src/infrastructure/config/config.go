@@ -21,6 +21,7 @@ type Config struct {
 	DBUser         string `env:"DB_USER" envDefault:"postgres"`
 	DBPassword     string `env:"DB_PASSWORD" envDefault:"postgres"`
 	DBName         string `env:"DB_NAME" envDefault:"gormgoskeleton"`
+	DBSSL          string `env:"DB_SSL" envDefault:"false"`
 }
 
 func (c *Config) ToMap() map[string]string {

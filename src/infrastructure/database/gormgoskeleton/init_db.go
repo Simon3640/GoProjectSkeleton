@@ -14,5 +14,9 @@ func InitMigrate(db *gorm.DB, logger contracts.ILoggerProvider) {
 	db.AutoMigrate(&db_models.User{})
 	logger.Info("User model migrated")
 
+	logger.Info("Auto migrating Role model")
+	db.AutoMigrate(&db_models.Role{})
+	logger.Info("Role model migrated")
+
 	logger.Info("Auto migrating ended")
 }
