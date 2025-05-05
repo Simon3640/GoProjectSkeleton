@@ -100,7 +100,6 @@ func updateUser(c *gin.Context) {
 	}
 
 	userUpdate.ID = id
-
 	uc_result := usecases_user.NewUpdateUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
 	).Execute(c, locales.EN_US, userUpdate)
