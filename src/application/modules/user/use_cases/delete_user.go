@@ -9,13 +9,12 @@ import (
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
 )
 
 type DeleteUserUseCase struct {
 	appMessages *locales.Locale
 	log         contracts.ILoggerProvider
-	repo        contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any]
+	repo        contracts_repositories.IUserRepository
 	locale      locales.LocaleTypeEnum
 }
 
@@ -56,7 +55,7 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 
 func NewDeleteUserUseCase(
 	log contracts.ILoggerProvider,
-	repo contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any],
+	repo contracts_repositories.IUserRepository,
 ) *DeleteUserUseCase {
 	return &DeleteUserUseCase{
 		appMessages: locales.NewLocale(locales.EN_US),

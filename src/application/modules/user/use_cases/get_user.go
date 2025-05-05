@@ -14,7 +14,7 @@ import (
 type GetUserUseCase struct {
 	appMessages *locales.Locale
 	log         contracts.ILoggerProvider
-	repo        contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any]
+	repo        contracts_repositories.IUserRepository
 	locale      locales.LocaleTypeEnum
 }
 
@@ -54,7 +54,7 @@ func (uc *GetUserUseCase) GetUser(ctx context.Context, result *usecase.UseCaseRe
 
 func NewGetUserUseCase(
 	log contracts.ILoggerProvider,
-	repo contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any],
+	repo contracts_repositories.IUserRepository,
 ) *GetUserUseCase {
 	return &GetUserUseCase{
 		appMessages: locales.NewLocale(locales.EN_US),
