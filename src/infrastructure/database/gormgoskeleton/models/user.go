@@ -14,3 +14,5 @@ type User struct {
 func (User) TableName() string {
 	return "user"
 }
+
+var _ DBModel = (*User)(nil)

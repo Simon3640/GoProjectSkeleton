@@ -19,7 +19,7 @@ type UserConverter struct{}
 
 var _ ModelConverter[models.UserCreate, models.UserUpdate, models.User, db_models.User] = (*UserConverter)(nil)
 
-func (uc *UserConverter) toGormCreate(model models.UserCreate) *db_models.User {
+func (uc *UserConverter) ToGormCreate(model models.UserCreate) *db_models.User {
 	return &db_models.User{
 		Name:   model.Name,
 		Email:  model.Email,
@@ -28,7 +28,7 @@ func (uc *UserConverter) toGormCreate(model models.UserCreate) *db_models.User {
 	}
 }
 
-func (uc *UserConverter) toDomain(ormModel *db_models.User) *models.User {
+func (uc *UserConverter) ToDomain(ormModel *db_models.User) *models.User {
 	return &models.User{
 		ID: ormModel.ID,
 		UserBase: models.UserBase{
@@ -40,7 +40,7 @@ func (uc *UserConverter) toDomain(ormModel *db_models.User) *models.User {
 	}
 }
 
-func (uc *UserConverter) toGormUpdate(model models.UserUpdate) *db_models.User {
+func (uc *UserConverter) ToGormUpdate(model models.UserUpdate) *db_models.User {
 	user := &db_models.User{}
 
 	if model.Name != nil {
