@@ -13,12 +13,7 @@ type UserRepository struct {
 	RepositoryBase[models.UserCreate, models.UserUpdate, models.User, db_models.User]
 }
 
-var _ contracts_repositories.IUserRepository[
-	models.UserCreate,
-	models.UserUpdate,
-	models.User,
-	db_models.User,
-] = (*UserRepository)(nil)
+var _ contracts_repositories.IUserRepository = (*UserRepository)(nil)
 
 type UserConverter struct{}
 

@@ -2,7 +2,7 @@ package models
 
 type RoleBase struct {
 	Key      string `json:"key"`
-	IsActive string `json:"status"`
+	IsActive bool   `json:"status"`
 	Priority int    `json:"priority"`
 }
 
@@ -12,7 +12,7 @@ type RoleCreate struct {
 
 type RoleUpdateBase struct {
 	Key      *string `json:"key"`
-	IsActive *string `json:"status"`
+	IsActive *bool   `json:"status"`
 	Priority *int    `json:"priority"`
 }
 
