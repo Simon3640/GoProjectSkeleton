@@ -1,7 +1,7 @@
 package repositories
 
 type ModelConverter[ModelCreate any, ModelUpdate any, Model any, DBModel any] interface {
-	toGormCreate(model ModelCreate) *DBModel
-	toDomain(ormModel *DBModel) *Model
-	toGormUpdate(model ModelUpdate) *DBModel
+	ToGormCreate(model ModelCreate) *DBModel
+	ToDomain(ormModel *DBModel) *Model
+	ToGormUpdate(model ModelUpdate) *DBModel
 }
