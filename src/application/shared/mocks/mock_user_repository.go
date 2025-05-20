@@ -19,7 +19,7 @@ type DBUser struct {
 	ID     int
 }
 
-var _ contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, DBUser] = (*MockUserRespository)(nil)
+var _ contracts_repositories.IUserRepository = (*MockUserRespository)(nil)
 
 func (m *MockUserRespository) Create(input models.UserCreate) (*models.User, error) {
 	args := m.Called(input)
