@@ -2,6 +2,7 @@ package database
 
 import (
 	"gormgoskeleton/src/application/contracts"
+	initdb "gormgoskeleton/src/infrastructure/database/gormgoskeleton/init_db"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -27,7 +28,7 @@ func (ggsbd GormGoSkeletonDB) SetUp(host string, port string, user string, passw
 	}
 	DB = db
 	logger.Info("Database connection established")
-	InitMigrate(db, logger)
+	initdb.InitMigrate(db, logger)
 }
 
 var Gormgoskeletondb *GormGoSkeletonDB
