@@ -8,6 +8,7 @@ var AdminUser = models.UserCreate{
 		Email:  "admin@gormgoskeleton.com",
 		Phone:  "1234567890",
 		Status: "active",
+		RoleID: 1,
 	},
 }
 
