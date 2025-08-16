@@ -20,6 +20,12 @@ type MessageKeys struct {
 	USER_GET_SUCCESS               MessageKeysEnum
 	USER_UPDATE_SUCCESS            MessageKeysEnum
 	USER_DELETE_SUCCESS            MessageKeysEnum
+	INVALID_USER_ID                MessageKeysEnum
+
+	PASSWORD_REQUIRED            MessageKeysEnum
+	PASSWORD_IS_SHORT            MessageKeysEnum
+	PASSWORD_UNDERMINED_STRENGTH MessageKeysEnum
+	PASSWORD_CREATED             MessageKeysEnum
 
 	INVALID_EMAIL         MessageKeysEnum
 	INVALID_PASSWORD      MessageKeysEnum
@@ -45,10 +51,17 @@ var MessageKeysInstance = MessageKeys{
 	USER_GET_SUCCESS:               "USER_GET_SUCCESS",
 	USER_UPDATE_SUCCESS:            "USER_UPDATE_SUCCESS",
 	USER_DELETE_SUCCESS:            "USER_DELETE_SUCCESS",
+	INVALID_USER_ID:                "INVALID_USER_ID",
 
 	INVALID_EMAIL:    "INVALID_EMAIL",
 	INVALID_PASSWORD: "INVALID_PASSWORD",
 	INVALID_SESSION:  "INVALID_SESSION",
+
+	// Password related messages
+	PASSWORD_REQUIRED:            "PASSWORD_REQUIRED",
+	PASSWORD_IS_SHORT:            "PASSWORD_IS_SHORT",
+	PASSWORD_UNDERMINED_STRENGTH: "PASSWORD_UNDERMINED_STRENGTH",
+	PASSWORD_CREATED:             "PASSWORD_CREATED",
 
 	APPLICATION_STATUS_OK: "APPLICATION_STATUS_OK",
 }

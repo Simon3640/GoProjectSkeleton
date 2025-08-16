@@ -18,9 +18,16 @@ var EsMessages = map[MessageKeysEnum]string{
 	"USER_GET_SUCCESS":               "Usuario obtenido con éxito.",
 	"USER_UPDATE_SUCCESS":            "Usuario actualizado con éxito.",
 	"USER_DELETE_SUCCESS":            "Usuario eliminado con éxito.",
+	"INVALID_USER_ID":                "El ID de usuario es inválido.",
 
-	"INVALID_EMAIL":         "El correo electrónico es inválido.",
-	"INVALID_PASSWORD":      "La contraseña es inválida.",
-	"INVALID_SESSION":       "La sesión es inválida.",
+	"PASSWORD_REQUIRED":            "La contraseña es requerida.",
+	"PASSWORD_IS_SHORT":            "La contraseña es demasiado corta.",
+	"PASSWORD_UNDERMINED_STRENGTH": "La fortaleza de la contraseña está comprometida.",
+	"PASSWORD_CREATED":             "Contraseña creada con éxito.",
+
+	"INVALID_EMAIL":    "El correo electrónico es inválido.",
+	"INVALID_PASSWORD": "La contraseña es inválida.",
+	"INVALID_SESSION":  "La sesión es inválida.",
+
 	"APPLICATION_STATUS_OK": "La aplicación está en ejecución.",
 }

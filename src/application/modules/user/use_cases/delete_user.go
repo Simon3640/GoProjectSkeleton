@@ -9,6 +9,7 @@ import (
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
+	"strings"
 )
 
 type DeleteUserUseCase struct {
@@ -30,8 +31,16 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input int,
 ) *usecase.UseCaseResult[types.Nil] {
+	validation, val_msgs := uc.validate(input)
 	result := usecase.NewUseCaseResult[types.Nil]()
 	uc.SetLocale(locale)
+	if !validation {
+		result.SetError(
+			status.InvalidInput,
+			strings.Join(val_msgs, "\n"),
+		)
+		return result
+	}
 	err := uc.repo.Delete(input)
 	if err != nil {
 		result.SetError(
@@ -51,6 +60,17 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 		),
 	)
 	return result
+}
+
+func (uc *DeleteUserUseCase) validate(input int) (bool, []string) {
+	var val_msgs []string
+	if input <= 0 {
+		val_msgs = append(val_msgs, uc.appMessages.Get(
+			uc.locale,
+			messages.MessageKeysInstance.INVALID_USER_ID,
+		))
+	}
+	return len(val_msgs) == 0, val_msgs
 }
 
 func NewDeleteUserUseCase(

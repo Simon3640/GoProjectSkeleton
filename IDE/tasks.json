@@ -1,0 +1,19 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "go: swag init",
+			"command": "swag",
+			"args": [
+				"init",
+				"-g",
+				"/src/infrastructure/api/cmd/main.go"
+			],
+			"problemMatcher": [
+				"$go"
+			],
+			"group": "build"
+		}
+	]
+}
