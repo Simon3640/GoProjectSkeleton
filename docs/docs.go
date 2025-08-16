@@ -29,6 +29,49 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/password": {
+            "post": {
+                "description": "This endpoint Create a new password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Password"
+                ],
+                "summary": "This endpoint Create a new password",
+                "parameters": [
+                    {
+                        "description": "Datos del usuario",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.PasswordCreateNoHash"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Usuario creado",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/user": {
             "get": {
                 "description": "This endpoint Get all users",
@@ -223,6 +266,23 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.PasswordCreateNoHash": {
+            "type": "object",
+            "properties": {
+                "expires_at": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "no_hashed_password": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.User": {
             "type": "object",
             "properties": {
@@ -237,6 +297,9 @@ const docTemplate = `{
                 },
                 "phone": {
                     "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
                 },
                 "status": {
                     "type": "string"
@@ -255,6 +318,9 @@ const docTemplate = `{
                 "phone": {
                     "type": "string"
                 },
+                "role_id": {
+                    "type": "integer"
+                },
                 "status": {
                     "type": "string"
                 }
@@ -271,6 +337,9 @@ const docTemplate = `{
                 },
                 "phone": {
                     "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
                 },
                 "status": {
                     "type": "string"

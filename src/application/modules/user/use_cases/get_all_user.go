@@ -14,7 +14,7 @@ import (
 type GetAllUserUseCase struct {
 	appMessages *locales.Locale
 	log         contracts.ILoggerProvider
-	repo        contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any]
+	repo        contracts_repositories.IUserRepository
 	locale      locales.LocaleTypeEnum
 }
 
@@ -35,7 +35,7 @@ func (uc *GetAllUserUseCase) Execute(
 ) *usecase.UseCaseResult[[]models.User] {
 	result := usecase.NewUseCaseResult[[]models.User]()
 	uc.SetLocale(locale)
-	data, err := uc.repo.GetAll()
+	data, err := uc.repo.GetAll(nil, nil, nil)
 	if err != nil {
 		result.SetError(
 			status.Conflict,
@@ -50,7 +50,7 @@ func (uc *GetAllUserUseCase) Execute(
 		data,
 		uc.appMessages.Get(
 			uc.locale,
-			"success",
+			messages.MessageKeysInstance.USER_LIST_SUCCESS,
 		),
 	)
 	return result
@@ -58,7 +58,7 @@ func (uc *GetAllUserUseCase) Execute(
 
 func NewGetAllUserUseCase(
 	log contracts.ILoggerProvider,
-	repo contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any],
+	repo contracts_repositories.IUserRepository,
 ) *GetAllUserUseCase {
 	return &GetAllUserUseCase{
 		log:         log,

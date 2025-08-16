@@ -20,6 +20,7 @@ type AppSettings struct {
 	DBUser         string
 	DBPassword     string
 	DBName         string
+	DBSSL          bool
 }
 
 func NewAppSettings() *AppSettings {

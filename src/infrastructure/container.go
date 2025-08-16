@@ -19,6 +19,7 @@ func Initialize() {
 		settings.AppSettingsInstance.DBUser,
 		settings.AppSettingsInstance.DBPassword,
 		settings.AppSettingsInstance.DBName,
+		&settings.AppSettingsInstance.DBSSL,
 		providers.Logger,
 	)
 }
