@@ -158,3 +158,36 @@ func getAllUser(c *gin.Context) {
 
 	c.JSON(statusCode, content)
 }
+
+// CreateUserAndPassword
+// @Summary This endpoint Create a new user
+// @Description This endpoint Create a new user and password
+// @Schemes models.UserAndPasswordCreate
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param request body models.UserAndPasswordCreate true "Datos del usuario"
+// @Success 201 {object} models.User "Usuario creado"
+// @Failure 400 {object} map[string]string "Error de validación"
+// @Router /api/user-password [post]
+func createUserAndPassword(c *gin.Context) {
+	var userCreate models.UserAndPasswordCreate
+
+	if err := c.ShouldBindJSON(&userCreate); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
+	hashProvider := providers.HashProviderInstance
+
+	uc_result := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
+		userRepository,
+		hashProvider,
+	).Execute(c, locales.EN_US, userCreate)
+	headers := map[api.HTTPHeaderTypeEnum]string{
+		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	}
+	content, statusCode := api.NewRequestResolver[models.User]().ResolveDTO(c, uc_result, headers)
+
+	c.JSON(statusCode, content)
+}

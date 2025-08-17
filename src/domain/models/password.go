@@ -31,14 +31,13 @@ func (p *PasswordCreate) SetDefaultExpiresAt() {
 	}
 }
 
-func (p PasswordCreateNoHash) IsValidPassword() bool {
-	// regex for password validation
+func IsValidPassword(p string) bool {
 	var hasMinLen, hasUpper, hasLower, hasNumber, hasSpecial bool
-	if len(p.NoHashedPassword) >= 8 {
+	if len(p) >= 8 {
 		hasMinLen = true
 	}
 
-	for _, char := range p.NoHashedPassword {
+	for _, char := range p {
 		switch {
 		case unicode.IsUpper(char):
 			hasUpper = true
@@ -52,6 +51,10 @@ func (p PasswordCreateNoHash) IsValidPassword() bool {
 	}
 
 	return hasMinLen && hasUpper && hasLower && hasNumber && hasSpecial
+}
+
+func (p PasswordCreateNoHash) IsValidPassword() bool {
+	return IsValidPassword(p.NoHashedPassword)
 }
 
 func NewPasswordCreate(userID int, hash string, expiresAt *time.Time, isActive bool) PasswordCreate {
