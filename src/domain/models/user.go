@@ -12,6 +12,11 @@ type UserCreate struct {
 	UserBase
 }
 
+type UserAndPasswordCreate struct {
+	UserCreate
+	Password string `json:"password"`
+}
+
 type UserRole struct {
 	UserBase
 	Role Role `json:"role"`

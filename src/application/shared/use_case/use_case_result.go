@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	"gormgoskeleton/src/application/shared/status"
 	"strconv"
 )
@@ -105,4 +106,8 @@ func (ucr *UseCaseResult[T]) GetData() *T {
 
 func (ucr *UseCaseResult[T]) HasError() bool {
 	return ucr.Error != nil
+}
+
+func (ucr *UseCaseResult[T]) GetError() error {
+	return fmt.Errorf("error: %s", *ucr.Error)
 }
