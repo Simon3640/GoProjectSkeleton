@@ -13,6 +13,42 @@ type UserRepository struct {
 	RepositoryBase[models.UserCreate, models.UserUpdate, models.User, db_models.User]
 }
 
+func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate) (*models.User, error) {
+	// Convert input to 2 models UserCreate and UserInDB
+	userCreate := ur.modelConverter.ToGormCreate(input.UserCreate)
+	tx := ur.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if err := tx.Create(userCreate).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	userInDB := ur.modelConverter.ToDomain(userCreate)
+	// Create password
+	passwordCreate := models.PasswordCreate{
+		PasswordBase: models.PasswordBase{
+			UserID:   userInDB.ID,
+			Hash:     input.Password,
+			IsActive: true,
+		},
+	}
+	passwordCreate.SetDefaultExpiresAt()
+	passwordModel := db_models.Password{
+		Hash:      passwordCreate.Hash,
+		ExpiresAt: passwordCreate.ExpiresAt,
+		IsActive:  passwordCreate.IsActive,
+		UserID:    passwordCreate.UserID,
+	}
+	if err := tx.Create(&passwordModel).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	return userInDB, tx.Commit().Error
+}
+
 var _ contracts_repositories.IUserRepository = (*UserRepository)(nil)
 
 type UserConverter struct{}

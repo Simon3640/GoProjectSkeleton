@@ -25,6 +25,21 @@ definitions:
       status:
         type: string
     type: object
+  models.UserAndPasswordCreate:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      role_id:
+        type: integer
+      status:
+        type: string
+    type: object
   models.UserCreate:
     properties:
       email:
@@ -119,6 +134,34 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/models.UserCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Usuario creado
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Error de validación
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: This endpoint Create a new user
+      tags:
+      - User
+  /api/user-password:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint Create a new user and password
+      parameters:
+      - description: Datos del usuario
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserAndPasswordCreate'
       produces:
       - application/json
       responses:

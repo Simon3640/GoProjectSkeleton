@@ -11,6 +11,7 @@ func Router(r *gin.RouterGroup) {
 	r.PATCH("/user/:id", updateUser)
 	r.DELETE("/user/:id", deleteUser)
 	r.GET("/user", getAllUser)
+	r.POST("/user-password", createUserAndPassword)
 
 	// Password routes
 	r.POST("/password", createPassword)
