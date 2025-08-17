@@ -45,3 +45,8 @@ func (m *MockUserRespository) GetAll(payload *map[string]string, skip *int, limi
 	args := m.Called()
 	return args.Get(0).([]models.User), args.Error(1)
 }
+
+func (m *MockUserRespository) CreateWithPassword(input models.UserAndPasswordCreate) (*models.User, error) {
+	args := m.Called(input)
+	return args.Get(0).(*models.User), args.Error(1)
+}
