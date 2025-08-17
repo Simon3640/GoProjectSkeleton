@@ -18,9 +18,16 @@ var EnMessages = map[MessageKeysEnum]string{
 	"USER_GET_SUCCESS":               "User retrieved successfully.",
 	"USER_UPDATE_SUCCESS":            "User updated successfully.",
 	"USER_DELETE_SUCCESS":            "User deleted successfully.",
+	"INVALID_USER_ID":                "Invalid user ID.",
 
-	"INVALID_EMAIL":         "Invalid email.",
-	"INVALID_PASSWORD":      "Invalid password.",
-	"INVALID_SESSION":       "Invalid session.",
+	"PASSWORD_REQUIRED":            "Password is required.",
+	"PASSWORD_IS_SHORT":            "Password is too short.",
+	"PASSWORD_UNDERMINED_STRENGTH": "Password strength is undermined.",
+	"PASSWORD_CREATED":             "Password created successfully.",
+
+	"INVALID_EMAIL":    "Invalid email.",
+	"INVALID_PASSWORD": "Invalid password.",
+	"INVALID_SESSION":  "Invalid session.",
+
 	"APPLICATION_STATUS_OK": "Application is running.",
 }

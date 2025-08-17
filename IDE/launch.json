@@ -6,6 +6,10 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/src/infrastructure/api/cmd/main.go",
+            // execute swag init before debugging
+            "preLaunchTask": "go: swag init",
+            "args": [],
+            "showLog": true,
             "env": {
                 "APP_NAME": "gormgoskeleton",
                 "APP_ENV": "dev",
@@ -16,8 +20,8 @@
                 "DB_PORT": "5436",
                 "DB_USER": "gormgoskeleton",
                 "DB_PASSWORD": "gormgoskeleton",
-                "DB_NAME": "gormgoskeleton",
-            },
+                "DB_NAME": "gormgoskeleton"
+            }
         }
     ]
 }

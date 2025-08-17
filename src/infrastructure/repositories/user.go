@@ -25,6 +25,7 @@ func (uc *UserConverter) ToGormCreate(model models.UserCreate) *db_models.User {
 		Email:  model.Email,
 		Phone:  model.Phone,
 		Status: model.Status,
+		RoleID: model.RoleID,
 	}
 }
 
@@ -36,6 +37,7 @@ func (uc *UserConverter) ToDomain(ormModel *db_models.User) *models.User {
 			Email:  ormModel.Email,
 			Phone:  ormModel.Phone,
 			Status: ormModel.Status,
+			RoleID: ormModel.RoleID,
 		},
 	}
 }
@@ -57,6 +59,9 @@ func (uc *UserConverter) ToGormUpdate(model models.UserUpdate) *db_models.User {
 
 	if model.Status != nil {
 		user.Status = *model.Status
+	}
+	if model.RoleID != nil {
+		user.RoleID = *model.RoleID
 	}
 	user.ID = model.ID
 	return user
