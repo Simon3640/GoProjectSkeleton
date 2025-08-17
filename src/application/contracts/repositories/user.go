@@ -1,7 +1,7 @@
 package contracts_repositories
 
-// import "gormgoskeleton/src/domain/models"
+import "gormgoskeleton/src/domain/models"
 
-type IUserRepository[ModelCreate any, ModelUpdate any, Model any, DBModel any] interface {
-	IRepositoryBase[ModelCreate, ModelUpdate, Model, DBModel]
+type IUserRepository interface {
+	IRepositoryBase[models.UserCreate, models.UserUpdate, models.User, models.UserInDB]
 }

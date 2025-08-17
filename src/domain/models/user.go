@@ -5,10 +5,16 @@ type UserBase struct {
 	Email  string `json:"email"`
 	Phone  string `json:"phone"`
 	Status string `json:"status"`
+	RoleID uint   `json:"role_id"`
 }
 
 type UserCreate struct {
 	UserBase
+}
+
+type UserRole struct {
+	UserBase
+	Role Role `json:"role"`
 }
 
 type UserUpdateBase struct {
@@ -16,6 +22,7 @@ type UserUpdateBase struct {
 	Email  *string `json:"email"`
 	Phone  *string `json:"phone"`
 	Status *string `json:"status"`
+	RoleID *uint   `json:"role_id,omitempty"`
 }
 
 type UserUpdate struct {
@@ -26,4 +33,9 @@ type UserUpdate struct {
 type User struct {
 	UserBase
 	ID int `json:"id"`
+}
+
+type UserInDB struct {
+	UserBase
+	DBBaseModel
 }

@@ -2,7 +2,6 @@ package usecases_user
 
 import (
 	"context"
-	"go/types"
 	"gormgoskeleton/src/application/contracts"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/application/shared/locales"
@@ -12,28 +11,31 @@ import (
 	"gormgoskeleton/src/domain/models"
 )
 
-type DeleteUserUseCase struct {
+type GetUserUseCase struct {
 	appMessages *locales.Locale
 	log         contracts.ILoggerProvider
-	repo        contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any]
+	repo        contracts_repositories.IUserRepository
 	locale      locales.LocaleTypeEnum
 }
 
-var _ usecase.BaseUseCase[int, types.Nil] = (*DeleteUserUseCase)(nil)
-
-func (uc *DeleteUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
+func (uc *GetUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
 	}
 }
 
-func (uc *DeleteUserUseCase) Execute(ctx context.Context,
+func (uc *GetUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input int,
-) *usecase.UseCaseResult[types.Nil] {
-	result := usecase.NewUseCaseResult[types.Nil]()
+) *usecase.UseCaseResult[models.User] {
+	result := usecase.NewUseCaseResult[models.User]()
+	uc.GetUser(ctx, result, input)
 	uc.SetLocale(locale)
-	err := uc.repo.Delete(input)
+	return result
+}
+
+func (uc *GetUserUseCase) GetUser(ctx context.Context, result *usecase.UseCaseResult[models.User], id int) {
+	res, err := uc.repo.GetByID(id)
 	if err != nil {
 		result.SetError(
 			status.Conflict,
@@ -45,20 +47,16 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 	}
 	result.SetData(
 		status.Success,
-		types.Nil{},
-		uc.appMessages.Get(
-			uc.locale,
-			messages.MessageKeysInstance.APPLICATION_STATUS_OK,
-		),
+		*res,
+		"",
 	)
-	return result
 }
 
-func NewDeleteUserUseCase(
+func NewGetUserUseCase(
 	log contracts.ILoggerProvider,
-	repo contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any],
-) *DeleteUserUseCase {
-	return &DeleteUserUseCase{
+	repo contracts_repositories.IUserRepository,
+) *GetUserUseCase {
+	return &GetUserUseCase{
 		appMessages: locales.NewLocale(locales.EN_US),
 		log:         log,
 		repo:        repo,

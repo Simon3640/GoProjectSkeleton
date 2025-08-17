@@ -17,7 +17,7 @@ import (
 type CreateUserUseCase struct {
 	appMessages *locales.Locale
 	log         contracts.ILoggerProvider
-	repo        contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any]
+	repo        contracts_repositories.IUserRepository
 	locale      locales.LocaleTypeEnum
 }
 
@@ -74,7 +74,7 @@ func (uc *CreateUserUseCase) validate(input models.UserCreate) (bool, []string) 
 		msgs = append(msgs, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.SOME_PARAMETERS_ARE_MISSING))
 	}
 	// regex for email validation
-	if regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`).MatchString(input.Email) == false {
+	if !regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`).MatchString(input.Email) {
 		msgs = append(msgs, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.INVALID_EMAIL))
 	}
 	return len(msgs) == 0, msgs
@@ -82,7 +82,7 @@ func (uc *CreateUserUseCase) validate(input models.UserCreate) (bool, []string) 
 
 func NewCreateUserUseCase(
 	log contracts.ILoggerProvider,
-	repo contracts_repositories.IUserRepository[models.UserCreate, models.UserUpdate, models.User, any],
+	repo contracts_repositories.IUserRepository,
 ) *CreateUserUseCase {
 	return &CreateUserUseCase{
 		appMessages: locales.NewLocale(locales.EN_US),

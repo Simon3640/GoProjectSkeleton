@@ -7,7 +7,7 @@ import (
 
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
-	"gormgoskeleton/src/application/use_cases/mocks"
+	"gormgoskeleton/src/application/shared/mocks"
 	"gormgoskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
