@@ -19,7 +19,7 @@ type DeleteUserUseCase struct {
 	locale      locales.LocaleTypeEnum
 }
 
-var _ usecase.BaseUseCase[int, types.Nil] = (*DeleteUserUseCase)(nil)
+var _ usecase.BaseUseCase[uint, types.Nil] = (*DeleteUserUseCase)(nil)
 
 func (uc *DeleteUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
@@ -29,7 +29,7 @@ func (uc *DeleteUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 
 func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input int,
+	input uint,
 ) *usecase.UseCaseResult[types.Nil] {
 	validation, val_msgs := uc.validate(input)
 	result := usecase.NewUseCaseResult[types.Nil]()
@@ -62,7 +62,7 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 	return result
 }
 
-func (uc *DeleteUserUseCase) validate(input int) (bool, []string) {
+func (uc *DeleteUserUseCase) validate(input uint) (bool, []string) {
 	var val_msgs []string
 	if input <= 0 {
 		val_msgs = append(val_msgs, uc.appMessages.Get(

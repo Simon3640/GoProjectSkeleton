@@ -17,7 +17,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRespository)
-	testIDToDelete := 1
+	var testIDToDelete uint = 1
 
 	testUserRepository.On("Delete", testIDToDelete).Return(nil)
 

@@ -10,6 +10,19 @@ definitions:
       user_id:
         type: integer
     type: object
+  models.Token:
+    properties:
+      access_expires_at:
+        type: string
+      access_token:
+        type: string
+      refresh_expires_at:
+        type: string
+      refresh_token:
+        type: string
+      token_type:
+        type: string
+    type: object
   models.User:
     properties:
       email:
@@ -53,6 +66,13 @@ definitions:
       status:
         type: string
     type: object
+  models.UserCredentials:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
   models.UserUpdateBase:
     properties:
       email:
@@ -69,6 +89,35 @@ definitions:
 info:
   contact: {}
 paths:
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint allows a user to log in and receive JWT access and
+        refresh tokens
+      parameters:
+      - description: User credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCredentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tokens generated successfully
+          schema:
+            $ref: '#/definitions/models.Token'
+        "400":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login and get JWT tokens
+      tags:
+      - Auth
   /api/health-check:
     get:
       consumes:

@@ -57,6 +57,6 @@ func TestCreateUserAndPassword(t *testing.T) {
 	// Assert the result
 	assert.True(result.IsSuccess())
 	assert.NotNil(result.Data)
-	assert.Equal(1, result.Data.ID)
+	assert.Equal(uint(1), result.Data.ID)
 
 }
