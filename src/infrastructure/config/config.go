@@ -22,6 +22,14 @@ type Config struct {
 	DBPassword     string `env:"DB_PASSWORD" envDefault:"postgres"`
 	DBName         string `env:"DB_NAME" envDefault:"gormgoskeleton"`
 	DBSSL          string `env:"DB_SSL" envDefault:"false"`
+
+	// Security
+	JWTSecretKey  string `env:"JWT_SECRET_KEY" envDefault:"secret"`
+	JWTIssuer     string `env:"JWT_ISSUER" envDefault:"test-issuer"`
+	JWTAudience   string `env:"JWT_AUDIENCE" envDefault:"test-audience"`
+	JWTAccessTTL  string `env:"JWT_ACCESS_TTL" envDefault:"3600"`
+	JWTRefreshTTL string `env:"JWT_REFRESH_TTL" envDefault:"86400"`
+	JWTClockSkew  string `env:"JWT_CLOCK_SKEW" envDefault:"60"`
 }
 
 func (c *Config) ToMap() map[string]string {

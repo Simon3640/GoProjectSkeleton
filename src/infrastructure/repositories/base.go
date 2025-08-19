@@ -27,14 +27,14 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Create(entit
 	return rb.modelConverter.ToDomain(_entity), nil
 }
 
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetByID(id int) (*Model, error) {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetByID(id uint) (*Model, error) {
 	var entity DBModel
 	err := rb.DB.First(&entity, id).Error
 	rb.logger.Debug("Entity retrieved successfully", entity)
 	return rb.modelConverter.ToDomain(&entity), err
 }
 
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id int, entity UpdateModel) (*Model, error) {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id uint, entity UpdateModel) (*Model, error) {
 	updateData := rb.modelConverter.ToGormUpdate(entity)
 	err := rb.DB.Model(new(DBModel)).Where("id = ?", id).Updates(updateData).Error
 
@@ -46,7 +46,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id in
 	return updatedEntity, nil
 }
 
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id int) error {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id uint) error {
 	err := rb.DB.Delete(new(DBModel), id).Error
 	rb.logger.Debug("Entity deleted", id)
 	return err
