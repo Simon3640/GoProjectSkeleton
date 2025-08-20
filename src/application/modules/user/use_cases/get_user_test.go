@@ -16,7 +16,7 @@ func TestGetUserUseCase(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRespository)
+	testUserRepository := new(mocks.MockUserRepository)
 	var testId uint = 1
 
 	testUserRepository.On("GetByID", testId).Return(&models.User{

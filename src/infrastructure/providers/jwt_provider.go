@@ -52,6 +52,7 @@ func (jp *JWTProvider) GenerateAccessToken(ctx context.Context,
 		"iat": now.Unix(),
 		"nbf": now.Add(-jp.config.ClockSkew).Unix(),
 		"exp": exp.Unix(),
+		"typ": "access",
 	}
 
 	for k, v := range claimsMap {
