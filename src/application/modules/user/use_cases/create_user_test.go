@@ -17,7 +17,7 @@ func TestCreateUserUseCase(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRespository)
+	testUserRepository := new(mocks.MockUserRepository)
 	testUser := models.UserCreate{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "test@testing.com",
@@ -48,7 +48,7 @@ func TestCreateUserUseCase_InvalidInput(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRespository)
+	testUserRepository := new(mocks.MockUserRepository)
 	testUser := models.UserCreate{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "invalidmail.com",

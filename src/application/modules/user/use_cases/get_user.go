@@ -26,7 +26,7 @@ func (uc *GetUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 
 func (uc *GetUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input int,
+	input uint,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.GetUser(ctx, result, input)
@@ -34,7 +34,7 @@ func (uc *GetUserUseCase) Execute(ctx context.Context,
 	return result
 }
 
-func (uc *GetUserUseCase) GetUser(ctx context.Context, result *usecase.UseCaseResult[models.User], id int) {
+func (uc *GetUserUseCase) GetUser(ctx context.Context, result *usecase.UseCaseResult[models.User], id uint) {
 	res, err := uc.repo.GetByID(id)
 	if err != nil {
 		result.SetError(

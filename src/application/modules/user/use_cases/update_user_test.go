@@ -16,7 +16,7 @@ func TestUpdateUserUseCase(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRespository)
+	testUserRepository := new(mocks.MockUserRepository)
 	name := "Update"
 	testUser := models.UserUpdate{
 		UserUpdateBase: models.UserUpdateBase{Name: &name},

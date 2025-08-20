@@ -32,12 +32,12 @@ type UserUpdateBase struct {
 
 type UserUpdate struct {
 	UserUpdateBase
-	ID int `json:"id"`
+	ID uint `json:"id"`
 }
 
 type User struct {
 	UserBase
-	ID int `json:"id"`
+	ID uint `json:"id"`
 }
 
 type UserInDB struct {
