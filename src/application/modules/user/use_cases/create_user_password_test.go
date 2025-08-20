@@ -16,7 +16,7 @@ func TestCreateUserAndPassword(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRespository)
+	testUserRepository := new(mocks.MockUserRepository)
 	testHashProvider := new(mocks.MockHashProvider)
 
 	userBase := models.UserBase{

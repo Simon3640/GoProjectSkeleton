@@ -85,3 +85,33 @@ func TestJWTProvider_ParseTokenAndValidate(t *testing.T) {
 	assert.Equal(subject, parsedClaims["sub"])
 	assert.Equal("admin", parsedClaims["role"])
 }
+
+func TestJWTProvider_ParseTokenAndValidate_InvalidToken(t *testing.T) {
+	assert := assert.New(t)
+
+	jwtProvider := NewJWTProvider()
+	jwtProvider.Setup(
+		"secret",
+		"test-issuer",
+		"test-audience",
+		3600,
+		86400,
+		60,
+	)
+
+	ctx := context.Background()
+	subject := "test-subject"
+	claimsMap := map[string]interface{}{
+		"role": "admin",
+	}
+	token, _, err := jwtProvider.GenerateAccessToken(ctx, subject, claimsMap)
+	assert.NoError(err)
+	assert.NotEmpty(token)
+
+	// Generate violated token by changing a character
+	invalidToken := token[:len(token)-1] + "x"
+
+	parsedClaims, err := jwtProvider.ParseTokenAndValidate(invalidToken)
+	assert.Error(err)
+	assert.Nil(parsedClaims)
+}
