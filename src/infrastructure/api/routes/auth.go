@@ -46,3 +46,32 @@ func login(c *gin.Context) {
 
 	c.JSON(statusCode, content)
 }
+
+// access-token-refresh
+// @Summary      Refresh JWT access token
+// @Description  This endpoint allows a user to refresh their JWT access token using a valid refresh
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        request body string true "Refresh token"
+// @Success      200 {object} models.Token
+// @Failure      400 {object} map[string]string "Validation error"
+// @Router       /api/auth/refresh [post]
+func refreshAccessToken(c *gin.Context) {
+	var refreshToken string
+
+	if err := c.ShouldBindJSON(&refreshToken); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	uc_result := auth.NewAuthenticationRefreshUseCase(providers.Logger,
+		providers.JWTProviderInstance,
+	).Execute(c, locales.EN_US, refreshToken)
+	headers := map[api.HTTPHeaderTypeEnum]string{
+		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	}
+	content, statusCode := api.NewRequestResolver[models.Token]().ResolveDTO(c, uc_result, headers)
+
+	c.JSON(statusCode, content)
+}

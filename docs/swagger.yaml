@@ -118,6 +118,35 @@ paths:
       summary: Login and get JWT tokens
       tags:
       - Auth
+  /api/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint allows a user to refresh their JWT access token using
+        a valid refresh
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Token'
+        "400":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Refresh JWT access token
+      tags:
+      - Auth
   /api/health-check:
     get:
       consumes:

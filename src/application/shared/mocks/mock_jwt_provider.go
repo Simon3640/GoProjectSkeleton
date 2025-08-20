@@ -26,8 +26,5 @@ func (m *MockJWTProvider) GenerateRefreshToken(ctx context.Context, userID strin
 
 func (m *MockJWTProvider) ParseTokenAndValidate(tokenString string) (contracts.JWTCLaims, error) {
 	args := m.Called(tokenString)
-	if claims, ok := args.Get(0).(contracts.JWTCLaims); ok {
-		return claims, args.Error(1)
-	}
-	return nil, args.Error(1)
+	return args.Get(0).(contracts.JWTCLaims), args.Error(1)
 }
