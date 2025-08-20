@@ -75,6 +75,7 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 		return result
 	}
 
+	// TODO: GO for user info
 	claims := contracts.JWTCLaims{
 		"role": "user",
 	}

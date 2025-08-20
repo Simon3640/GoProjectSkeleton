@@ -29,6 +29,7 @@ var EsMessages = map[MessageKeysEnum]string{
 	"AUTHORIZATION_HEADER_INVALID": "El encabezado de autorización es inválido.",
 	"AUTHORIZATION_TOKEN_EXPIRED":  "El token de autorización ha expirado.",
 	"AUTHORIZATION_GENERATED":      "Token de autorización generado con éxito.",
+	"INVALID_JWT_TOKEN":            "Token JWT inválido.",
 
 	"INVALID_EMAIL":    "El correo electrónico es inválido.",
 	"INVALID_PASSWORD": "La contraseña es inválida.",

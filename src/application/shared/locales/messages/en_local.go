@@ -29,6 +29,7 @@ var EnMessages = map[MessageKeysEnum]string{
 	"AUTHORIZATION_HEADER_INVALID": "Authorization header is invalid.",
 	"AUTHORIZATION_TOKEN_EXPIRED":  "Authorization token has expired.",
 	"AUTHORIZATION_GENERATED":      "Authorization token generated successfully.",
+	"INVALID_JWT_TOKEN":            "Invalid JWT token.",
 
 	"INVALID_EMAIL":    "Invalid email.",
 	"INVALID_PASSWORD": "Invalid password.",

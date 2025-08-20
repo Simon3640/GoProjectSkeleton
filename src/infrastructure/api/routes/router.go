@@ -18,5 +18,6 @@ func Router(r *gin.RouterGroup) {
 
 	// Auth routes
 	r.POST("/auth/login", login)
+	r.POST("/auth/refresh", refreshAccessToken)
 
 }
