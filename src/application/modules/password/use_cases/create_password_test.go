@@ -18,7 +18,7 @@ func TestCreatePasswordUseCase(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(mocks.MockLoggerProvider)
-	testPasswordRepository := new(mocks.MockPasswordRespository)
+	testPasswordRepository := new(mocks.MockPasswordRepository)
 	testHashProvider := new(mocks.MockHashProvider)
 	testPassword := models.PasswordCreateNoHash{
 		UserID:           1,

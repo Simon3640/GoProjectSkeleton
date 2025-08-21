@@ -23,15 +23,15 @@ func (mlp *MockLoggerProvider) Panic(message string, err error) {
 }
 
 func (mlp *MockLoggerProvider) ErrorMsg(message string) {
-	fmt.Printf(message)
+	fmt.Print(message)
 }
 
 func (mlp *MockLoggerProvider) Info(message string) {
-	fmt.Printf(message)
+	fmt.Print(message)
 }
 
 func (mlp *MockLoggerProvider) Warning(message string) {
-	fmt.Printf(message)
+	fmt.Print(message)
 }
 
 func (mlp *MockLoggerProvider) Debug(message string, data any) {
