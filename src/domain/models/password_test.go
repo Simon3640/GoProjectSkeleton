@@ -12,7 +12,7 @@ func TestPasswordModel(t *testing.T) {
 	// Test NewPasswordCreate
 	passwordCreate := NewPasswordCreate(1, "TestPassword123", nil, true)
 	assert.NotNil(passwordCreate)
-	assert.Equal(passwordCreate.UserID, 1)
+	assert.Equal(passwordCreate.UserID, uint(1))
 	assert.Equal(passwordCreate.Hash, "TestPassword123")
 	assert.NotNil(passwordCreate.ExpiresAt)
 	assert.True(passwordCreate.IsActive)

@@ -1,15 +1,20 @@
 package models
 
 import (
+	"fmt"
 	"time"
 	"unicode"
 )
 
 type PasswordBase struct {
-	UserID    int        `json:"user_id"`
+	UserID    uint       `json:"user_id"`
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	IsActive  bool       `json:"is_active"`
 	Hash      string     `json:"hash"`
+}
+
+func (p PasswordBase) UserIDString() string {
+	return fmt.Sprintf("%d", p.UserID)
 }
 
 type PasswordCreate struct {
@@ -17,7 +22,7 @@ type PasswordCreate struct {
 }
 
 type PasswordCreateNoHash struct {
-	UserID           int        `json:"user_id"`
+	UserID           uint       `json:"user_id"`
 	NoHashedPassword string     `json:"no_hashed_password"`
 	ExpiresAt        *time.Time `json:"expires_at,omitempty"`
 	IsActive         bool       `json:"is_active"`
@@ -57,7 +62,7 @@ func (p PasswordCreateNoHash) IsValidPassword() bool {
 	return IsValidPassword(p.NoHashedPassword)
 }
 
-func NewPasswordCreate(userID int, hash string, expiresAt *time.Time, isActive bool) PasswordCreate {
+func NewPasswordCreate(userID uint, hash string, expiresAt *time.Time, isActive bool) PasswordCreate {
 	p := PasswordCreate{
 		PasswordBase: PasswordBase{
 			UserID:    userID,
@@ -78,12 +83,12 @@ type PasswordUpdateBase struct {
 
 type PasswordUpdate struct {
 	PasswordUpdateBase
-	ID int `json:"id"`
+	ID uint `json:"id"`
 }
 
 type Password struct {
 	PasswordBase
-	ID int `json:"id"`
+	ID uint `json:"id"`
 }
 
 type PasswordInDB struct {

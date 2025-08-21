@@ -21,6 +21,14 @@ type AppSettings struct {
 	DBPassword     string
 	DBName         string
 	DBSSL          bool
+
+	// Security
+	JWTSecretKey  string
+	JWTIssuer     string
+	JWTAudience   string
+	JWTAccessTTL  int64 // in seconds
+	JWTRefreshTTL int64 // in seconds
+	JWTClockSkew  int64 // in seconds
 }
 
 func NewAppSettings() *AppSettings {
@@ -74,6 +82,12 @@ func setFieldValue(field reflect.Value, value string) error {
 			return errors.New("invalid float value: " + value)
 		}
 		field.SetFloat(floatValue)
+	case reflect.Int64:
+		int64Value, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return errors.New("invalid int64 value: " + value)
+		}
+		field.SetInt(int64Value)
 	default:
 		return errors.New("unsupported field type")
 	}

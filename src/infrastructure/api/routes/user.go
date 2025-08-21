@@ -65,7 +65,7 @@ func getUser(c *gin.Context) {
 
 	uc_result := usecases_user.NewGetUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c, locales.EN_US, id)
+	).Execute(c, locales.EN_US, uint(id))
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
@@ -99,7 +99,7 @@ func updateUser(c *gin.Context) {
 		return
 	}
 
-	userUpdate.ID = id
+	userUpdate.ID = uint(id)
 	uc_result := usecases_user.NewUpdateUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
 	).Execute(c, locales.EN_US, userUpdate)
@@ -130,7 +130,7 @@ func deleteUser(c *gin.Context) {
 
 	uc_result := usecases_user.NewDeleteUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c, locales.EN_US, id)
+	).Execute(c, locales.EN_US, uint(id))
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}

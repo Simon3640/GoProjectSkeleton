@@ -19,6 +19,46 @@ type PasswordConverter struct{}
 
 var _ ModelConverter[models.PasswordCreate, models.PasswordUpdate, models.Password, db_models.Password] = (*PasswordConverter)(nil)
 
+func (r *PasswordRepository) Create(model models.PasswordCreate) (*models.Password, error) {
+	// start a transaction thay clean all previous passwords for the user setting is_active to false
+	// and then create the new password
+	tx := r.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	err := tx.Model(&db_models.Password{}).Where(
+		"user_id = ? AND is_active = ?", model.UserID, true,
+	).Updates(map[string]interface{}{"is_active": false}).Error
+
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	_entity := r.modelConverter.ToGormCreate(model)
+
+	r.logger.Debug("Creating new password", _entity)
+
+	if err := tx.Create(_entity).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	return r.modelConverter.ToDomain(_entity), tx.Commit().Error
+}
+
+func (r *PasswordRepository) GetActivePassword(userEmail string) (*models.Password, error) {
+	var password db_models.Password
+	// Select the user by email, then take the first active password
+	if err := r.DB.Joins(`JOIN "user" u ON u.id = password.user_id`).Where("u.email = ? AND password.is_active = ?", userEmail, true).First(&password).Error; err != nil {
+		return nil, err
+	}
+	return r.modelConverter.ToDomain(&password), nil
+}
+
 func (uc *PasswordConverter) ToGormCreate(model models.PasswordCreate) *db_models.Password {
 	return &db_models.Password{
 		Hash:      model.Hash,
@@ -66,35 +106,4 @@ func NewPasswordRepository(db *gorm.DB, logger contracts.ILoggerProvider) *Passw
 			db_models.Password,
 		]{DB: db, modelConverter: &PasswordConverter{}, logger: logger},
 	}
-}
-
-func (r *PasswordRepository) Create(model models.PasswordCreate) (*models.Password, error) {
-	// start a transaction thay clean all previous passwords for the user setting is_active to false
-	// and then create the new password
-	tx := r.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	err := tx.Model(&db_models.Password{}).Where(
-		"user_id = ? AND is_active = ?", model.UserID, true,
-	).Updates(map[string]interface{}{"is_active": false}).Error
-
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	_entity := r.modelConverter.ToGormCreate(model)
-
-	r.logger.Debug("Creating new password", _entity)
-
-	if err := tx.Create(_entity).Error; err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	return r.modelConverter.ToDomain(_entity), tx.Commit().Error
 }

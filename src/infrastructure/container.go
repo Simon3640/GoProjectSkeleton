@@ -22,4 +22,14 @@ func Initialize() {
 		&settings.AppSettingsInstance.DBSSL,
 		providers.Logger,
 	)
+
+	// Initialize JWT Provider
+	providers.JWTProviderInstance.Setup(
+		settings.AppSettingsInstance.JWTSecretKey,
+		settings.AppSettingsInstance.JWTIssuer,
+		settings.AppSettingsInstance.JWTAudience,
+		settings.AppSettingsInstance.JWTAccessTTL,
+		settings.AppSettingsInstance.JWTRefreshTTL,
+		settings.AppSettingsInstance.JWTClockSkew,
+	)
 }

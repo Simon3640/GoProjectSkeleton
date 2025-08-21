@@ -16,7 +16,7 @@ func TestCreateUserAndPassword(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRespository)
+	testUserRepository := new(mocks.MockUserRepository)
 	testHashProvider := new(mocks.MockHashProvider)
 
 	userBase := models.UserBase{
@@ -57,6 +57,6 @@ func TestCreateUserAndPassword(t *testing.T) {
 	// Assert the result
 	assert.True(result.IsSuccess())
 	assert.NotNil(result.Data)
-	assert.Equal(1, result.Data.ID)
+	assert.Equal(uint(1), result.Data.ID)
 
 }
