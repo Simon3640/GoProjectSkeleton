@@ -1,15 +1,18 @@
 package usecase
 
-import "gormgoskeleton/src/domain/models"
+import (
+	"gormgoskeleton/src/application/shared/locales/messages"
+	"gormgoskeleton/src/domain/models"
+)
 
-type Guard func(user models.UserWithRole, input any) error
+type Guard func(user models.UserWithRole, input any) *messages.MessageKeysEnum
 
 type Guards struct {
 	list  []Guard
 	actor models.UserWithRole
 }
 
-func (g Guards) Validate(input any) error {
+func (g Guards) Validate(input any) *messages.MessageKeysEnum {
 	for _, guard := range g.list {
 		if err := guard(g.actor, input); err != nil {
 			return err
