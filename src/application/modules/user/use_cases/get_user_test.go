@@ -4,8 +4,11 @@ import (
 	"context"
 	"testing"
 
+	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
+	"gormgoskeleton/src/application/shared/status"
+	domain_mocks "gormgoskeleton/src/domain/mocks"
 	"gormgoskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -15,9 +18,12 @@ func TestGetUserUseCase(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
+	actor := domain_mocks.UserWithRole
+	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
-	var testId uint = 1
+	var testId uint = actor.ID
 
 	testUserRepository.On("GetByID", testId).Return(&models.User{
 		UserBase: models.UserBase{Name: "Test",
@@ -29,10 +35,39 @@ func TestGetUserUseCase(t *testing.T) {
 
 	uc := NewGetUserUseCase(testLogger, testUserRepository)
 
-	result := uc.Execute(ctx, locales.EN_US, testId)
+	result := uc.Execute(ctxWithUser, locales.EN_US, testId)
 
 	assert.NotNil(result)
 	assert.Equal(result.Data.ID == 1, true)
 	assert.Equal(result.Data.Name == "Test", true)
 	assert.Equal(result.Details == "", true)
+}
+
+func TestGetUserUseCase_DifferentUser(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.Background()
+
+	actor := domain_mocks.UserWithRole
+	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+
+	testLogger := new(mocks.MockLoggerProvider)
+	testUserRepository := new(mocks.MockUserRepository)
+	var testId uint = actor.ID + 1 // Different user ID
+
+	testUserRepository.On("GetByID", testId).Return(&models.User{
+		UserBase: models.UserBase{Name: "Test",
+			Email:  "test@testing.com",
+			Phone:  "1234567890",
+			Status: "active"},
+		ID: 2,
+	}, nil)
+
+	uc := NewGetUserUseCase(testLogger, testUserRepository)
+
+	result := uc.Execute(ctxWithUser, locales.EN_US, testId)
+
+	assert.NotNil(result)
+	assert.Equal(result.HasError(), true)
+	assert.Equal(result.StatusCode, status.Unauthorized)
+
 }

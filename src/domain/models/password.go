@@ -36,7 +36,7 @@ func (p PasswordCreateNoHash) GetUserID() uint {
 }
 
 // ExpiresAt is a pointer to allow it to be optional but if not provided, it defaults to 30 days from now.
-func (p PasswordCreate) SetDefaultExpiresAt() {
+func (p *PasswordCreate) SetDefaultExpiresAt() {
 	if p.ExpiresAt == nil {
 		defaultExpiry := time.Now().Add(30 * 24 * time.Hour) // 30 days
 		p.ExpiresAt = &defaultExpiry

@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"strings"
 
+	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
@@ -29,7 +29,7 @@ func (v *BaseUseCaseValidation[Input, Output]) Validate(
 	ctx context.Context,
 	input Input,
 	result *UseCaseResult[Output],
-) error {
+) {
 	// Know if input has the method Validation then call
 	if validator, ok := any(input).(interface{ Validate() []string }); ok {
 		errs := validator.Validate()
@@ -38,11 +38,11 @@ func (v *BaseUseCaseValidation[Input, Output]) Validate(
 				status.InvalidInput,
 				strings.Join(errs, "\n"),
 			)
-			return errors.New("input validation failed")
+			return
 		}
 	}
 
-	user_ctx, ok := ctx.Value("user").(models.UserWithRole)
+	user_ctx, ok := ctx.Value(app_context.UserKey).(models.UserWithRole)
 	if !ok {
 		result.SetError(
 			status.Unauthorized,
@@ -51,8 +51,17 @@ func (v *BaseUseCaseValidation[Input, Output]) Validate(
 				messages.MessageKeysInstance.AUTHORIZATION_REQUIRED,
 			),
 		)
-		return errors.New("no user provided in context")
+		return
 	}
 	v.Guards.SetActor(user_ctx)
-	return v.Guards.Validate(input)
+	if err := v.Guards.Validate(input); err != nil {
+		result.SetError(
+			status.Unauthorized,
+			v.AppMessages.Get(
+				v.Locale,
+				messages.MessageKeysInstance.UNAUTHORIZED_RESOURCE,
+			),
+		)
+		return
+	}
 }

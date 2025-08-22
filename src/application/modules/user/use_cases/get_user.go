@@ -64,7 +64,7 @@ func NewGetUserUseCase(
 	return &GetUserUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[uint, models.User]{
 			AppMessages: locales.NewLocale(locales.EN_US),
-			Guards:      usecase.NewGuards(guards.RoleGuard("admin"), guards.UserGetItSelf),
+			Guards:      usecase.NewGuards(guards.RoleGuard("admin", "user"), guards.UserGetItSelf),
 		},
 		log:  log,
 		repo: repo,

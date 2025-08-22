@@ -24,6 +24,6 @@ func NewGuards(guards ...Guard) Guards {
 	}
 }
 
-func (g Guards) SetActor(actor models.UserWithRole) {
+func (g *Guards) SetActor(actor models.UserWithRole) {
 	g.actor = actor
 }
