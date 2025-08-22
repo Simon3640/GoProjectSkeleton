@@ -2,8 +2,11 @@ package usecases_user
 
 import (
 	"context"
+	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
+	"gormgoskeleton/src/application/shared/status"
+	domain_mocks "gormgoskeleton/src/domain/mocks"
 	"gormgoskeleton/src/domain/models"
 	"testing"
 
@@ -15,12 +18,15 @@ func TestUpdateUserUseCase(t *testing.T) {
 
 	ctx := context.Background()
 
+	actor := domain_mocks.UserWithRole
+	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
 	name := "Update"
 	testUser := models.UserUpdate{
 		UserUpdateBase: models.UserUpdateBase{Name: &name},
-		ID:             1,
+		ID:             actor.ID,
 	}
 
 	testUserRepository.On("Update", testUser.ID, testUser).Return(&models.User{
@@ -28,15 +34,41 @@ func TestUpdateUserUseCase(t *testing.T) {
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
 			Status: "active"},
-		ID: 1,
+		ID: actor.ID,
 	}, nil)
 
 	uc := NewUpdateUserUseCase(testLogger, testUserRepository)
 
-	result := uc.Execute(ctx, locales.EN_US, testUser)
+	result := uc.Execute(ctxWithUser, locales.EN_US, testUser)
 
 	assert.NotNil(result)
 	assert.Equal(result.Data.ID == 1, true)
 	assert.Equal(result.Data.Name == "Update", true)
 
+}
+
+func TestUpdateUserUseCase_DifferentUser(t *testing.T) {
+	assert := assert.New(t)
+
+	ctx := context.Background()
+
+	actor := domain_mocks.UserWithRole
+	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+
+	testLogger := new(mocks.MockLoggerProvider)
+	testUserRepository := new(mocks.MockUserRepository)
+	name := "Update"
+	testUser := models.UserUpdate{
+		UserUpdateBase: models.UserUpdateBase{Name: &name},
+		ID:             actor.ID + 1,
+	}
+
+	testUserRepository.On("Update", testUser.ID, testUser).Return(nil)
+
+	uc := NewUpdateUserUseCase(testLogger, testUserRepository)
+
+	result := uc.Execute(ctxWithUser, locales.EN_US, testUser)
+
+	assert.NotNil(result)
+	assert.Equal(result.StatusCode, status.Unauthorized)
 }

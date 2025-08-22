@@ -63,7 +63,7 @@ func NewUpdateUserUseCase(
 	return &UpdateUserUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[models.UserUpdate, models.User]{
 			AppMessages: locales.NewLocale(locales.EN_US),
-			Guards:      usecase.NewGuards(guards.RoleGuard("admin"), guards.UserResourceGuard[models.User]()),
+			Guards:      usecase.NewGuards(guards.RoleGuard("admin", "user"), guards.UserResourceGuard[models.UserUpdate]()),
 		},
 		log:  log,
 		repo: repo,

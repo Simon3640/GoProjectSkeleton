@@ -97,7 +97,7 @@ func NewCreatePasswordUseCase(
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[models.PasswordCreateNoHash, bool]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards: usecase.NewGuards(
-				guards.RoleGuard("admin"),
+				guards.RoleGuard("admin", "user"),
 				guards.UserResourceGuard[models.PasswordCreateNoHash](),
 			),
 		},

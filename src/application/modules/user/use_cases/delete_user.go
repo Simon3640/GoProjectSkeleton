@@ -11,7 +11,6 @@ import (
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
 )
 
 type DeleteUserUseCase struct {
@@ -66,7 +65,7 @@ func NewDeleteUserUseCase(
 ) *DeleteUserUseCase {
 	return &DeleteUserUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[uint, types.Nil]{
-			Guards:      usecase.NewGuards(guards.RoleGuard("admin"), guards.UserResourceGuard[models.User]()),
+			Guards:      usecase.NewGuards(guards.RoleGuard("admin", "user"), guards.UserGetItSelf),
 			AppMessages: locales.NewLocale(locales.EN_US),
 		},
 		log:  log,

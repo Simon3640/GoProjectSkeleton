@@ -53,21 +53,33 @@ type UserAndPasswordCreate struct {
 	Password string `json:"password"`
 }
 
+func (u UserAndPasswordCreate) Validate() []string {
+	errs := u.UserCreate.Validate()
+	if IsValidPassword(u.Password) {
+		errs = append(errs, "password is invalid")
+	}
+	return errs
+}
+
 type UserWithRole struct {
 	UserBase
 	role Role
 	ID   uint `json:"id"`
 }
 
-func (u UserWithRole) UserIsAdmin() bool {
+func (u *UserWithRole) SetRole(role Role) {
+	u.role = role
+}
+
+func (u *UserWithRole) UserIsAdmin() bool {
 	return u.role.Key == "admin"
 }
 
-func (u UserWithRole) GetRoleKey() string {
+func (u *UserWithRole) GetRoleKey() string {
 	return u.role.Key
 }
 
-func (u UserWithRole) GetUserID() uint {
+func (u *UserWithRole) GetUserID() uint {
 	return u.ID
 }
 

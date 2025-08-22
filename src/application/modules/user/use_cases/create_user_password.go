@@ -70,10 +70,12 @@ func (uc *CreateUserAndPasswordUseCase) validate(
 	result *usecase.UseCaseResult[models.User]) {
 	msgs := input.UserCreate.Validate()
 
-	result.SetError(
-		status.InvalidInput,
-		strings.Join(msgs, "\n"),
-	)
+	if len(msgs) > 0 {
+		result.SetError(
+			status.InvalidInput,
+			strings.Join(msgs, "\n"),
+		)
+	}
 }
 
 func NewCreateUserAndPasswordUseCase(
