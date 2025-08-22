@@ -3,6 +3,7 @@ package messages
 var EnMessages = map[MessageKeysEnum]string{
 	"SOMETHING_WENT_WRONG":          "Oh sorry, something went wrong with current action!",
 	"RESOURCE_NOT_FOUND":            "Resource not found!",
+	"UNAUTHORIZED_RESOURCE":         "You are not authorized to access this resource.",
 	"SOME_PARAMETERS_ARE_MISSING":   "Some parameters are missing: %s.",
 	"UNKNOWN_RESPONSE_STATUS":       "Response status from server unknown.",
 	"TOOL_HAS_NOT_BEEN_INITIALIZED": "The %s tool has not been initialized.",
