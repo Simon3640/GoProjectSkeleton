@@ -55,7 +55,7 @@ type UserAndPasswordCreate struct {
 
 func (u UserAndPasswordCreate) Validate() []string {
 	errs := u.UserCreate.Validate()
-	if IsValidPassword(u.Password) {
+	if !IsValidPassword(u.Password) {
 		errs = append(errs, "password is invalid")
 	}
 	return errs

@@ -68,7 +68,7 @@ func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 func (uc *CreateUserAndPasswordUseCase) validate(
 	input models.UserAndPasswordCreate,
 	result *usecase.UseCaseResult[models.User]) {
-	msgs := input.UserCreate.Validate()
+	msgs := input.Validate()
 
 	if len(msgs) > 0 {
 		result.SetError(
