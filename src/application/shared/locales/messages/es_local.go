@@ -3,6 +3,7 @@ package messages
 var EsMessages = map[MessageKeysEnum]string{
 	"SOMETHING_WENT_WRONG":          "Oh, lo sentimos, algo no salió bien con esta acción!",
 	"RESOURCE_NOT_FOUND":            "Recurso no encontrado!",
+	"UNAUTHORIZED_RESOURCE":         "No estás autorizado para acceder a este recurso.",
 	"SOME_PARAMETERS_ARE_MISSING":   "Faltan algunos parámetros: %s.",
 	"UNKNOWN_RESPONSE_STATUS":       "Estado de respuesta del servidor desconocido.",
 	"TOOL_HAS_NOT_BEEN_INITIALIZED": "La herramienta %s no ha sido configurada.",

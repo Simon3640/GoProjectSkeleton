@@ -12,3 +12,8 @@ func (m *MockUserRepository) CreateWithPassword(input models.UserAndPasswordCrea
 	args := m.Called(input)
 	return args.Get(0).(*models.User), args.Error(1)
 }
+
+func (m *MockUserRepository) GetUserWithRole(id uint) (*models.UserWithRole, error) {
+	args := m.Called(id)
+	return args.Get(0).(*models.UserWithRole), args.Error(1)
+}

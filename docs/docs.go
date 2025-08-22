@@ -117,6 +117,11 @@ const docTemplate = `{
         },
         "/api/password": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "This endpoint Create a new password",
                 "consumes": [
                     "application/json"
@@ -160,6 +165,11 @@ const docTemplate = `{
         },
         "/api/user": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "This endpoint Get all users",
                 "consumes": [
                     "application/json"
@@ -227,6 +237,11 @@ const docTemplate = `{
         },
         "/api/user-password": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "This endpoint Create a new user and password",
                 "consumes": [
                     "application/json"
@@ -270,6 +285,11 @@ const docTemplate = `{
         },
         "/api/user/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "This endpoint Get a user by ID",
                 "consumes": [
                     "application/json"
@@ -309,6 +329,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "This endpoint Delete a user by ID",
                 "consumes": [
                     "application/json"
@@ -345,6 +370,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "This endpoint Update a user by ID",
                 "consumes": [
                     "application/json"
@@ -528,6 +558,14 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "Bearer token for authentication",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

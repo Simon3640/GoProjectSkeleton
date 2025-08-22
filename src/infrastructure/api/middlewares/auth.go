@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"context"
 	"gormgoskeleton/src/application/modules/auth"
 	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
@@ -27,16 +28,18 @@ func AuthMiddleware() gin.HandlerFunc {
 			headers := map[api.HTTPHeaderTypeEnum]string{
 				api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 			}
-			content, statusCode := api.NewRequestResolver[models.User]().ResolveDTO(c, uc_result, headers)
+			content, statusCode := api.NewRequestResolver[models.UserWithRole]().ResolveDTO(c, uc_result, headers)
 			c.JSON(statusCode, content)
 			c.Abort()
 			return
 		}
 
 		user := uc_result.GetData()
-		appContext := app_context.NewContextWithUser(user)
 
-		c.Request = c.Request.WithContext(appContext)
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, app_context.UserKey, *user)
+
+		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()
 

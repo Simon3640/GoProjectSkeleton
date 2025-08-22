@@ -27,7 +27,7 @@ type AuthUserUseCase struct {
 	jwtProvider contracts.IJWTProvider
 }
 
-var _ usecase.BaseUseCase[string, models.User] = (*AuthUserUseCase)(nil)
+var _ usecase.BaseUseCase[string, models.UserWithRole] = (*AuthUserUseCase)(nil)
 
 func (uc *AuthUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
@@ -38,8 +38,8 @@ func (uc *AuthUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 func (uc *AuthUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input string,
-) *usecase.UseCaseResult[models.User] {
-	result := usecase.NewUseCaseResult[models.User]()
+) *usecase.UseCaseResult[models.UserWithRole] {
+	result := usecase.NewUseCaseResult[models.UserWithRole]()
 	uc.SetLocale(locale)
 	validation, msg := uc.validate(input)
 
@@ -72,7 +72,7 @@ func (uc *AuthUserUseCase) Execute(ctx context.Context,
 	}
 	subID := uint(subInt)
 
-	user, err := uc.userRepository.GetByID(subID)
+	user, err := uc.userRepository.GetUserWithRole(subID)
 
 	if err != nil {
 		result.SetError(

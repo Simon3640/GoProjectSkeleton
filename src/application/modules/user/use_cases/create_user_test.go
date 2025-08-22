@@ -6,6 +6,8 @@ import (
 
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
+	"gormgoskeleton/src/application/shared/status"
+	domain_mocks "gormgoskeleton/src/domain/mocks"
 	"gormgoskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -18,18 +20,15 @@ func TestCreateUserUseCase(t *testing.T) {
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
-	testUser := models.UserCreate{
-		UserBase: models.UserBase{Name: "Test",
-			Email:  "test@testing.com",
-			Phone:  "1234567890",
-			Status: "active"},
-	}
+	testUser := domain_mocks.UserCreate
 
 	testUserRepository.On("Create", testUser).Return(&models.User{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
-			Status: "active"},
+			Status: "active",
+			RoleID: 2,
+		},
 		ID: 1,
 	}, nil)
 
@@ -49,18 +48,22 @@ func TestCreateUserUseCase_InvalidInput(t *testing.T) {
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
-	testUser := models.UserCreate{
+	testUserInvalidRoleID := models.UserCreate{
 		UserBase: models.UserBase{Name: "Test",
-			Email:  "invalidmail.com",
+			Email:  "invalid@gmail.com",
 			Phone:  "1234567890",
-			Status: "active"},
+			Status: "active",
+			RoleID: 1,
+		},
 	}
 
 	uc := NewCreateUserUseCase(testLogger, testUserRepository)
 
-	result := uc.Execute(ctx, locales.EN_US, testUser)
+	result := uc.Execute(ctx, locales.EN_US, testUserInvalidRoleID)
 
 	assert.NotNil(result)
 
 	assert.Equal(result.HasError(), true)
+	assert.Equal(result.StatusCode, status.InvalidInput)
+
 }

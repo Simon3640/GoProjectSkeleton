@@ -8,8 +8,44 @@ type UserBase struct {
 	RoleID uint   `json:"role_id"`
 }
 
+func (u UserBase) Validate() []string {
+	var errs []string
+
+	if u.Name == "" {
+		errs = append(errs, "name is required")
+	}
+	if u.Email == "" {
+		errs = append(errs, "email is required")
+	}
+	if u.Phone == "" {
+		errs = append(errs, "phone is required")
+	}
+	if u.Status == "" {
+		errs = append(errs, "status is required")
+	}
+	if u.RoleID == 0 {
+		errs = append(errs, "role_id is required")
+	}
+	// regex for email validation
+	if !IsValidEmail(u.Email) {
+		errs = append(errs, "email is invalid")
+	}
+
+	return errs
+}
+
 type UserCreate struct {
 	UserBase
+}
+
+// cant create admin role
+func (u UserCreate) Validate() []string {
+	// super Validate
+	errs := u.UserBase.Validate()
+	if u.RoleID == 1 { // TODO: replace with constant
+		errs = append(errs, "admin role is not allowed")
+	}
+	return errs
 }
 
 type UserAndPasswordCreate struct {
@@ -17,9 +53,34 @@ type UserAndPasswordCreate struct {
 	Password string `json:"password"`
 }
 
-type UserRole struct {
+func (u UserAndPasswordCreate) Validate() []string {
+	errs := u.UserCreate.Validate()
+	if !IsValidPassword(u.Password) {
+		errs = append(errs, "password is invalid")
+	}
+	return errs
+}
+
+type UserWithRole struct {
 	UserBase
-	Role Role `json:"role"`
+	role Role
+	ID   uint `json:"id"`
+}
+
+func (u *UserWithRole) SetRole(role Role) {
+	u.role = role
+}
+
+func (u *UserWithRole) UserIsAdmin() bool {
+	return u.role.Key == "admin"
+}
+
+func (u *UserWithRole) GetRoleKey() string {
+	return u.role.Key
+}
+
+func (u *UserWithRole) GetUserID() uint {
+	return u.ID
 }
 
 type UserUpdateBase struct {
@@ -35,9 +96,25 @@ type UserUpdate struct {
 	ID uint `json:"id"`
 }
 
+func (u UserUpdate) Validate() []string {
+	var errs []string
+	if u.Email != nil && *u.Email == "" && !IsValidEmail(*u.Email) {
+		errs = append(errs, "email is invalid")
+	}
+	return errs
+}
+
+func (u UserUpdate) GetUserID() uint {
+	return u.ID
+}
+
 type User struct {
 	UserBase
 	ID uint `json:"id"`
+}
+
+func (u User) GetUserID() uint {
+	return u.ID
 }
 
 type UserInDB struct {
