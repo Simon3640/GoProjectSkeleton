@@ -59,7 +59,7 @@ func (v *BaseUseCaseValidation[Input, Output]) Validate(
 			status.Unauthorized,
 			v.AppMessages.Get(
 				v.Locale,
-				messages.MessageKeysInstance.UNAUTHORIZED_RESOURCE,
+				*err,
 			),
 		)
 		return
