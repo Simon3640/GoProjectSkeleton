@@ -14,6 +14,10 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
+// @Description Bearer token for authentication
 func main() {
 	providers.Logger.Info("Initializing infraestructure...")
 	infrastructure.Initialize()

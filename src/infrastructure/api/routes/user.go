@@ -37,7 +37,7 @@ func createUser(c *gin.Context) {
 
 	uc_result := usecases_user.NewCreateUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c, locales.EN_US, userCreate)
+	).Execute(c.Request.Context(), locales.EN_US, userCreate)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
@@ -56,6 +56,7 @@ func createUser(c *gin.Context) {
 // @Success 200 {object} models.User "Usuario"
 // @Failure 404 {object} map[string]string "Usuario no encontrado"
 // @Router /api/user/{id} [get]
+// @Security Bearer
 func getUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -65,7 +66,7 @@ func getUser(c *gin.Context) {
 
 	uc_result := usecases_user.NewGetUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c, locales.EN_US, uint(id))
+	).Execute(c.Request.Context(), locales.EN_US, uint(id))
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
@@ -85,6 +86,7 @@ func getUser(c *gin.Context) {
 // @Success 200 {object} models.User "Usuario actualizado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user/{id} [patch]
+// @Security Bearer
 func updateUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -102,7 +104,7 @@ func updateUser(c *gin.Context) {
 	userUpdate.ID = uint(id)
 	uc_result := usecases_user.NewUpdateUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c, locales.EN_US, userUpdate)
+	).Execute(c.Request.Context(), locales.EN_US, userUpdate)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
@@ -121,6 +123,7 @@ func updateUser(c *gin.Context) {
 // @Success 204 {object} nil "Usuario eliminado"
 // @Failure 404 {object} map[string]string "Usuario no encontrado"
 // @Router /api/user/{id} [delete]
+// @Security Bearer
 func deleteUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -130,7 +133,7 @@ func deleteUser(c *gin.Context) {
 
 	uc_result := usecases_user.NewDeleteUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c, locales.EN_US, uint(id))
+	).Execute(c.Request.Context(), locales.EN_US, uint(id))
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
@@ -147,10 +150,11 @@ func deleteUser(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} []models.User "Usuarios"
 // @Router /api/user [get]
+// @Security Bearer
 func getAllUser(c *gin.Context) {
 	uc_result := usecases_user.NewGetAllUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c, locales.EN_US, usecases_user.Nil{})
+	).Execute(c.Request.Context(), locales.EN_US, usecases_user.Nil{})
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
@@ -170,6 +174,7 @@ func getAllUser(c *gin.Context) {
 // @Success 201 {object} models.User "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user-password [post]
+// @Security Bearer
 func createUserAndPassword(c *gin.Context) {
 	var userCreate models.UserAndPasswordCreate
 
@@ -183,7 +188,7 @@ func createUserAndPassword(c *gin.Context) {
 	uc_result := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
 		userRepository,
 		hashProvider,
-	).Execute(c, locales.EN_US, userCreate)
+	).Execute(c.Request.Context(), locales.EN_US, userCreate)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}

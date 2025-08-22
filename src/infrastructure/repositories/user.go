@@ -49,6 +49,32 @@ func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate)
 	return userInDB, tx.Commit().Error
 }
 
+func (ur *UserRepository) GetUserWithRole(id uint) (*models.UserWithRole, error) {
+	var userWithRole db_models.User
+	if err := ur.DB.Preload("Role").First(&userWithRole, id).Error; err != nil {
+		return nil, err
+	}
+	userWithRoleModel := models.UserWithRole{
+		UserBase: models.UserBase{
+			Name:   userWithRole.Name,
+			Email:  userWithRole.Email,
+			Phone:  userWithRole.Phone,
+			Status: userWithRole.Status,
+			RoleID: userWithRole.RoleID,
+		},
+		ID: userWithRole.ID,
+	}
+	userWithRoleModel.SetRole(models.Role{
+		ID: userWithRole.Role.ID,
+		RoleBase: models.RoleBase{
+			Key:      userWithRole.Role.Key,
+			IsActive: userWithRole.Role.IsActive,
+			Priority: userWithRole.Role.Priority,
+		},
+	})
+	return &userWithRoleModel, nil
+}
+
 var _ contracts_repositories.IUserRepository = (*UserRepository)(nil)
 
 type UserConverter struct{}

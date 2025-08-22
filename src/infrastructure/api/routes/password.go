@@ -25,6 +25,7 @@ import (
 // @Success 201 {object} bool "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/password [post]
+// @Security Bearer
 func createPassword(c *gin.Context) {
 	var passwordCreate models.PasswordCreateNoHash
 
@@ -37,7 +38,7 @@ func createPassword(c *gin.Context) {
 
 	uc_result := usecases_password.NewCreatePasswordUseCase(providers.Logger,
 		passwordRepository, providers.HashProviderInstance,
-	).Execute(c, locales.EN_US, passwordCreate)
+	).Execute(c.Request.Context(), locales.EN_US, passwordCreate)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}

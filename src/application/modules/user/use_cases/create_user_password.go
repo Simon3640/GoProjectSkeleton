@@ -2,7 +2,6 @@ package usecases_user
 
 import (
 	"context"
-	"regexp"
 	"strings"
 
 	"gormgoskeleton/src/application/contracts"
@@ -36,13 +35,9 @@ func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
-	validation, msg := uc.validate(input)
+	uc.validate(input, result)
 
-	if !validation {
-		result.SetError(
-			status.InvalidInput,
-			strings.Join(msg, "\n"),
-		)
+	if result.HasError() {
 		return result
 	}
 
@@ -70,22 +65,17 @@ func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 	return result
 }
 
-func (uc *CreateUserAndPasswordUseCase) validate(input models.UserAndPasswordCreate) (bool, []string) {
-	var msgs []string
+func (uc *CreateUserAndPasswordUseCase) validate(
+	input models.UserAndPasswordCreate,
+	result *usecase.UseCaseResult[models.User]) {
+	msgs := input.Validate()
 
-	if input.Email == "" {
-		msgs = append(msgs, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.SOME_PARAMETERS_ARE_MISSING))
+	if len(msgs) > 0 {
+		result.SetError(
+			status.InvalidInput,
+			strings.Join(msgs, "\n"),
+		)
 	}
-	// regex for email validation
-	if !regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`).MatchString(input.Email) {
-		msgs = append(msgs, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.INVALID_EMAIL))
-	}
-
-	if !models.IsValidPassword(input.Password) {
-		msgs = append(msgs, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.INVALID_PASSWORD))
-	}
-
-	return len(msgs) == 0, msgs
 }
 
 func NewCreateUserAndPasswordUseCase(
