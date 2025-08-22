@@ -181,6 +181,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - Bearer: []
       summary: This endpoint Create a new password
       tags:
       - Password
@@ -198,6 +200,8 @@ paths:
             items:
               $ref: '#/definitions/models.User'
             type: array
+      security:
+      - Bearer: []
       summary: This endpoint Get all users
       tags:
       - User
@@ -253,6 +257,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - Bearer: []
       summary: This endpoint Create a new user
       tags:
       - User
@@ -278,6 +284,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - Bearer: []
       summary: This endpoint Delete a user by ID
       tags:
       - User
@@ -304,6 +312,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - Bearer: []
       summary: This endpoint Get a user by ID
       tags:
       - User
@@ -336,7 +346,15 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - Bearer: []
       summary: This endpoint Update a user by ID
       tags:
       - User
+securityDefinitions:
+  Bearer:
+    description: Bearer token for authentication
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

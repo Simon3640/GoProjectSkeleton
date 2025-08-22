@@ -41,8 +41,18 @@ func (v *BaseUseCaseValidation[Input, Output]) Validate(
 			return
 		}
 	}
-
-	user_ctx, ok := ctx.Value(app_context.UserKey).(models.UserWithRole)
+	user := ctx.Value(app_context.UserKey)
+	if user == nil {
+		result.SetError(
+			status.InternalError,
+			v.AppMessages.Get(
+				v.Locale,
+				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			),
+		)
+		return
+	}
+	user_ctx, ok := user.(models.UserWithRole)
 	if !ok {
 		result.SetError(
 			status.Unauthorized,
