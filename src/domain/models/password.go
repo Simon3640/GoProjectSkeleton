@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"time"
-	"unicode"
 )
 
 type PasswordBase struct {
@@ -11,6 +10,10 @@ type PasswordBase struct {
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	IsActive  bool       `json:"is_active"`
 	Hash      string     `json:"hash"`
+}
+
+func (p PasswordBase) GetUserID() uint {
+	return p.UserID
 }
 
 func (p PasswordBase) UserIDString() string {
@@ -28,38 +31,24 @@ type PasswordCreateNoHash struct {
 	IsActive         bool       `json:"is_active"`
 }
 
+func (p PasswordCreateNoHash) GetUserID() uint {
+	return p.UserID
+}
+
 // ExpiresAt is a pointer to allow it to be optional but if not provided, it defaults to 30 days from now.
-func (p *PasswordCreate) SetDefaultExpiresAt() {
+func (p PasswordCreate) SetDefaultExpiresAt() {
 	if p.ExpiresAt == nil {
 		defaultExpiry := time.Now().Add(30 * 24 * time.Hour) // 30 days
 		p.ExpiresAt = &defaultExpiry
 	}
 }
 
-func IsValidPassword(p string) bool {
-	var hasMinLen, hasUpper, hasLower, hasNumber, hasSpecial bool
-	if len(p) >= 8 {
-		hasMinLen = true
+func (p PasswordCreateNoHash) Validate() []string {
+	var errs []string
+	if !IsValidPassword(p.NoHashedPassword) {
+		errs = append(errs, "Invalid password")
 	}
-
-	for _, char := range p {
-		switch {
-		case unicode.IsUpper(char):
-			hasUpper = true
-		case unicode.IsLower(char):
-			hasLower = true
-		case unicode.IsNumber(char):
-			hasNumber = true
-		case unicode.IsPunct(char) || unicode.IsSymbol(char):
-			hasSpecial = true
-		}
-	}
-
-	return hasMinLen && hasUpper && hasLower && hasNumber && hasSpecial
-}
-
-func (p PasswordCreateNoHash) IsValidPassword() bool {
-	return IsValidPassword(p.NoHashedPassword)
+	return errs
 }
 
 func NewPasswordCreate(userID uint, hash string, expiresAt *time.Time, isActive bool) PasswordCreate {
