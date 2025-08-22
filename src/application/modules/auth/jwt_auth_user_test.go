@@ -7,7 +7,7 @@ import (
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
 	"gormgoskeleton/src/application/shared/status"
-	"gormgoskeleton/src/domain/models"
+	domain_mocks "gormgoskeleton/src/domain/mocks"
 	"testing"
 	"time"
 
@@ -35,27 +35,18 @@ func TestAuthUserCase(t *testing.T) {
 	}
 
 	testJWTProvider.On("ParseTokenAndValidate", validToken).Return(claimsReturn, nil)
-	testUserRepository.On("GetByID", uint(1)).Return(&models.User{
-		UserBase: models.UserBase{
-			Name:   "Test User",
-			Email:  "test@example.com",
-			Phone:  "1234567890",
-			Status: "active",
-			RoleID: 2,
-		},
-		ID: uint(1),
-	}, nil)
+	testUserRepository.On("GetUserWithRole", uint(1)).Return(&domain_mocks.UserWithRole, nil)
 
 	result := authUserUseCase.Execute(context.Background(), locales.EN_US, validToken)
 
 	asswert.NotNil(result)
 	asswert.True(result.IsSuccess())
 	asswert.Equal(uint(1), result.Data.ID)
-	asswert.Equal("Test User", result.Data.Name)
-	asswert.Equal("test@example.com", result.Data.Email)
-	asswert.Equal("1234567890", result.Data.Phone)
-	asswert.Equal("active", result.Data.Status)
-	asswert.Equal(uint(2), result.Data.RoleID)
+	asswert.Equal(domain_mocks.UserWithRole.Name, result.Data.Name)
+	asswert.Equal(domain_mocks.UserWithRole.Email, result.Data.Email)
+	asswert.Equal(domain_mocks.UserWithRole.Phone, result.Data.Phone)
+	asswert.Equal(domain_mocks.UserWithRole.Status, result.Data.Status)
+	asswert.Equal(domain_mocks.UserWithRole.RoleID, result.Data.RoleID)
 
 }
 
