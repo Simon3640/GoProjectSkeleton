@@ -21,7 +21,7 @@ func TestAuthenticationUseCase(t *testing.T) {
 	testLogger := new(mocks.MockLoggerProvider)
 	testJWTProvider := new(mocks.MockJWTProvider)
 	testHashProvider := new(mocks.MockHashProvider)
-	testPasswordRepository := new(mocks.MockPasswordRespository)
+	testPasswordRepository := new(mocks.MockPasswordRepository)
 
 	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testHashProvider, testJWTProvider)
 
@@ -58,7 +58,7 @@ func TestAuthenticationUseCase_InvalidCredentials(t *testing.T) {
 	testLogger := new(mocks.MockLoggerProvider)
 	testJWTProvider := new(mocks.MockJWTProvider)
 	testHashProvider := new(mocks.MockHashProvider)
-	testPasswordRepository := new(mocks.MockPasswordRespository)
+	testPasswordRepository := new(mocks.MockPasswordRepository)
 
 	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testHashProvider, testJWTProvider)
 
