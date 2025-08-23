@@ -14,10 +14,18 @@ var _ contracts_repositories.IUserRepository = (*MockUserRepository)(nil)
 
 func (m *MockUserRepository) CreateWithPassword(input models.UserAndPasswordCreate) (*models.User, *application_errors.ApplicationError) {
 	args := m.Called(input)
-	return args.Get(0).(*models.User), args.Get(1).(*application_errors.ApplicationError)
+	errorArg := args.Get(1)
+	if errorArg != nil {
+		return args.Get(0).(*models.User), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.Get(0).(*models.User), nil
 }
 
 func (m *MockUserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *application_errors.ApplicationError) {
 	args := m.Called(id)
-	return args.Get(0).(*models.UserWithRole), args.Get(1).(*application_errors.ApplicationError)
+	errorArg := args.Get(1)
+	if errorArg != nil {
+		return args.Get(0).(*models.UserWithRole), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.Get(0).(*models.UserWithRole), nil
 }
