@@ -51,12 +51,12 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 	claims, err := uc.jwtProvider.ParseTokenAndValidate(input)
 
 	if err != nil {
-		uc.log.Error("Error parsing or validating token", err)
+		uc.log.Error("Error parsing or validating token", err.ToError())
 		result.SetError(
-			status.Unauthorized,
+			err.Code,
 			uc.appMessages.Get(
 				uc.locale,
-				messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
+				err.Context,
 			),
 		)
 		return result
@@ -108,7 +108,7 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 	access, exp, err := uc.jwtProvider.GenerateAccessToken(ctx, sub, claimsMap)
 
 	if err != nil {
-		uc.log.Error("Error generating access token", err)
+		uc.log.Error("Error generating access token", err.ToError())
 		result.SetError(
 			status.InternalError,
 			uc.appMessages.Get(
@@ -121,7 +121,7 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 
 	refresh, expRefresh, err := uc.jwtProvider.GenerateRefreshToken(ctx, sub)
 	if err != nil {
-		uc.log.Error("Error generating refresh token", err)
+		uc.log.Error("Error generating refresh token", err.ToError())
 		result.SetError(
 			status.InternalError,
 			uc.appMessages.Get(
