@@ -51,6 +51,7 @@ func (uc *CreateUserUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
+		return result
 	}
 	result.SetData(
 		status.Success,

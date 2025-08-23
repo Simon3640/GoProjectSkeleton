@@ -51,6 +51,7 @@ func (uc *GetAllUserUseCase) Execute(
 				err.Context,
 			),
 		)
+		return result
 	}
 	result.SetData(
 		status.Success,

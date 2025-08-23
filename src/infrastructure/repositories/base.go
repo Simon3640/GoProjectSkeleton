@@ -19,13 +19,10 @@ var _ contracts_repositories.IRepositoryBase[any, any, any, any] = (*RepositoryB
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Create(entity CreateModel) (*Model, *application_errors.ApplicationError) {
 	// Convertir a modelo de GORM
 	_entity := rb.modelConverter.ToGormCreate(entity)
-	err := rb.DB.Create(_entity).Error
-	if err != nil {
-		if appError, ok := ORMErrorMapping[err]; ok {
-			rb.logger.Debug("Error creating entity", appError.ToError())
-			return nil, appError
-		}
-		return nil, DefaultORMError
+	if err := rb.DB.Create(_entity).Error; err != nil {
+		appErr := MapOrmError(err)
+		rb.logger.Debug("Error creating entity", appErr.ToError())
+		return nil, appErr
 	}
 	rb.logger.Debug("Entity created successfully", _entity)
 	// Convertir de nuevo a modelo de dominio
@@ -34,28 +31,22 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Create(entit
 
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetByID(id uint) (*Model, *application_errors.ApplicationError) {
 	var entity DBModel
-	err := rb.DB.First(&entity, id).Error
-	rb.logger.Debug("Entity retrieved successfully", entity)
-	if err != nil {
-		if appError, ok := ORMErrorMapping[err]; ok {
-			rb.logger.Debug("Error retrieving entity", appError.ToError())
-			return nil, appError
-		}
-		return nil, DefaultORMError
+	if err := rb.DB.First(&entity, id).Error; err != nil {
+		appErr := MapOrmError(err)
+		rb.logger.Debug("Error retrieving entity", appErr.ToError())
+		return nil, appErr
 	}
+	rb.logger.Debug("Entity retrieved successfully", entity)
 	return rb.modelConverter.ToDomain(&entity), nil
 }
 
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id uint, entity UpdateModel) (*Model, *application_errors.ApplicationError) {
 	updateData := rb.modelConverter.ToGormUpdate(entity)
-	err := rb.DB.Model(new(DBModel)).Where("id = ?", id).Updates(updateData).Error
 
-	if err != nil {
-		if appError, ok := ORMErrorMapping[err]; ok {
-			rb.logger.Debug("Error updating entity", appError.ToError())
-			return nil, appError
-		}
-		return nil, DefaultORMError
+	if err := rb.DB.Model(new(DBModel)).Where("id = ?", id).Updates(updateData).Error; err != nil {
+		appErr := MapOrmError(err)
+		rb.logger.Debug("Error updating entity", appErr.ToError())
+		return nil, appErr
 	}
 	rb.logger.Debug("Entity updated successfully", updateData)
 	updatedEntity, _ := rb.GetByID(id)
@@ -63,14 +54,10 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id ui
 }
 
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id uint) *application_errors.ApplicationError {
-	err := rb.DB.Delete(new(DBModel), id).Error
-	rb.logger.Debug("Entity deleted", id)
-	if err != nil {
-		if appError, ok := ORMErrorMapping[err]; ok {
-			rb.logger.Debug("Error deleting entity", appError.ToError())
-			return appError
-		}
-		return DefaultORMError
+	if err := rb.DB.Delete(new(DBModel), id).Error; err != nil {
+		appErr := MapOrmError(err)
+		rb.logger.Debug("Error deleting entity", appErr.ToError())
+		return appErr
 	}
 	return nil
 }
@@ -92,11 +79,10 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(paylo
 		rb.DB = rb.DB.Limit(*limit)
 	}
 	// Execute the query
-	err := rb.DB.Find(&entities).Error
-	if err != nil {
-		if appError, ok := ORMErrorMapping[err]; ok {
-			rb.logger.Debug("Error retrieving entities", appError.ToError())
-			return nil, appError
+	if err := rb.DB.Find(&entities).Error; err != nil {
+		if appErr := MapOrmError(err); appErr != nil {
+			rb.logger.Debug("Error retrieving entities", appErr.ToError())
+			return nil, appErr
 		}
 		return nil, DefaultORMError
 	}

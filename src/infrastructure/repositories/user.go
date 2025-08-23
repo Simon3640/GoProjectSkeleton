@@ -26,10 +26,7 @@ func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate)
 	if err := tx.Create(userCreate).Error; err != nil {
 		ur.logger.Debug("Error creating user", err)
 		tx.Rollback()
-		if errorApp, ok := ORMErrorMapping[err]; ok {
-			return nil, errorApp
-		}
-		return nil, DefaultORMError
+		return nil, MapOrmError(err)
 	}
 	userInDB := ur.modelConverter.ToDomain(userCreate)
 	// Create password
@@ -48,12 +45,9 @@ func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate)
 		UserID:    passwordCreate.UserID,
 	}
 	if err := tx.Create(&passwordModel).Error; err != nil {
-		ur.logger.Debug("Error creating password", err)
+		ur.logger.Debug("Error creating password for user", err)
 		tx.Rollback()
-		if errorApp, ok := ORMErrorMapping[err]; ok {
-			return nil, errorApp
-		}
-		return nil, DefaultORMError
+		return nil, MapOrmError(err)
 	}
 
 	if err := tx.Commit().Error; err != nil {
@@ -67,10 +61,7 @@ func (ur *UserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *appli
 	var userWithRole db_models.User
 	if err := ur.DB.Preload("Role").First(&userWithRole, id).Error; err != nil {
 		ur.logger.Debug("Error retrieving user with role", err)
-		if errorApp, ok := ORMErrorMapping[err]; ok {
-			return nil, errorApp
-		}
-		return nil, DefaultORMError
+		return nil, MapOrmError(err)
 	}
 	userWithRoleModel := models.UserWithRole{
 		UserBase: models.UserBase{
