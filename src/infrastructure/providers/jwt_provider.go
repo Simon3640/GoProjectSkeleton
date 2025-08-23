@@ -106,9 +106,10 @@ func (jp *JWTProvider) ParseTokenAndValidate(tokenString string) (contracts.JWTC
 		return []byte(jp.config.Secret), nil
 	}, jwt.WithAudience(jp.config.Audience), jwt.WithIssuer(jp.config.Issuer), jwt.WithLeeway(jp.config.ClockSkew))
 	if err != nil {
+		// TODO: handle token validation and parsing errors
 		return nil, application_errors.NewApplicationError(
 			status.Unauthorized,
-			messages.MessageKeysInstance.JWT_TOKEN_VIOLATED,
+			messages.MessageKeysInstance.INVALID_JWT_TOKEN,
 			err.Error(),
 		)
 	}

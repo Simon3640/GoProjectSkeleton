@@ -37,10 +37,7 @@ func (r *PasswordRepository) Create(model models.PasswordCreate) (*models.Passwo
 	if err != nil {
 		tx.Rollback()
 		r.logger.Debug("Error deactivating previous passwords", err)
-		if errorApp, ok := ORMErrorMapping[err]; ok {
-			return nil, errorApp
-		}
-		return nil, DefaultORMError
+		return nil, MapOrmError(err)
 	}
 
 	_entity := r.modelConverter.ToGormCreate(model)
@@ -49,10 +46,7 @@ func (r *PasswordRepository) Create(model models.PasswordCreate) (*models.Passwo
 
 	if err := tx.Create(_entity).Error; err != nil {
 		tx.Rollback()
-		if errorApp, ok := ORMErrorMapping[err]; ok {
-			return nil, errorApp
-		}
-		return nil, DefaultORMError
+		return nil, MapOrmError(err)
 	}
 	if err := tx.Commit().Error; err != nil {
 		return nil, DefaultORMError
@@ -66,10 +60,7 @@ func (r *PasswordRepository) GetActivePassword(userEmail string) (*models.Passwo
 	// Select the user by email, then take the first active password
 	if err := r.DB.Joins(`JOIN "user" u ON u.id = password.user_id`).Where("u.email = ? AND password.is_active = ?", userEmail, true).First(&password).Error; err != nil {
 		r.logger.Debug("Error retrieving active password", err)
-		if errorApp, ok := ORMErrorMapping[err]; ok {
-			return nil, errorApp
-		}
-		return nil, DefaultORMError
+		return nil, MapOrmError(err)
 	}
 	return r.modelConverter.ToDomain(&password), nil
 }

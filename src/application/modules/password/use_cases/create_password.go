@@ -69,6 +69,7 @@ func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
+		return result
 	}
 
 	var success bool

@@ -49,6 +49,7 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
+		return result
 	}
 	result.SetData(
 		status.Success,

@@ -48,6 +48,7 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
+		return result
 	}
 	result.SetData(
 		status.Success,

@@ -49,6 +49,7 @@ func (uc *GetUserUseCase) GetUser(ctx context.Context, result *usecase.UseCaseRe
 				err.Context,
 			),
 		)
+		return
 	}
 	result.SetData(
 		status.Success,
