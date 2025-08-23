@@ -30,7 +30,7 @@ func TestJWTProvider_GenerateAccessToken(t *testing.T) {
 
 	token, exp, err := jwtProvider.GenerateAccessToken(ctx, subject, claimsMap)
 
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotEmpty(token)
 	assert.True(exp.After(time.Now()))
 }
@@ -51,7 +51,7 @@ func TestJWTProvider_GenerateRefreshToken(t *testing.T) {
 	subject := "test-subject"
 	token, exp, err := jwtProvider.GenerateRefreshToken(ctx, subject)
 
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotEmpty(token)
 	assert.True(exp.After(time.Now()))
 	assert.True(time.Until(exp) <= jwtProvider.config.RefreshTTL+jwtProvider.config.ClockSkew)
@@ -77,10 +77,10 @@ func TestJWTProvider_ParseTokenAndValidate(t *testing.T) {
 	}
 	token, _, err := jwtProvider.GenerateAccessToken(ctx, subject, claimsMap)
 
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotEmpty(token)
 	parsedClaims, err := jwtProvider.ParseTokenAndValidate(token)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(parsedClaims)
 	assert.Equal(subject, parsedClaims["sub"])
 	assert.Equal("admin", parsedClaims["role"])
@@ -105,13 +105,13 @@ func TestJWTProvider_ParseTokenAndValidate_InvalidToken(t *testing.T) {
 		"role": "admin",
 	}
 	token, _, err := jwtProvider.GenerateAccessToken(ctx, subject, claimsMap)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotEmpty(token)
 
 	// Generate violated token by changing a character
 	invalidToken := token[:len(token)-1] + "x"
 
 	parsedClaims, err := jwtProvider.ParseTokenAndValidate(invalidToken)
-	assert.Error(err)
+	assert.NotNil(err)
 	assert.Nil(parsedClaims)
 }

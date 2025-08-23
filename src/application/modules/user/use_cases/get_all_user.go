@@ -43,11 +43,12 @@ func (uc *GetAllUserUseCase) Execute(
 
 	data, err := uc.repo.GetAll(nil, nil, nil)
 	if err != nil {
+		uc.log.Error("Error getting all users", err.ToError())
 		result.SetError(
-			status.Conflict,
+			err.Code,
 			uc.AppMessages.Get(
 				uc.Locale,
-				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				err.Context,
 			),
 		)
 	}
