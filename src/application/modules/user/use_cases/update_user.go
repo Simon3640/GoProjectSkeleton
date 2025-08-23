@@ -41,11 +41,12 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context,
 	res, err := uc.repo.Update(input.ID, input)
 
 	if err != nil {
+		uc.log.Error("Error updating user", err.ToError())
 		result.SetError(
-			status.Conflict,
+			err.Code,
 			uc.AppMessages.Get(
 				uc.Locale,
-				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				err.Context,
 			),
 		)
 	}

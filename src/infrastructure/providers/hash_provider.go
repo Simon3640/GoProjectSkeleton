@@ -4,10 +4,13 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
-	"errors"
 	"fmt"
-	contracts "gormgoskeleton/src/application/contracts"
 	"strings"
+
+	contracts "gormgoskeleton/src/application/contracts"
+	application_errors "gormgoskeleton/src/application/shared/errors"
+	"gormgoskeleton/src/application/shared/locales/messages"
+	"gormgoskeleton/src/application/shared/status"
 
 	"golang.org/x/crypto/argon2"
 )
@@ -22,13 +25,11 @@ type HashProvider struct {
 
 var _ contracts.IHashProvider = (*HashProvider)(nil)
 
-func (hp *HashProvider) HashPassword(password string) (string, error) {
+func (hp *HashProvider) HashPassword(password string) (string, *application_errors.ApplicationError) {
 	// creating a salt of variable length
 	salt := make([]byte, hp.saltLen)
-	_, err := rand.Read(salt)
-	if err != nil {
-		return "", err
-	}
+	rand.Read(salt)
+	// It never return error
 
 	hash := argon2.IDKey([]byte(password), salt, hp.time, hp.memory, hp.threads, hp.keyLen)
 
@@ -41,11 +42,14 @@ func (hp *HashProvider) HashPassword(password string) (string, error) {
 	return final, nil
 }
 
-func (hp *HashProvider) VerifyPassword(hashedPassword, password string) (bool, error) {
+func (hp *HashProvider) VerifyPassword(hashedPassword, password string) (bool, *application_errors.ApplicationError) {
 	// Dividimos el formato
 	parts := strings.Split(hashedPassword, "$")
 	if len(parts) != 6 {
-		return false, errors.New("hash inválido")
+		return false, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"invalid hash format")
 	}
 
 	// Extraer parámetros
@@ -54,17 +58,26 @@ func (hp *HashProvider) VerifyPassword(hashedPassword, password string) (bool, e
 	var p uint8
 	_, err := fmt.Sscanf(parts[3], "m=%d,t=%d,p=%d", &mem, &t, &p)
 	if err != nil {
-		return false, err
+		return false, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"failed to parse hash parameters")
 	}
 
 	// Extraer salt y hash originales
 	salt, err := base64.RawStdEncoding.DecodeString(parts[4])
 	if err != nil {
-		return false, err
+		return false, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"failed to decode salt")
 	}
 	hash, err := base64.RawStdEncoding.DecodeString(parts[5])
 	if err != nil {
-		return false, err
+		return false, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"failed to decode hash")
 	}
 
 	// Recalcular hash con la contraseña ingresada

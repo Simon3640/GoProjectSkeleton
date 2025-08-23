@@ -12,6 +12,8 @@ var EsMessages = map[MessageKeysEnum]string{
 	"AUTHORIZATION_REQUIRED":        "La autorización es requerida.",
 	"INVALID_USER_OR_PASSWORD":      "Usuario o contraseña incorrecto.",
 	"ERROR_CREATING_USER":           "Algo no salió bien registrado el usuario.",
+	"RESOURCE_EXISTS":               "El recurso ya existe.",
+	"INVALID_DATA":                  "Datos inválidos proporcionados.",
 
 	"USER_WAS_CREATED":               "El usuario fue registrado",
 	"USER_WITH_EMAIL_ALREADY_EXISTS": "Un usuario ya ha sido registrado con el email: %s.",

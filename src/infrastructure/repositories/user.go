@@ -3,6 +3,7 @@ package repositories
 import (
 	"gormgoskeleton/src/application/contracts"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/domain/models"
 	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
 
@@ -13,7 +14,7 @@ type UserRepository struct {
 	RepositoryBase[models.UserCreate, models.UserUpdate, models.User, db_models.User]
 }
 
-func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate) (*models.User, error) {
+func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate) (*models.User, *application_errors.ApplicationError) {
 	// Convert input to 2 models UserCreate and UserInDB
 	userCreate := ur.modelConverter.ToGormCreate(input.UserCreate)
 	tx := ur.DB.Begin()
@@ -23,8 +24,12 @@ func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate)
 		}
 	}()
 	if err := tx.Create(userCreate).Error; err != nil {
+		ur.logger.Debug("Error creating user", err)
 		tx.Rollback()
-		return nil, err
+		if errorApp, ok := ORMErrorMapping[err]; ok {
+			return nil, errorApp
+		}
+		return nil, DefaultORMError
 	}
 	userInDB := ur.modelConverter.ToDomain(userCreate)
 	// Create password
@@ -43,16 +48,29 @@ func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate)
 		UserID:    passwordCreate.UserID,
 	}
 	if err := tx.Create(&passwordModel).Error; err != nil {
+		ur.logger.Debug("Error creating password", err)
 		tx.Rollback()
-		return nil, err
+		if errorApp, ok := ORMErrorMapping[err]; ok {
+			return nil, errorApp
+		}
+		return nil, DefaultORMError
 	}
-	return userInDB, tx.Commit().Error
+
+	if err := tx.Commit().Error; err != nil {
+		return nil, DefaultORMError
+	}
+
+	return userInDB, nil
 }
 
-func (ur *UserRepository) GetUserWithRole(id uint) (*models.UserWithRole, error) {
+func (ur *UserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *application_errors.ApplicationError) {
 	var userWithRole db_models.User
 	if err := ur.DB.Preload("Role").First(&userWithRole, id).Error; err != nil {
-		return nil, err
+		ur.logger.Debug("Error retrieving user with role", err)
+		if errorApp, ok := ORMErrorMapping[err]; ok {
+			return nil, errorApp
+		}
+		return nil, DefaultORMError
 	}
 	userWithRoleModel := models.UserWithRole{
 		UserBase: models.UserBase{

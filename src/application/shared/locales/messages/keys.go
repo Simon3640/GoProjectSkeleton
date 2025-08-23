@@ -14,6 +14,8 @@ type MessageKeys struct {
 	SOMETHING_WENT_WRONG          MessageKeysEnum
 	INVALID_USER_OR_PASSWORD      MessageKeysEnum
 	ERROR_CREATING_USER           MessageKeysEnum
+	RESOURCE_EXISTS               MessageKeysEnum
+	INVALID_DATA                  MessageKeysEnum
 
 	USER_WAS_CREATED               MessageKeysEnum
 	USER_WITH_EMAIL_ALREADY_EXISTS MessageKeysEnum
@@ -33,6 +35,7 @@ type MessageKeys struct {
 	AUTHORIZATION_TOKEN_EXPIRED  MessageKeysEnum
 	AUTHORIZATION_GENERATED      MessageKeysEnum
 	INVALID_JWT_TOKEN            MessageKeysEnum
+	JWT_TOKEN_VIOLATED           MessageKeysEnum
 
 	INVALID_EMAIL         MessageKeysEnum
 	INVALID_PASSWORD      MessageKeysEnum
@@ -52,6 +55,8 @@ var MessageKeysInstance = MessageKeys{
 	SOMETHING_WENT_WRONG:          "SOMETHING_WENT_WRONG",
 	INVALID_USER_OR_PASSWORD:      "INVALID_USER_OR_PASSWORD",
 	ERROR_CREATING_USER:           "ERROR_CREATING_USER",
+	RESOURCE_EXISTS:               "RESOURCE_EXISTS",
+	INVALID_DATA:                  "INVALID_DATA",
 
 	USER_WAS_CREATED:               "USER_WAS_CREATED",
 	USER_WITH_EMAIL_ALREADY_EXISTS: "USER_WITH_EMAIL_ALREADY_EXISTS",
@@ -77,6 +82,7 @@ var MessageKeysInstance = MessageKeys{
 	AUTHORIZATION_TOKEN_EXPIRED:  "AUTHORIZATION_TOKEN_EXPIRED",
 	AUTHORIZATION_GENERATED:      "AUTHORIZATION_GENERATED",
 	INVALID_JWT_TOKEN:            "INVALID_JWT_TOKEN",
+	JWT_TOKEN_VIOLATED:           "JWT_TOKEN_VIOLATED",
 
 	APPLICATION_STATUS_OK: "APPLICATION_STATUS_OK",
 }

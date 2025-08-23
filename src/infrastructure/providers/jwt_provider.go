@@ -5,6 +5,9 @@ import (
 	"time"
 
 	"gormgoskeleton/src/application/contracts"
+	application_errors "gormgoskeleton/src/application/shared/errors"
+	"gormgoskeleton/src/application/shared/locales/messages"
+	"gormgoskeleton/src/application/shared/status"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -42,7 +45,7 @@ func NewJWTProvider() *JWTProvider {
 
 func (jp *JWTProvider) GenerateAccessToken(ctx context.Context,
 	subject string,
-	claimsMap contracts.JWTCLaims) (string, time.Time, error) {
+	claimsMap contracts.JWTCLaims) (string, time.Time, *application_errors.ApplicationError) {
 	now := time.Now().Add(jp.config.ClockSkew)
 	exp := now.Add(jp.config.AccessTTL)
 	claims := jwt.MapClaims{
@@ -60,11 +63,15 @@ func (jp *JWTProvider) GenerateAccessToken(ctx context.Context,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString(jp.config.Secret)
-	return signedToken, exp, err
+	return signedToken, exp, application_errors.NewApplicationError(
+		status.InternalError,
+		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+		err.Error(),
+	)
 }
 
 func (jp *JWTProvider) GenerateRefreshToken(ctx context.Context,
-	subject string) (string, time.Time, error) {
+	subject string) (string, time.Time, *application_errors.ApplicationError) {
 	now := time.Now().Add(jp.config.ClockSkew)
 	exp := now.Add(jp.config.RefreshTTL)
 	claims := jwt.MapClaims{
@@ -78,10 +85,14 @@ func (jp *JWTProvider) GenerateRefreshToken(ctx context.Context,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString(jp.config.Secret)
-	return signedToken, exp, err
+	return signedToken, exp, application_errors.NewApplicationError(
+		status.InternalError,
+		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+		err.Error(),
+	)
 }
 
-func (jp *JWTProvider) ParseTokenAndValidate(tokenString string) (contracts.JWTCLaims, error) {
+func (jp *JWTProvider) ParseTokenAndValidate(tokenString string) (contracts.JWTCLaims, *application_errors.ApplicationError) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrTokenMalformed
@@ -89,7 +100,11 @@ func (jp *JWTProvider) ParseTokenAndValidate(tokenString string) (contracts.JWTC
 		return []byte(jp.config.Secret), nil
 	}, jwt.WithAudience(jp.config.Audience), jwt.WithIssuer(jp.config.Issuer), jwt.WithLeeway(jp.config.ClockSkew))
 	if err != nil {
-		return nil, err
+		return nil, application_errors.NewApplicationError(
+			status.Unauthorized,
+			messages.MessageKeysInstance.JWT_TOKEN_VIOLATED,
+			err.Error(),
+		)
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
@@ -99,7 +114,11 @@ func (jp *JWTProvider) ParseTokenAndValidate(tokenString string) (contracts.JWTC
 		}
 		return result, nil
 	} else {
-		return nil, jwt.ErrTokenInvalidClaims
+		return nil, application_errors.NewApplicationError(
+			status.InternalError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"invalid token claims",
+		)
 	}
 }
 

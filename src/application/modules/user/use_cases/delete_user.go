@@ -40,11 +40,12 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 
 	err := uc.repo.Delete(input)
 	if err != nil {
+		uc.log.Error("Error deleting user", err.ToError())
 		result.SetError(
-			status.Conflict,
+			err.Code,
 			uc.AppMessages.Get(
 				uc.Locale,
-				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				err.Context,
 			),
 		)
 	}

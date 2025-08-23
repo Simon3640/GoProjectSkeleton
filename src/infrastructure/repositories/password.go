@@ -3,6 +3,7 @@ package repositories
 import (
 	"gormgoskeleton/src/application/contracts"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/domain/models"
 	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
 
@@ -19,7 +20,7 @@ type PasswordConverter struct{}
 
 var _ ModelConverter[models.PasswordCreate, models.PasswordUpdate, models.Password, db_models.Password] = (*PasswordConverter)(nil)
 
-func (r *PasswordRepository) Create(model models.PasswordCreate) (*models.Password, error) {
+func (r *PasswordRepository) Create(model models.PasswordCreate) (*models.Password, *application_errors.ApplicationError) {
 	// start a transaction thay clean all previous passwords for the user setting is_active to false
 	// and then create the new password
 	tx := r.DB.Begin()
@@ -35,7 +36,11 @@ func (r *PasswordRepository) Create(model models.PasswordCreate) (*models.Passwo
 
 	if err != nil {
 		tx.Rollback()
-		return nil, err
+		r.logger.Debug("Error deactivating previous passwords", err)
+		if errorApp, ok := ORMErrorMapping[err]; ok {
+			return nil, errorApp
+		}
+		return nil, DefaultORMError
 	}
 
 	_entity := r.modelConverter.ToGormCreate(model)
@@ -44,17 +49,27 @@ func (r *PasswordRepository) Create(model models.PasswordCreate) (*models.Passwo
 
 	if err := tx.Create(_entity).Error; err != nil {
 		tx.Rollback()
-		return nil, err
+		if errorApp, ok := ORMErrorMapping[err]; ok {
+			return nil, errorApp
+		}
+		return nil, DefaultORMError
+	}
+	if err := tx.Commit().Error; err != nil {
+		return nil, DefaultORMError
 	}
 
-	return r.modelConverter.ToDomain(_entity), tx.Commit().Error
+	return r.modelConverter.ToDomain(_entity), nil
 }
 
-func (r *PasswordRepository) GetActivePassword(userEmail string) (*models.Password, error) {
+func (r *PasswordRepository) GetActivePassword(userEmail string) (*models.Password, *application_errors.ApplicationError) {
 	var password db_models.Password
 	// Select the user by email, then take the first active password
 	if err := r.DB.Joins(`JOIN "user" u ON u.id = password.user_id`).Where("u.email = ? AND password.is_active = ?", userEmail, true).First(&password).Error; err != nil {
-		return nil, err
+		r.logger.Debug("Error retrieving active password", err)
+		if errorApp, ok := ORMErrorMapping[err]; ok {
+			return nil, errorApp
+		}
+		return nil, DefaultORMError
 	}
 	return r.modelConverter.ToDomain(&password), nil
 }

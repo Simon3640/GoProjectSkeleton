@@ -1,6 +1,8 @@
 package mocks
 
 import (
+	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/domain/models"
 )
 
@@ -8,12 +10,14 @@ type MockUserRepository struct {
 	MockRepositoryBase[models.UserCreate, models.UserUpdate, models.User, models.User]
 }
 
-func (m *MockUserRepository) CreateWithPassword(input models.UserAndPasswordCreate) (*models.User, error) {
+var _ contracts_repositories.IUserRepository = (*MockUserRepository)(nil)
+
+func (m *MockUserRepository) CreateWithPassword(input models.UserAndPasswordCreate) (*models.User, *application_errors.ApplicationError) {
 	args := m.Called(input)
-	return args.Get(0).(*models.User), args.Error(1)
+	return args.Get(0).(*models.User), args.Get(1).(*application_errors.ApplicationError)
 }
 
-func (m *MockUserRepository) GetUserWithRole(id uint) (*models.UserWithRole, error) {
+func (m *MockUserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *application_errors.ApplicationError) {
 	args := m.Called(id)
-	return args.Get(0).(*models.UserWithRole), args.Error(1)
+	return args.Get(0).(*models.UserWithRole), args.Get(1).(*application_errors.ApplicationError)
 }

@@ -7,7 +7,6 @@ import (
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/application/shared/guards"
 	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
 	"gormgoskeleton/src/domain/models"
@@ -42,11 +41,12 @@ func (uc *GetUserUseCase) Execute(ctx context.Context,
 func (uc *GetUserUseCase) GetUser(ctx context.Context, result *usecase.UseCaseResult[models.User], id uint) {
 	res, err := uc.repo.GetByID(id)
 	if err != nil {
+		uc.log.Error("Error getting user by ID", err.ToError())
 		result.SetError(
-			status.Conflict,
+			err.Code,
 			uc.AppMessages.Get(
 				uc.Locale,
-				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				err.Context,
 			),
 		)
 	}

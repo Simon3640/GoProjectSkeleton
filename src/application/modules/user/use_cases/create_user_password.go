@@ -46,11 +46,12 @@ func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 	res, err := uc.repo.CreateWithPassword(input)
 
 	if err != nil {
+		uc.log.Error("Error creating user with password", err.ToError())
 		result.SetError(
-			status.Conflict,
+			err.Code,
 			uc.appMessages.Get(
 				uc.locale,
-				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				err.Context,
 			),
 		)
 	}
