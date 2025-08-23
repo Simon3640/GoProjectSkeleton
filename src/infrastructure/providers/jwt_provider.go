@@ -63,11 +63,14 @@ func (jp *JWTProvider) GenerateAccessToken(ctx context.Context,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString(jp.config.Secret)
-	return signedToken, exp, application_errors.NewApplicationError(
-		status.InternalError,
-		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
-		err.Error(),
-	)
+	if err != nil {
+		return "", time.Time{}, application_errors.NewApplicationError(
+			status.InternalError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			err.Error(),
+		)
+	}
+	return signedToken, exp, nil
 }
 
 func (jp *JWTProvider) GenerateRefreshToken(ctx context.Context,
@@ -85,7 +88,10 @@ func (jp *JWTProvider) GenerateRefreshToken(ctx context.Context,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString(jp.config.Secret)
-	return signedToken, exp, application_errors.NewApplicationError(
+	if err == nil {
+		return signedToken, exp, nil
+	}
+	return "", time.Time{}, application_errors.NewApplicationError(
 		status.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		err.Error(),

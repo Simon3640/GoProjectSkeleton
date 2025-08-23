@@ -52,7 +52,7 @@ func TestHashUniqueness(t *testing.T) {
 	password := "AnotherStr0ngP@ss!"
 	hash1, err1 := hashProvider.HashPassword(password)
 	hash2, err2 := hashProvider.HashPassword(password)
-	assert.NotNil(err1)
-	assert.NotNil(err2)
+	assert.Nil(err1)
+	assert.Nil(err2)
 	assert.NotEqual(hash1, hash2, "Hashes should be unique due to different salts")
 }

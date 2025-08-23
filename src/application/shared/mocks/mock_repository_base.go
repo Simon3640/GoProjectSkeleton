@@ -15,25 +15,45 @@ var _ contracts_repositories.IRepositoryBase[any, any, any, any] = (*MockReposit
 
 func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) Create(entity CreateDomainModel) (*DomainModel, *application_errors.ApplicationError) {
 	args := m.Called(entity)
-	return args.Get(0).(*DomainModel), args.Get(1).(*application_errors.ApplicationError)
+	errorArg := args.Get(1)
+	if errorArg != nil {
+		return args.Get(0).(*DomainModel), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.Get(0).(*DomainModel), nil
 }
 
 func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) GetByID(id uint) (*DomainModel, *application_errors.ApplicationError) {
 	args := m.Called(id)
-	return args.Get(0).(*DomainModel), args.Get(1).(*application_errors.ApplicationError)
+	errorArg := args.Get(1)
+	if errorArg != nil {
+		return args.Get(0).(*DomainModel), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.Get(0).(*DomainModel), nil
 }
 
 func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) Update(id uint, entity UpdateDomainModel) (*DomainModel, *application_errors.ApplicationError) {
 	args := m.Called(id, entity)
-	return args.Get(0).(*DomainModel), args.Get(1).(*application_errors.ApplicationError)
+	errorArg := args.Get(1)
+	if errorArg != nil {
+		return args.Get(0).(*DomainModel), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.Get(0).(*DomainModel), nil
 }
 
 func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) Delete(id uint) *application_errors.ApplicationError {
 	args := m.Called(id)
-	return args.Get(0).(*application_errors.ApplicationError)
+	errorArg := args.Get(0)
+	if errorArg != nil {
+		return errorArg.(*application_errors.ApplicationError)
+	}
+	return nil
 }
 
 func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) GetAll(payload *map[string]string, skip *int, limit *int) ([]DomainModel, *application_errors.ApplicationError) {
 	args := m.Called()
-	return args.Get(0).([]DomainModel), args.Get(1).(*application_errors.ApplicationError)
+	errorArg := args.Get(1)
+	if errorArg != nil {
+		return args.Get(0).([]DomainModel), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.Get(0).([]DomainModel), nil
 }
