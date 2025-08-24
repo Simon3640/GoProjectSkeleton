@@ -41,11 +41,12 @@ func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 
 	hashedPassword, err := uc.hashProvider.HashPassword(input.NoHashedPassword)
 	if err != nil {
+		uc.log.Error("Error hashing password", err.ToError())
 		result.SetError(
-			status.InternalError,
+			err.Code,
 			uc.AppMessages.Get(
 				uc.Locale,
-				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				err.Context,
 			),
 		)
 		return result
@@ -62,12 +63,13 @@ func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 
 	if err != nil {
 		result.SetError(
-			status.Conflict,
+			err.Code,
 			uc.AppMessages.Get(
 				uc.Locale,
-				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				err.Context,
 			),
 		)
+		return result
 	}
 
 	var success bool

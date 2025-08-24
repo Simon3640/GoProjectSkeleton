@@ -1,17 +1,32 @@
 package mocks
 
-import "github.com/stretchr/testify/mock"
+import (
+	"gormgoskeleton/src/application/contracts"
+	application_errors "gormgoskeleton/src/application/shared/errors"
+
+	"github.com/stretchr/testify/mock"
+)
 
 type MockHashProvider struct {
 	mock.Mock
 }
 
-func (mhp *MockHashProvider) HashPassword(password string) (string, error) {
+var _ contracts.IHashProvider = (*MockHashProvider)(nil)
+
+func (mhp *MockHashProvider) HashPassword(password string) (string, *application_errors.ApplicationError) {
 	args := mhp.Called(password)
-	return args.String(0), args.Error(1)
+	errorArg := args.Get(1)
+	if errorArg != nil {
+		return args.String(0), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.String(0), nil
 }
 
-func (mhp *MockHashProvider) VerifyPassword(hashedPassword string, password string) (bool, error) {
+func (mhp *MockHashProvider) VerifyPassword(hashedPassword string, password string) (bool, *application_errors.ApplicationError) {
 	args := mhp.Called(hashedPassword, password)
-	return args.Bool(0), args.Error(1)
+	errorArg := args.Get(1)
+	if errorArg != nil {
+		return args.Bool(0), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.Bool(0), nil
 }

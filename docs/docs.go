@@ -237,11 +237,6 @@ const docTemplate = `{
         },
         "/api/user-password": {
             "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "This endpoint Create a new user and password",
                 "consumes": [
                     "application/json"

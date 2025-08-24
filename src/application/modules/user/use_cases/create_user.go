@@ -43,13 +43,15 @@ func (uc *CreateUserUseCase) Execute(ctx context.Context,
 	res, err := uc.repo.Create(input)
 
 	if err != nil {
+		uc.log.Error("Error creating user", err.ToError())
 		result.SetError(
-			status.Conflict,
+			err.Code,
 			uc.appMessages.Get(
 				uc.locale,
-				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				err.Context,
 			),
 		)
+		return result
 	}
 	result.SetData(
 		status.Success,

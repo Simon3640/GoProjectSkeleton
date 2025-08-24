@@ -174,7 +174,6 @@ func getAllUser(c *gin.Context) {
 // @Success 201 {object} models.User "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user-password [post]
-// @Security Bearer
 func createUserAndPassword(c *gin.Context) {
 	var userCreate models.UserAndPasswordCreate
 

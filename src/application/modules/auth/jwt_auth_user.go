@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"regexp"
 	"strconv"
 	"strings"
@@ -51,18 +50,14 @@ func (uc *AuthUserUseCase) Execute(ctx context.Context,
 		return result
 	}
 
-	sub, err := uc.parseTokenAndValidate(input)
-	if err != nil {
-		result.SetError(
-			status.Unauthorized,
-			err.Error(),
-		)
+	sub := uc.parseTokenAndValidate(input, result)
+	if result.HasError() {
 		return result
 	}
 
 	// convert subject to uint
 
-	subInt, err := strconv.Atoi(sub)
+	subInt, err := strconv.Atoi(*sub)
 	if err != nil {
 		result.SetError(
 			status.Unauthorized,
@@ -72,12 +67,16 @@ func (uc *AuthUserUseCase) Execute(ctx context.Context,
 	}
 	subID := uint(subInt)
 
-	user, err := uc.userRepository.GetUserWithRole(subID)
+	user, appError := uc.userRepository.GetUserWithRole(subID)
 
-	if err != nil {
+	if appError != nil {
+		uc.log.Error("Error getting user with role", appError.ToError())
 		result.SetError(
-			status.NotFound,
-			err.Error(),
+			appError.Code,
+			uc.appMessages.Get(
+				uc.locale,
+				appError.Context,
+			),
 		)
 		return result
 	}
@@ -108,44 +107,59 @@ func (uc *AuthUserUseCase) validate(input string) (bool, []string) {
 	return len(validationErrors) == 0, validationErrors
 }
 
-func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string) (string, error) {
+func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *usecase.UseCaseResult[models.UserWithRole]) *string {
 	claims, err := uc.jwtProvider.ParseTokenAndValidate(tokenString)
 	if err != nil {
-		uc.log.Error("Error parsing or validating token", err)
-		return "", errors.New(uc.appMessages.Get(
-			uc.locale,
-			messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
-		))
+		uc.log.Error("Failed to parse and validate token", err.ToError())
+		result.SetError(
+			err.Code,
+			uc.appMessages.Get(
+				uc.locale,
+				err.Context,
+			),
+		)
+		return nil
 	}
 
 	// Validate that is not refresh token
 	if claims["typ"] != "access" {
-		uc.log.Error("Invalid token type", nil)
-		return "", errors.New(uc.appMessages.Get(
-			uc.locale,
-			messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
-		))
+		result.SetError(
+			status.Unauthorized,
+			uc.appMessages.Get(
+				uc.locale,
+				messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
+			),
+		)
+		return nil
 	}
 
 	if exp, ok := claims["exp"].(float64); !ok || exp < float64(time.Now().Unix()) {
 		uc.log.Error("Token has expired", nil)
-		return "", errors.New(uc.appMessages.Get(
-			uc.locale,
-			messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
-		))
+		result.SetError(
+			status.Unauthorized,
+			uc.appMessages.Get(
+				uc.locale,
+				messages.MessageKeysInstance.AUTHORIZATION_TOKEN_EXPIRED,
+			),
+		)
+		return nil
 	}
 
 	// Extract subject from claims
 	sub, ok := claims["sub"].(string)
 	if !ok {
 		uc.log.Error("Invalid subject in token claims", nil)
-		return "", errors.New(uc.appMessages.Get(
-			uc.locale,
-			messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
-		))
+		result.SetError(
+			status.Unauthorized,
+			uc.appMessages.Get(
+				uc.locale,
+				messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
+			),
+		)
+		return nil
 	}
 
-	return sub, nil
+	return &sub
 }
 
 func NewAuthUserUseCase(
