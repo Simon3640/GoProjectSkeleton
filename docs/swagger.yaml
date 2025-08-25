@@ -36,7 +36,7 @@ definitions:
       role_id:
         type: integer
       status:
-        type: string
+        $ref: '#/definitions/models.UserStatusEnum'
     type: object
   models.UserAndPasswordCreate:
     properties:
@@ -51,7 +51,7 @@ definitions:
       role_id:
         type: integer
       status:
-        type: string
+        $ref: '#/definitions/models.UserStatusEnum'
     type: object
   models.UserCreate:
     properties:
@@ -64,7 +64,7 @@ definitions:
       role_id:
         type: integer
       status:
-        type: string
+        $ref: '#/definitions/models.UserStatusEnum'
     type: object
   models.UserCredentials:
     properties:
@@ -73,6 +73,16 @@ definitions:
       password:
         type: string
     type: object
+  models.UserStatusEnum:
+    enum:
+    - active
+    - inactive
+    - pending
+    type: string
+    x-enum-varnames:
+    - UserStatusActive
+    - UserStatusInactive
+    - UserStatusPending
   models.UserUpdateBase:
     properties:
       email:
@@ -84,7 +94,7 @@ definitions:
       role_id:
         type: integer
       status:
-        type: string
+        $ref: '#/definitions/models.UserStatusEnum'
     type: object
 info:
   contact: {}

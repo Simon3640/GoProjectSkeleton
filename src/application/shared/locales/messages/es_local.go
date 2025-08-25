@@ -14,6 +14,7 @@ var EsMessages = map[MessageKeysEnum]string{
 	"ERROR_CREATING_USER":           "Algo no salió bien registrado el usuario.",
 	"RESOURCE_EXISTS":               "El recurso ya existe.",
 	"INVALID_DATA":                  "Datos inválidos proporcionados.",
+	"NEW_USER_WELCOME":              "Bienvenido a nuestra plataforma, %s!",
 
 	"USER_WAS_CREATED":               "El usuario fue registrado",
 	"USER_WITH_EMAIL_ALREADY_EXISTS": "Un usuario ya ha sido registrado con el email: %s.",

@@ -16,6 +16,7 @@ type MessageKeys struct {
 	ERROR_CREATING_USER           MessageKeysEnum
 	RESOURCE_EXISTS               MessageKeysEnum
 	INVALID_DATA                  MessageKeysEnum
+	NEW_USER_WELCOME              MessageKeysEnum
 
 	USER_WAS_CREATED               MessageKeysEnum
 	USER_WITH_EMAIL_ALREADY_EXISTS MessageKeysEnum
@@ -57,6 +58,7 @@ var MessageKeysInstance = MessageKeys{
 	ERROR_CREATING_USER:           "ERROR_CREATING_USER",
 	RESOURCE_EXISTS:               "RESOURCE_EXISTS",
 	INVALID_DATA:                  "INVALID_DATA",
+	NEW_USER_WELCOME:              "NEW_USER_WELCOME",
 
 	USER_WAS_CREATED:               "USER_WAS_CREATED",
 	USER_WITH_EMAIL_ALREADY_EXISTS: "USER_WITH_EMAIL_ALREADY_EXISTS",
