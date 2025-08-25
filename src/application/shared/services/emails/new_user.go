@@ -18,7 +18,7 @@ type RegisterUserEmailService struct {
 }
 
 func NewRegisterUserEmailService(
-	renderer contracts.ITemplateRender[NewUserEmailData],
+	renderer contracts.IRenderProvider[NewUserEmailData],
 	sender contracts.IEmailProvider,
 	locale locales.LocaleTypeEnum,
 	appMessages locales.Locale,
