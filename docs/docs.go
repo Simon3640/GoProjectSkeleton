@@ -476,7 +476,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "status": {
-                    "$ref": "#/definitions/models.UserStatusEnum"
+                    "type": "string"
                 }
             }
         },
@@ -499,7 +499,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "status": {
-                    "$ref": "#/definitions/models.UserStatusEnum"
+                    "type": "string"
                 }
             }
         },
@@ -519,7 +519,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "status": {
-                    "$ref": "#/definitions/models.UserStatusEnum"
+                    "type": "string"
                 }
             }
         },
@@ -533,19 +533,6 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "models.UserStatusEnum": {
-            "type": "string",
-            "enum": [
-                "active",
-                "inactive",
-                "pending"
-            ],
-            "x-enum-varnames": [
-                "UserStatusActive",
-                "UserStatusInactive",
-                "UserStatusPending"
-            ]
         },
         "models.UserUpdateBase": {
             "type": "object",
@@ -563,7 +550,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "status": {
-                    "$ref": "#/definitions/models.UserStatusEnum"
+                    "type": "string"
                 }
             }
         }

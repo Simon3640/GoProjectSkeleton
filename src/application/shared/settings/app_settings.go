@@ -8,13 +8,15 @@ import (
 
 type AppSettings struct {
 	// Application
-	AppName        string
-	AppEnv         string
-	AppPort        string
-	AppVersion     string
-	AppDescription string
-	EnableLog      bool
-	DebugLog       bool
+	AppName         string
+	AppEnv          string
+	AppPort         string
+	AppVersion      string
+	AppDescription  string
+	AppSupportEmail string
+	EnableLog       bool
+	DebugLog        bool
+	TemplatesPath   string
 
 	// Database
 	DBHost     string
@@ -34,7 +36,7 @@ type AppSettings struct {
 
 	// Mail
 	MailHost     string
-	MailPort     string
+	MailPort     int
 	MailPassword string
 	MailFrom     string
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	user_pipes "gormgoskeleton/src/application/modules/user/pipes"
 	usecases_user "gormgoskeleton/src/application/modules/user/use_cases"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/domain/models"
@@ -184,10 +185,26 @@ func createUserAndPassword(c *gin.Context) {
 	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
 	hashProvider := providers.HashProviderInstance
 
-	uc_result := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
+	uc_create_user_email := usecases_user.NewCreateUserSendEmailUseCase(
+		providers.Logger,
+		providers.JWTProviderInstance,
+	)
+
+	uc_create_user_password := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
 		userRepository,
 		hashProvider,
-	).Execute(c.Request.Context(), locales.EN_US, userCreate)
+	)
+
+	uc_result := user_pipes.NewCreateUserPipe(c.Request.Context(),
+		locales.EN_US,
+		uc_create_user_password,
+		uc_create_user_email,
+	).Execute(userCreate)
+
+	// uc_result := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
+	// 	userRepository,
+	// 	hashProvider,
+	// ).Execute(c.Request.Context(), locales.EN_US, userCreate)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}

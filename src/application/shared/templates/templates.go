@@ -1,4 +1,4 @@
-package email_service
+package templates
 
 import "gormgoskeleton/src/application/shared/locales"
 
@@ -15,13 +15,13 @@ var TemplateKeysInstance = TemplateKeys{
 }
 
 var EnTemplates = map[TemplateKeysEnum]string{
-	TemplateKeysInstance.WelcomeEmail:       "new_user_en.html.j2",
-	TemplateKeysInstance.PasswordResetEmail: "password_reset_email.html.j2",
+	TemplateKeysInstance.WelcomeEmail:       "new_user_en.gohtml",
+	TemplateKeysInstance.PasswordResetEmail: "password_reset_email.gohtml",
 }
 
 var EsTemplates = map[TemplateKeysEnum]string{
-	TemplateKeysInstance.WelcomeEmail:       "new_user_es.html.j2",
-	TemplateKeysInstance.PasswordResetEmail: "password_reset_email.html.j2",
+	TemplateKeysInstance.WelcomeEmail:       "new_user_es.gohtml",
+	TemplateKeysInstance.PasswordResetEmail: "password_reset_email.gohtml",
 }
 
 type Templates struct {

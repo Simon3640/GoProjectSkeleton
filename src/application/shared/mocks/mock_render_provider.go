@@ -11,7 +11,7 @@ type MockRenderProvider[D any] struct {
 	mock.Mock
 }
 
-var _ contracts.IRenderProvider[any] = (*MockRenderProvider[any])(nil)
+var _ contracts.IRendererProvider[any] = (*MockRenderProvider[any])(nil)
 
 func (m *MockRenderProvider[D]) Render(template string, data D) (string, *application_errors.ApplicationError) {
 	args := m.Called(template, data)

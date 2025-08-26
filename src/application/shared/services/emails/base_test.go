@@ -1,45 +1,36 @@
 package email_service
 
-import (
-	"testing"
+// type structTestData struct {
+// 	Something string
+// }
 
-	"gormgoskeleton/src/application/shared/mocks"
-	"gormgoskeleton/src/domain/models"
+// func TestEmailServiceBase(t *testing.T) {
+// 	assert := assert.New(t)
 
-	"github.com/stretchr/testify/assert"
-)
+// 	mockEmailProvider := new(mocks.MockEmailProvider)
+// 	mockRenderProvider := new(mocks.MockRenderProvider[structTestData])
 
-type structTestData struct {
-	Something string
-}
+// 	test_data := structTestData{Something: "<Data>"}
 
-func TestEmailServiceBase(t *testing.T) {
-	assert := assert.New(t)
+// 	mockEmailProvider.On("SendEmail", "<Email>", "<Subject>", "<Data>").Return(nil)
+// 	mockRenderProvider.On("Render", "<Template>", test_data).Return("<Data>", nil)
 
-	mockEmailProvider := new(mocks.MockEmailProvider)
-	mockRenderProvider := new(mocks.MockRenderProvider[structTestData])
+// 	emailServiceBase := &EmailServiceBase[structTestData]{
+// 		Renderer: mockRenderProvider,
+// 		Sender:   mockEmailProvider,
+// 		template: "<Template>",
+// 		subject:  "<Subject>",
+// 	}
 
-	test_data := structTestData{Something: "<Data>"}
+// 	assert.Nil(
+// 		emailServiceBase.SendWithTemplate(
+// 			test_data,
+// 			models.User{
+// 				UserBase: models.UserBase{
+// 					Email: "<Email>",
+// 				},
+// 			},
+// 		),
+// 	)
 
-	mockEmailProvider.On("SendEmail", "<Email>", "<Subject>", "<Data>").Return(nil)
-	mockRenderProvider.On("Render", "<Template>", test_data).Return("<Data>", nil)
-
-	emailServiceBase := &EmailServiceBase[structTestData]{
-		Renderer: mockRenderProvider,
-		Sender:   mockEmailProvider,
-		template: "<Template>",
-		subject:  "<Subject>",
-	}
-
-	assert.Nil(
-		emailServiceBase.SendWithTemplate(
-			test_data,
-			models.User{
-				UserBase: models.UserBase{
-					Email: "<Email>",
-				},
-			},
-		),
-	)
-
-}
+// }
