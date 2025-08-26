@@ -2,6 +2,7 @@ package providers
 
 import (
 	"context"
+	application_errors "gormgoskeleton/src/application/shared/errors"
 	"testing"
 	"time"
 
@@ -113,5 +114,6 @@ func TestJWTProvider_ParseTokenAndValidate_InvalidToken(t *testing.T) {
 
 	parsedClaims, err := jwtProvider.ParseTokenAndValidate(invalidToken)
 	assert.NotNil(err)
+	assert.IsType(&application_errors.ApplicationError{}, err)
 	assert.Nil(parsedClaims)
 }
