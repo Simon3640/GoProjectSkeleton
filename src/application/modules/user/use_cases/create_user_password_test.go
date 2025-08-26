@@ -2,10 +2,12 @@ package usecases_user
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
 	"gormgoskeleton/src/domain/models"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -39,7 +41,12 @@ func TestCreateUserAndPassword(t *testing.T) {
 
 	testUserRepository.On("CreateWithPassword", testUserAndPasswordHash).Return(&models.User{
 		UserBase: userBase,
-		ID:       1,
+		DBBaseModel: models.DBBaseModel{
+			ID:        1,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			DeletedAt: time.Time{},
+		},
 	}, nil)
 
 	testHashProvider.On("HashPassword", testUserAndPassword.Password).Return("hashed_password", nil)
