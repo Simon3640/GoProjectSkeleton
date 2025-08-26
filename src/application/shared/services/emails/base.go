@@ -7,7 +7,7 @@ import (
 )
 
 type EmailServiceBase[D any] struct {
-	Renderer contracts.ITemplateRender[D]
+	Renderer contracts.IRenderProvider[D]
 	Sender   contracts.IEmailProvider
 	template string
 	subject  string
