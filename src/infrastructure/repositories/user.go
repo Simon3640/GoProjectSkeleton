@@ -102,7 +102,12 @@ func (uc *UserConverter) ToGormCreate(model models.UserCreate) *db_models.User {
 
 func (uc *UserConverter) ToDomain(ormModel *db_models.User) *models.User {
 	return &models.User{
-		ID: ormModel.ID,
+		DBBaseModel: models.DBBaseModel{
+			ID:        ormModel.ID,
+			CreatedAt: ormModel.CreatedAt,
+			UpdatedAt: ormModel.UpdatedAt,
+			DeletedAt: ormModel.DeletedAt.Time,
+		},
 		UserBase: models.UserBase{
 			Name:   ormModel.Name,
 			Email:  ormModel.Email,

@@ -460,6 +460,12 @@ const docTemplate = `{
         "models.User": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -476,6 +482,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "status": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }
