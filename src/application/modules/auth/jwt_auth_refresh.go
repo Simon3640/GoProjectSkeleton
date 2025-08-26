@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
@@ -16,10 +16,10 @@ import (
 
 type AuthenticationRefreshUseCase struct {
 	appMessages *locales.Locale
-	log         contracts.ILoggerProvider
+	log         contracts_providers.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
-	jwtProvider contracts.IJWTProvider
+	jwtProvider contracts_providers.IJWTProvider
 }
 
 var _ usecase.BaseUseCase[string, models.Token] = (*AuthenticationRefreshUseCase)(nil)
@@ -168,8 +168,8 @@ func (uc *AuthenticationRefreshUseCase) validate(input string) (bool, []string) 
 }
 
 func NewAuthenticationRefreshUseCase(
-	log contracts.ILoggerProvider,
-	jwtProvider contracts.IJWTProvider,
+	log contracts_providers.ILoggerProvider,
+	jwtProvider contracts_providers.IJWTProvider,
 ) *AuthenticationRefreshUseCase {
 	return &AuthenticationRefreshUseCase{
 		appMessages: locales.NewLocale(locales.EN_US),

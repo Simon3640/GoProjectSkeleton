@@ -3,7 +3,7 @@ package email_service
 import (
 	"fmt"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
@@ -13,8 +13,8 @@ import (
 )
 
 type EmailServiceBase[D any] struct {
-	Renderer contracts.IRendererProvider[D]
-	Sender   contracts.IEmailProvider
+	Renderer contracts_providers.IRendererProvider[D]
+	Sender   contracts_providers.IEmailProvider
 }
 
 func (svc *EmailServiceBase[D]) SendWithTemplate(

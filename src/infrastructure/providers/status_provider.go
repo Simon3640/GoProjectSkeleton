@@ -3,14 +3,14 @@ package providers
 import (
 	"time"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	"gormgoskeleton/src/application/shared/settings"
 	"gormgoskeleton/src/domain/models"
 )
 
 type ApiStatusProvider struct{}
 
-var _ contracts.IApiStatusProvider = (*ApiStatusProvider)(nil)
+var _ contracts_providers.IApiStatusProvider = (*ApiStatusProvider)(nil)
 
 func (asp *ApiStatusProvider) Get(date time.Time) models.Status {
 	return models.Status{
