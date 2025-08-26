@@ -465,7 +465,7 @@
                     "type": "integer"
                 },
                 "status": {
-                    "$ref": "#/definitions/models.UserStatusEnum"
+                    "type": "string"
                 }
             }
         },
@@ -488,7 +488,7 @@
                     "type": "integer"
                 },
                 "status": {
-                    "$ref": "#/definitions/models.UserStatusEnum"
+                    "type": "string"
                 }
             }
         },
@@ -508,7 +508,7 @@
                     "type": "integer"
                 },
                 "status": {
-                    "$ref": "#/definitions/models.UserStatusEnum"
+                    "type": "string"
                 }
             }
         },
@@ -522,19 +522,6 @@
                     "type": "string"
                 }
             }
-        },
-        "models.UserStatusEnum": {
-            "type": "string",
-            "enum": [
-                "active",
-                "inactive",
-                "pending"
-            ],
-            "x-enum-varnames": [
-                "UserStatusActive",
-                "UserStatusInactive",
-                "UserStatusPending"
-            ]
         },
         "models.UserUpdateBase": {
             "type": "object",
@@ -552,7 +539,7 @@
                     "type": "integer"
                 },
                 "status": {
-                    "$ref": "#/definitions/models.UserStatusEnum"
+                    "type": "string"
                 }
             }
         }

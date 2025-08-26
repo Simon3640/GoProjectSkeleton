@@ -67,11 +67,12 @@ func (ep *EmailProvider) SendEmail(
 	return nil
 }
 
-func NewEmailProvider(smtpHost string, smtPort int, username string, password string) *EmailProvider {
-	return &EmailProvider{
-		smtpHost: smtpHost,
-		smtpPort: smtPort,
-		from:     username,
-		password: password,
-	}
+func NewEmailProvider() *EmailProvider {
+	return &EmailProvider{}
+}
+
+var EmailProviderInstance *EmailProvider
+
+func init() {
+	EmailProviderInstance = NewEmailProvider()
 }

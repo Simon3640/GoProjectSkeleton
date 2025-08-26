@@ -9,13 +9,15 @@ import (
 
 type Config struct {
 	// Application
-	AppName        string `env:"APP_NAME" envDefault:"gormgoskeleton"`
-	AppEnv         string `env:"APP_ENV" envDefault:"development"`
-	AppPort        string `env:"APP_PORT" envDefault:"8080"`
-	AppVersion     string `env:"APP_VERSION" envDefault:"0.0.1"`
-	AppDescription string `env:"APP_DESCRIPTION" envDefault:"Description"`
-	EnableLog      string `env:"ENABLE_LOG" envDefault:"true"`
-	DebugLog       string `env:"DEBUG_LOG" envDefault:"true"`
+	AppName         string `env:"APP_NAME" envDefault:"gormgoskeleton"`
+	AppEnv          string `env:"APP_ENV" envDefault:"development"`
+	AppPort         string `env:"APP_PORT" envDefault:"8080"`
+	AppVersion      string `env:"APP_VERSION" envDefault:"0.0.1"`
+	AppDescription  string `env:"APP_DESCRIPTION" envDefault:"Description"`
+	AppSupportEmail string `env:"APP_SUPPORT_EMAIL" envDefault:"support@gormgoskeleton.com"`
+	EnableLog       string `env:"ENABLE_LOG" envDefault:"true"`
+	DebugLog        string `env:"DEBUG_LOG" envDefault:"true"`
+	TemplatesPath   string `env:"TEMPLATES_PATH" envDefault:"src/application/shared/templates/"`
 
 	// Database
 	DBHost     string `env:"DB_HOST" envDefault:"localhost"`

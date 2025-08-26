@@ -8,17 +8,18 @@ import (
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
 	email_service "gormgoskeleton/src/application/shared/services/emails"
+	email_models "gormgoskeleton/src/application/shared/services/emails/models"
+	"gormgoskeleton/src/application/shared/settings"
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
 	"gormgoskeleton/src/domain/models"
 )
 
 type CreateUserSendEmailUseCase struct {
-	appMessages     *locales.Locale
-	log             contracts.ILoggerProvider
-	newUserEmailSvc email_service.RegisterUserEmailService
-	jwt             contracts.IJWTProvider
-	locale          locales.LocaleTypeEnum
+	appMessages *locales.Locale
+	log         contracts.ILoggerProvider
+	jwt         contracts.IJWTProvider
+	locale      locales.LocaleTypeEnum
 }
 
 var _ usecase.BaseUseCase[models.User, models.User] = (*CreateUserSendEmailUseCase)(nil)
@@ -38,13 +39,15 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 
 	token, exp, err := uc.jwt.GenerateAccessToken(ctx, fmt.Sprint(input.ID), nil)
 
-	newUserEmailData := email_service.NewUserEmailData{
+	newUserEmailData := email_models.NewUserEmailData{
 		Name:            input.Name,
 		ActivationToken: token,
 		Expiration:      exp,
+		AppName:         settings.AppSettingsInstance.AppName,
+		SupportEmail:    settings.AppSettingsInstance.AppSupportEmail,
 	}
 
-	if err := uc.newUserEmailSvc.SendWithTemplate(newUserEmailData, input); err != nil {
+	if err := email_service.RegisterUserEmailServiceInstance.SendWithTemplate(newUserEmailData, input, locale); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
 			err.Code,
@@ -80,13 +83,11 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 
 func NewCreateUserSendEmailUseCase(
 	log contracts.ILoggerProvider,
-	newUserEmailSvc email_service.RegisterUserEmailService,
 	jwt contracts.IJWTProvider,
 ) *CreateUserSendEmailUseCase {
 	return &CreateUserSendEmailUseCase{
-		appMessages:     locales.NewLocale(locales.EN_US),
-		log:             log,
-		newUserEmailSvc: newUserEmailSvc,
-		jwt:             jwt,
+		appMessages: locales.NewLocale(locales.EN_US),
+		log:         log,
+		jwt:         jwt,
 	}
 }
