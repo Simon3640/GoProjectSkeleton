@@ -2,6 +2,8 @@ package email_service
 
 import (
 	"fmt"
+	"time"
+
 	"gormgoskeleton/src/application/contracts"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
@@ -11,6 +13,7 @@ import (
 type NewUserEmailData struct {
 	Name            string
 	ActivationToken string
+	Expiration      time.Time
 }
 
 type RegisterUserEmailService struct {
