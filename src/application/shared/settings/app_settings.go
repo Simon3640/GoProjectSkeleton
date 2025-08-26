@@ -15,12 +15,14 @@ type AppSettings struct {
 	AppDescription string
 	EnableLog      bool
 	DebugLog       bool
-	DBHost         string
-	DBPort         string
-	DBUser         string
-	DBPassword     string
-	DBName         string
-	DBSSL          bool
+
+	// Database
+	DBHost     string
+	DBPort     string
+	DBUser     string
+	DBPassword string
+	DBName     string
+	DBSSL      bool
 
 	// Security
 	JWTSecretKey  string
@@ -29,6 +31,12 @@ type AppSettings struct {
 	JWTAccessTTL  int64 // in seconds
 	JWTRefreshTTL int64 // in seconds
 	JWTClockSkew  int64 // in seconds
+
+	// Mail
+	MailHost     string
+	MailPort     string
+	MailPassword string
+	MailFrom     string
 }
 
 func NewAppSettings() *AppSettings {

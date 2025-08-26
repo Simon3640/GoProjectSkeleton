@@ -14,6 +14,7 @@ var EnMessages = map[MessageKeysEnum]string{
 	"ERROR_CREATING_USER":           "Create user error.",
 	"RESOURCE_EXISTS":               "Resource already exists.",
 	"INVALID_DATA":                  "Invalid data provided.",
+	"NEW_USER_WELCOME":              "Welcome to our platform, %s!",
 
 	"USER_WAS_CREATED":               "User was created.",
 	"USER_WITH_EMAIL_ALREADY_EXISTS": "A user has already registered with the email address: %s.",

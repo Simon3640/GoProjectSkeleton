@@ -45,6 +45,13 @@ services:
     # networks:
     #   - gormgoskeleton
 
+  mailhog:
+    image: axllent/mailpit:latest
+    # platform: linux/amd64
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    restart: always
 
 # networks:
 #   gormgoskeleton:
