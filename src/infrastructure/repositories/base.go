@@ -53,10 +53,19 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id ui
 	return updatedEntity, nil
 }
 
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id uint) *application_errors.ApplicationError {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) SoftDelete(id uint) *application_errors.ApplicationError {
 	if err := rb.DB.Delete(new(DBModel), id).Error; err != nil {
 		appErr := MapOrmError(err)
 		rb.logger.Debug("Error deleting entity", appErr.ToError())
+		return appErr
+	}
+	return nil
+}
+
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id uint) *application_errors.ApplicationError {
+	if err := rb.DB.Unscoped().Delete(new(DBModel), id).Error; err != nil {
+		appErr := MapOrmError(err)
+		rb.logger.Debug("Error hard deleting entity", appErr.ToError())
 		return appErr
 	}
 	return nil
