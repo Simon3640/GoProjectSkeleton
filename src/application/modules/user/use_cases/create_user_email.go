@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
 	email_service "gormgoskeleton/src/application/shared/services/emails"
@@ -17,8 +17,8 @@ import (
 
 type CreateUserSendEmailUseCase struct {
 	appMessages *locales.Locale
-	log         contracts.ILoggerProvider
-	jwt         contracts.IJWTProvider
+	log         contracts_providers.ILoggerProvider
+	jwt         contracts_providers.IJWTProvider
 	locale      locales.LocaleTypeEnum
 }
 
@@ -82,8 +82,8 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 }
 
 func NewCreateUserSendEmailUseCase(
-	log contracts.ILoggerProvider,
-	jwt contracts.IJWTProvider,
+	log contracts_providers.ILoggerProvider,
+	jwt contracts_providers.IJWTProvider,
 ) *CreateUserSendEmailUseCase {
 	return &CreateUserSendEmailUseCase{
 		appMessages: locales.NewLocale(locales.EN_US),
