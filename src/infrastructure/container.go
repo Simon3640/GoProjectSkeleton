@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	email_service "gormgoskeleton/src/application/shared/services/emails"
 	settings "gormgoskeleton/src/application/shared/settings"
 	config "gormgoskeleton/src/infrastructure/config"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
@@ -31,5 +32,19 @@ func Initialize() {
 		settings.AppSettingsInstance.JWTAccessTTL,
 		settings.AppSettingsInstance.JWTRefreshTTL,
 		settings.AppSettingsInstance.JWTClockSkew,
+	)
+
+	// Initialize Email Provider
+	providers.EmailProviderInstance.Setup(
+		settings.AppSettingsInstance.MailHost,
+		settings.AppSettingsInstance.MailPort,
+		settings.AppSettingsInstance.MailFrom,
+		settings.AppSettingsInstance.MailPassword,
+	)
+
+	// Services
+	email_service.RegisterUserEmailServiceInstance.SetUp(
+		providers.RenderNewUserEmailInstance,
+		providers.EmailProviderInstance,
 	)
 }

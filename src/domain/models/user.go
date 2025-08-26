@@ -98,7 +98,7 @@ type UserUpdate struct {
 
 func (u UserUpdate) Validate() []string {
 	var errs []string
-	if (u.Email != nil && *u.Email == "") || !IsValidEmail(*u.Email) {
+	if u.Email != nil && !IsValidEmail(*u.Email) {
 		errs = append(errs, "email is invalid")
 	}
 	if u.RoleID != nil && *u.RoleID == 1 { // TODO: replace with constant
