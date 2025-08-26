@@ -9,5 +9,6 @@ type IRepositoryBase[CreateDomainModel any, UpdateDomainModel any, DomainModel a
 	GetByID(id uint) (*DomainModel, *application_errors.ApplicationError)
 	Update(id uint, entity UpdateDomainModel) (*DomainModel, *application_errors.ApplicationError)
 	Delete(id uint) *application_errors.ApplicationError
+	SoftDelete(id uint) *application_errors.ApplicationError
 	GetAll(payload *map[string]string, skip *int, limit *int) ([]DomainModel, *application_errors.ApplicationError)
 }

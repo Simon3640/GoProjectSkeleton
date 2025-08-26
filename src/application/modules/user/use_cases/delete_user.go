@@ -38,7 +38,7 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 		return result
 	}
 
-	err := uc.repo.Delete(input)
+	err := uc.repo.SoftDelete(input)
 	if err != nil {
 		uc.log.Error("Error deleting user", err.ToError())
 		result.SetError(
