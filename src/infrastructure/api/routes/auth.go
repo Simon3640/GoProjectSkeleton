@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"gormgoskeleton/src/application/modules/auth"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/domain/models"
 	"gormgoskeleton/src/infrastructure/api"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
 	"gormgoskeleton/src/infrastructure/providers"
@@ -25,7 +25,7 @@ import (
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/login [post]
 func login(c *gin.Context) {
-	var userCredentials models.UserCredentials
+	var userCredentials dtos.UserCredentials
 
 	if err := c.ShouldBindJSON(&userCredentials); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -42,7 +42,7 @@ func login(c *gin.Context) {
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[models.Token]().ResolveDTO(c, uc_result, headers)
+	content, statusCode := api.NewRequestResolver[dtos.Token]().ResolveDTO(c, uc_result, headers)
 
 	c.JSON(statusCode, content)
 }
@@ -71,7 +71,7 @@ func refreshAccessToken(c *gin.Context) {
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[models.Token]().ResolveDTO(c, uc_result, headers)
+	content, statusCode := api.NewRequestResolver[dtos.Token]().ResolveDTO(c, uc_result, headers)
 
 	c.JSON(statusCode, content)
 }

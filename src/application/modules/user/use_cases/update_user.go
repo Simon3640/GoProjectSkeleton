@@ -5,6 +5,7 @@ import (
 
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/guards"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
@@ -14,12 +15,12 @@ import (
 )
 
 type UpdateUserUseCase struct {
-	usecase.BaseUseCaseValidation[models.UserUpdate, models.User]
+	usecase.BaseUseCaseValidation[dtos.UserUpdate, models.User]
 	log  contracts_providers.ILoggerProvider
 	repo contracts_repositories.IUserRepository
 }
 
-var _ usecase.BaseUseCase[models.UserUpdate, models.User] = (*UpdateUserUseCase)(nil)
+var _ usecase.BaseUseCase[dtos.UserUpdate, models.User] = (*UpdateUserUseCase)(nil)
 
 func (uc *UpdateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
@@ -29,7 +30,7 @@ func (uc *UpdateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 
 func (uc *UpdateUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input models.UserUpdate,
+	input dtos.UserUpdate,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
@@ -63,9 +64,9 @@ func NewUpdateUserUseCase(
 	repo contracts_repositories.IUserRepository,
 ) *UpdateUserUseCase {
 	return &UpdateUserUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[models.UserUpdate, models.User]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[dtos.UserUpdate, models.User]{
 			AppMessages: locales.NewLocale(locales.EN_US),
-			Guards:      usecase.NewGuards(guards.RoleGuard("admin", "user"), guards.UserResourceGuard[models.UserUpdate]()),
+			Guards:      usecase.NewGuards(guards.RoleGuard("admin", "user"), guards.UserResourceGuard[dtos.UserUpdate]()),
 		},
 		log:  log,
 		repo: repo,

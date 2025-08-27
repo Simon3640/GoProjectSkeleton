@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	usecases_password "gormgoskeleton/src/application/modules/password/use_cases"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/domain/models"
 	"gormgoskeleton/src/infrastructure/api"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
 	"gormgoskeleton/src/infrastructure/providers"
@@ -27,7 +27,7 @@ import (
 // @Router /api/password [post]
 // @Security Bearer
 func createPassword(c *gin.Context) {
-	var passwordCreate models.PasswordCreateNoHash
+	var passwordCreate dtos.PasswordCreateNoHash
 
 	if err := c.ShouldBindJSON(&passwordCreate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

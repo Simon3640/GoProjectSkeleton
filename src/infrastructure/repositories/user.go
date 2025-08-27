@@ -3,6 +3,7 @@ package repositories
 import (
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/domain/models"
 	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
@@ -11,10 +12,10 @@ import (
 )
 
 type UserRepository struct {
-	RepositoryBase[models.UserCreate, models.UserUpdate, models.User, db_models.User]
+	RepositoryBase[dtos.UserCreate, dtos.UserUpdate, models.User, db_models.User]
 }
 
-func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate) (*models.User, *application_errors.ApplicationError) {
+func (ur *UserRepository) CreateWithPassword(input dtos.UserAndPasswordCreate) (*models.User, *application_errors.ApplicationError) {
 	// Convert input to 2 models UserCreate and UserInDB
 	userCreate := ur.modelConverter.ToGormCreate(input.UserCreate)
 	tx := ur.DB.Begin()
@@ -30,7 +31,7 @@ func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate)
 	}
 	userInDB := ur.modelConverter.ToDomain(userCreate)
 	// Create password
-	passwordCreate := models.PasswordCreate{
+	passwordCreate := dtos.PasswordCreate{
 		PasswordBase: models.PasswordBase{
 			UserID:   userInDB.ID,
 			Hash:     input.Password,
@@ -88,9 +89,9 @@ var _ contracts_repositories.IUserRepository = (*UserRepository)(nil)
 
 type UserConverter struct{}
 
-var _ ModelConverter[models.UserCreate, models.UserUpdate, models.User, db_models.User] = (*UserConverter)(nil)
+var _ ModelConverter[dtos.UserCreate, dtos.UserUpdate, models.User, db_models.User] = (*UserConverter)(nil)
 
-func (uc *UserConverter) ToGormCreate(model models.UserCreate) *db_models.User {
+func (uc *UserConverter) ToGormCreate(model dtos.UserCreate) *db_models.User {
 	return &db_models.User{
 		Name:   model.Name,
 		Email:  model.Email,
@@ -118,7 +119,7 @@ func (uc *UserConverter) ToDomain(ormModel *db_models.User) *models.User {
 	}
 }
 
-func (uc *UserConverter) ToGormUpdate(model models.UserUpdate) *db_models.User {
+func (uc *UserConverter) ToGormUpdate(model dtos.UserUpdate) *db_models.User {
 	user := &db_models.User{}
 
 	if model.Name != nil {
@@ -146,8 +147,8 @@ func (uc *UserConverter) ToGormUpdate(model models.UserUpdate) *db_models.User {
 func NewUserRepository(db *gorm.DB, logger contracts_providers.ILoggerProvider) *UserRepository {
 	return &UserRepository{
 		RepositoryBase: RepositoryBase[
-			models.UserCreate,
-			models.UserUpdate,
+			dtos.UserCreate,
+			dtos.UserUpdate,
 			models.User,
 			db_models.User,
 		]{DB: db, modelConverter: &UserConverter{}, logger: logger},

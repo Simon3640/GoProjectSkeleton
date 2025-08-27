@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
 	"gormgoskeleton/src/domain/models"
@@ -29,8 +30,8 @@ func TestCreateUserAndPassword(t *testing.T) {
 		RoleID: 2,
 	}
 
-	testUserAndPassword := models.UserAndPasswordCreate{
-		UserCreate: models.UserCreate{
+	testUserAndPassword := dtos.UserAndPasswordCreate{
+		UserCreate: dtos.UserCreate{
 			UserBase: userBase,
 		},
 		Password: "P@ssw0rd",

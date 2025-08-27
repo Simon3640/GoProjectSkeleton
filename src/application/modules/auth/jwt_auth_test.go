@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
 	"gormgoskeleton/src/application/shared/status"
@@ -26,7 +27,7 @@ func TestAuthenticationUseCase(t *testing.T) {
 	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testHashProvider, testJWTProvider)
 
 	// Valid User Authentication
-	userCredentials := models.UserCredentials{
+	userCredentials := dtos.UserCredentials{
 		Email:    "user@example.com",
 		Password: "plainPassword",
 	}
@@ -63,7 +64,7 @@ func TestAuthenticationUseCase_InvalidCredentials(t *testing.T) {
 	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testHashProvider, testJWTProvider)
 
 	// Invalid User Authentication
-	userCredentials := models.UserCredentials{
+	userCredentials := dtos.UserCredentials{
 		Email:    "user@example.com",
 		Password: "wrongPassword",
 	}

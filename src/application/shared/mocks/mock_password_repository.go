@@ -2,12 +2,13 @@ package mocks
 
 import (
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/domain/models"
 )
 
 type MockPasswordRepository struct {
-	MockRepositoryBase[models.PasswordCreate, models.PasswordUpdate, models.Password, models.PasswordInDB]
+	MockRepositoryBase[dtos.PasswordCreate, dtos.PasswordUpdate, models.Password, models.PasswordInDB]
 }
 
 var _ contracts_repositories.IPasswordRepository = (*MockPasswordRepository)(nil)
