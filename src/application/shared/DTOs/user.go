@@ -56,3 +56,6 @@ func (u UserUpdate) Validate() []string {
 func (u UserUpdate) GetUserID() uint {
 	return u.ID
 }
+
+type UserMultiResponse struct{ MultipleResponse[models.User] }
+type UserSingleResponse struct{ SingleResponse[models.User] }
