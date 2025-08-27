@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserCredentials"
+                            "$ref": "#/definitions/dtos.UserCredentials"
                         }
                     }
                 ],
@@ -43,7 +43,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Tokens generated successfully",
                         "schema": {
-                            "$ref": "#/definitions/models.Token"
+                            "$ref": "#/definitions/dtos.Token"
                         }
                     },
                     "400": {
@@ -86,7 +86,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Token"
+                            "$ref": "#/definitions/dtos.Token"
                         }
                     },
                     "400": {
@@ -140,7 +140,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.PasswordCreateNoHash"
+                            "$ref": "#/definitions/dtos.PasswordCreateNoHash"
                         }
                     }
                 ],
@@ -221,7 +221,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.User"
+                                "$ref": "#/definitions/dtos.UserMultiResponse"
                             }
                         }
                     },
@@ -273,7 +273,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserCreate"
+                            "$ref": "#/definitions/dtos.UserCreate"
                         }
                     }
                 ],
@@ -316,7 +316,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserAndPasswordCreate"
+                            "$ref": "#/definitions/dtos.UserAndPasswordCreate"
                         }
                     }
                 ],
@@ -456,7 +456,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserUpdateBase"
+                            "$ref": "#/definitions/dtos.UserUpdateBase"
                         }
                     }
                 ],
@@ -481,7 +481,41 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.PasswordCreateNoHash": {
+        "dtos.Link": {
+            "type": "object",
+            "properties": {
+                "last": {
+                    "type": "string"
+                },
+                "next": {
+                    "type": "string"
+                },
+                "self": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.MetaMultiResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "has_next": {
+                    "type": "boolean"
+                },
+                "has_prev": {
+                    "type": "boolean"
+                },
+                "links": {
+                    "$ref": "#/definitions/dtos.Link"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dtos.PasswordCreateNoHash": {
             "type": "object",
             "properties": {
                 "expires_at": {
@@ -498,7 +532,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.Token": {
+        "dtos.Token": {
             "type": "object",
             "properties": {
                 "access_expires_at": {
@@ -514,6 +548,94 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "token_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.UserAndPasswordCreate": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.UserCreate": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.UserCredentials": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.UserMultiResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.User"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/dtos.MetaMultiResponse"
+                }
+            }
+        },
+        "dtos.UserUpdateBase": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "status": {
                     "type": "string"
                 }
             }
@@ -546,80 +668,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.UserAndPasswordCreate": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "role_id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.UserCreate": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "role_id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.UserCredentials": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.UserUpdateBase": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "role_id": {
-                    "type": "integer"
-                },
-                "status": {
                     "type": "string"
                 }
             }

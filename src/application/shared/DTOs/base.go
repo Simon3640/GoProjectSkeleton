@@ -7,19 +7,16 @@ type Link struct {
 }
 
 type MetaMultiResponse struct {
-	Count    int   `json:"count"`
-	Total    int   `json:"total"`
-	Page     int   `json:"page"`
-	PageSize int   `json:"page_size"`
-	HasNext  bool  `json:"has_next"`
-	HasPrev  bool  `json:"has_prev"`
-	Links    *Link `json:"links"`
+	Count   int   `json:"count"`
+	Total   int   `json:"total"`
+	HasNext bool  `json:"has_next"`
+	HasPrev bool  `json:"has_prev"`
+	Links   *Link `json:"links"`
 }
 
 type MultipleResponse[D any] struct {
-	Data    []D               `json:"data"`
-	Meta    MetaMultiResponse `json:"meta"`
-	Details string            `json:"details,omitempty"`
+	Data []D               `json:"data"`
+	Meta MetaMultiResponse `json:"meta"`
 }
 
 type MetaSingleResponse struct {
@@ -29,6 +26,6 @@ type MetaSingleResponse struct {
 }
 
 type SingleResponse[D any] struct {
-	Data    D      `json:"data"`
-	Details string `json:"details,omitempty"`
+	Data D                  `json:"data"`
+	Meta MetaSingleResponse `json:"meta"`
 }

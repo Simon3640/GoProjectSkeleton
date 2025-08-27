@@ -5,6 +5,7 @@ import (
 
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/guards"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
@@ -15,12 +16,12 @@ import (
 )
 
 type GetAllUserUseCase struct {
-	usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], []models.User]
+	usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], dtos.UserMultiResponse]
 	log  contracts_providers.ILoggerProvider
 	repo contracts_repositories.IUserRepository
 }
 
-var _ usecase.BaseUseCase[domain_utils.QueryPayloadBuilder[models.User], []models.User] = (*GetAllUserUseCase)(nil)
+var _ usecase.BaseUseCase[domain_utils.QueryPayloadBuilder[models.User], dtos.UserMultiResponse] = (*GetAllUserUseCase)(nil)
 
 func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
@@ -32,8 +33,8 @@ func (uc *GetAllUserUseCase) Execute(
 	ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input domain_utils.QueryPayloadBuilder[models.User],
-) *usecase.UseCaseResult[[]models.User] {
-	result := usecase.NewUseCaseResult[[]models.User]()
+) *usecase.UseCaseResult[dtos.UserMultiResponse] {
+	result := usecase.NewUseCaseResult[dtos.UserMultiResponse]()
 	uc.SetLocale(locale)
 	uc.Validate(ctx, input, result)
 	if result.HasError() {
@@ -41,6 +42,16 @@ func (uc *GetAllUserUseCase) Execute(
 	}
 
 	data, err := uc.repo.GetAll(&input, input.Pagination.GetOffset(), input.Pagination.GetLimit())
+	// TODO: MultiResponse with count and pagination
+	var response dtos.UserMultiResponse
+	response.MultipleResponse.Data = data
+	response.MultipleResponse.Meta = dtos.MetaMultiResponse{
+		Count:   len(data),
+		Total:   0,     // TODO: implement total count in repository
+		HasNext: true,  // TODO: implement has next in repository
+		HasPrev: false, // TODO: implement has prev in repository
+		Links:   nil,   // TODO: implement
+	}
 	if err != nil {
 		uc.log.Error("Error getting all users", err.ToError())
 		result.SetError(
@@ -54,7 +65,7 @@ func (uc *GetAllUserUseCase) Execute(
 	}
 	result.SetData(
 		status.Success,
-		data,
+		response,
 		uc.AppMessages.Get(
 			uc.Locale,
 			messages.MessageKeysInstance.USER_LIST_SUCCESS,
@@ -68,7 +79,7 @@ func NewGetAllUserUseCase(
 	repo contracts_repositories.IUserRepository,
 ) *GetAllUserUseCase {
 	return &GetAllUserUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], []models.User]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], dtos.UserMultiResponse]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(guards.RoleGuard("admin")),
 		},
