@@ -113,7 +113,7 @@ func (u UserUpdate) GetUserID() uint {
 
 type User struct {
 	UserBase
-	ID uint `json:"id"`
+	DBBaseModel
 }
 
 func (u User) GetUserID() uint {

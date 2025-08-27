@@ -3,6 +3,7 @@ package usecases_user
 import (
 	"context"
 	"testing"
+	"time"
 
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
@@ -29,7 +30,12 @@ func TestCreateUserUseCase(t *testing.T) {
 			Status: "active",
 			RoleID: 2,
 		},
-		ID: 1,
+		DBBaseModel: models.DBBaseModel{
+			ID:        1,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			DeletedAt: time.Time{},
+		},
 	}, nil)
 
 	uc := NewCreateUserUseCase(testLogger, testUserRepository)

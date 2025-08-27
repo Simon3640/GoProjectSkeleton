@@ -3,6 +3,7 @@ package usecases_user
 import (
 	"context"
 	"testing"
+	"time"
 
 	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
@@ -30,7 +31,12 @@ func TestGetUserUseCase(t *testing.T) {
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
 			Status: "active"},
-		ID: 1,
+		DBBaseModel: models.DBBaseModel{
+			ID:        1,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			DeletedAt: time.Time{},
+		},
 	}, nil)
 
 	uc := NewGetUserUseCase(testLogger, testUserRepository)
@@ -59,7 +65,12 @@ func TestGetUserUseCase_DifferentUser(t *testing.T) {
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
 			Status: "active"},
-		ID: 2,
+		DBBaseModel: models.DBBaseModel{
+			ID:        2,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			DeletedAt: time.Time{},
+		},
 	}, nil)
 
 	uc := NewGetUserUseCase(testLogger, testUserRepository)
