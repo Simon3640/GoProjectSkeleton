@@ -1,7 +1,7 @@
 package email_service
 
 import (
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	email_models "gormgoskeleton/src/application/shared/services/emails/models"
 )
 
@@ -10,8 +10,8 @@ type RegisterUserEmailService struct {
 }
 
 func (svc *RegisterUserEmailService) SetUp(
-	renderer contracts.IRendererProvider[email_models.NewUserEmailData],
-	sender contracts.IEmailProvider,
+	renderer contracts_providers.IRendererProvider[email_models.NewUserEmailData],
+	sender contracts_providers.IEmailProvider,
 ) {
 	svc.EmailServiceBase.Renderer = renderer
 	svc.EmailServiceBase.Sender = sender

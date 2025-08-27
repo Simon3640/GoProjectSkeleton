@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	contracts "gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	locales "gormgoskeleton/src/application/shared/locales"
 	messages "gormgoskeleton/src/application/shared/locales/messages"
 	status "gormgoskeleton/src/application/shared/status"
@@ -14,8 +14,8 @@ import (
 
 type GetStatusUseCase struct {
 	appMessages       *locales.Locale
-	log               contracts.ILoggerProvider
-	apiStatusProvider contracts.IApiStatusProvider
+	log               contracts_providers.ILoggerProvider
+	apiStatusProvider contracts_providers.IApiStatusProvider
 	locale            locales.LocaleTypeEnum
 }
 
@@ -44,8 +44,8 @@ func (uc *GetStatusUseCase) Execute(ctx context.Context,
 }
 
 func NewGetStatusUseCase(
-	log contracts.ILoggerProvider,
-	apiStatusProvider contracts.IApiStatusProvider,
+	log contracts_providers.ILoggerProvider,
+	apiStatusProvider contracts_providers.IApiStatusProvider,
 ) *GetStatusUseCase {
 	return &GetStatusUseCase{
 		appMessages:       locales.NewLocale(locales.EN_US),

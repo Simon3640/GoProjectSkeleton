@@ -4,7 +4,7 @@ import (
 	"net/smtp"
 	"strconv"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/settings"
@@ -18,7 +18,7 @@ type EmailProvider struct {
 	password string
 }
 
-var _ contracts.IEmailProvider = (*EmailProvider)(nil)
+var _ contracts_providers.IEmailProvider = (*EmailProvider)(nil)
 
 func (ep *EmailProvider) Setup(smtpHost string, smtpPort int, from string, password string) {
 	ep.smtpHost = smtpHost

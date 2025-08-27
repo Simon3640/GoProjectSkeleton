@@ -3,7 +3,7 @@ package usecases_user
 import (
 	"context"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/application/shared/guards"
 	"gormgoskeleton/src/application/shared/locales"
@@ -15,7 +15,7 @@ import (
 
 type GetAllUserUseCase struct {
 	usecase.BaseUseCaseValidation[Nil, []models.User]
-	log  contracts.ILoggerProvider
+	log  contracts_providers.ILoggerProvider
 	repo contracts_repositories.IUserRepository
 }
 
@@ -65,7 +65,7 @@ func (uc *GetAllUserUseCase) Execute(
 }
 
 func NewGetAllUserUseCase(
-	log contracts.ILoggerProvider,
+	log contracts_providers.ILoggerProvider,
 	repo contracts_repositories.IUserRepository,
 ) *GetAllUserUseCase {
 	return &GetAllUserUseCase{

@@ -1,7 +1,7 @@
 package mocks
 
 import (
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 
 	"github.com/stretchr/testify/mock"
@@ -11,7 +11,7 @@ type MockEmailProvider struct {
 	mock.Mock
 }
 
-var _ contracts.IEmailProvider = (*MockEmailProvider)(nil)
+var _ contracts_providers.IEmailProvider = (*MockEmailProvider)(nil)
 
 func (m *MockEmailProvider) SendEmail(to string, subject string, body string) *application_errors.ApplicationError {
 	args := m.Called(to, subject, body)

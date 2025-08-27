@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
@@ -15,7 +15,7 @@ import (
 
 type CreateUserUseCase struct {
 	appMessages *locales.Locale
-	log         contracts.ILoggerProvider
+	log         contracts_providers.ILoggerProvider
 	repo        contracts_repositories.IUserRepository
 	locale      locales.LocaleTypeEnum
 }
@@ -78,7 +78,7 @@ func (uc *CreateUserUseCase) validate(
 }
 
 func NewCreateUserUseCase(
-	log contracts.ILoggerProvider,
+	log contracts_providers.ILoggerProvider,
 	repo contracts_repositories.IUserRepository,
 ) *CreateUserUseCase {
 	return &CreateUserUseCase{

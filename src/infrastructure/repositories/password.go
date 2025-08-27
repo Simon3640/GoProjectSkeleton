@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/domain/models"
@@ -103,7 +103,7 @@ func (uc *PasswordConverter) ToGormUpdate(model models.PasswordUpdate) *db_model
 	return password
 }
 
-func NewPasswordRepository(db *gorm.DB, logger contracts.ILoggerProvider) *PasswordRepository {
+func NewPasswordRepository(db *gorm.DB, logger contracts_providers.ILoggerProvider) *PasswordRepository {
 	return &PasswordRepository{
 		RepositoryBase: RepositoryBase[
 			models.PasswordCreate,

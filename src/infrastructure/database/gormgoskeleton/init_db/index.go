@@ -3,13 +3,13 @@ package initdb
 import (
 	"gorm.io/gorm"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	"gormgoskeleton/src/domain/defaults"
 	"gormgoskeleton/src/infrastructure/database/gormgoskeleton/init_db/setups"
 	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
 )
 
-func InitMigrate(db *gorm.DB, logger contracts.ILoggerProvider) {
+func InitMigrate(db *gorm.DB, logger contracts_providers.ILoggerProvider) {
 	logger.Info("Auto migrating models")
 
 	logger.Info("Auto migrating Role model")
