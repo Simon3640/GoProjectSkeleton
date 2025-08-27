@@ -170,7 +170,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "This endpoint Get all users",
+                "description": "Retrieve all users with support for filtering, sorting, and pagination.",
                 "consumes": [
                     "application/json"
                 ],
@@ -180,14 +180,75 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "This endpoint Get all users",
+                "summary": "Get all users",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Filter users in the format column:operator:value (e.g. Name:eq:Admin, Age:gt:18)",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Sort users in the format column:asc|desc (e.g. Name:asc, CreatedAt:desc)",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page (default: 10)",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Usuarios",
+                        "description": "List of users",
                         "schema": {
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/models.User"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
                             }
                         }
                     }
