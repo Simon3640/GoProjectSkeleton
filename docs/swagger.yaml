@@ -25,6 +25,10 @@ definitions:
     type: object
   models.User:
     properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
       email:
         type: string
       id:
@@ -36,6 +40,8 @@ definitions:
       role_id:
         type: integer
       status:
+        type: string
+      updated_at:
         type: string
     type: object
   models.UserAndPasswordCreate:

@@ -9,6 +9,7 @@ import (
 	domain_mocks "gormgoskeleton/src/domain/mocks"
 	"gormgoskeleton/src/domain/models"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -34,7 +35,12 @@ func TestUpdateUserUseCase(t *testing.T) {
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
 			Status: "active"},
-		ID: actor.ID,
+		DBBaseModel: models.DBBaseModel{
+			ID:        actor.ID,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			DeletedAt: time.Time{},
+		},
 	}, nil)
 
 	uc := NewUpdateUserUseCase(testLogger, testUserRepository)
