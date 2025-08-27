@@ -163,25 +163,14 @@ func deleteUser(c *gin.Context) {
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Router /api/user [get]
 func getAllUser(c *gin.Context) {
-	var queryParams domain_utils.QueryPayloadBuilder[models.User]
-	queryParams.ParseFilters(c.QueryArray("filter"))
-	queryParams.ParseSorts(c.QueryArray("sort"))
-	page, _ := strconv.Atoi(c.Query("page"))
-	pageSize, _ := strconv.Atoi(c.Query("page_size"))
-	if page == 0 {
-		page = 1
+	queryParams, exists := c.Get("queryParams")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Query parameters not found"})
+		return
 	}
-	if pageSize == 0 {
-		pageSize = 10
-	}
-	queryParams.Pagination = domain_utils.Pagination{
-		Page:     page,
-		PageSize: pageSize,
-	}
-
 	uc_result := usecases_user.NewGetAllUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c.Request.Context(), locales.EN_US, queryParams)
+	).Execute(c.Request.Context(), locales.EN_US, queryParams.(domain_utils.QueryPayloadBuilder[models.User]))
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
