@@ -219,3 +219,24 @@ func (qp *QueryPayloadBuilder[DBModel]) ParseSorts(sort []string) {
 		qp.Sorts = append(qp.Sorts, qp.ParseSort(s))
 	}
 }
+
+func NewQueryPayloadBuilder[DBModel any](sorts []string,
+	filters []string,
+	page *int,
+	pageSize *int,
+) QueryPayloadBuilder[DBModel] {
+	var queryParams QueryPayloadBuilder[DBModel]
+	queryParams.ParseFilters(filters)
+	queryParams.ParseSorts(sorts)
+	if page == nil || *page == 0 {
+		queryParams.Pagination.Page = 1
+	} else {
+		queryParams.Pagination.Page = *page
+	}
+	if pageSize == nil || *pageSize == 0 {
+		queryParams.Pagination.PageSize = 10
+	} else {
+		queryParams.Pagination.PageSize = *pageSize
+	}
+	return queryParams
+}
