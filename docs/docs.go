@@ -219,10 +219,7 @@ const docTemplate = `{
                     "200": {
                         "description": "List of users",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dtos.UserMultiResponse"
-                            }
+                            "$ref": "#/definitions/dtos.UserMultiResponse"
                         }
                     },
                     "400": {
@@ -609,14 +606,14 @@ const docTemplate = `{
         "dtos.UserMultiResponse": {
             "type": "object",
             "properties": {
-                "data": {
+                "meta": {
+                    "$ref": "#/definitions/dtos.MetaMultiResponse"
+                },
+                "records": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.User"
                     }
-                },
-                "meta": {
-                    "$ref": "#/definitions/dtos.MetaMultiResponse"
                 }
             }
         },

@@ -44,8 +44,8 @@ func (uc *GetAllUserUseCase) Execute(
 	data, err := uc.repo.GetAll(&input, input.Pagination.GetOffset(), input.Pagination.GetLimit())
 	// TODO: MultiResponse with count and pagination
 	var response dtos.UserMultiResponse
-	response.MultipleResponse.Data = data
-	response.MultipleResponse.Meta = dtos.MetaMultiResponse{
+	response.Records = data
+	response.Meta = dtos.MetaMultiResponse{
 		Count:   len(data),
 		Total:   0,     // TODO: implement total count in repository
 		HasNext: true,  // TODO: implement has next in repository

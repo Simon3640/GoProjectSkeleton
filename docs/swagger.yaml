@@ -82,12 +82,12 @@ definitions:
     type: object
   dtos.UserMultiResponse:
     properties:
-      data:
+      meta:
+        $ref: '#/definitions/dtos.MetaMultiResponse'
+      records:
         items:
           $ref: '#/definitions/models.User'
         type: array
-      meta:
-        $ref: '#/definitions/dtos.MetaMultiResponse'
     type: object
   dtos.UserUpdateBase:
     properties:
@@ -258,9 +258,7 @@ paths:
         "200":
           description: List of users
           schema:
-            items:
-              $ref: '#/definitions/dtos.UserMultiResponse'
-            type: array
+            $ref: '#/definitions/dtos.UserMultiResponse'
         "400":
           description: Bad request
           schema:
