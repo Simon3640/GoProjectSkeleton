@@ -25,7 +25,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 	testUserRepository := new(mocks.MockUserRepository)
 	var testIDToDelete uint = actor.ID
 
-	testUserRepository.On("Delete", testIDToDelete).Return(nil)
+	testUserRepository.On("SoftDelete", testIDToDelete).Return(nil)
 
 	uc := NewDeleteUserUseCase(testLogger, testUserRepository)
 
