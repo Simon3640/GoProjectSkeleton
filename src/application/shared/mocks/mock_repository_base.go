@@ -49,6 +49,15 @@ func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, D
 	return nil
 }
 
+func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) SoftDelete(id uint) *application_errors.ApplicationError {
+	args := m.Called(id)
+	errorArg := args.Get(0)
+	if errorArg != nil {
+		return errorArg.(*application_errors.ApplicationError)
+	}
+	return nil
+}
+
 func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) GetAll(payload *map[string]string, skip *int, limit *int) ([]DomainModel, *application_errors.ApplicationError) {
 	args := m.Called()
 	errorArg := args.Get(1)
