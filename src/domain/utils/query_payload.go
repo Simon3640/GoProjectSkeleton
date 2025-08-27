@@ -162,21 +162,31 @@ func (qp *QueryPayloadBuilder[DBModel]) ParseFilter(filter string) Filter {
 	// field on DBModel?
 	var field string
 	var found bool
-	for i := 0; i < reflect.TypeOf(*new(DBModel)).NumField(); i++ {
-		if strings.EqualFold(reflect.TypeOf(*new(DBModel)).Field(i).Name, parts[0]) {
-			field = parts[0]
-			found = true
-			break
-		}
-	}
+	field, found = getFieldName(reflect.TypeOf(*new(DBModel)), parts[0])
 	if !found {
 		return Filter{}
 	}
 	return Filter{
-		Field:    strings.ToLower(field),
+		Field:    field,
 		Operator: operator,
 		Value:    &value,
 	}
+}
+
+func getFieldName(t reflect.Type, search string) (string, bool) {
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		// Si es una struct embebida, recursivamente busca en ella
+		if field.Anonymous && field.Type.Kind() == reflect.Struct {
+			if name, found := getFieldName(field.Type, search); found {
+				return name, true
+			}
+		}
+		if strings.EqualFold(field.Name, search) {
+			return field.Name, true
+		}
+	}
+	return "", false
 }
 
 func (qp *QueryPayloadBuilder[DBModel]) ParseFilters(filter []string) {
@@ -194,18 +204,12 @@ func (qp *QueryPayloadBuilder[DBModel]) ParseSort(sort string) Sort {
 	// field on DBModel?
 	var field string
 	var found bool
-	for i := 0; i < reflect.TypeOf(*new(DBModel)).NumField(); i++ {
-		if strings.EqualFold(reflect.TypeOf(*new(DBModel)).Field(i).Name, parts[0]) {
-			field = parts[0]
-			found = true
-			break
-		}
-	}
+	field, found = getFieldName(reflect.TypeOf(*new(DBModel)), parts[0])
 	if !found {
 		return Sort{}
 	}
 	return Sort{
-		Field: strings.ToLower(field),
+		Field: field,
 		Order: SortOrder(parts[1]),
 	}
 }

@@ -11,17 +11,16 @@ import (
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
 	"gormgoskeleton/src/domain/models"
+	domaim_utils "gormgoskeleton/src/domain/utils"
 )
 
 type GetAllUserUseCase struct {
-	usecase.BaseUseCaseValidation[Nil, []models.User]
+	usecase.BaseUseCaseValidation[domaim_utils.QueryPayloadBuilder[models.User], []models.User]
 	log  contracts_providers.ILoggerProvider
 	repo contracts_repositories.IUserRepository
 }
 
-type Nil struct{}
-
-var _ usecase.BaseUseCase[Nil, []models.User] = (*GetAllUserUseCase)(nil)
+var _ usecase.BaseUseCase[domaim_utils.QueryPayloadBuilder[models.User], []models.User] = (*GetAllUserUseCase)(nil)
 
 func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
@@ -32,7 +31,7 @@ func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 func (uc *GetAllUserUseCase) Execute(
 	ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input Nil,
+	input domaim_utils.QueryPayloadBuilder[models.User],
 ) *usecase.UseCaseResult[[]models.User] {
 	result := usecase.NewUseCaseResult[[]models.User]()
 	uc.SetLocale(locale)
@@ -41,7 +40,7 @@ func (uc *GetAllUserUseCase) Execute(
 		return result
 	}
 
-	data, err := uc.repo.GetAll(nil, nil, nil)
+	data, err := uc.repo.GetAll(&input, input.Pagination.GetOffset(), input.Pagination.GetLimit())
 	if err != nil {
 		uc.log.Error("Error getting all users", err.ToError())
 		result.SetError(
@@ -69,7 +68,7 @@ func NewGetAllUserUseCase(
 	repo contracts_repositories.IUserRepository,
 ) *GetAllUserUseCase {
 	return &GetAllUserUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[Nil, []models.User]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[domaim_utils.QueryPayloadBuilder[models.User], []models.User]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(guards.RoleGuard("admin")),
 		},

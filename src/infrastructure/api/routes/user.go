@@ -9,6 +9,7 @@ import (
 	usecases_user "gormgoskeleton/src/application/modules/user/use_cases"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/domain/models"
+	domain_utils "gormgoskeleton/src/domain/utils"
 	"gormgoskeleton/src/infrastructure/api"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
 	"gormgoskeleton/src/infrastructure/providers"
@@ -144,18 +145,43 @@ func deleteUser(c *gin.Context) {
 }
 
 // GetAllUser
-// @Summary This endpoint Get all users
-// @Description This endpoint Get all users
+// @Summary Get all users
+// @Description Retrieve all users with support for filtering, sorting, and pagination.
 // @Tags User
 // @Accept json
 // @Produce json
-// @Success 200 {object} []models.User "Usuarios"
-// @Router /api/user [get]
 // @Security Bearer
+//
+// @Param filter query []string false "Filter users in the format column:operator:value (e.g. Name:eq:Admin, Age:gt:18)"
+// @Param sort query []string false "Sort users in the format column:asc|desc (e.g. Name:asc, CreatedAt:desc)"
+// @Param page query int false "Page number (default: 1)"
+// @Param page_size query int false "Number of items per page (default: 10)"
+//
+// @Success 200 {array} models.User "List of users"
+// @Failure 400 {object} map[string]string "Bad request"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/user [get]
 func getAllUser(c *gin.Context) {
+	var queryParams domain_utils.QueryPayloadBuilder[models.User]
+	queryParams.ParseFilters(c.QueryArray("filter"))
+	queryParams.ParseSorts(c.QueryArray("sort"))
+	page, _ := strconv.Atoi(c.Query("page"))
+	pageSize, _ := strconv.Atoi(c.Query("page_size"))
+	if page == 0 {
+		page = 1
+	}
+	if pageSize == 0 {
+		pageSize = 10
+	}
+	queryParams.Pagination = domain_utils.Pagination{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
 	uc_result := usecases_user.NewGetAllUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c.Request.Context(), locales.EN_US, usecases_user.Nil{})
+	).Execute(c.Request.Context(), locales.EN_US, queryParams)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
