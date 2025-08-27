@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"fmt"
-	"strings"
 
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
@@ -21,37 +20,46 @@ type RepositoryBase[CreateModel any, UpdateModel any, Model any, DBModel any] st
 var _ contracts_repositories.IRepositoryBase[any, any, any, any] = (*RepositoryBase[any, any, any, any])(nil)
 
 func FilterToGorm(f domain_utils.Filter) (string, []interface{}, error) {
-	if err := f.Validate(); len(err) > 0 {
-		return "", nil, fmt.Errorf("invalid filter: %s", strings.Join(err, ", "))
-	}
-
 	switch f.Operator {
 	case domain_utils.OperatorEqual:
-		return f.Field + " = ?", []interface{}{f.Value}, nil
+		return f.Field + " = ?", []interface{}{*f.Value}, nil
 	case domain_utils.OperatorNotEqual:
-		return f.Field + " != ?", []interface{}{f.Value}, nil
+		return f.Field + " != ?", []interface{}{*f.Value}, nil
 	case domain_utils.OperatorGreaterThan:
-		return f.Field + " > ?", []interface{}{f.Value}, nil
+		return f.Field + " > ?", []interface{}{*f.Value}, nil
 	case domain_utils.OperatorGreaterEqual:
-		return f.Field + " >= ?", []interface{}{f.Value}, nil
+		return f.Field + " >= ?", []interface{}{*f.Value}, nil
 	case domain_utils.OperatorLessThan:
-		return f.Field + " < ?", []interface{}{f.Value}, nil
+		return f.Field + " < ?", []interface{}{*f.Value}, nil
 	case domain_utils.OperatorLessEqual:
-		return f.Field + " <= ?", []interface{}{f.Value}, nil
+		return f.Field + " <= ?", []interface{}{*f.Value}, nil
 	case domain_utils.OperatorLike:
-		return f.Field + " LIKE ?", []interface{}{f.Value}, nil
+		return f.Field + " LIKE ?", []interface{}{*f.Value}, nil
 	case domain_utils.OperatorILike:
-		return f.Field + " ILIKE ?", []interface{}{f.Value}, nil
+		return f.Field + " ILIKE ?", []interface{}{*f.Value}, nil
 	case domain_utils.OperatorIn:
-		return f.Field + " IN ?", []interface{}{f.Value}, nil
+		return f.Field + " IN ?", []interface{}{*f.Value}, nil
 	case domain_utils.OperatorNotIn:
-		return f.Field + " NOT IN ?", []interface{}{f.Value}, nil
+		return f.Field + " NOT IN ?", []interface{}{*f.Value}, nil
 	case domain_utils.OperatorIsNull:
 		return f.Field + " IS NULL", []interface{}{}, nil
 	case domain_utils.OperatorIsNotNull:
 		return f.Field + " IS NOT NULL", []interface{}{}, nil
 	default:
 		return "", nil, fmt.Errorf("unsupported operator: %s", f.Operator)
+	}
+}
+
+func SortToGorm(s domain_utils.Sort) string {
+	switch s.Field {
+	case "CreatedAt":
+		return fmt.Sprintf("created_at %s", s.Order)
+	case "UpdatedAt":
+		return fmt.Sprintf("updated_at %s", s.Order)
+	case "DeletedAt":
+		return fmt.Sprintf("deleted_at %s", s.Order)
+	default:
+		return fmt.Sprintf("%s %s", s.Field, s.Order)
 	}
 }
 
@@ -110,9 +118,11 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id ui
 	return nil
 }
 
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[Model], skip *int, limit *int) ([]Model, *application_errors.ApplicationError) {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[Model], skip int, limit int) ([]Model, *application_errors.ApplicationError) {
 	var entities []DBModel
 	// Apply filters from payload
+
+	query := rb.DB.Model(new(DBModel))
 	if payload != nil {
 		for _, filter := range payload.Filters {
 			gormCondition, args, err := FilterToGorm(filter)
@@ -120,18 +130,21 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(paylo
 				rb.logger.Debug("Error converting filter to GORM", err)
 				continue
 			}
-			rb.DB = rb.DB.Where(gormCondition, args...)
+			if args != nil {
+				query = query.Where(gormCondition, args...)
+			} else {
+				query = query.Where(gormCondition)
+			}
+		}
+		// Apply sorts from payload
+		for _, sort := range payload.Sorts {
+			gormSort := SortToGorm(sort)
+			query = query.Order(gormSort)
 		}
 	}
-	// Apply pagination
-	if skip != nil && *skip > 0 {
-		rb.DB = rb.DB.Offset(*skip)
-	}
-	if limit != nil && *limit > 0 {
-		rb.DB = rb.DB.Limit(*limit)
-	}
+	query = query.Offset(skip).Limit(limit)
 	// Execute the query
-	if err := rb.DB.Find(&entities).Error; err != nil {
+	if err := query.Find(&entities).Error; err != nil {
 		if appErr := MapOrmError(err); appErr != nil {
 			rb.logger.Debug("Error retrieving entities", appErr.ToError())
 			return nil, appErr
