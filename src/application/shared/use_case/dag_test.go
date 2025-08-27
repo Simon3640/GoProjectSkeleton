@@ -52,8 +52,8 @@ func TestDagExecution(t *testing.T) {
 	dag3 := Then(dag2, NewStep(UC3))
 
 	input := "5"
-	result, err := dag3.Execute(input)
-	assert.Nil(err)
+	result := dag3.Execute(input)
+	// assert.Nil(err)
 	assert.NotNil(result)
 
 }

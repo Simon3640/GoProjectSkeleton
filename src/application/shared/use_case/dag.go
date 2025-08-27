@@ -75,6 +75,15 @@ func Then[I any, O any, P any](d *DAG[I, O], next DagStep[O, P]) *DAG[I, P] {
 	return &DAG[I, P]{
 		run: func(input I) *UseCaseResult[P] {
 			r1 := d.run(input)
+			// TODO: Best error control must be done
+			if r1.HasError() {
+				return &UseCaseResult[P]{
+					StatusCode: r1.StatusCode,
+					Success:    false,
+					Error:      r1.Error,
+					Details:    r1.Details,
+				}
+			}
 			return next.uc.Execute(
 				d.ctx,
 				d.locale,
@@ -84,13 +93,9 @@ func Then[I any, O any, P any](d *DAG[I, O], next DagStep[O, P]) *DAG[I, P] {
 	}
 }
 
-func (d *DAG[I, O]) Execute(input I) (*UseCaseResult[O], error) {
+func (d *DAG[I, O]) Execute(input I) *UseCaseResult[O] {
 	if d.run == nil {
-		return nil, nil
+		return nil
 	}
-	result := d.run(input)
-	if result.HasError() {
-		return nil, result.GetError()
-	}
-	return result, nil
+	return d.run(input)
 }
