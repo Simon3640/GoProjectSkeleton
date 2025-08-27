@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
@@ -25,7 +25,7 @@ type JWTProvider struct {
 	config Config
 }
 
-var _ contracts.IJWTProvider = (*JWTProvider)(nil)
+var _ contracts_providers.IJWTProvider = (*JWTProvider)(nil)
 
 func (jp *JWTProvider) Setup(Secret string, Issuer string, Audience string,
 	AccessTTL int64, RefreshTTL int64, ClockSkew int64) {
@@ -45,7 +45,7 @@ func NewJWTProvider() *JWTProvider {
 
 func (jp *JWTProvider) GenerateAccessToken(ctx context.Context,
 	subject string,
-	claimsMap contracts.JWTCLaims) (string, time.Time, *application_errors.ApplicationError) {
+	claimsMap contracts_providers.JWTCLaims) (string, time.Time, *application_errors.ApplicationError) {
 	now := time.Now().Add(jp.config.ClockSkew)
 	exp := now.Add(jp.config.AccessTTL)
 	claims := jwt.MapClaims{
@@ -98,7 +98,7 @@ func (jp *JWTProvider) GenerateRefreshToken(ctx context.Context,
 	)
 }
 
-func (jp *JWTProvider) ParseTokenAndValidate(tokenString string) (contracts.JWTCLaims, *application_errors.ApplicationError) {
+func (jp *JWTProvider) ParseTokenAndValidate(tokenString string) (contracts_providers.JWTCLaims, *application_errors.ApplicationError) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrTokenMalformed
@@ -115,7 +115,7 @@ func (jp *JWTProvider) ParseTokenAndValidate(tokenString string) (contracts.JWTC
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		result := make(contracts.JWTCLaims)
+		result := make(contracts_providers.JWTCLaims)
 		for k, v := range claims {
 			result[k] = v
 		}

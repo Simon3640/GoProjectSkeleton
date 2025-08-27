@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
@@ -16,13 +16,13 @@ import (
 
 type AuthenticateUseCase struct {
 	appMessages *locales.Locale
-	log         contracts.ILoggerProvider
+	log         contracts_providers.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
 	pass contracts_repositories.IPasswordRepository
 
-	jwtProvider  contracts.IJWTProvider
-	hashProvider contracts.IHashProvider
+	jwtProvider  contracts_providers.IJWTProvider
+	hashProvider contracts_providers.IHashProvider
 }
 
 var _ usecase.BaseUseCase[models.UserCredentials, models.Token] = (*AuthenticateUseCase)(nil)
@@ -76,7 +76,7 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 	}
 
 	// TODO: GO for user info
-	claims := contracts.JWTCLaims{
+	claims := contracts_providers.JWTCLaims{
 		"role": "user",
 	}
 
@@ -139,10 +139,10 @@ func (uc *AuthenticateUseCase) validate(input models.UserCredentials) (bool, []s
 }
 
 func NewAuthenticateUseCase(
-	log contracts.ILoggerProvider,
+	log contracts_providers.ILoggerProvider,
 	pass contracts_repositories.IPasswordRepository,
-	hashProvider contracts.IHashProvider,
-	jwtProvider contracts.IJWTProvider,
+	hashProvider contracts_providers.IHashProvider,
+	jwtProvider contracts_providers.IJWTProvider,
 ) *AuthenticateUseCase {
 	return &AuthenticateUseCase{
 		appMessages:  locales.NewLocale(locales.EN_US),

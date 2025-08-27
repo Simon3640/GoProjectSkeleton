@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
 
@@ -24,7 +24,7 @@ func TestAuthenticationRefreshUseCase(t *testing.T) {
 
 	// Valid Token Refresh
 	validToken := "validAccessToken.123"
-	claimsReturn := contracts.JWTCLaims{
+	claimsReturn := contracts_providers.JWTCLaims{
 		"sub": "1",
 		"typ": "refresh",
 		"exp": float64(time.Now().Add(1 * time.Hour).Unix()),

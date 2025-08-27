@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 
@@ -10,7 +10,7 @@ import (
 
 type RepositoryBase[CreateModel any, UpdateModel any, Model any, DBModel any] struct {
 	DB             *gorm.DB
-	logger         contracts.ILoggerProvider
+	logger         contracts_providers.ILoggerProvider
 	modelConverter ModelConverter[CreateModel, UpdateModel, Model, DBModel]
 }
 

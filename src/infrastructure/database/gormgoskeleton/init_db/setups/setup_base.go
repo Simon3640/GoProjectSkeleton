@@ -3,7 +3,7 @@ package setups
 import (
 	"fmt"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
 	"gormgoskeleton/src/infrastructure/repositories"
 
@@ -17,7 +17,7 @@ type SetupBase[CreateModel any, UpdateModel any, Model any, DBModel db_models.DB
 func (s *SetupBase[CreateModel, UpdateModel, Model, DBModel]) Setup(db *gorm.DB,
 	db_model DBModel,
 	defaults []CreateModel,
-	logger contracts.ILoggerProvider) {
+	logger contracts_providers.ILoggerProvider) {
 	logger.Info(fmt.Sprintf("Auto migrating the %s table", db_model.TableName()))
 	db_has_table := db.Migrator().HasTable(db_model)
 	err := db.AutoMigrate(db_model)
