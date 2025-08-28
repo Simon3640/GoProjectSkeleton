@@ -11,17 +11,17 @@ import (
 	email_models "gormgoskeleton/src/application/shared/services/emails/models"
 	"gormgoskeleton/src/application/shared/settings"
 	"gormgoskeleton/src/application/shared/status"
+	"gormgoskeleton/src/application/shared/templates"
 	usecase "gormgoskeleton/src/application/shared/use_case"
 )
 
 type GetResetPasswordSendEmailUseCase struct {
 	appMessages *locales.Locale
 	log         contracts_providers.ILoggerProvider
-	jwt         contracts_providers.IJWTProvider
 	locale      locales.LocaleTypeEnum
 }
 
-var _ usecase.BaseUseCase[dtos.OneTimeTokenUserEmail, bool] = (*GetResetPasswordSendEmailUseCase)(nil)
+var _ usecase.BaseUseCase[dtos.OneTimeTokenUser, bool] = (*GetResetPasswordSendEmailUseCase)(nil)
 
 func (uc *GetResetPasswordSendEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
@@ -31,7 +31,7 @@ func (uc *GetResetPasswordSendEmailUseCase) SetLocale(locale locales.LocaleTypeE
 
 func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input dtos.OneTimeTokenUserEmail,
+	input dtos.OneTimeTokenUser,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
@@ -44,7 +44,13 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
 
-	if err := email_service.ResetPasswordEmailServiceInstance.SendWithTemplate(newUserEmailData, input.User, locale); err != nil {
+	if err := email_service.ResetPasswordEmailServiceInstance.SendWithTemplate(
+		newUserEmailData,
+		input.User,
+		locale,
+		templates.TemplateKeysInstance.PasswordResetEmail,
+		messages.MessageKeysInstance.RESET_PASSWORD_SUBJECT,
+	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
 			err.Code,
@@ -60,7 +66,7 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 		true,
 		uc.appMessages.Get(
 			uc.locale,
-			messages.MessageKeysInstance.USER_WAS_CREATED,
+			messages.MessageKeysInstance.RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY,
 		),
 	)
 	return result
@@ -68,11 +74,9 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 
 func NewGetResetPasswordSendEmailUseCase(
 	log contracts_providers.ILoggerProvider,
-	jwt contracts_providers.IJWTProvider,
 ) *GetResetPasswordSendEmailUseCase {
 	return &GetResetPasswordSendEmailUseCase{
 		appMessages: locales.NewLocale(locales.EN_US),
 		log:         log,
-		jwt:         jwt,
 	}
 }

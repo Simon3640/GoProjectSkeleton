@@ -29,11 +29,11 @@ type OneTimeTokenUpdate struct {
 	ID     uint  `json:"id"`
 }
 
-type OneTimeTokenUserEmail struct {
+type OneTimeTokenUser struct {
 	User  models.User
 	Token string `json:"token"`
 }
 
-func (o *OneTimeTokenUserEmail) BuildURL(baseURL string) string {
+func (o *OneTimeTokenUser) BuildURL(baseURL string) string {
 	return baseURL + "?token=" + o.Token
 }

@@ -47,6 +47,50 @@
                 }
             }
         },
+        "/api/auth/password-reset/{identifier}": {
+            "get": {
+                "description": "This endpoint allows a user to request a password reset. An email with a",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Request password reset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provided email or phone number",
+                        "name": "identifier",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password reset email sent",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/auth/refresh": {
             "post": {
                 "description": "This endpoint allows a user to refresh their JWT access token using a valid refresh",

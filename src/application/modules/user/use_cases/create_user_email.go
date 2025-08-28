@@ -11,6 +11,7 @@ import (
 	email_models "gormgoskeleton/src/application/shared/services/emails/models"
 	"gormgoskeleton/src/application/shared/settings"
 	"gormgoskeleton/src/application/shared/status"
+	"gormgoskeleton/src/application/shared/templates"
 	usecase "gormgoskeleton/src/application/shared/use_case"
 	"gormgoskeleton/src/domain/models"
 )
@@ -47,7 +48,13 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 		SupportEmail:    settings.AppSettingsInstance.AppSupportEmail,
 	}
 
-	if err := email_service.RegisterUserEmailServiceInstance.SendWithTemplate(newUserEmailData, input, locale); err != nil {
+	if err := email_service.RegisterUserEmailServiceInstance.SendWithTemplate(
+		newUserEmailData,
+		input,
+		locale,
+		templates.TemplateKeysInstance.WelcomeEmail,
+		messages.MessageKeysInstance.NEW_USER_WELCOME,
+	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
 			err.Code,
