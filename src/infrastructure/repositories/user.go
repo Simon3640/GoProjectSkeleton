@@ -1,8 +1,10 @@
 package repositories
 
 import (
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
+	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/domain/models"
 	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
 
@@ -10,10 +12,10 @@ import (
 )
 
 type UserRepository struct {
-	RepositoryBase[models.UserCreate, models.UserUpdate, models.User, db_models.User]
+	RepositoryBase[dtos.UserCreate, dtos.UserUpdate, models.User, db_models.User]
 }
 
-func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate) (*models.User, error) {
+func (ur *UserRepository) CreateWithPassword(input dtos.UserAndPasswordCreate) (*models.User, *application_errors.ApplicationError) {
 	// Convert input to 2 models UserCreate and UserInDB
 	userCreate := ur.modelConverter.ToGormCreate(input.UserCreate)
 	tx := ur.DB.Begin()
@@ -23,12 +25,13 @@ func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate)
 		}
 	}()
 	if err := tx.Create(userCreate).Error; err != nil {
+		ur.logger.Debug("Error creating user", err)
 		tx.Rollback()
-		return nil, err
+		return nil, MapOrmError(err)
 	}
 	userInDB := ur.modelConverter.ToDomain(userCreate)
 	// Create password
-	passwordCreate := models.PasswordCreate{
+	passwordCreate := dtos.PasswordCreate{
 		PasswordBase: models.PasswordBase{
 			UserID:   userInDB.ID,
 			Hash:     input.Password,
@@ -43,19 +46,62 @@ func (ur *UserRepository) CreateWithPassword(input models.UserAndPasswordCreate)
 		UserID:    passwordCreate.UserID,
 	}
 	if err := tx.Create(&passwordModel).Error; err != nil {
+		ur.logger.Debug("Error creating password for user", err)
 		tx.Rollback()
-		return nil, err
+		return nil, MapOrmError(err)
 	}
-	return userInDB, tx.Commit().Error
+
+	if err := tx.Commit().Error; err != nil {
+		return nil, DefaultORMError
+	}
+
+	return userInDB, nil
+}
+
+func (ur *UserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *application_errors.ApplicationError) {
+	var userWithRole db_models.User
+	if err := ur.DB.Preload("Role").First(&userWithRole, id).Error; err != nil {
+		ur.logger.Debug("Error retrieving user with role", err)
+		return nil, MapOrmError(err)
+	}
+	userWithRoleModel := models.UserWithRole{
+		UserBase: models.UserBase{
+			Name:   userWithRole.Name,
+			Email:  userWithRole.Email,
+			Phone:  userWithRole.Phone,
+			Status: userWithRole.Status,
+			RoleID: userWithRole.RoleID,
+		},
+		ID: userWithRole.ID,
+	}
+	userWithRoleModel.SetRole(models.Role{
+		ID: userWithRole.Role.ID,
+		RoleBase: models.RoleBase{
+			Key:      userWithRole.Role.Key,
+			IsActive: userWithRole.Role.IsActive,
+			Priority: userWithRole.Role.Priority,
+		},
+	})
+	return &userWithRoleModel, nil
+}
+
+func (ur *UserRepository) GetByEmailOrPhone(emailOrPhone string) (*models.User, *application_errors.ApplicationError) {
+	var user db_models.User
+	if err := ur.DB.Where("email = ? OR phone = ?", emailOrPhone, emailOrPhone).First(&user).Error; err != nil {
+		ur.logger.Debug("Error retrieving user by email or phone", err)
+		return nil, MapOrmError(err)
+	}
+	userModel := ur.modelConverter.ToDomain(&user)
+	return userModel, nil
 }
 
 var _ contracts_repositories.IUserRepository = (*UserRepository)(nil)
 
 type UserConverter struct{}
 
-var _ ModelConverter[models.UserCreate, models.UserUpdate, models.User, db_models.User] = (*UserConverter)(nil)
+var _ ModelConverter[dtos.UserCreate, dtos.UserUpdate, models.User, db_models.User] = (*UserConverter)(nil)
 
-func (uc *UserConverter) ToGormCreate(model models.UserCreate) *db_models.User {
+func (uc *UserConverter) ToGormCreate(model dtos.UserCreate) *db_models.User {
 	return &db_models.User{
 		Name:   model.Name,
 		Email:  model.Email,
@@ -67,7 +113,12 @@ func (uc *UserConverter) ToGormCreate(model models.UserCreate) *db_models.User {
 
 func (uc *UserConverter) ToDomain(ormModel *db_models.User) *models.User {
 	return &models.User{
-		ID: ormModel.ID,
+		DBBaseModel: models.DBBaseModel{
+			ID:        ormModel.ID,
+			CreatedAt: ormModel.CreatedAt,
+			UpdatedAt: ormModel.UpdatedAt,
+			DeletedAt: ormModel.DeletedAt.Time,
+		},
 		UserBase: models.UserBase{
 			Name:   ormModel.Name,
 			Email:  ormModel.Email,
@@ -78,7 +129,7 @@ func (uc *UserConverter) ToDomain(ormModel *db_models.User) *models.User {
 	}
 }
 
-func (uc *UserConverter) ToGormUpdate(model models.UserUpdate) *db_models.User {
+func (uc *UserConverter) ToGormUpdate(model dtos.UserUpdate) *db_models.User {
 	user := &db_models.User{}
 
 	if model.Name != nil {
@@ -103,11 +154,11 @@ func (uc *UserConverter) ToGormUpdate(model models.UserUpdate) *db_models.User {
 	return user
 }
 
-func NewUserRepository(db *gorm.DB, logger contracts.ILoggerProvider) *UserRepository {
+func NewUserRepository(db *gorm.DB, logger contracts_providers.ILoggerProvider) *UserRepository {
 	return &UserRepository{
 		RepositoryBase: RepositoryBase[
-			models.UserCreate,
-			models.UserUpdate,
+			dtos.UserCreate,
+			dtos.UserUpdate,
 			models.User,
 			db_models.User,
 		]{DB: db, modelConverter: &UserConverter{}, logger: logger},

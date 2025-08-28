@@ -1,7 +1,7 @@
 package database
 
 import (
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	initdb "gormgoskeleton/src/infrastructure/database/gormgoskeleton/init_db"
 
 	"gorm.io/driver/postgres"
@@ -12,7 +12,7 @@ type GormGoSkeletonDB struct{}
 
 var DB *gorm.DB
 
-func (ggsbd GormGoSkeletonDB) SetUp(host string, port string, user string, password string, dbname string, ssl *bool, logger contracts.ILoggerProvider) {
+func (ggsbd GormGoSkeletonDB) SetUp(host string, port string, user string, password string, dbname string, ssl *bool, logger contracts_providers.ILoggerProvider) {
 	sslmode := "disable"
 	if ssl != nil && *ssl {
 		logger.Info("SSL is enabled")

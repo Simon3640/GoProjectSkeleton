@@ -2,51 +2,40 @@ package mocks
 
 import (
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
+	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/domain/models"
-
-	"github.com/stretchr/testify/mock"
 )
 
-type MockUserRespository struct {
-	mock.Mock
+type MockUserRepository struct {
+	MockRepositoryBase[dtos.UserCreate, dtos.UserUpdate, models.User, models.User]
 }
 
-type DBUser struct {
-	Name   string
-	Email  string
-	Phone  string
-	Status string
-	ID     int
-}
+var _ contracts_repositories.IUserRepository = (*MockUserRepository)(nil)
 
-var _ contracts_repositories.IUserRepository = (*MockUserRespository)(nil)
-
-func (m *MockUserRespository) Create(input models.UserCreate) (*models.User, error) {
+func (m *MockUserRepository) CreateWithPassword(input dtos.UserAndPasswordCreate) (*models.User, *application_errors.ApplicationError) {
 	args := m.Called(input)
-	return args.Get(0).(*models.User), args.Error(1)
+	errorArg := args.Get(1)
+	if errorArg != nil {
+		return args.Get(0).(*models.User), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.Get(0).(*models.User), nil
 }
 
-func (m *MockUserRespository) Update(id int, input models.UserUpdate) (*models.User, error) {
-	args := m.Called(id, input)
-	return args.Get(0).(*models.User), args.Error(1)
-}
-
-func (m *MockUserRespository) GetByID(id int) (*models.User, error) {
+func (m *MockUserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *application_errors.ApplicationError) {
 	args := m.Called(id)
-	return args.Get(0).(*models.User), args.Error(1)
+	errorArg := args.Get(1)
+	if errorArg != nil {
+		return args.Get(0).(*models.UserWithRole), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.Get(0).(*models.UserWithRole), nil
 }
 
-func (m *MockUserRespository) Delete(id int) error {
-	args := m.Called(id)
-	return args.Error(0)
-}
-
-func (m *MockUserRespository) GetAll(payload *map[string]string, skip *int, limit *int) ([]models.User, error) {
-	args := m.Called()
-	return args.Get(0).([]models.User), args.Error(1)
-}
-
-func (m *MockUserRespository) CreateWithPassword(input models.UserAndPasswordCreate) (*models.User, error) {
-	args := m.Called(input)
-	return args.Get(0).(*models.User), args.Error(1)
+func (m *MockUserRepository) GetByEmailOrPhone(emailOrPhone string) (*models.User, *application_errors.ApplicationError) {
+	args := m.Called(emailOrPhone)
+	errorArg := args.Get(1)
+	if errorArg != nil {
+		return args.Get(0).(*models.User), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.Get(0).(*models.User), nil
 }

@@ -18,12 +18,12 @@ type RoleUpdateBase struct {
 
 type RoleUpdate struct {
 	RoleUpdateBase
-	ID int `json:"id"`
+	ID uint `json:"id"`
 }
 
 type Role struct {
 	RoleBase
-	ID int `json:"id"`
+	ID uint `json:"id"`
 }
 
 type RoleInDB struct {

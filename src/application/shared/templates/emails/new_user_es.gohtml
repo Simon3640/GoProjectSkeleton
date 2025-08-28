@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Bienvenido, {{.Name}}</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; line-height:1.5;">
+    <h2>¡Hola {{.Name}}!</h2>
+    <p>
+      Gracias por registrarte en <b>{{.AppName}}</b>.  
+      Estamos felices de tenerte con nosotros 🚀.
+    </p>
+    <p>
+      Si tienes alguna duda, puedes escribirnos a <a href="mailto:{{.SupportEmail}}">{{.SupportEmail}}</a>.
+    </p>
+    <hr>
+    <small>© {{.AppName}} - Todos los derechos reservados</small>
+  </body>
+</html>

@@ -8,36 +8,61 @@ type UserBase struct {
 	RoleID uint   `json:"role_id"`
 }
 
-type UserCreate struct {
+func (u UserBase) Validate() []string {
+	var errs []string
+
+	if u.Name == "" {
+		errs = append(errs, "name is required")
+	}
+	if u.Email == "" {
+		errs = append(errs, "email is required")
+	}
+	if u.Phone == "" {
+		errs = append(errs, "phone is required")
+	}
+	if u.Status == "" {
+		errs = append(errs, "status is required")
+	}
+	if u.RoleID == 0 {
+		errs = append(errs, "role_id is required")
+	}
+	// regex for email validation
+	if !IsValidEmail(u.Email) {
+		errs = append(errs, "email is invalid")
+	}
+
+	return errs
+}
+
+type UserWithRole struct {
 	UserBase
+	role Role
+	ID   uint `json:"id"`
 }
 
-type UserAndPasswordCreate struct {
-	UserCreate
-	Password string `json:"password"`
+func (u *UserWithRole) SetRole(role Role) {
+	u.role = role
 }
 
-type UserRole struct {
-	UserBase
-	Role Role `json:"role"`
+func (u *UserWithRole) UserIsAdmin() bool {
+	return u.role.Key == "admin"
 }
 
-type UserUpdateBase struct {
-	Name   *string `json:"name"`
-	Email  *string `json:"email"`
-	Phone  *string `json:"phone"`
-	Status *string `json:"status"`
-	RoleID *uint   `json:"role_id,omitempty"`
+func (u *UserWithRole) GetRoleKey() string {
+	return u.role.Key
 }
 
-type UserUpdate struct {
-	UserUpdateBase
-	ID int `json:"id"`
+func (u *UserWithRole) GetUserID() uint {
+	return u.ID
 }
 
 type User struct {
 	UserBase
-	ID int `json:"id"`
+	DBBaseModel
+}
+
+func (u User) GetUserID() uint {
+	return u.ID
 }
 
 type UserInDB struct {

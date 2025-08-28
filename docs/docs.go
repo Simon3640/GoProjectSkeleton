@@ -15,6 +15,136 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/auth/login": {
+            "post": {
+                "description": "This endpoint allows a user to log in and receive JWT access and refresh tokens",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login and get JWT tokens",
+                "parameters": [
+                    {
+                        "description": "User credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UserCredentials"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tokens generated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.Token"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/password-reset/{identifier}": {
+            "get": {
+                "description": "This endpoint allows a user to request a password reset. An email with a",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Request password reset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provided email or phone number",
+                        "name": "identifier",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password reset email sent",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/refresh": {
+            "post": {
+                "description": "This endpoint allows a user to refresh their JWT access token using a valid refresh",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Refresh JWT access token",
+                "parameters": [
+                    {
+                        "description": "Refresh token",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.Token"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/health-check": {
             "get": {
                 "consumes": [
@@ -31,6 +161,11 @@ const docTemplate = `{
         },
         "/api/password": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "This endpoint Create a new password",
                 "consumes": [
                     "application/json"
@@ -49,7 +184,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.PasswordCreateNoHash"
+                            "$ref": "#/definitions/dtos.PasswordCreateNoHash"
                         }
                     }
                 ],
@@ -74,7 +209,12 @@ const docTemplate = `{
         },
         "/api/user": {
             "get": {
-                "description": "This endpoint Get all users",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve all users with support for filtering, sorting, and pagination.",
                 "consumes": [
                     "application/json"
                 ],
@@ -84,14 +224,72 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "This endpoint Get all users",
+                "summary": "Get all users",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Filter users in the format column:operator:value (e.g. Name:eq:Admin, Age:gt:18)",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Sort users in the format column:asc|desc (e.g. Name:asc, CreatedAt:desc)",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page (default: 10)",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Usuarios",
+                        "description": "List of users",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/dtos.UserMultiResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
                             }
                         }
                     }
@@ -116,7 +314,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserCreate"
+                            "$ref": "#/definitions/dtos.UserCreate"
                         }
                     }
                 ],
@@ -159,7 +357,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserAndPasswordCreate"
+                            "$ref": "#/definitions/dtos.UserAndPasswordCreate"
                         }
                     }
                 ],
@@ -184,6 +382,11 @@ const docTemplate = `{
         },
         "/api/user/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "This endpoint Get a user by ID",
                 "consumes": [
                     "application/json"
@@ -223,6 +426,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "This endpoint Delete a user by ID",
                 "consumes": [
                     "application/json"
@@ -259,6 +467,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "This endpoint Update a user by ID",
                 "consumes": [
                     "application/json"
@@ -284,7 +497,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserUpdateBase"
+                            "$ref": "#/definitions/dtos.UserUpdateBase"
                         }
                     }
                 ],
@@ -309,7 +522,41 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.PasswordCreateNoHash": {
+        "dtos.Link": {
+            "type": "object",
+            "properties": {
+                "last": {
+                    "type": "string"
+                },
+                "next": {
+                    "type": "string"
+                },
+                "self": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.MetaMultiResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "has_next": {
+                    "type": "boolean"
+                },
+                "has_prev": {
+                    "type": "boolean"
+                },
+                "links": {
+                    "$ref": "#/definitions/dtos.Link"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dtos.PasswordCreateNoHash": {
             "type": "object",
             "properties": {
                 "expires_at": {
@@ -326,30 +573,27 @@ const docTemplate = `{
                 }
             }
         },
-        "models.User": {
+        "dtos.Token": {
             "type": "object",
             "properties": {
-                "email": {
+                "access_expires_at": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
+                "access_token": {
                     "type": "string"
                 },
-                "phone": {
+                "refresh_expires_at": {
                     "type": "string"
                 },
-                "role_id": {
-                    "type": "integer"
+                "refresh_token": {
+                    "type": "string"
                 },
-                "status": {
+                "token_type": {
                     "type": "string"
                 }
             }
         },
-        "models.UserAndPasswordCreate": {
+        "dtos.UserAndPasswordCreate": {
             "type": "object",
             "properties": {
                 "email": {
@@ -372,7 +616,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UserCreate": {
+        "dtos.UserCreate": {
             "type": "object",
             "properties": {
                 "email": {
@@ -392,7 +636,32 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UserUpdateBase": {
+        "dtos.UserCredentials": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.UserMultiResponse": {
+            "type": "object",
+            "properties": {
+                "meta": {
+                    "$ref": "#/definitions/dtos.MetaMultiResponse"
+                },
+                "records": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.User"
+                    }
+                }
+            }
+        },
+        "dtos.UserUpdateBase": {
             "type": "object",
             "properties": {
                 "email": {
@@ -411,6 +680,46 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "Bearer token for authentication",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

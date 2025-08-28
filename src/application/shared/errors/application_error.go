@@ -1,14 +1,16 @@
-package errors
+package application_errors
 
 import (
 	"errors"
 	"fmt"
-	"strconv"
+
+	"gormgoskeleton/src/application/shared/locales/messages"
+	"gormgoskeleton/src/application/shared/status"
 )
 
 type ApplicationError struct {
-	Code    int
-	Context string
+	Code    status.ApplicationStatusEnum
+	Context messages.MessageKeysEnum
 	ErrMsg  string
 }
 
@@ -17,7 +19,15 @@ func (ae *ApplicationError) ToError() error {
 		"Error: %s, Context: %s, Code: %s",
 		ae.ErrMsg,
 		ae.Context,
-		strconv.Itoa(ae.Code),
+		string(ae.Code),
 	)
 	return errors.New(errorMessage)
+}
+
+func NewApplicationError(code status.ApplicationStatusEnum, context messages.MessageKeysEnum, errMsg string) *ApplicationError {
+	return &ApplicationError{
+		Code:    code,
+		Context: context,
+		ErrMsg:  errMsg,
+	}
 }
