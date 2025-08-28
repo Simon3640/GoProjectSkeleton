@@ -40,6 +40,11 @@ func (mhp *MockHashProvider) OneTimeToken() (string, []byte, *application_errors
 	return args.String(0), args.Get(1).([]byte), nil
 }
 
+func (mhp *MockHashProvider) HashOneTimeToken(token string) []byte {
+	args := mhp.Called(token)
+	return args.Get(0).([]byte)
+}
+
 func (mhp *MockHashProvider) ValidateOneTimeToken(hashedToken []byte, token string) bool {
 	args := mhp.Called(hashedToken, token)
 	return args.Bool(0)

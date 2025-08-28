@@ -49,6 +49,11 @@ func NewPasswordCreate(userID uint, hash string, expiresAt *time.Time, isActive 
 	return p
 }
 
+type PasswordTokenCreate struct {
+	Token            string `json:"token"`
+	NoHashedPassword string `json:"no_hashed_password"`
+}
+
 type PasswordUpdateBase struct {
 	Hash      *string    `json:"hash"`
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`

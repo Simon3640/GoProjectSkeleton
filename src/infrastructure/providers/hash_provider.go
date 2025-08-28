@@ -98,8 +98,12 @@ func (hp *HashProvider) OneTimeToken() (string, []byte, *application_errors.Appl
 			"failed to generate random bytes")
 	}
 	token := base64.RawURLEncoding.EncodeToString(salt)
+	return token, hp.HashOneTimeToken(token), nil
+}
+
+func (hp *HashProvider) HashOneTimeToken(token string) []byte {
 	h := sha256.Sum256([]byte(token))
-	return token, h[:], nil
+	return h[:]
 }
 
 func (hp *HashProvider) ValidateOneTimeToken(hashedToken []byte, token string) bool {
