@@ -1,4 +1,4 @@
-package domaim_utils
+package domain_utils
 
 import (
 	"fmt"
