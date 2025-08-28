@@ -383,7 +383,7 @@ func TestQueryPayloadBuilder_ParseFilter(t *testing.T) {
 			name:         "Valid filter",
 			filterString: "name:eq:John",
 			expectedFilter: Filter{
-				Field:    "name",
+				Field:    "Name",
 				Operator: OperatorEqual,
 				Value:    stringPtr("John"),
 			},
@@ -392,14 +392,14 @@ func TestQueryPayloadBuilder_ParseFilter(t *testing.T) {
 			name:         "Valid filter with different operator",
 			filterString: "age:gt:25",
 			expectedFilter: Filter{
-				Field:    "age",
+				Field:    "Age",
 				Operator: OperatorGreaterThan,
 				Value:    stringPtr("25"),
 			},
 		},
 		{
 			name:           "Invalid filter - not enough parts",
-			filterString:   "name:eq",
+			filterString:   "Name:eq",
 			expectedFilter: Filter{},
 		},
 		{
