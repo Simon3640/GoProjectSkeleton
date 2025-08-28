@@ -7,5 +7,5 @@ import (
 )
 
 type SetupModel[ModelCreate any, ModelUpdate any, Model any, DBModel any] interface {
-	Setup(db *gorm.DB, db_model DBModel, defaults []ModelCreate, logger contracts_providers.ILoggerProvider)
+	Setup(db *gorm.DB, db_model DBModel, defaults *[]ModelCreate, logger contracts_providers.ILoggerProvider)
 }

@@ -13,16 +13,20 @@ func InitMigrate(db *gorm.DB, logger contracts_providers.ILoggerProvider) {
 	logger.Info("Auto migrating models")
 
 	logger.Info("Auto migrating Role model")
-	setups.NewSetUpRole().Setup(db, db_models.Role{}, defaults.DefaultRoles, logger)
+	setups.NewSetUpRole().Setup(db, db_models.Role{}, &defaults.DefaultRoles, logger)
 	logger.Info("Role model migrated")
 
 	logger.Info("Auto migrating User model")
-	setups.NewSetupUser().Setup(db, db_models.User{}, defaults.DefaultUsers, logger)
+	setups.NewSetupUser().Setup(db, db_models.User{}, &defaults.DefaultUsers, logger)
 	logger.Info("User model migrated")
 
 	logger.Info("Auto migrating Password model")
-	setups.NewSetupPassword().Setup(db, db_models.Password{}, defaults.DefaultPasswords, logger)
+	setups.NewSetupPassword().Setup(db, db_models.Password{}, &defaults.DefaultPasswords, logger)
 	logger.Info("Password model migrated")
 
 	logger.Info("Auto migrating ended")
+
+	logger.Info("Auto migrating OneTimeToken model")
+	setups.NewSetupOneTimeToken().Setup(db, db_models.OneTimeToken{}, nil, logger)
+	logger.Info("OneTimeToken model migrated")
 }
