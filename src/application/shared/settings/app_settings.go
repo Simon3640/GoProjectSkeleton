@@ -27,12 +27,13 @@ type AppSettings struct {
 	DBSSL      bool
 
 	// Security
-	JWTSecretKey  string
-	JWTIssuer     string
-	JWTAudience   string
-	JWTAccessTTL  int64 // in seconds
-	JWTRefreshTTL int64 // in seconds
-	JWTClockSkew  int64 // in seconds
+	JWTSecretKey    string
+	JWTIssuer       string
+	JWTAudience     string
+	JWTAccessTTL    int64 // in seconds
+	JWTRefreshTTL   int64 // in seconds
+	JWTClockSkew    int64 // in seconds
+	OneTimeTokenTTL int64 // in minutes
 
 	// Mail
 	MailHost     string
