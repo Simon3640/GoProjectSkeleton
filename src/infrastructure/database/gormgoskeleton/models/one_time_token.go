@@ -10,7 +10,7 @@ type OneTimeToken struct {
 	gorm.Model
 	UserID  uint      `gorm:"not null;index"`
 	Purpose string    `gorm:"not null:varchar(255)"`
-	Hash    string    `gorm:"not null;varchar(255);uniqueIndex"`
+	Hash    []byte    `gorm:"not null;varchar(255);uniqueIndex"`
 	IsUsed  bool      `gorm:"not null"`
 	Expires time.Time `gorm:"not null"`
 }
