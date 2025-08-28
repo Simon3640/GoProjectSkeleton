@@ -1,8 +1,11 @@
 package defaults
 
-import "gormgoskeleton/src/domain/models"
+import (
+	dtos "gormgoskeleton/src/application/shared/DTOs"
+	"gormgoskeleton/src/domain/models"
+)
 
-var AdminUser = models.UserCreate{
+var AdminUser = dtos.UserCreate{
 	UserBase: models.UserBase{
 		Name:   "Admin",
 		Email:  "admin@gormgoskeleton.com",
@@ -12,6 +15,6 @@ var AdminUser = models.UserCreate{
 	},
 }
 
-var DefaultUsers = []models.UserCreate{
+var DefaultUsers = []dtos.UserCreate{
 	AdminUser,
 }

@@ -1,6 +1,9 @@
-package domain_mocks
+package dto_mocks
 
-import "gormgoskeleton/src/domain/models"
+import (
+	dtos "gormgoskeleton/src/application/shared/DTOs"
+	"gormgoskeleton/src/domain/models"
+)
 
 var UserBase = models.UserBase{
 	Name:   "Test User",
@@ -10,11 +13,11 @@ var UserBase = models.UserBase{
 	RoleID: 2,
 }
 
-var UserCreate = models.UserCreate{
+var UserCreate = dtos.UserCreate{
 	UserBase: UserBase,
 }
 
-var UserAndPasswordCreate = models.UserAndPasswordCreate{
+var UserAndPasswordCreate = dtos.UserAndPasswordCreate{
 	UserCreate: UserCreate,
 	Password:   "$trongPassword123",
 }

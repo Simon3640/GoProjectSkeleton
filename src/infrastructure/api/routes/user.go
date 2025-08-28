@@ -7,6 +7,7 @@ import (
 
 	user_pipes "gormgoskeleton/src/application/modules/user/pipes"
 	usecases_user "gormgoskeleton/src/application/modules/user/use_cases"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/domain/models"
 	domain_utils "gormgoskeleton/src/domain/utils"
@@ -30,7 +31,7 @@ import (
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user [post]
 func createUser(c *gin.Context) {
-	var userCreate models.UserCreate
+	var userCreate dtos.UserCreate
 
 	if err := c.ShouldBindJSON(&userCreate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -96,7 +97,7 @@ func updateUser(c *gin.Context) {
 		return
 	}
 
-	var userUpdate models.UserUpdate
+	var userUpdate dtos.UserUpdate
 
 	if err := c.ShouldBindJSON(&userUpdate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -191,7 +192,7 @@ func getAllUser(c *gin.Context) {
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user-password [post]
 func createUserAndPassword(c *gin.Context) {
-	var userCreate models.UserAndPasswordCreate
+	var userCreate dtos.UserAndPasswordCreate
 
 	if err := c.ShouldBindJSON(&userCreate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

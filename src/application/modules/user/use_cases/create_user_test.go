@@ -5,10 +5,11 @@ import (
 	"testing"
 	"time"
 
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
+	dto_mocks "gormgoskeleton/src/application/shared/mocks/dtos"
 	"gormgoskeleton/src/application/shared/status"
-	domain_mocks "gormgoskeleton/src/domain/mocks"
 	"gormgoskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -21,7 +22,7 @@ func TestCreateUserUseCase(t *testing.T) {
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
-	testUser := domain_mocks.UserCreate
+	testUser := dto_mocks.UserCreate
 
 	testUserRepository.On("Create", testUser).Return(&models.User{
 		UserBase: models.UserBase{Name: "Test",
@@ -54,7 +55,7 @@ func TestCreateUserUseCase_InvalidInput(t *testing.T) {
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
-	testUserInvalidRoleID := models.UserCreate{
+	testUserInvalidRoleID := dtos.UserCreate{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "invalid@gmail.com",
 			Phone:  "1234567890",

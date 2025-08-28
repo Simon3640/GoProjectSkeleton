@@ -7,11 +7,11 @@ import (
 	"time"
 
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
 )
 
 type AuthenticationRefreshUseCase struct {
@@ -22,7 +22,7 @@ type AuthenticationRefreshUseCase struct {
 	jwtProvider contracts_providers.IJWTProvider
 }
 
-var _ usecase.BaseUseCase[string, models.Token] = (*AuthenticationRefreshUseCase)(nil)
+var _ usecase.BaseUseCase[string, dtos.Token] = (*AuthenticationRefreshUseCase)(nil)
 
 func (uc *AuthenticationRefreshUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
@@ -33,8 +33,8 @@ func (uc *AuthenticationRefreshUseCase) SetLocale(locale locales.LocaleTypeEnum)
 func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input string,
-) *usecase.UseCaseResult[models.Token] {
-	result := usecase.NewUseCaseResult[models.Token]()
+) *usecase.UseCaseResult[dtos.Token] {
+	result := usecase.NewUseCaseResult[dtos.Token]()
 	uc.SetLocale(locale)
 	validation, msg := uc.validate(input)
 
@@ -134,7 +134,7 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 
 	// Response
 
-	token := models.Token{
+	token := dtos.Token{
 		AccessToken:           access,
 		RefreshToken:          refresh,
 		TokenType:             "Bearer",
