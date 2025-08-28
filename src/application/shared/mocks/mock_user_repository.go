@@ -30,3 +30,12 @@ func (m *MockUserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *ap
 	}
 	return args.Get(0).(*models.UserWithRole), nil
 }
+
+func (m *MockUserRepository) GetByEmailOrPhone(emailOrPhone string) (*models.User, *application_errors.ApplicationError) {
+	args := m.Called(emailOrPhone)
+	errorArg := args.Get(1)
+	if errorArg != nil {
+		return args.Get(0).(*models.User), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.Get(0).(*models.User), nil
+}
