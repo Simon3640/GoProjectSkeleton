@@ -15,8 +15,8 @@ type MetaMultiResponse struct {
 }
 
 type MultipleResponse[D any] struct {
-	Data []D               `json:"data"`
-	Meta MetaMultiResponse `json:"meta"`
+	Records []D               `json:"records"`
+	Meta    MetaMultiResponse `json:"meta"`
 }
 
 type MetaSingleResponse struct {
@@ -26,6 +26,6 @@ type MetaSingleResponse struct {
 }
 
 type SingleResponse[D any] struct {
-	Data D                  `json:"data"`
-	Meta MetaSingleResponse `json:"meta"`
+	Record D                  `json:"record"`
+	Meta   MetaSingleResponse `json:"meta"`
 }

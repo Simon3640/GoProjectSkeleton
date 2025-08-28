@@ -57,5 +57,5 @@ func (u UserUpdate) GetUserID() uint {
 	return u.ID
 }
 
-type UserMultiResponse struct{ MultipleResponse[models.User] }
-type UserSingleResponse struct{ SingleResponse[models.User] }
+type UserMultiResponse = MultipleResponse[models.User]
+type UserSingleResponse = SingleResponse[models.User]

@@ -158,7 +158,7 @@ func deleteUser(c *gin.Context) {
 // @Param page query int false "Page number (default: 1)"
 // @Param page_size query int false "Number of items per page (default: 10)"
 //
-// @Success 200 {array} dtos.UserMultiResponse "List of users"
+// @Success 200 {object} dtos.UserMultiResponse "List of users"
 // @Failure 400 {object} map[string]string "Bad request"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
