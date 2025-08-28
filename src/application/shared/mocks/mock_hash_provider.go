@@ -30,3 +30,17 @@ func (mhp *MockHashProvider) VerifyPassword(hashedPassword string, password stri
 	}
 	return args.Bool(0), nil
 }
+
+func (mhp *MockHashProvider) OneTimeToken() (string, []byte, *application_errors.ApplicationError) {
+	args := mhp.Called()
+	errorArg := args.Get(2)
+	if errorArg != nil {
+		return args.String(0), args.Get(1).([]byte), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.String(0), args.Get(1).([]byte), nil
+}
+
+func (mhp *MockHashProvider) ValidateOneTimeToken(hashedToken []byte, token string) bool {
+	args := mhp.Called(hashedToken, token)
+	return args.Bool(0)
+}
