@@ -28,3 +28,12 @@ type OneTimeTokenUpdate struct {
 	IsUsed *bool `json:"is_used,omitempty"`
 	ID     uint  `json:"id"`
 }
+
+type OneTimeTokenUserEmail struct {
+	User  models.User
+	Token string `json:"token"`
+}
+
+func (o *OneTimeTokenUserEmail) BuildURL(baseURL string) string {
+	return baseURL + "?token=" + o.Token
+}

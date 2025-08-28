@@ -17,6 +17,14 @@ type EmailServiceBase[D any] struct {
 	Sender   contracts_providers.IEmailProvider
 }
 
+func (svc *EmailServiceBase[D]) SetUp(
+	renderer contracts_providers.IRendererProvider[D],
+	sender contracts_providers.IEmailProvider,
+) {
+	svc.Renderer = renderer
+	svc.Sender = sender
+}
+
 func (svc *EmailServiceBase[D]) SendWithTemplate(
 	data D,
 	user models.User,
