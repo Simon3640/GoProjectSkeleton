@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/domain/models"
 	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
@@ -57,7 +57,7 @@ func (uc *RoleConverter) ToGormUpdate(model models.RoleUpdate) *db_models.Role {
 	return Role
 }
 
-func NewRoleRepository(db *gorm.DB, logger contracts.ILoggerProvider) *RoleRepository {
+func NewRoleRepository(db *gorm.DB, logger contracts_providers.ILoggerProvider) *RoleRepository {
 	return &RoleRepository{
 		RepositoryBase: RepositoryBase[
 			models.RoleCreate,

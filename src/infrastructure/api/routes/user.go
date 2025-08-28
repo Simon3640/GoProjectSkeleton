@@ -5,9 +5,12 @@ import (
 	"net/http"
 	"strconv"
 
+	user_pipes "gormgoskeleton/src/application/modules/user/pipes"
 	usecases_user "gormgoskeleton/src/application/modules/user/use_cases"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/domain/models"
+	domain_utils "gormgoskeleton/src/domain/utils"
 	"gormgoskeleton/src/infrastructure/api"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
 	"gormgoskeleton/src/infrastructure/providers"
@@ -19,16 +22,16 @@ import (
 // CreateUser
 // @Summary This endpoint Create a new user
 // @Description This endpoint Create a new user
-// @Schemes models.UserCreate
+// @Schemes dtos.UserCreate
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param request body models.UserCreate true "Datos del usuario"
+// @Param request body dtos.UserCreate true "Datos del usuario"
 // @Success 201 {object} models.User "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user [post]
 func createUser(c *gin.Context) {
-	var userCreate models.UserCreate
+	var userCreate dtos.UserCreate
 
 	if err := c.ShouldBindJSON(&userCreate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -37,7 +40,7 @@ func createUser(c *gin.Context) {
 
 	uc_result := usecases_user.NewCreateUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c, locales.EN_US, userCreate)
+	).Execute(c.Request.Context(), locales.EN_US, userCreate)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
@@ -56,6 +59,7 @@ func createUser(c *gin.Context) {
 // @Success 200 {object} models.User "Usuario"
 // @Failure 404 {object} map[string]string "Usuario no encontrado"
 // @Router /api/user/{id} [get]
+// @Security Bearer
 func getUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -65,7 +69,7 @@ func getUser(c *gin.Context) {
 
 	uc_result := usecases_user.NewGetUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c, locales.EN_US, id)
+	).Execute(c.Request.Context(), locales.EN_US, uint(id))
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
@@ -81,10 +85,11 @@ func getUser(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "ID del usuario"
-// @Param request body models.UserUpdateBase true "Datos del usuario"
+// @Param request body dtos.UserUpdateBase true "Datos del usuario"
 // @Success 200 {object} models.User "Usuario actualizado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user/{id} [patch]
+// @Security Bearer
 func updateUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -92,17 +97,17 @@ func updateUser(c *gin.Context) {
 		return
 	}
 
-	var userUpdate models.UserUpdate
+	var userUpdate dtos.UserUpdate
 
 	if err := c.ShouldBindJSON(&userUpdate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	userUpdate.ID = id
+	userUpdate.ID = uint(id)
 	uc_result := usecases_user.NewUpdateUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c, locales.EN_US, userUpdate)
+	).Execute(c.Request.Context(), locales.EN_US, userUpdate)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
@@ -121,6 +126,7 @@ func updateUser(c *gin.Context) {
 // @Success 204 {object} nil "Usuario eliminado"
 // @Failure 404 {object} map[string]string "Usuario no encontrado"
 // @Router /api/user/{id} [delete]
+// @Security Bearer
 func deleteUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -130,7 +136,7 @@ func deleteUser(c *gin.Context) {
 
 	uc_result := usecases_user.NewDeleteUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c, locales.EN_US, id)
+	).Execute(c.Request.Context(), locales.EN_US, uint(id))
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
@@ -140,21 +146,36 @@ func deleteUser(c *gin.Context) {
 }
 
 // GetAllUser
-// @Summary This endpoint Get all users
-// @Description This endpoint Get all users
+// @Summary Get all users
+// @Description Retrieve all users with support for filtering, sorting, and pagination.
 // @Tags User
 // @Accept json
 // @Produce json
-// @Success 200 {object} []models.User "Usuarios"
+// @Security Bearer
+//
+// @Param filter query []string false "Filter users in the format column:operator:value (e.g. Name:eq:Admin, Age:gt:18)"
+// @Param sort query []string false "Sort users in the format column:asc|desc (e.g. Name:asc, CreatedAt:desc)"
+// @Param page query int false "Page number (default: 1)"
+// @Param page_size query int false "Number of items per page (default: 10)"
+//
+// @Success 200 {object} dtos.UserMultiResponse "List of users"
+// @Failure 400 {object} map[string]string "Bad request"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Internal server error"
 // @Router /api/user [get]
 func getAllUser(c *gin.Context) {
+	queryParams, exists := c.Get("queryParams")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Query parameters not found"})
+		return
+	}
 	uc_result := usecases_user.NewGetAllUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c, locales.EN_US, usecases_user.Nil{})
+	).Execute(c.Request.Context(), locales.EN_US, queryParams.(domain_utils.QueryPayloadBuilder[models.User]))
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[[]models.User]().ResolveDTO(c, uc_result, headers)
+	content, statusCode := api.NewRequestResolver[dtos.UserMultiResponse]().ResolveDTO(c, uc_result, headers)
 
 	c.JSON(statusCode, content)
 }
@@ -166,12 +187,12 @@ func getAllUser(c *gin.Context) {
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param request body models.UserAndPasswordCreate true "Datos del usuario"
+// @Param request body dtos.UserAndPasswordCreate true "Datos del usuario"
 // @Success 201 {object} models.User "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user-password [post]
 func createUserAndPassword(c *gin.Context) {
-	var userCreate models.UserAndPasswordCreate
+	var userCreate dtos.UserAndPasswordCreate
 
 	if err := c.ShouldBindJSON(&userCreate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -180,10 +201,26 @@ func createUserAndPassword(c *gin.Context) {
 	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
 	hashProvider := providers.HashProviderInstance
 
-	uc_result := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
+	uc_create_user_email := usecases_user.NewCreateUserSendEmailUseCase(
+		providers.Logger,
+		providers.JWTProviderInstance,
+	)
+
+	uc_create_user_password := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
 		userRepository,
 		hashProvider,
-	).Execute(c, locales.EN_US, userCreate)
+	)
+
+	uc_result := user_pipes.NewCreateUserPipe(c.Request.Context(),
+		locales.EN_US,
+		uc_create_user_password,
+		uc_create_user_email,
+	).Execute(userCreate)
+
+	// uc_result := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
+	// 	userRepository,
+	// 	hashProvider,
+	// ).Execute(c.Request.Context(), locales.EN_US, userCreate)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}

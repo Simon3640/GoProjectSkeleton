@@ -2,10 +2,13 @@ package usecases_user
 
 import (
 	"context"
+	"testing"
+	"time"
+
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
 	"gormgoskeleton/src/domain/models"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +19,7 @@ func TestCreateUserAndPassword(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRespository)
+	testUserRepository := new(mocks.MockUserRepository)
 	testHashProvider := new(mocks.MockHashProvider)
 
 	userBase := models.UserBase{
@@ -27,8 +30,8 @@ func TestCreateUserAndPassword(t *testing.T) {
 		RoleID: 2,
 	}
 
-	testUserAndPassword := models.UserAndPasswordCreate{
-		UserCreate: models.UserCreate{
+	testUserAndPassword := dtos.UserAndPasswordCreate{
+		UserCreate: dtos.UserCreate{
 			UserBase: userBase,
 		},
 		Password: "P@ssw0rd",
@@ -39,7 +42,12 @@ func TestCreateUserAndPassword(t *testing.T) {
 
 	testUserRepository.On("CreateWithPassword", testUserAndPasswordHash).Return(&models.User{
 		UserBase: userBase,
-		ID:       1,
+		DBBaseModel: models.DBBaseModel{
+			ID:        1,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			DeletedAt: time.Time{},
+		},
 	}, nil)
 
 	testHashProvider.On("HashPassword", testUserAndPassword.Password).Return("hashed_password", nil)
@@ -57,6 +65,6 @@ func TestCreateUserAndPassword(t *testing.T) {
 	// Assert the result
 	assert.True(result.IsSuccess())
 	assert.NotNil(result.Data)
-	assert.Equal(1, result.Data.ID)
+	assert.Equal(uint(1), result.Data.ID)
 
 }

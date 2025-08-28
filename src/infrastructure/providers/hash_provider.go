@@ -2,12 +2,16 @@ package providers
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
-	"errors"
 	"fmt"
-	contracts "gormgoskeleton/src/application/contracts"
 	"strings"
+
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	application_errors "gormgoskeleton/src/application/shared/errors"
+	"gormgoskeleton/src/application/shared/locales/messages"
+	"gormgoskeleton/src/application/shared/status"
 
 	"golang.org/x/crypto/argon2"
 )
@@ -20,15 +24,13 @@ type HashProvider struct {
 	saltLen uint32
 }
 
-var _ contracts.IHashProvider = (*HashProvider)(nil)
+var _ contracts_providers.IHashProvider = (*HashProvider)(nil)
 
-func (hp *HashProvider) HashPassword(password string) (string, error) {
+func (hp *HashProvider) HashPassword(password string) (string, *application_errors.ApplicationError) {
 	// creating a salt of variable length
 	salt := make([]byte, hp.saltLen)
-	_, err := rand.Read(salt)
-	if err != nil {
-		return "", err
-	}
+	rand.Read(salt)
+	// It never return error
 
 	hash := argon2.IDKey([]byte(password), salt, hp.time, hp.memory, hp.threads, hp.keyLen)
 
@@ -41,11 +43,14 @@ func (hp *HashProvider) HashPassword(password string) (string, error) {
 	return final, nil
 }
 
-func (hp *HashProvider) VerifyPassword(hashedPassword, password string) (bool, error) {
+func (hp *HashProvider) VerifyPassword(hashedPassword, password string) (bool, *application_errors.ApplicationError) {
 	// Dividimos el formato
 	parts := strings.Split(hashedPassword, "$")
 	if len(parts) != 6 {
-		return false, errors.New("hash inválido")
+		return false, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"invalid hash format")
 	}
 
 	// Extraer parámetros
@@ -54,23 +59,56 @@ func (hp *HashProvider) VerifyPassword(hashedPassword, password string) (bool, e
 	var p uint8
 	_, err := fmt.Sscanf(parts[3], "m=%d,t=%d,p=%d", &mem, &t, &p)
 	if err != nil {
-		return false, err
+		return false, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"failed to parse hash parameters")
 	}
 
 	// Extraer salt y hash originales
 	salt, err := base64.RawStdEncoding.DecodeString(parts[4])
 	if err != nil {
-		return false, err
+		return false, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"failed to decode salt")
 	}
 	hash, err := base64.RawStdEncoding.DecodeString(parts[5])
 	if err != nil {
-		return false, err
+		return false, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"failed to decode hash")
 	}
 
 	// Recalcular hash con la contraseña ingresada
 	newHash := argon2.IDKey([]byte(password), salt, t, mem, p, uint32(len(hash)))
 
 	return subtle.ConstantTimeCompare(hash, newHash) == 1, nil
+}
+
+func (hp *HashProvider) OneTimeToken() (string, []byte, *application_errors.ApplicationError) {
+	// creating a salt of variable length
+	salt := make([]byte, 32)
+	_, err := rand.Read(salt)
+	if err != nil {
+		return "", nil, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"failed to generate random bytes")
+	}
+	token := base64.RawURLEncoding.EncodeToString(salt)
+	return token, hp.HashOneTimeToken(token), nil
+}
+
+func (hp *HashProvider) HashOneTimeToken(token string) []byte {
+	h := sha256.Sum256([]byte(token))
+	return h[:]
+}
+
+func (hp *HashProvider) ValidateOneTimeToken(hashedToken []byte, token string) bool {
+	h := sha256.Sum256([]byte(token))
+	return subtle.ConstantTimeCompare(hashedToken, h[:]) == 1
 }
 
 func NewHashProvider() *HashProvider {

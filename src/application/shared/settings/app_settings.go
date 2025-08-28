@@ -8,19 +8,39 @@ import (
 
 type AppSettings struct {
 	// Application
-	AppName        string
-	AppEnv         string
-	AppPort        string
-	AppVersion     string
-	AppDescription string
-	EnableLog      bool
-	DebugLog       bool
-	DBHost         string
-	DBPort         string
-	DBUser         string
-	DBPassword     string
-	DBName         string
-	DBSSL          bool
+	AppName         string
+	AppEnv          string
+	AppPort         string
+	AppVersion      string
+	AppDescription  string
+	AppSupportEmail string
+	EnableLog       bool
+	DebugLog        bool
+	TemplatesPath   string
+
+	// Database
+	DBHost     string
+	DBPort     string
+	DBUser     string
+	DBPassword string
+	DBName     string
+	DBSSL      bool
+
+	// Security
+	JWTSecretKey             string
+	JWTIssuer                string
+	JWTAudience              string
+	JWTAccessTTL             int64 // in seconds
+	JWTRefreshTTL            int64 // in seconds
+	JWTClockSkew             int64 // in seconds
+	OneTimeTokenTTL          int64 // in minutes
+	FrontendResetPasswordURL string
+
+	// Mail
+	MailHost     string
+	MailPort     int
+	MailPassword string
+	MailFrom     string
 }
 
 func NewAppSettings() *AppSettings {
@@ -74,6 +94,12 @@ func setFieldValue(field reflect.Value, value string) error {
 			return errors.New("invalid float value: " + value)
 		}
 		field.SetFloat(floatValue)
+	case reflect.Int64:
+		int64Value, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return errors.New("invalid int64 value: " + value)
+		}
+		field.SetInt(int64Value)
 	default:
 		return errors.New("unsupported field type")
 	}

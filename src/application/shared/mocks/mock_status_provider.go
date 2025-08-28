@@ -3,7 +3,7 @@ package mocks
 import (
 	"time"
 
-	"gormgoskeleton/src/application/contracts"
+	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	"gormgoskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/mock"
@@ -13,7 +13,7 @@ type MockStatusProvider struct {
 	mock.Mock
 }
 
-var _ contracts.IApiStatusProvider = (*MockStatusProvider)(nil)
+var _ contracts_providers.IApiStatusProvider = (*MockStatusProvider)(nil)
 
 func (msp *MockStatusProvider) Get(date time.Time) models.Status {
 	args := msp.Called(date)
