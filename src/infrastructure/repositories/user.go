@@ -85,6 +85,16 @@ func (ur *UserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *appli
 	return &userWithRoleModel, nil
 }
 
+func (ur *UserRepository) GetByEmailOrPhone(emailOrPhone string) (*models.User, *application_errors.ApplicationError) {
+	var user db_models.User
+	if err := ur.DB.Where("email = ? OR phone = ?", emailOrPhone, emailOrPhone).First(&user).Error; err != nil {
+		ur.logger.Debug("Error retrieving user by email or phone", err)
+		return nil, MapOrmError(err)
+	}
+	userModel := ur.modelConverter.ToDomain(&user)
+	return userModel, nil
+}
+
 var _ contracts_repositories.IUserRepository = (*UserRepository)(nil)
 
 type UserConverter struct{}
