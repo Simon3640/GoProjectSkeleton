@@ -28,6 +28,7 @@ var EnMessages = map[MessageKeysEnum]string{
 	"PASSWORD_IS_SHORT":            "Password is too short.",
 	"PASSWORD_UNDERMINED_STRENGTH": "Password strength is undermined.",
 	"PASSWORD_CREATED":             "Password created successfully.",
+	"PASSWORD_TOKEN_CREATED":       "Reset password token created successfully.",
 
 	"AUTHORIZATION_HEADER_MISSING": "Authorization header is missing.",
 	"AUTHORIZATION_HEADER_INVALID": "Authorization header is invalid.",
