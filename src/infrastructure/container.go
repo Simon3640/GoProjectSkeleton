@@ -47,4 +47,9 @@ func Initialize() {
 		providers.RenderNewUserEmailInstance,
 		providers.EmailProviderInstance,
 	)
+
+	email_service.ResetPasswordEmailServiceInstance.SetUp(
+		providers.RenderResetPasswordEmailInstance,
+		providers.EmailProviderInstance,
+	)
 }

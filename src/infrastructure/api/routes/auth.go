@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"gormgoskeleton/src/application/modules/auth"
+	auth_pipes "gormgoskeleton/src/application/modules/auth/pipe"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/infrastructure/api"
@@ -72,6 +73,53 @@ func refreshAccessToken(c *gin.Context) {
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
 	content, statusCode := api.NewRequestResolver[dtos.Token]().ResolveDTO(c, uc_result, headers)
+
+	c.JSON(statusCode, content)
+}
+
+// password-reset
+// @Summary      Request password reset
+// @Description  This endpoint allows a user to request a password reset. An email with a
+//
+//	one-time token will be sent to the user's registered email address.
+//
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        identifier path string true "Provided email or phone number"
+// @Success      200 {object} map[string]string "Password reset email sent"
+// @Failure      400 {object} map[string]string "Validation error"
+// @Router       /api/auth/password-reset/{identifier} [get]
+func requestPasswordReset(c *gin.Context) {
+	identifier := c.Param("identifier")
+	if identifier == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Identifier is required"})
+		return
+	}
+
+	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
+	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.DB, providers.Logger)
+
+	uc_reset_password_token := auth.NewGetResetPasswordTokenUseCase(
+		providers.Logger,
+		oneTimeTokenRepository,
+		userRepository,
+		providers.HashProviderInstance,
+	)
+
+	uc_reset_password_token_email := auth.NewGetResetPasswordSendEmailUseCase(
+		providers.Logger)
+
+	uc_result := auth_pipes.NewGetResetPasswordPipe(
+		c.Request.Context(),
+		locales.ES_ES,
+		uc_reset_password_token,
+		uc_reset_password_token_email,
+	).Execute(identifier)
+	headers := map[api.HTTPHeaderTypeEnum]string{
+		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	}
+	content, statusCode := api.NewRequestResolver[bool]().ResolveDTO(c, uc_result, headers)
 
 	c.JSON(statusCode, content)
 }
