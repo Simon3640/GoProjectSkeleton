@@ -2,6 +2,7 @@ package providers
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
 	"fmt"
@@ -84,6 +85,26 @@ func (hp *HashProvider) VerifyPassword(hashedPassword, password string) (bool, *
 	newHash := argon2.IDKey([]byte(password), salt, t, mem, p, uint32(len(hash)))
 
 	return subtle.ConstantTimeCompare(hash, newHash) == 1, nil
+}
+
+func (hp *HashProvider) OneTimeToken() (string, []byte, *application_errors.ApplicationError) {
+	// creating a salt of variable length
+	salt := make([]byte, 32)
+	_, err := rand.Read(salt)
+	if err != nil {
+		return "", nil, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"failed to generate random bytes")
+	}
+	token := base64.RawURLEncoding.EncodeToString(salt)
+	h := sha256.Sum256([]byte(token))
+	return token, h[:], nil
+}
+
+func (hp *HashProvider) ValidateOneTimeToken(hashedToken []byte, token string) bool {
+	h := sha256.Sum256([]byte(token))
+	return subtle.ConstantTimeCompare(hashedToken, h[:]) == 1
 }
 
 func NewHashProvider() *HashProvider {
