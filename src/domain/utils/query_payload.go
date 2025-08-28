@@ -220,6 +220,59 @@ func (qp *QueryPayloadBuilder[DBModel]) ParseSorts(sort []string) {
 	}
 }
 
+func (qp *QueryPayloadBuilder[DBModel]) HasNextPrev(total int64) (bool, bool) {
+	hasNext := false
+	hasPrev := false
+	if qp.Pagination.Page*qp.Pagination.PageSize < int(total) {
+		hasNext = true
+	}
+	if qp.Pagination.Page > 1 {
+		hasPrev = true
+	}
+	return hasNext, hasPrev
+}
+
+// GetQueryKey for caching purposes
+func (qp *QueryPayloadBuilder[DBModel]) GetQueryKey() string {
+	var sb strings.Builder
+	sb.WriteString("filter:")
+	for _, f := range qp.Filters {
+		sb.WriteString(fmt.Sprintf("%s|%s|%v;", f.Field, f.Operator, f.Value))
+	}
+	sb.WriteString("sort:")
+	for _, s := range qp.Sorts {
+		sb.WriteString(fmt.Sprintf("%s|%s;", s.Field, s.Order))
+	}
+	return sb.String()
+}
+
+// BuildQueryParamsUrl constructs the query parameters string for URLs
+func (qp *QueryPayloadBuilder[DBModel]) BuildQueryParamsURL(
+	filter bool,
+	sort bool,
+	pages bool,
+) string {
+	var sb strings.Builder
+	if filter {
+		for _, f := range qp.Filters {
+			if f.Value != nil {
+				sb.WriteString(fmt.Sprintf("filter=%s:%s:%s&", f.Field, f.Operator, *f.Value))
+			} else {
+				sb.WriteString(fmt.Sprintf("filter=%s:%s:&", f.Field, f.Operator))
+			}
+		}
+	}
+	if sort {
+		for _, s := range qp.Sorts {
+			sb.WriteString(fmt.Sprintf("sort=%s:%s&", s.Field, s.Order))
+		}
+	}
+	if pages {
+		sb.WriteString(fmt.Sprintf("page=%d&page_size=%d", qp.Pagination.Page, qp.Pagination.PageSize))
+	}
+	return sb.String()
+}
+
 func NewQueryPayloadBuilder[DBModel any](sorts []string,
 	filters []string,
 	page *int,

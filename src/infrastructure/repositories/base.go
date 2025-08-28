@@ -118,7 +118,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id ui
 	return nil
 }
 
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[Model], skip int, limit int) ([]Model, *application_errors.ApplicationError) {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[Model], skip int, limit int) ([]Model, int64, *application_errors.ApplicationError) {
 	var entities []DBModel
 	// Apply filters from payload
 
@@ -142,14 +142,25 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(paylo
 			query = query.Order(gormSort)
 		}
 	}
+
+	// Count total records
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		if appErr := MapOrmError(err); appErr != nil {
+			rb.logger.Debug("Error counting entities", appErr.ToError())
+			return nil, 0, appErr
+		}
+		return nil, 0, DefaultORMError
+	}
+
 	query = query.Offset(skip).Limit(limit)
 	// Execute the query
 	if err := query.Find(&entities).Error; err != nil {
 		if appErr := MapOrmError(err); appErr != nil {
 			rb.logger.Debug("Error retrieving entities", appErr.ToError())
-			return nil, appErr
+			return nil, 0, appErr
 		}
-		return nil, DefaultORMError
+		return nil, 0, DefaultORMError
 	}
 
 	result := make([]Model, len(entities))
@@ -158,5 +169,5 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(paylo
 		result[i] = *rb.modelConverter.ToDomain(&entity)
 	}
 
-	return result, nil
+	return result, total, nil
 }
