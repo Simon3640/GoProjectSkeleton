@@ -3,7 +3,7 @@ package mocks
 import (
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	application_errors "gormgoskeleton/src/application/shared/errors"
-	domaim_utils "gormgoskeleton/src/domain/utils"
+	domain_utils "gormgoskeleton/src/domain/utils"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -59,7 +59,7 @@ func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, D
 	return nil
 }
 
-func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) GetAll(payload *domaim_utils.QueryPayloadBuilder[DomainModel], skip int, limit int) ([]DomainModel, *application_errors.ApplicationError) {
+func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[DomainModel], skip int, limit int) ([]DomainModel, *application_errors.ApplicationError) {
 	args := m.Called(payload, skip, limit)
 	errorArg := args.Get(1)
 	if errorArg != nil {

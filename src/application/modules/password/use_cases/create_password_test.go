@@ -5,10 +5,11 @@ import (
 	"testing"
 	"time"
 
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
-	domain_mocks "gormgoskeleton/src/domain/mocks"
+	dto_mocks "gormgoskeleton/src/application/shared/mocks/dtos"
 	"gormgoskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -19,12 +20,12 @@ func TestCreatePasswordUseCase(t *testing.T) {
 
 	ctx := context.Background()
 
-	actor := domain_mocks.UserWithRole
+	actor := dto_mocks.UserWithRole
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testPasswordRepository := new(mocks.MockPasswordRepository)
 	testHashProvider := new(mocks.MockHashProvider)
-	testPassword := models.PasswordCreateNoHash{
+	testPassword := dtos.PasswordCreateNoHash{
 		UserID:           actor.ID,
 		NoHashedPassword: "TestPassword123!",
 		ExpiresAt:        &time.Time{},
@@ -33,7 +34,7 @@ func TestCreatePasswordUseCase(t *testing.T) {
 
 	contextWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
-	testPasswordCreate := models.NewPasswordCreate(
+	testPasswordCreate := dtos.NewPasswordCreate(
 		testPassword.UserID,
 		"HashedPassword123!",
 		testPassword.ExpiresAt,

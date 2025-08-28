@@ -1,6 +1,8 @@
-package domain_mocks
+package dto_mocks
 
 import "gormgoskeleton/src/domain/models"
+
+// TODO: Evaluate if Role can be created with DTOs
 
 var UserRoleBase = models.RoleBase{
 	Key:      "user",

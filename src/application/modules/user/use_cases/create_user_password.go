@@ -6,6 +6,7 @@ import (
 
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
@@ -21,7 +22,7 @@ type CreateUserAndPasswordUseCase struct {
 	locale       locales.LocaleTypeEnum
 }
 
-var _ usecase.BaseUseCase[models.UserAndPasswordCreate, models.User] = (*CreateUserAndPasswordUseCase)(nil)
+var _ usecase.BaseUseCase[dtos.UserAndPasswordCreate, models.User] = (*CreateUserAndPasswordUseCase)(nil)
 
 func (uc *CreateUserAndPasswordUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
@@ -31,7 +32,7 @@ func (uc *CreateUserAndPasswordUseCase) SetLocale(locale locales.LocaleTypeEnum)
 
 func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input models.UserAndPasswordCreate,
+	input dtos.UserAndPasswordCreate,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
@@ -68,7 +69,7 @@ func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 }
 
 func (uc *CreateUserAndPasswordUseCase) validate(
-	input models.UserAndPasswordCreate,
+	input dtos.UserAndPasswordCreate,
 	result *usecase.UseCaseResult[models.User]) {
 	msgs := input.Validate()
 

@@ -7,11 +7,11 @@ import (
 
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
 )
 
 type AuthenticateUseCase struct {
@@ -25,7 +25,7 @@ type AuthenticateUseCase struct {
 	hashProvider contracts_providers.IHashProvider
 }
 
-var _ usecase.BaseUseCase[models.UserCredentials, models.Token] = (*AuthenticateUseCase)(nil)
+var _ usecase.BaseUseCase[dtos.UserCredentials, dtos.Token] = (*AuthenticateUseCase)(nil)
 
 func (uc *AuthenticateUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
@@ -35,9 +35,9 @@ func (uc *AuthenticateUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 
 func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input models.UserCredentials,
-) *usecase.UseCaseResult[models.Token] {
-	result := usecase.NewUseCaseResult[models.Token]()
+	input dtos.UserCredentials,
+) *usecase.UseCaseResult[dtos.Token] {
+	result := usecase.NewUseCaseResult[dtos.Token]()
 	uc.SetLocale(locale)
 	validation, msg := uc.validate(input)
 
@@ -105,7 +105,7 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 
 	// Response
 
-	token := models.Token{
+	token := dtos.Token{
 		AccessToken:           access,
 		RefreshToken:          refresh,
 		TokenType:             "Bearer",
@@ -124,7 +124,7 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 	return result
 }
 
-func (uc *AuthenticateUseCase) validate(input models.UserCredentials) (bool, []string) {
+func (uc *AuthenticateUseCase) validate(input dtos.UserCredentials) (bool, []string) {
 	// Validate the input data
 	var validationErrors []string
 	if input.Email == "" {

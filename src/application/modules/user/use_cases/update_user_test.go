@@ -2,11 +2,12 @@ package usecases_user
 
 import (
 	"context"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
+	dto_mocks "gormgoskeleton/src/application/shared/mocks/dtos"
 	"gormgoskeleton/src/application/shared/status"
-	domain_mocks "gormgoskeleton/src/domain/mocks"
 	"gormgoskeleton/src/domain/models"
 	"testing"
 	"time"
@@ -19,14 +20,14 @@ func TestUpdateUserUseCase(t *testing.T) {
 
 	ctx := context.Background()
 
-	actor := domain_mocks.UserWithRole
+	actor := dto_mocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
 	name := "Update"
-	testUser := models.UserUpdate{
-		UserUpdateBase: models.UserUpdateBase{Name: &name},
+	testUser := dtos.UserUpdate{
+		UserUpdateBase: dtos.UserUpdateBase{Name: &name},
 		ID:             actor.ID,
 	}
 
@@ -58,14 +59,14 @@ func TestUpdateUserUseCase_DifferentUser(t *testing.T) {
 
 	ctx := context.Background()
 
-	actor := domain_mocks.UserWithRole
+	actor := dto_mocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
 	name := "Update"
-	testUser := models.UserUpdate{
-		UserUpdateBase: models.UserUpdateBase{Name: &name},
+	testUser := dtos.UserUpdate{
+		UserUpdateBase: dtos.UserUpdateBase{Name: &name},
 		ID:             actor.ID + 1,
 	}
 

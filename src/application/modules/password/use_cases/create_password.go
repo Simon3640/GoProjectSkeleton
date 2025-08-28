@@ -5,22 +5,22 @@ import (
 
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/guards"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
 )
 
 type CreatePasswordUseCase struct {
-	usecase.BaseUseCaseValidation[models.PasswordCreateNoHash, bool]
+	usecase.BaseUseCaseValidation[dtos.PasswordCreateNoHash, bool]
 	log          contracts_providers.ILoggerProvider
 	repo         contracts_repositories.IPasswordRepository
 	hashProvider contracts_providers.IHashProvider
 }
 
-var _ usecase.BaseUseCase[models.PasswordCreateNoHash, bool] = (*CreatePasswordUseCase)(nil)
+var _ usecase.BaseUseCase[dtos.PasswordCreateNoHash, bool] = (*CreatePasswordUseCase)(nil)
 
 func (uc *CreatePasswordUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
@@ -30,7 +30,7 @@ func (uc *CreatePasswordUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 
 func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input models.PasswordCreateNoHash,
+	input dtos.PasswordCreateNoHash,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
@@ -52,7 +52,7 @@ func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 		return result
 	}
 
-	passwordCreate := models.NewPasswordCreate(
+	passwordCreate := dtos.NewPasswordCreate(
 		input.UserID,
 		hashedPassword,
 		input.ExpiresAt,
@@ -96,11 +96,11 @@ func NewCreatePasswordUseCase(
 	hashProvider contracts_providers.IHashProvider,
 ) *CreatePasswordUseCase {
 	return &CreatePasswordUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[models.PasswordCreateNoHash, bool]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[dtos.PasswordCreateNoHash, bool]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards: usecase.NewGuards(
 				guards.RoleGuard("admin", "user"),
-				guards.UserResourceGuard[models.PasswordCreateNoHash](),
+				guards.UserResourceGuard[dtos.PasswordCreateNoHash](),
 			),
 		},
 		log:          log,
