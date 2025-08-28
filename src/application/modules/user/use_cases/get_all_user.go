@@ -11,16 +11,16 @@ import (
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
 	"gormgoskeleton/src/domain/models"
-	domaim_utils "gormgoskeleton/src/domain/utils"
+	domain_utils "gormgoskeleton/src/domain/utils"
 )
 
 type GetAllUserUseCase struct {
-	usecase.BaseUseCaseValidation[domaim_utils.QueryPayloadBuilder[models.User], []models.User]
+	usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], []models.User]
 	log  contracts_providers.ILoggerProvider
 	repo contracts_repositories.IUserRepository
 }
 
-var _ usecase.BaseUseCase[domaim_utils.QueryPayloadBuilder[models.User], []models.User] = (*GetAllUserUseCase)(nil)
+var _ usecase.BaseUseCase[domain_utils.QueryPayloadBuilder[models.User], []models.User] = (*GetAllUserUseCase)(nil)
 
 func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
@@ -31,7 +31,7 @@ func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 func (uc *GetAllUserUseCase) Execute(
 	ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input domaim_utils.QueryPayloadBuilder[models.User],
+	input domain_utils.QueryPayloadBuilder[models.User],
 ) *usecase.UseCaseResult[[]models.User] {
 	result := usecase.NewUseCaseResult[[]models.User]()
 	uc.SetLocale(locale)
@@ -68,7 +68,7 @@ func NewGetAllUserUseCase(
 	repo contracts_repositories.IUserRepository,
 ) *GetAllUserUseCase {
 	return &GetAllUserUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[domaim_utils.QueryPayloadBuilder[models.User], []models.User]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], []models.User]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(guards.RoleGuard("admin")),
 		},
