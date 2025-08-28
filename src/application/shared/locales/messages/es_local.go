@@ -28,6 +28,7 @@ var EsMessages = map[MessageKeysEnum]string{
 	"PASSWORD_IS_SHORT":            "La contraseña es demasiado corta.",
 	"PASSWORD_UNDERMINED_STRENGTH": "La fortaleza de la contraseña está comprometida.",
 	"PASSWORD_CREATED":             "Contraseña creada con éxito.",
+	"PASSWORD_TOKEN_CREATED":       "Token de restablecimiento de contraseña creado con éxito.",
 
 	"AUTHORIZATION_HEADER_MISSING": "Falta el encabezado de autorización.",
 	"AUTHORIZATION_HEADER_INVALID": "El encabezado de autorización es inválido.",
