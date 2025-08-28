@@ -24,11 +24,13 @@ var EnMessages = map[MessageKeysEnum]string{
 	"USER_DELETE_SUCCESS":            "User deleted successfully.",
 	"INVALID_USER_ID":                "Invalid user ID.",
 
-	"PASSWORD_REQUIRED":            "Password is required.",
-	"PASSWORD_IS_SHORT":            "Password is too short.",
-	"PASSWORD_UNDERMINED_STRENGTH": "Password strength is undermined.",
-	"PASSWORD_CREATED":             "Password created successfully.",
-	"PASSWORD_TOKEN_CREATED":       "Reset password token created successfully.",
+	"PASSWORD_REQUIRED":                      "Password is required.",
+	"PASSWORD_IS_SHORT":                      "Password is too short.",
+	"PASSWORD_UNDERMINED_STRENGTH":           "Password strength is undermined.",
+	"PASSWORD_CREATED":                       "Password created successfully.",
+	"PASSWORD_TOKEN_CREATED":                 "Reset password token created successfully.",
+	"RESET_PASSWORD_SUBJECT":                 "Password reset for your account",
+	"RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY": "Reset password email sent successfully.",
 
 	"AUTHORIZATION_HEADER_MISSING": "Authorization header is missing.",
 	"AUTHORIZATION_HEADER_INVALID": "Authorization header is invalid.",

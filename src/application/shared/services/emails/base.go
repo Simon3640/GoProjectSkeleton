@@ -17,16 +17,26 @@ type EmailServiceBase[D any] struct {
 	Sender   contracts_providers.IEmailProvider
 }
 
+func (svc *EmailServiceBase[D]) SetUp(
+	renderer contracts_providers.IRendererProvider[D],
+	sender contracts_providers.IEmailProvider,
+) {
+	svc.Renderer = renderer
+	svc.Sender = sender
+}
+
 func (svc *EmailServiceBase[D]) SendWithTemplate(
 	data D,
 	user models.User,
 	locale locales.LocaleTypeEnum,
+	templateKey templates.TemplateKeysEnum,
+	subjectKey messages.MessageKeysEnum,
 ) *application_errors.ApplicationError {
 	appMessages := locales.NewLocale(locale)
-	template := (settings.AppSettingsInstance.TemplatesPath + "/emails/" +
+	template := (settings.AppSettingsInstance.TemplatesPath + "emails/" +
 		templates.GetTemplate(
 			locale,
-			templates.TemplateKeysInstance.WelcomeEmail,
+			templateKey,
 		))
 	rendered, err := svc.Renderer.Render(template, data)
 	if err != nil {
@@ -36,7 +46,7 @@ func (svc *EmailServiceBase[D]) SendWithTemplate(
 		fmt.Sprintf(
 			appMessages.Get(
 				locale,
-				messages.MessageKeysInstance.NEW_USER_WELCOME,
+				subjectKey,
 			),
 			settings.AppSettingsInstance.AppName,
 		), rendered)

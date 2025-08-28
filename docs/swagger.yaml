@@ -155,6 +155,36 @@ paths:
       summary: Login and get JWT tokens
       tags:
       - Auth
+  /api/auth/password-reset/{identifier}:
+    get:
+      consumes:
+      - application/json
+      description: This endpoint allows a user to request a password reset. An email
+        with a
+      parameters:
+      - description: Provided email or phone number
+        in: path
+        name: identifier
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset email sent
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Request password reset
+      tags:
+      - Auth
   /api/auth/refresh:
     post:
       consumes:

@@ -43,8 +43,14 @@ type RenderNewUserEmail struct {
 	RendererBase[email_models.NewUserEmailData]
 }
 
+type RenderResetPasswordEmail struct {
+	RendererBase[email_models.ResetPasswordEmailData]
+}
+
 var RenderNewUserEmailInstance *RenderNewUserEmail
+var RenderResetPasswordEmailInstance *RenderResetPasswordEmail
 
 func init() {
 	RenderNewUserEmailInstance = &RenderNewUserEmail{}
+	RenderResetPasswordEmailInstance = &RenderResetPasswordEmail{}
 }

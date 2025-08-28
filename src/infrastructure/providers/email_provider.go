@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"fmt"
 	"net/smtp"
 	"strconv"
 
@@ -27,10 +28,10 @@ func (ep *EmailProvider) Setup(smtpHost string, smtpPort int, from string, passw
 	ep.password = password
 }
 
-func (ep *EmailProvider) buildConnection() func(to string, message string) error {
-	return func(to string, message string) error {
+func (ep *EmailProvider) buildConnection() func(to string, message []byte) error {
+	return func(to string, message []byte) error {
 		var auth smtp.Auth
-		// for testing purposes
+		// para testing con Mailpit: no hace falta autenticación
 		if settings.AppSettingsInstance.AppEnv == "development" || settings.AppSettingsInstance.AppEnv == "test" {
 			auth = nil
 		} else {
@@ -41,7 +42,7 @@ func (ep *EmailProvider) buildConnection() func(to string, message string) error
 			auth,
 			ep.from,
 			[]string{to},
-			[]byte(message),
+			message,
 		)
 		return err
 	}
@@ -52,11 +53,19 @@ func (ep *EmailProvider) SendEmail(
 	subject string,
 	body string,
 ) *application_errors.ApplicationError {
-	message := "From: " + ep.from + "\n" +
-		"To: " + to + "\n" +
-		"Subject: " + subject + "\n" +
-		"\n" +
-		body
+
+	// Headers + cuerpo en HTML
+	message := []byte(fmt.Sprintf(
+		"From: %s\r\n"+
+			"To: %s\r\n"+
+			"Subject: %s\r\n"+
+			"MIME-Version: 1.0\r\n"+
+			"Content-Type: text/html; charset=\"UTF-8\"\r\n"+
+			"\r\n"+
+			"%s\r\n",
+		ep.from, to, subject, body,
+	))
+
 	if err := ep.buildConnection()(to, message); err != nil {
 		return application_errors.NewApplicationError(
 			status.ProviderError,
