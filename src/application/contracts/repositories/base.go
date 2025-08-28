@@ -2,6 +2,7 @@ package contracts_repositories
 
 import (
 	application_errors "gormgoskeleton/src/application/shared/errors"
+	domaim_utils "gormgoskeleton/src/domain/utils"
 )
 
 type IRepositoryBase[CreateDomainModel any, UpdateDomainModel any, DomainModel any, DBModel any] interface {
@@ -10,5 +11,5 @@ type IRepositoryBase[CreateDomainModel any, UpdateDomainModel any, DomainModel a
 	Update(id uint, entity UpdateDomainModel) (*DomainModel, *application_errors.ApplicationError)
 	Delete(id uint) *application_errors.ApplicationError
 	SoftDelete(id uint) *application_errors.ApplicationError
-	GetAll(payload *map[string]string, skip *int, limit *int) ([]DomainModel, *application_errors.ApplicationError)
+	GetAll(payload *domaim_utils.QueryPayloadBuilder[DomainModel], skip int, limit int) ([]DomainModel, *application_errors.ApplicationError)
 }
