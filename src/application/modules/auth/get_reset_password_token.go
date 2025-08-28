@@ -14,7 +14,7 @@ import (
 )
 
 type GetResetPasswordTokenUseCase struct {
-	usecase.BaseUseCaseValidation[string, string]
+	usecase.BaseUseCaseValidation[string, dtos.OneTimeTokenUser]
 	log contracts_providers.ILoggerProvider
 
 	tokenRepo contracts_repositories.IOneTimeTokenRepository
@@ -33,8 +33,8 @@ func (uc *GetResetPasswordTokenUseCase) SetLocale(locale locales.LocaleTypeEnum)
 func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input string,
-) *usecase.UseCaseResult[string] {
-	result := usecase.NewUseCaseResult[string]()
+) *usecase.UseCaseResult[dtos.OneTimeTokenUser] {
+	result := usecase.NewUseCaseResult[dtos.OneTimeTokenUser]()
 	uc.SetLocale(locale)
 	uc.Validate(ctx, input, result)
 	if result.HasError() {
@@ -79,7 +79,10 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 
 	result.SetData(
 		status.Success,
-		token,
+		dtos.OneTimeTokenUser{
+			User:  *user,
+			Token: token,
+		},
 		uc.AppMessages.Get(
 			uc.Locale,
 			messages.MessageKeysInstance.PASSWORD_TOKEN_CREATED,
@@ -92,7 +95,7 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 func (uc *GetResetPasswordTokenUseCase) Validate(
 	ctx context.Context,
 	input string,
-	result *usecase.UseCaseResult[string],
+	result *usecase.UseCaseResult[dtos.OneTimeTokenUser],
 ) {
 	// Skip input validation as it's just a string (email or phone)
 }
@@ -104,7 +107,7 @@ func NewGetResetPasswordTokenUseCase(
 	hashProvider contracts_providers.IHashProvider,
 ) *GetResetPasswordTokenUseCase {
 	return &GetResetPasswordTokenUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, string]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, dtos.OneTimeTokenUser]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},

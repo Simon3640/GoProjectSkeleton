@@ -28,12 +28,14 @@ type Config struct {
 	DBSSL      string `env:"DB_SSL" envDefault:"false"`
 
 	// Security
-	JWTSecretKey  string `env:"JWT_SECRET_KEY" envDefault:"secret"`
-	JWTIssuer     string `env:"JWT_ISSUER" envDefault:"test-issuer"`
-	JWTAudience   string `env:"JWT_AUDIENCE" envDefault:"test-audience"`
-	JWTAccessTTL  string `env:"JWT_ACCESS_TTL" envDefault:"3600"`
-	JWTRefreshTTL string `env:"JWT_REFRESH_TTL" envDefault:"86400"`
-	JWTClockSkew  string `env:"JWT_CLOCK_SKEW" envDefault:"60"`
+	JWTSecretKey             string `env:"JWT_SECRET_KEY" envDefault:"secret"`
+	JWTIssuer                string `env:"JWT_ISSUER" envDefault:"test-issuer"`
+	JWTAudience              string `env:"JWT_AUDIENCE" envDefault:"test-audience"`
+	JWTAccessTTL             string `env:"JWT_ACCESS_TTL" envDefault:"3600"`
+	JWTRefreshTTL            string `env:"JWT_REFRESH_TTL" envDefault:"86400"`
+	JWTClockSkew             string `env:"JWT_CLOCK_SKEW" envDefault:"60"`
+	OneTimeTokenTTL          string `env:"ONE_TIME_TOKEN_TTL" envDefault:"15"`
+	FrontendResetPasswordURL string `env:"FRONTEND_RESET_PASSWORD_URL" envDefault:"http://localhost:3000/reset-password"`
 
 	// Mail
 	MailHost     string `env:"MAIL_HOST" envDefault:"localhost"`

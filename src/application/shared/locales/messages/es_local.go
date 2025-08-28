@@ -24,11 +24,13 @@ var EsMessages = map[MessageKeysEnum]string{
 	"USER_DELETE_SUCCESS":            "Usuario eliminado con éxito.",
 	"INVALID_USER_ID":                "El ID de usuario es inválido.",
 
-	"PASSWORD_REQUIRED":            "La contraseña es requerida.",
-	"PASSWORD_IS_SHORT":            "La contraseña es demasiado corta.",
-	"PASSWORD_UNDERMINED_STRENGTH": "La fortaleza de la contraseña está comprometida.",
-	"PASSWORD_CREATED":             "Contraseña creada con éxito.",
-	"PASSWORD_TOKEN_CREATED":       "Token de restablecimiento de contraseña creado con éxito.",
+	"PASSWORD_REQUIRED":                      "La contraseña es requerida.",
+	"PASSWORD_IS_SHORT":                      "La contraseña es demasiado corta.",
+	"PASSWORD_UNDERMINED_STRENGTH":           "La fortaleza de la contraseña está comprometida.",
+	"PASSWORD_CREATED":                       "Contraseña creada con éxito.",
+	"PASSWORD_TOKEN_CREATED":                 "Token de restablecimiento de contraseña creado con éxito.",
+	"RESET_PASSWORD_SUBJECT":                 "Restablecimiento de contraseña para tu cuenta",
+	"RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY": "Correo de restablecimiento de contraseña enviado con éxito.",
 
 	"AUTHORIZATION_HEADER_MISSING": "Falta el encabezado de autorización.",
 	"AUTHORIZATION_HEADER_INVALID": "El encabezado de autorización es inválido.",

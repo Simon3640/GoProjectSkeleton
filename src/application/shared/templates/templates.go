@@ -16,12 +16,12 @@ var TemplateKeysInstance = TemplateKeys{
 
 var EnTemplates = map[TemplateKeysEnum]string{
 	TemplateKeysInstance.WelcomeEmail:       "new_user_en.gohtml",
-	TemplateKeysInstance.PasswordResetEmail: "password_reset_email.gohtml",
+	TemplateKeysInstance.PasswordResetEmail: "reset_password_en.gohtml",
 }
 
 var EsTemplates = map[TemplateKeysEnum]string{
 	TemplateKeysInstance.WelcomeEmail:       "new_user_es.gohtml",
-	TemplateKeysInstance.PasswordResetEmail: "password_reset_email.gohtml",
+	TemplateKeysInstance.PasswordResetEmail: "reset_password_es.gohtml",
 }
 
 type Templates struct {
