@@ -10,7 +10,7 @@ type OneTimeTokenCreate struct {
 	models.OneTimeTokenBase
 }
 
-func NewOneTimeTokenCreate(userID uint, purpose string, hash []byte) *OneTimeTokenCreate {
+func NewOneTimeTokenCreate(userID uint, purpose models.OneTimeTokenPurpose, hash []byte) *OneTimeTokenCreate {
 	// TODO: move expiration to another place
 	expires := time.Now().Add(time.Duration(settings.AppSettingsInstance.OneTimeTokenTTL) * time.Minute)
 	return &OneTimeTokenCreate{

@@ -9,6 +9,7 @@ import (
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
+	"gormgoskeleton/src/domain/models"
 )
 
 type GetResetPasswordTokenUseCase struct {
@@ -62,7 +63,7 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 		)
 	}
 
-	tokenCreate := dtos.NewOneTimeTokenCreate(user.ID, "reset_password", hash)
+	tokenCreate := dtos.NewOneTimeTokenCreate(user.ID, models.OneTimeTokenPurposePasswordReset, hash)
 	_, err = uc.tokenRepo.Create(*tokenCreate)
 	if err != nil {
 		uc.log.Error("Error creating one time token", err.ToError())
