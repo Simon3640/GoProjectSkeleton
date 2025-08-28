@@ -17,11 +17,11 @@ import (
 // CreatePassword
 // @Summary This endpoint Create a new password
 // @Description This endpoint Create a new password
-// @Schemes models.PasswordCreateNoHash
+// @Schemes dtos.PasswordCreateNoHash
 // @Tags Password
 // @Accept json
 // @Produce json
-// @Param request body models.PasswordCreateNoHash true "Datos del usuario"
+// @Param request body dtos.PasswordCreateNoHash true "Datos del usuario"
 // @Success 201 {object} bool "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/password [post]

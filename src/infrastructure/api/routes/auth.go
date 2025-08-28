@@ -20,8 +20,8 @@ import (
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        request body models.UserCredentials true "User credentials"
-// @Success      200 {object} models.Token "Tokens generated successfully"
+// @Param        request body dtos.UserCredentials true "User credentials"
+// @Success      200 {object} dtos.Token "Tokens generated successfully"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/login [post]
 func login(c *gin.Context) {
@@ -54,7 +54,7 @@ func login(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request body string true "Refresh token"
-// @Success      200 {object} models.Token
+// @Success      200 {object} dtos.Token
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/refresh [post]
 func refreshAccessToken(c *gin.Context) {

@@ -22,11 +22,11 @@ import (
 // CreateUser
 // @Summary This endpoint Create a new user
 // @Description This endpoint Create a new user
-// @Schemes models.UserCreate
+// @Schemes dtos.UserCreate
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param request body models.UserCreate true "Datos del usuario"
+// @Param request body dtos.UserCreate true "Datos del usuario"
 // @Success 201 {object} models.User "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user [post]
@@ -85,7 +85,7 @@ func getUser(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "ID del usuario"
-// @Param request body models.UserUpdateBase true "Datos del usuario"
+// @Param request body dtos.UserUpdateBase true "Datos del usuario"
 // @Success 200 {object} models.User "Usuario actualizado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user/{id} [patch]
@@ -158,7 +158,7 @@ func deleteUser(c *gin.Context) {
 // @Param page query int false "Page number (default: 1)"
 // @Param page_size query int false "Number of items per page (default: 10)"
 //
-// @Success 200 {array} models.User "List of users"
+// @Success 200 {array} dtos.UserMultiResponse "List of users"
 // @Failure 400 {object} map[string]string "Bad request"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
@@ -175,7 +175,7 @@ func getAllUser(c *gin.Context) {
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[[]models.User]().ResolveDTO(c, uc_result, headers)
+	content, statusCode := api.NewRequestResolver[dtos.UserMultiResponse]().ResolveDTO(c, uc_result, headers)
 
 	c.JSON(statusCode, content)
 }
@@ -187,7 +187,7 @@ func getAllUser(c *gin.Context) {
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param request body models.UserAndPasswordCreate true "Datos del usuario"
+// @Param request body dtos.UserAndPasswordCreate true "Datos del usuario"
 // @Success 201 {object} models.User "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user-password [post]
