@@ -32,6 +32,13 @@ definitions:
       user_id:
         type: integer
     type: object
+  dtos.PasswordTokenCreate:
+    properties:
+      no_hashed_password:
+        type: string
+      token:
+        type: string
+    type: object
   dtos.Token:
     properties:
       access_expires_at:
@@ -251,6 +258,36 @@ paths:
       security:
       - Bearer: []
       summary: This endpoint Create a new password
+      tags:
+      - Password
+  /api/password/reset-token:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint Create a new password reset token
+      parameters:
+      - description: Datos del usuario
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.PasswordTokenCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Token creado
+          schema:
+            type: boolean
+        "400":
+          description: Error de validación
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: This endpoint Create a new password reset token
       tags:
       - Password
   /api/user:

@@ -196,6 +196,54 @@
                 }
             }
         },
+        "/api/password/reset-token": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "This endpoint Create a new password reset token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Password"
+                ],
+                "summary": "This endpoint Create a new password reset token",
+                "parameters": [
+                    {
+                        "description": "Datos del usuario",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.PasswordTokenCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Token creado",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/user": {
             "get": {
                 "security": [
@@ -559,6 +607,17 @@
                 },
                 "user_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dtos.PasswordTokenCreate": {
+            "type": "object",
+            "properties": {
+                "no_hashed_password": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
                 }
             }
         },

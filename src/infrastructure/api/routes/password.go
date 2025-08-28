@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	password_pipes "gormgoskeleton/src/application/modules/password/pipes"
 	usecases_password "gormgoskeleton/src/application/modules/password/use_cases"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
@@ -37,7 +38,7 @@ func createPassword(c *gin.Context) {
 	passwordRepository := repositories.NewPasswordRepository(database.DB, providers.Logger)
 
 	uc_result := usecases_password.NewCreatePasswordUseCase(providers.Logger,
-		passwordRepository, providers.HashProviderInstance,
+		passwordRepository, providers.HashProviderInstance, false,
 	).Execute(c.Request.Context(), locales.EN_US, passwordCreate)
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
@@ -45,4 +46,55 @@ func createPassword(c *gin.Context) {
 	content, statusCode := api.NewRequestResolver[bool]().ResolveDTO(c, uc_result, headers)
 
 	c.JSON(statusCode, content)
+}
+
+// CreatePasswordResetToken
+// @Summary This endpoint Create a new password reset token
+// @Description This endpoint Create a new password reset token
+// @Schemes dtos.PasswordTokenCreate
+// @Tags Password
+// @Accept json
+// @Produce json
+// @Param request body dtos.PasswordTokenCreate true "Datos del usuario"
+// @Success 201 {object} bool "Token creado"
+// @Failure 400 {object} map[string]string "Error de validación"
+// @Router /api/password/reset-token [post]
+// @Security Bearer
+func createPasswordToken(c *gin.Context) {
+	var passwordTokenCreate dtos.PasswordTokenCreate
+
+	if err := c.ShouldBindJSON(&passwordTokenCreate); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	passwordRepository := repositories.NewPasswordRepository(database.DB, providers.Logger)
+	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.DB, providers.Logger)
+
+	uc_create_password_token := usecases_password.NewCreatePasswordTokenUseCase(providers.Logger,
+		passwordRepository,
+		providers.HashProviderInstance,
+		oneTimeTokenRepository,
+	)
+
+	uc_create_password := usecases_password.NewCreatePasswordUseCase(providers.Logger,
+		passwordRepository,
+		providers.HashProviderInstance,
+		true, // Skip guards because this is called internally
+	)
+
+	uc_result := password_pipes.NewGetResetPasswordPipe(
+		c.Request.Context(),
+		locales.EN_US,
+		uc_create_password_token,
+		uc_create_password,
+	).Execute(passwordTokenCreate)
+
+	headers := map[api.HTTPHeaderTypeEnum]string{
+		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	}
+	content, statusCode := api.NewRequestResolver[bool]().ResolveDTO(c, uc_result, headers)
+
+	c.JSON(statusCode, content)
+
 }

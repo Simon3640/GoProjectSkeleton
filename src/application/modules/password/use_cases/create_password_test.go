@@ -53,7 +53,7 @@ func TestCreatePasswordUseCase(t *testing.T) {
 
 	testHashProvider.On("HashPassword", testPassword.NoHashedPassword).Return("HashedPassword123!", nil)
 
-	uc := NewCreatePasswordUseCase(testLogger, testPasswordRepository, testHashProvider)
+	uc := NewCreatePasswordUseCase(testLogger, testPasswordRepository, testHashProvider, false)
 
 	result := uc.Execute(contextWithUser, locales.EN_US, testPassword)
 
