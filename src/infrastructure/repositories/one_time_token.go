@@ -22,7 +22,7 @@ var _ ModelConverter[dtos.OneTimeTokenCreate, dtos.OneTimeTokenUpdate, models.On
 
 func (uc *OneTimeTokenConverter) ToGormCreate(model dtos.OneTimeTokenCreate) *db_models.OneTimeToken {
 	return &db_models.OneTimeToken{
-		Purpose: model.Purpose,
+		Purpose: string(model.Purpose),
 		Hash:    model.Hash,
 		UserID:  model.UserID,
 		Expires: model.Expires,
@@ -39,7 +39,7 @@ func (uc *OneTimeTokenConverter) ToDomain(ormModel *db_models.OneTimeToken) *mod
 			DeletedAt: ormModel.DeletedAt.Time,
 		},
 		OneTimeTokenBase: models.OneTimeTokenBase{
-			Purpose: ormModel.Purpose,
+			Purpose: models.OneTimeTokenPurpose(ormModel.Purpose),
 			Hash:    ormModel.Hash,
 			UserID:  ormModel.UserID,
 			Expires: ormModel.Expires,
