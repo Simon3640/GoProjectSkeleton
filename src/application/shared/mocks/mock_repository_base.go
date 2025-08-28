@@ -59,11 +59,11 @@ func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, D
 	return nil
 }
 
-func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[DomainModel], skip int, limit int) ([]DomainModel, *application_errors.ApplicationError) {
+func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[DomainModel], skip int, limit int) ([]DomainModel, int64, *application_errors.ApplicationError) {
 	args := m.Called(payload, skip, limit)
-	errorArg := args.Get(1)
+	errorArg := args.Get(2)
 	if errorArg != nil {
-		return args.Get(0).([]DomainModel), errorArg.(*application_errors.ApplicationError)
+		return args.Get(0).([]DomainModel), args.Get(1).(int64), errorArg.(*application_errors.ApplicationError)
 	}
-	return args.Get(0).([]DomainModel), nil
+	return args.Get(0).([]DomainModel), args.Get(1).(int64), nil
 }

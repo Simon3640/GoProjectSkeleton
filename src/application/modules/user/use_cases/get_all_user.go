@@ -41,17 +41,7 @@ func (uc *GetAllUserUseCase) Execute(
 		return result
 	}
 
-	data, err := uc.repo.GetAll(&input, input.Pagination.GetOffset(), input.Pagination.GetLimit())
-	// TODO: MultiResponse with count and pagination
-	var response dtos.UserMultiResponse
-	response.Records = data
-	response.Meta = dtos.MetaMultiResponse{
-		Count:   len(data),
-		Total:   0,     // TODO: implement total count in repository
-		HasNext: true,  // TODO: implement has next in repository
-		HasPrev: false, // TODO: implement has prev in repository
-		Links:   nil,   // TODO: implement
-	}
+	data, total, err := uc.repo.GetAll(&input, input.Pagination.GetOffset(), input.Pagination.GetLimit())
 	if err != nil {
 		uc.log.Error("Error getting all users", err.ToError())
 		result.SetError(
@@ -63,6 +53,18 @@ func (uc *GetAllUserUseCase) Execute(
 		)
 		return result
 	}
+
+	// Build MultiResponse
+	var response dtos.UserMultiResponse
+	response.Records = data
+	hasNext, hasPrev := input.HasNextPrev(total)
+	response.Meta = dtos.NewMetaMultiResponse(len(data), total, hasNext, hasPrev)
+	response.Meta.BuildLinks(
+		"/user",
+		input.Pagination.Page,
+		input.Pagination.PageSize, input.BuildQueryParamsURL(true, true, false),
+	)
+
 	result.SetData(
 		status.Success,
 		response,
