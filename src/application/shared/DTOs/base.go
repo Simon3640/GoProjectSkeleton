@@ -1,17 +1,49 @@
 package dtos
 
+import "strconv"
+
 type Link struct {
-	Self string `json:"self"`
-	Next string `json:"next,omitempty"`
-	Last string `json:"last,omitempty"`
+	Self string  `json:"self"`
+	Next *string `json:"next"`
+	Last *string `json:"last"`
 }
 
 type MetaMultiResponse struct {
 	Count   int   `json:"count"`
-	Total   int   `json:"total"`
+	Total   int64 `json:"total"`
 	HasNext bool  `json:"has_next"`
 	HasPrev bool  `json:"has_prev"`
 	Links   *Link `json:"links"`
+}
+
+func NewMetaMultiResponse(count int, total int64, hasNext bool, hasPrev bool) MetaMultiResponse {
+	return MetaMultiResponse{
+		Count:   count,
+		Total:   total,
+		HasNext: hasNext,
+		HasPrev: hasPrev,
+		Links:   nil,
+	}
+}
+
+func (mr *MetaMultiResponse) BuildLinks(prefix string, page int, pageSize int, queryParamsUrl string) {
+	if mr.Links == nil {
+		mr.Links = &Link{}
+	}
+	mr.Links.Next = nil
+	mr.Links.Last = nil
+	mr.Links.Self = prefix + "?" + queryParamsUrl
+	if mr.HasNext {
+		*mr.Links.Next = (prefix +
+			"?page=" +
+			strconv.Itoa(page+1) +
+			"&page_size=" +
+			strconv.Itoa(pageSize) +
+			"&" + queryParamsUrl)
+	}
+	if mr.HasPrev {
+		*mr.Links.Last = prefix + "?page=" + strconv.Itoa(page-1) + "&page_size=" + strconv.Itoa(pageSize)
+	}
 }
 
 type MultipleResponse[D any] struct {
