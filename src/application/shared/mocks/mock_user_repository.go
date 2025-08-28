@@ -2,17 +2,18 @@ package mocks
 
 import (
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/domain/models"
 )
 
 type MockUserRepository struct {
-	MockRepositoryBase[models.UserCreate, models.UserUpdate, models.User, models.User]
+	MockRepositoryBase[dtos.UserCreate, dtos.UserUpdate, models.User, models.User]
 }
 
 var _ contracts_repositories.IUserRepository = (*MockUserRepository)(nil)
 
-func (m *MockUserRepository) CreateWithPassword(input models.UserAndPasswordCreate) (*models.User, *application_errors.ApplicationError) {
+func (m *MockUserRepository) CreateWithPassword(input dtos.UserAndPasswordCreate) (*models.User, *application_errors.ApplicationError) {
 	args := m.Called(input)
 	errorArg := args.Get(1)
 	if errorArg != nil {

@@ -8,8 +8,8 @@ import (
 	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
+	dto_mocks "gormgoskeleton/src/application/shared/mocks/dtos"
 	"gormgoskeleton/src/application/shared/status"
-	domain_mocks "gormgoskeleton/src/domain/mocks"
 	"gormgoskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -19,7 +19,7 @@ func TestGetUserUseCase(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	actor := domain_mocks.UserWithRole
+	actor := dto_mocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
 	testLogger := new(mocks.MockLoggerProvider)
@@ -53,7 +53,7 @@ func TestGetUserUseCase_DifferentUser(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	actor := domain_mocks.UserWithRole
+	actor := dto_mocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
 	testLogger := new(mocks.MockLoggerProvider)

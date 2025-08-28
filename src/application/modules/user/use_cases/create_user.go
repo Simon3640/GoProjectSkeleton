@@ -6,6 +6,7 @@ import (
 
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
+	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
@@ -20,7 +21,7 @@ type CreateUserUseCase struct {
 	locale      locales.LocaleTypeEnum
 }
 
-var _ usecase.BaseUseCase[models.UserCreate, models.User] = (*CreateUserUseCase)(nil)
+var _ usecase.BaseUseCase[dtos.UserCreate, models.User] = (*CreateUserUseCase)(nil)
 
 func (uc *CreateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
@@ -30,7 +31,7 @@ func (uc *CreateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 
 func (uc *CreateUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input models.UserCreate,
+	input dtos.UserCreate,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
@@ -65,7 +66,7 @@ func (uc *CreateUserUseCase) Execute(ctx context.Context,
 }
 
 func (uc *CreateUserUseCase) validate(
-	input models.UserCreate,
+	input dtos.UserCreate,
 	result *usecase.UseCaseResult[models.User]) {
 	msgs := input.Validate()
 

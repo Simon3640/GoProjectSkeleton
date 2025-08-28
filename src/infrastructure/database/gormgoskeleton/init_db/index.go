@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
-	"gormgoskeleton/src/domain/defaults"
+	"gormgoskeleton/src/application/shared/defaults"
 	"gormgoskeleton/src/infrastructure/database/gormgoskeleton/init_db/setups"
 	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
 )

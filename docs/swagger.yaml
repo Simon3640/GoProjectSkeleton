@@ -1,5 +1,27 @@
 definitions:
-  models.PasswordCreateNoHash:
+  dtos.Link:
+    properties:
+      last:
+        type: string
+      next:
+        type: string
+      self:
+        type: string
+    type: object
+  dtos.MetaMultiResponse:
+    properties:
+      count:
+        type: integer
+      has_next:
+        type: boolean
+      has_prev:
+        type: boolean
+      links:
+        $ref: '#/definitions/dtos.Link'
+      total:
+        type: integer
+    type: object
+  dtos.PasswordCreateNoHash:
     properties:
       expires_at:
         type: string
@@ -10,7 +32,7 @@ definitions:
       user_id:
         type: integer
     type: object
-  models.Token:
+  dtos.Token:
     properties:
       access_expires_at:
         type: string
@@ -21,6 +43,63 @@ definitions:
       refresh_token:
         type: string
       token_type:
+        type: string
+    type: object
+  dtos.UserAndPasswordCreate:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      role_id:
+        type: integer
+      status:
+        type: string
+    type: object
+  dtos.UserCreate:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      role_id:
+        type: integer
+      status:
+        type: string
+    type: object
+  dtos.UserCredentials:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  dtos.UserMultiResponse:
+    properties:
+      meta:
+        $ref: '#/definitions/dtos.MetaMultiResponse'
+      records:
+        items:
+          $ref: '#/definitions/models.User'
+        type: array
+    type: object
+  dtos.UserUpdateBase:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      role_id:
+        type: integer
+      status:
         type: string
     type: object
   models.User:
@@ -44,54 +123,6 @@ definitions:
       updated_at:
         type: string
     type: object
-  models.UserAndPasswordCreate:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-      phone:
-        type: string
-      role_id:
-        type: integer
-      status:
-        type: string
-    type: object
-  models.UserCreate:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      phone:
-        type: string
-      role_id:
-        type: integer
-      status:
-        type: string
-    type: object
-  models.UserCredentials:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    type: object
-  models.UserUpdateBase:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      phone:
-        type: string
-      role_id:
-        type: integer
-      status:
-        type: string
-    type: object
 info:
   contact: {}
 paths:
@@ -107,14 +138,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.UserCredentials'
+          $ref: '#/definitions/dtos.UserCredentials'
       produces:
       - application/json
       responses:
         "200":
           description: Tokens generated successfully
           schema:
-            $ref: '#/definitions/models.Token'
+            $ref: '#/definitions/dtos.Token'
         "400":
           description: Validation error
           schema:
@@ -143,7 +174,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Token'
+            $ref: '#/definitions/dtos.Token'
         "400":
           description: Validation error
           schema:
@@ -173,7 +204,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.PasswordCreateNoHash'
+          $ref: '#/definitions/dtos.PasswordCreateNoHash'
       produces:
       - application/json
       responses:
@@ -227,9 +258,7 @@ paths:
         "200":
           description: List of users
           schema:
-            items:
-              $ref: '#/definitions/models.User'
-            type: array
+            $ref: '#/definitions/dtos.UserMultiResponse'
         "400":
           description: Bad request
           schema:
@@ -263,7 +292,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.UserCreate'
+          $ref: '#/definitions/dtos.UserCreate'
       produces:
       - application/json
       responses:
@@ -291,7 +320,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.UserAndPasswordCreate'
+          $ref: '#/definitions/dtos.UserAndPasswordCreate'
       produces:
       - application/json
       responses:
@@ -378,7 +407,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.UserUpdateBase'
+          $ref: '#/definitions/dtos.UserUpdateBase'
       produces:
       - application/json
       responses:

@@ -7,8 +7,8 @@ import (
 	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
+	dto_mocks "gormgoskeleton/src/application/shared/mocks/dtos"
 	"gormgoskeleton/src/application/shared/status"
-	domain_mocks "gormgoskeleton/src/domain/mocks"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -18,14 +18,14 @@ func TestDeleteUserUseCase(t *testing.T) {
 
 	ctx := context.Background()
 
-	actor := domain_mocks.UserWithRole
+	actor := dto_mocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
 	var testIDToDelete uint = actor.ID
 
-	testUserRepository.On("Delete", testIDToDelete).Return(nil)
+	testUserRepository.On("SoftDelete", testIDToDelete).Return(nil)
 
 	uc := NewDeleteUserUseCase(testLogger, testUserRepository)
 
@@ -40,7 +40,7 @@ func TestDeleteUserUseCase_DifferentUser(t *testing.T) {
 
 	ctx := context.Background()
 
-	actor := domain_mocks.UserWithRole
+	actor := dto_mocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
 	testLogger := new(mocks.MockLoggerProvider)
