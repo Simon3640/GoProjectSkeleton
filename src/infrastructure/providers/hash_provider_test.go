@@ -80,4 +80,8 @@ func TestOneTimeToken(t *testing.T) {
 	assert.True(valid1, "Token 1 should be valid")
 	assert.True(valid2, "Token 2 should be valid")
 	assert.False(invalid, "Token 2 should not validate against hash 1")
+
+	// Test hashing the token
+	hashedToken1 := hashProvider.HashOneTimeToken(token1)
+	assert.Equal(hash1, hashedToken1, "Hashed token should match the original hash")
 }

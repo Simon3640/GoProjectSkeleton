@@ -43,4 +43,5 @@ func (o *OneTimeTokenBase) Validate() []string {
 type OneTimeToken struct {
 	OneTimeTokenBase
 	DBBaseModel
+	Selector string `json:"selector"`
 }

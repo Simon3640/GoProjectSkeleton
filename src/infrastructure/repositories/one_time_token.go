@@ -4,6 +4,7 @@ import (
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
+	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/domain/models"
 	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
 
@@ -15,6 +16,16 @@ type OneTimeTokenRepository struct {
 }
 
 var _ contracts_repositories.IOneTimeTokenRepository = (*OneTimeTokenRepository)(nil)
+
+func (or *OneTimeTokenRepository) GetByTokenHash(tokenHash []byte) (*models.OneTimeToken, *application_errors.ApplicationError) {
+	var ormModel db_models.OneTimeToken
+
+	if err := or.DB.Where("hash = ?", tokenHash).First(&ormModel).Error; err != nil {
+		or.logger.Debug("Error fetching one-time token by hash", err)
+		return nil, MapOrmError(err)
+	}
+	return or.modelConverter.ToDomain(&ormModel), nil
+}
 
 type OneTimeTokenConverter struct{}
 
