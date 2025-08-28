@@ -7,6 +7,7 @@ import (
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
+	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
 	"gormgoskeleton/src/domain/models"
@@ -81,11 +82,19 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 		token,
 		uc.AppMessages.Get(
 			uc.Locale,
-			"auth.reset_password_token_sent",
+			messages.MessageKeysInstance.PASSWORD_TOKEN_CREATED,
 		),
 	)
 
 	return result
+}
+
+func (uc *GetResetPasswordTokenUseCase) Validate(
+	ctx context.Context,
+	input string,
+	result *usecase.UseCaseResult[string],
+) {
+	// Skip input validation as it's just a string (email or phone)
 }
 
 func NewGetResetPasswordTokenUseCase(
