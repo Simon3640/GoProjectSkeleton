@@ -31,6 +31,8 @@ var EsMessages = map[MessageKeysEnum]string{
 	"PASSWORD_TOKEN_CREATED":                 "Token de restablecimiento de contraseña creado con éxito.",
 	"RESET_PASSWORD_SUBJECT":                 "Restablecimiento de contraseña para tu cuenta",
 	"RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY": "Correo de restablecimiento de contraseña enviado con éxito.",
+	"INVALID_PASSWORD_RESET_TOKEN":           "Token de restablecimiento de contraseña inválido.",
+	"RESET_PASSWORD_TOKEN_VALID":             "El token de restablecimiento de contraseña es válido.",
 
 	"AUTHORIZATION_HEADER_MISSING": "Falta el encabezado de autorización.",
 	"AUTHORIZATION_HEADER_INVALID": "El encabezado de autorización es inválido.",

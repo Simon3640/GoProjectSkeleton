@@ -54,13 +54,13 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx context.Context,
 		return result
 	}
 
-	if oneTimeToke == nil || !oneTimeToke.IsUsed || oneTimeToke.Expires.Before(time.Now()) {
+	if oneTimeToke == nil || oneTimeToke.IsUsed || oneTimeToke.Expires.Before(time.Now()) {
 		uc.log.Error("One time token is not valid", nil)
 		result.SetError(
 			status.Conflict,
 			uc.AppMessages.Get(
 				uc.Locale,
-				messages.MessageKeysInstance.INVALID_DATA, // TODO: Create a specific message for invalid token
+				messages.MessageKeysInstance.INVALID_PASSWORD_RESET_TOKEN,
 			),
 		)
 		return result
@@ -77,11 +77,19 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx context.Context,
 		passwordCreateNoHash,
 		uc.AppMessages.Get(
 			uc.Locale,
-			messages.MessageKeysInstance.APPLICATION_STATUS_OK, // TODO: Create a specific message for valid token
+			messages.MessageKeysInstance.RESET_PASSWORD_TOKEN_VALID,
 		),
 	)
 
 	return result
+}
+
+func (uc *CreatePasswordTokenUseCase) Validate(
+	ctx context.Context,
+	input dtos.PasswordTokenCreate,
+	result *usecase.UseCaseResult[dtos.PasswordCreateNoHash],
+) {
+	// Call base validation
 }
 
 func NewCreatePasswordTokenUseCase(

@@ -31,6 +31,8 @@ var EnMessages = map[MessageKeysEnum]string{
 	"PASSWORD_TOKEN_CREATED":                 "Reset password token created successfully.",
 	"RESET_PASSWORD_SUBJECT":                 "Password reset for your account",
 	"RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY": "Reset password email sent successfully.",
+	"INVALID_PASSWORD_RESET_TOKEN":           "Invalid password reset token.",
+	"RESET_PASSWORD_TOKEN_VALID":             "Password reset token is valid.",
 
 	"AUTHORIZATION_HEADER_MISSING": "Authorization header is missing.",
 	"AUTHORIZATION_HEADER_INVALID": "Authorization header is invalid.",

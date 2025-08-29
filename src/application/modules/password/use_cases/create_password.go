@@ -94,14 +94,19 @@ func NewCreatePasswordUseCase(
 	log contracts_providers.ILoggerProvider,
 	repo contracts_repositories.IPasswordRepository,
 	hashProvider contracts_providers.IHashProvider,
+	skip_guards bool,
 ) *CreatePasswordUseCase {
+	_guards := usecase.Guards{}
+	if !skip_guards {
+		_guards = usecase.NewGuards(
+			guards.RoleGuard("admin", "user"),
+			guards.UserResourceGuard[dtos.PasswordCreateNoHash](),
+		)
+	}
 	return &CreatePasswordUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[dtos.PasswordCreateNoHash, bool]{
 			AppMessages: locales.NewLocale(locales.EN_US),
-			Guards: usecase.NewGuards(
-				guards.RoleGuard("admin", "user"),
-				guards.UserResourceGuard[dtos.PasswordCreateNoHash](),
-			),
+			Guards:      _guards,
 		},
 		log:          log,
 		repo:         repo,

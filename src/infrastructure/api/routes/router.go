@@ -22,6 +22,7 @@ func Router(r *gin.RouterGroup) {
 
 	// Password routes
 	private.POST("/password", createPassword)
+	r.POST("/password/reset-token", createPasswordToken)
 
 	// Auth routes
 	r.POST("/auth/login", login)
