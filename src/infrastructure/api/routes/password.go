@@ -3,7 +3,6 @@ package routes
 import (
 	"net/http"
 
-	password_pipes "gormgoskeleton/src/application/modules/password/pipes"
 	usecases_password "gormgoskeleton/src/application/modules/password/use_cases"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
@@ -59,7 +58,6 @@ func createPassword(c *gin.Context) {
 // @Success 201 {object} bool "Token creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/password/reset-token [post]
-// @Security Bearer
 func createPasswordToken(c *gin.Context) {
 	var passwordTokenCreate dtos.PasswordTokenCreate
 
@@ -71,24 +69,11 @@ func createPasswordToken(c *gin.Context) {
 	passwordRepository := repositories.NewPasswordRepository(database.DB, providers.Logger)
 	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.DB, providers.Logger)
 
-	uc_create_password_token := usecases_password.NewCreatePasswordTokenUseCase(providers.Logger,
+	uc_result := usecases_password.NewCreatePasswordTokenUseCase(providers.Logger,
 		passwordRepository,
 		providers.HashProviderInstance,
 		oneTimeTokenRepository,
-	)
-
-	uc_create_password := usecases_password.NewCreatePasswordUseCase(providers.Logger,
-		passwordRepository,
-		providers.HashProviderInstance,
-		true, // Skip guards because this is called internally
-	)
-
-	uc_result := password_pipes.NewGetResetPasswordPipe(
-		c.Request.Context(),
-		locales.EN_US,
-		uc_create_password_token,
-		uc_create_password,
-	).Execute(passwordTokenCreate)
+	).Execute(c.Request.Context(), locales.EN_US, passwordTokenCreate)
 
 	headers := map[api.HTTPHeaderTypeEnum]string{
 		api.CONTENT_TYPE: string(api.APPLICATION_JSON),

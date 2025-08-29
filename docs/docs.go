@@ -209,11 +209,6 @@ const docTemplate = `{
         },
         "/api/password/reset-token": {
             "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "This endpoint Create a new password reset token",
                 "consumes": [
                     "application/json"
