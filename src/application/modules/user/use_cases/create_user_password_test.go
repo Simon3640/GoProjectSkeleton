@@ -26,7 +26,7 @@ func TestCreateUserAndPassword(t *testing.T) {
 		Name:   "Test User",
 		Email:  "test@example.com",
 		Phone:  "1234567890",
-		Status: "active",
+		Status: "pending",
 		RoleID: 2,
 	}
 

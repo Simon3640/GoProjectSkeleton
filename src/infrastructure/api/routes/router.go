@@ -19,6 +19,7 @@ func Router(r *gin.RouterGroup) {
 	private.DELETE("/user/:id", deleteUser)
 	private.GET("/user", middlewares.QueryMidleWare[models.User](), getAllUser)
 	r.POST("/user-password", createUserAndPassword)
+	r.POST("/user/activate", activateUser)
 
 	// Password routes
 	private.POST("/password", createPassword)

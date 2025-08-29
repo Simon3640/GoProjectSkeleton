@@ -25,6 +25,7 @@ type MessageKeys struct {
 	USER_UPDATE_SUCCESS            MessageKeysEnum
 	USER_DELETE_SUCCESS            MessageKeysEnum
 	INVALID_USER_ID                MessageKeysEnum
+	INVALID_USER_ACTIVATION_TOKEN  MessageKeysEnum
 
 	PASSWORD_REQUIRED                      MessageKeysEnum
 	PASSWORD_IS_SHORT                      MessageKeysEnum
@@ -72,6 +73,7 @@ var MessageKeysInstance = MessageKeys{
 	USER_UPDATE_SUCCESS:            "USER_UPDATE_SUCCESS",
 	USER_DELETE_SUCCESS:            "USER_DELETE_SUCCESS",
 	INVALID_USER_ID:                "INVALID_USER_ID",
+	INVALID_USER_ACTIVATION_TOKEN:  "INVALID_USER_ACTIVATION_TOKEN",
 
 	INVALID_EMAIL:    "INVALID_EMAIL",
 	INVALID_PASSWORD: "INVALID_PASSWORD",
