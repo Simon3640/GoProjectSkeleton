@@ -58,5 +58,9 @@ func (u UserUpdate) GetUserID() uint {
 	return u.ID
 }
 
+type UserActivate struct {
+	Token string `json:"token"`
+}
+
 type UserMultiResponse = MultipleResponse[models.User]
 type UserSingleResponse = SingleResponse[models.User]
