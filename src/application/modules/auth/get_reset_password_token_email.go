@@ -39,7 +39,7 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 	newUserEmailData := email_models.ResetPasswordEmailData{
 		Name:              input.User.Name,
 		ResetLink:         input.BuildURL(settings.AppSettingsInstance.FrontendResetPasswordURL),
-		ExpirationMinutes: settings.AppSettingsInstance.OneTimeTokenTTL,
+		ExpirationMinutes: settings.AppSettingsInstance.OneTimeTokenPasswordTTL,
 		AppName:           settings.AppSettingsInstance.AppName,
 		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}

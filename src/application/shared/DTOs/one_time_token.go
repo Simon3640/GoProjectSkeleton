@@ -10,15 +10,19 @@ type OneTimeTokenCreate struct {
 	models.OneTimeTokenBase
 }
 
+var PurposeTimeMap = map[models.OneTimeTokenPurpose]time.Duration{
+	models.OneTimeTokenPurposeEmailVerify:   time.Duration(settings.AppSettingsInstance.OneTimeTokenEmailVerifyTTL) * time.Minute,
+	models.OneTimeTokenPurposePasswordReset: time.Duration(settings.AppSettingsInstance.OneTimeTokenPasswordTTL) * time.Minute,
+}
+
 func NewOneTimeTokenCreate(userID uint, purpose models.OneTimeTokenPurpose, hash []byte) *OneTimeTokenCreate {
 	// TODO: move expiration to another place
-	expires := time.Now().Add(time.Duration(settings.AppSettingsInstance.OneTimeTokenTTL) * time.Minute)
 	return &OneTimeTokenCreate{
 		OneTimeTokenBase: models.OneTimeTokenBase{
 			UserID:  userID,
 			Purpose: purpose,
 			Hash:    hash,
-			Expires: expires,
+			Expires: time.Now().Add(PurposeTimeMap[purpose]),
 			IsUsed:  false,
 		},
 	}

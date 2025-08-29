@@ -50,6 +50,7 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
+		return result
 	}
 
 	token, hash, err := uc.hashProvider.OneTimeToken()
@@ -62,6 +63,7 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
+		return result
 	}
 
 	tokenCreate := dtos.NewOneTimeTokenCreate(user.ID, models.OneTimeTokenPurposePasswordReset, hash)
@@ -75,6 +77,7 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
+		return result
 	}
 
 	result.SetData(
