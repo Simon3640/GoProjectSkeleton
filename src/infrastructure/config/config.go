@@ -38,6 +38,8 @@ type Config struct {
 	OneTimeTokenEmailVerifyTTL string `env:"ONE_TIME_TOKEN_EMAIL_VERIFY_TTL" envDefault:"60"`
 	FrontendResetPasswordURL   string `env:"FRONTEND_RESET_PASSWORD_URL" envDefault:"http://localhost:3000/reset-password"`
 	FrontendActivateAccountURL string `env:"FRONTEND_ACTIVATE_ACCOUNT_URL" envDefault:"http://localhost:3000/activate-account"`
+	OneTimePasswordLength      string `env:"ONE_TIME_PASSWORD_LENGTH" envDefault:"6"`
+	OneTimePasswordTTL         string `env:"ONE_TIME_PASSWORD_TTL" envDefault:"10"`
 
 	// Mail
 	MailHost     string `env:"MAIL_HOST" envDefault:"localhost"`
