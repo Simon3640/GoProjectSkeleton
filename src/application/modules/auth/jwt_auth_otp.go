@@ -18,7 +18,6 @@ type AuthenticateOTPUseCase struct {
 	log         contracts_providers.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
-	pass     contracts_repositories.IPasswordRepository
 	userRepo contracts_repositories.IUserRepository
 	otpRepo  contracts_repositories.IOneTimePasswordRepository
 
@@ -163,7 +162,6 @@ func (uc *AuthenticateOTPUseCase) Validate(input string, result *usecase.UseCase
 
 func NewAuthenticateOTPUseCase(
 	log contracts_providers.ILoggerProvider,
-	pass contracts_repositories.IPasswordRepository,
 	userRepo contracts_repositories.IUserRepository,
 	otpRepo contracts_repositories.IOneTimePasswordRepository,
 	hashProvider contracts_providers.IHashProvider,
@@ -172,7 +170,6 @@ func NewAuthenticateOTPUseCase(
 	return &AuthenticateOTPUseCase{
 		appMessages:  locales.NewLocale(locales.EN_US),
 		log:          log,
-		pass:         pass,
 		userRepo:     userRepo,
 		otpRepo:      otpRepo,
 		jwtProvider:  jwtProvider,
