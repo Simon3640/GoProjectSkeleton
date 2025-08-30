@@ -49,3 +49,17 @@ func (mhp *MockHashProvider) ValidateOneTimeToken(hashedToken []byte, token stri
 	args := mhp.Called(hashedToken, token)
 	return args.Bool(0)
 }
+
+func (mhp *MockHashProvider) GenerateOTP() (string, []byte, *application_errors.ApplicationError) {
+	args := mhp.Called()
+	errorArg := args.Get(2)
+	if errorArg != nil {
+		return args.String(0), args.Get(1).([]byte), errorArg.(*application_errors.ApplicationError)
+	}
+	return args.String(0), args.Get(1).([]byte), nil
+}
+
+func (mhp *MockHashProvider) ValidateOTP(hashedOTP []byte, otp string) bool {
+	args := mhp.Called(hashedOTP, otp)
+	return args.Bool(0)
+}
