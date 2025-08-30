@@ -199,11 +199,13 @@ func createUserAndPassword(c *gin.Context) {
 		return
 	}
 	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
+	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.DB, providers.Logger)
 	hashProvider := providers.HashProviderInstance
 
 	uc_create_user_email := usecases_user.NewCreateUserSendEmailUseCase(
 		providers.Logger,
-		providers.JWTProviderInstance,
+		providers.HashProviderInstance,
+		oneTimeTokenRepository,
 	)
 
 	uc_create_user_password := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
