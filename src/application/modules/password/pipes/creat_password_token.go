@@ -16,6 +16,8 @@ func NewGetResetPasswordPipe(
 	create_password_token_uc *usecases_password.CreatePasswordTokenUseCase,
 	create_password_uc *usecases_password.CreatePasswordUseCase,
 ) *usecase.DAG[dtos.PasswordTokenCreate, bool] {
-	dag := usecase.NewDag(usecase.NewStep(create_password_token_uc), locale, ctx)
-	return usecase.Then(dag, usecase.NewStep(create_password_uc))
+	return nil
+	// return nil --- IGNORE ---
+	// dag := usecase.NewDag(usecase.NewStep(create_password_token_uc), locale, ctx)
+	// return usecase.Then(dag, usecase.NewStep(create_password_uc))
 }

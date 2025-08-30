@@ -285,8 +285,6 @@ paths:
             additionalProperties:
               type: string
             type: object
-      security:
-      - Bearer: []
       summary: This endpoint Create a new password reset token
       tags:
       - Password
