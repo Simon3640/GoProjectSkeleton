@@ -63,6 +63,8 @@ definitions:
         type: string
       name:
         type: string
+      otp_login:
+        type: boolean
       password:
         type: string
       phone:
@@ -78,6 +80,8 @@ definitions:
         type: string
       name:
         type: string
+      otp_login:
+        type: boolean
       phone:
         type: string
       role_id:
@@ -107,6 +111,8 @@ definitions:
         type: string
       name:
         type: string
+      otp_login:
+        type: boolean
       phone:
         type: string
       role_id:
@@ -126,6 +132,8 @@ definitions:
         type: integer
       name:
         type: string
+      otp_login:
+        type: boolean
       phone:
         type: string
       role_id:
@@ -158,6 +166,8 @@ paths:
           description: Tokens generated successfully
           schema:
             $ref: '#/definitions/dtos.Token'
+        "204":
+          description: OTP login enabled, OTP Sended to user email or phone
         "400":
           description: Validation error
           schema:

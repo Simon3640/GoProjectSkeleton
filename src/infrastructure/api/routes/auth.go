@@ -23,6 +23,7 @@ import (
 // @Produce      json
 // @Param        request body dtos.UserCredentials true "User credentials"
 // @Success      200 {object} dtos.Token "Tokens generated successfully"
+// @Success 	 204 {object} nil "OTP login enabled, OTP Sended to user email or phone"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/login [post]
 func login(c *gin.Context) {
@@ -34,9 +35,11 @@ func login(c *gin.Context) {
 	}
 
 	password_repository := repositories.NewPasswordRepository(database.DB, providers.Logger)
+	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
 
 	uc_result := auth.NewAuthenticateUseCase(providers.Logger,
 		password_repository,
+		userRepository,
 		providers.HashProviderInstance,
 		providers.JWTProviderInstance,
 	).Execute(c, locales.EN_US, userCredentials)

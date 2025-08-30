@@ -19,7 +19,9 @@ type AuthenticateUseCase struct {
 	log         contracts_providers.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
-	pass contracts_repositories.IPasswordRepository
+	pass     contracts_repositories.IPasswordRepository
+	userRepo contracts_repositories.IUserRepository
+	otpRepo  contracts_repositories.IOneTimePasswordRepository
 
 	jwtProvider  contracts_providers.IJWTProvider
 	hashProvider contracts_providers.IHashProvider
@@ -51,6 +53,21 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 
 	// Get password from repository
 	password, err := uc.pass.GetActivePassword(input.Email)
+
+	if err != nil {
+		result.SetError(
+			status.NotFound,
+			uc.appMessages.Get(
+				uc.locale,
+				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
+			),
+		)
+		return result
+	}
+
+	// Get user with role from repository
+	user, err := uc.userRepo.GetUserWithRole(password.UserID)
+
 	if err != nil {
 		result.SetError(
 			status.NotFound,
@@ -75,9 +92,31 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 		return result
 	}
 
-	// TODO: GO for user info
+	// OTP Login
+	if user.OTPLogin {
+		// otp, err := services.CreateOneTimePasswordService(user.ID, models.OneTimePasswordLogin, uc.hashProvider, uc.otpRepo)
+		if err != nil {
+			uc.log.Error("Error creating OTP", err.ToError())
+			result.SetError(
+				status.Conflict,
+				uc.appMessages.Get(
+					uc.locale,
+					messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				),
+			)
+			return result
+		}
+
+		result.SetSuccess(true)
+		result.SetDetails(uc.appMessages.Get(
+			uc.locale,
+			messages.MessageKeysInstance.OTP_LOGIN_ENABLED,
+		))
+		return result
+	}
+
 	claims := contracts_providers.JWTCLaims{
-		"role": "user",
+		"role": user.GetRoleKey(),
 	}
 
 	// Generate JWT tokens
@@ -141,6 +180,7 @@ func (uc *AuthenticateUseCase) validate(input dtos.UserCredentials) (bool, []str
 func NewAuthenticateUseCase(
 	log contracts_providers.ILoggerProvider,
 	pass contracts_repositories.IPasswordRepository,
+	userRepo contracts_repositories.IUserRepository,
 	hashProvider contracts_providers.IHashProvider,
 	jwtProvider contracts_providers.IJWTProvider,
 ) *AuthenticateUseCase {
@@ -148,6 +188,7 @@ func NewAuthenticateUseCase(
 		appMessages:  locales.NewLocale(locales.EN_US),
 		log:          log,
 		pass:         pass,
+		userRepo:     userRepo,
 		jwtProvider:  jwtProvider,
 		hashProvider: hashProvider,
 	}
