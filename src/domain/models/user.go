@@ -1,11 +1,12 @@
 package models
 
 type UserBase struct {
-	Name   string `json:"name"`
-	Email  string `json:"email"`
-	Phone  string `json:"phone"`
-	Status string `json:"status"`
-	RoleID uint   `json:"role_id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	Status   string `json:"status"`
+	RoleID   uint   `json:"role_id"`
+	OTPLogin bool   `json:"otp_login"`
 }
 
 func (u UserBase) Validate() []string {

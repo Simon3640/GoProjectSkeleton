@@ -46,6 +46,9 @@ const docTemplate = `{
                             "$ref": "#/definitions/dtos.Token"
                         }
                     },
+                    "204": {
+                        "description": "OTP login enabled, OTP Sended to user email or phone"
+                    },
                     "400": {
                         "description": "Validation error",
                         "schema": {
@@ -707,6 +710,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "otp_login": {
+                    "type": "boolean"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -729,6 +735,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "otp_login": {
+                    "type": "boolean"
                 },
                 "phone": {
                     "type": "string"
@@ -775,6 +784,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "otp_login": {
+                    "type": "boolean"
+                },
                 "phone": {
                     "type": "string"
                 },
@@ -803,6 +815,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "otp_login": {
+                    "type": "boolean"
                 },
                 "phone": {
                     "type": "string"

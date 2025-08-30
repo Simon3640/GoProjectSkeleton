@@ -40,6 +40,7 @@ var EnMessages = map[MessageKeysEnum]string{
 	"AUTHORIZATION_TOKEN_EXPIRED":  "Authorization token has expired.",
 	"AUTHORIZATION_GENERATED":      "Authorization token generated successfully.",
 	"INVALID_JWT_TOKEN":            "Invalid JWT token.",
+	"OTP_LOGIN_ENABLED":            "OTP login is enabled for this user. An OTP code has been sent to your email or phone.",
 
 	"INVALID_EMAIL":    "Invalid email.",
 	"INVALID_PASSWORD": "Invalid password.",

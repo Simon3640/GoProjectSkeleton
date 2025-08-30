@@ -35,6 +35,9 @@
                             "$ref": "#/definitions/dtos.Token"
                         }
                     },
+                    "204": {
+                        "description": "OTP login enabled, OTP Sended to user email or phone"
+                    },
                     "400": {
                         "description": "Validation error",
                         "schema": {
@@ -696,6 +699,9 @@
                 "name": {
                     "type": "string"
                 },
+                "otp_login": {
+                    "type": "boolean"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -718,6 +724,9 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "otp_login": {
+                    "type": "boolean"
                 },
                 "phone": {
                     "type": "string"
@@ -764,6 +773,9 @@
                 "name": {
                     "type": "string"
                 },
+                "otp_login": {
+                    "type": "boolean"
+                },
                 "phone": {
                     "type": "string"
                 },
@@ -792,6 +804,9 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "otp_login": {
+                    "type": "boolean"
                 },
                 "phone": {
                     "type": "string"
