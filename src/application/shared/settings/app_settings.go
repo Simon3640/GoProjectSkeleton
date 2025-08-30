@@ -37,6 +37,8 @@ type AppSettings struct {
 	OneTimeTokenEmailVerifyTTL int64 // in minutes
 	FrontendResetPasswordURL   string
 	FrontendActivateAccountURL string
+	OneTimePasswordTTL         int64 // in minutes
+	OneTimePasswordLength      int   // length of the generated one-time password
 
 	// Mail
 	MailHost     string

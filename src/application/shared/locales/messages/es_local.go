@@ -40,6 +40,8 @@ var EsMessages = map[MessageKeysEnum]string{
 	"AUTHORIZATION_TOKEN_EXPIRED":  "El token de autorización ha expirado.",
 	"AUTHORIZATION_GENERATED":      "Token de autorización generado con éxito.",
 	"INVALID_JWT_TOKEN":            "Token JWT inválido.",
+	"OTP_LOGIN_ENABLED":            "El inicio de sesión OTP está habilitado para este usuario. Por favor, un código OTP ha sido enviado a tu correo electrónico o teléfono.",
+	"INVALID_OTP":                  "El código OTP proporcionado es inválido. Está usado, expirado o es incorrecto.",
 
 	"INVALID_EMAIL":    "El correo electrónico es inválido.",
 	"INVALID_PASSWORD": "La contraseña es inválida.",

@@ -46,6 +46,50 @@ const docTemplate = `{
                             "$ref": "#/definitions/dtos.Token"
                         }
                     },
+                    "204": {
+                        "description": "OTP login enabled, OTP Sended to user email or phone"
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/login-otp/{otp}": {
+            "get": {
+                "description": "This endpoint allows a user to log in with OTP and receive JWT access and",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login with OTP and get JWT tokens",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "One Time Password",
+                        "name": "otp",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tokens generated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.Token"
+                        }
+                    },
                     "400": {
                         "description": "Validation error",
                         "schema": {
@@ -707,6 +751,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "otp_login": {
+                    "type": "boolean"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -729,6 +776,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "otp_login": {
+                    "type": "boolean"
                 },
                 "phone": {
                     "type": "string"
@@ -775,6 +825,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "otp_login": {
+                    "type": "boolean"
+                },
                 "phone": {
                     "type": "string"
                 },
@@ -803,6 +856,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "otp_login": {
+                    "type": "boolean"
                 },
                 "phone": {
                     "type": "string"
