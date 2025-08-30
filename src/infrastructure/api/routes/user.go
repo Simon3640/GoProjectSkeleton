@@ -230,3 +230,40 @@ func createUserAndPassword(c *gin.Context) {
 
 	c.JSON(statusCode, content)
 }
+
+// ActivateUser
+// @Summary This endpoint Activate a user by token
+// @Description This endpoint Activate a user by token
+// @Schemes models.UserActivate
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param request body dtos.UserActivate true "Token de activación"
+// @Success 200 {object} bool "Usuario activado"
+// @Failure 400 {object} map[string]string "Error de validación"
+// @Router /api/user/activate [post]
+func activateUser(c *gin.Context) {
+	var userActivate dtos.UserActivate
+
+	if err := c.ShouldBindJSON(&userActivate); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
+	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.DB, providers.Logger)
+	hashProvider := providers.HashProviderInstance
+
+	uc_result := usecases_user.NewActivateUserUseCase(
+		providers.Logger,
+		userRepository,
+		oneTimeTokenRepository,
+		hashProvider,
+	).Execute(c.Request.Context(), locales.EN_US, userActivate)
+	headers := map[api.HTTPHeaderTypeEnum]string{
+		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	}
+	content, statusCode := api.NewRequestResolver[bool]().ResolveDTO(c, uc_result, headers)
+
+	c.JSON(statusCode, content)
+}

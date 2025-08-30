@@ -423,6 +423,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user/activate": {
+            "post": {
+                "description": "This endpoint Activate a user by token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "This endpoint Activate a user by token",
+                "parameters": [
+                    {
+                        "description": "Token de activación",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UserActivate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario activado",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/{id}": {
             "get": {
                 "security": [
@@ -643,6 +686,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "token_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.UserActivate": {
+            "type": "object",
+            "properties": {
+                "token": {
                     "type": "string"
                 }
             }

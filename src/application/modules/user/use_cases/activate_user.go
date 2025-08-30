@@ -61,7 +61,7 @@ func (uc *ActivateUserUseCase) Execute(ctx context.Context,
 			status.Conflict,
 			uc.AppMessages.Get(
 				uc.Locale,
-				messages.MessageKeysInstance.INVALID_PASSWORD_RESET_TOKEN,
+				messages.MessageKeysInstance.INVALID_USER_ACTIVATION_TOKEN,
 			),
 		)
 		return result

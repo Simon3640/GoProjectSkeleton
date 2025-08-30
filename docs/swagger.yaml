@@ -52,6 +52,11 @@ definitions:
       token_type:
         type: string
     type: object
+  dtos.UserActivate:
+    properties:
+      token:
+        type: string
+    type: object
   dtos.UserAndPasswordCreate:
     properties:
       email:
@@ -489,6 +494,34 @@ paths:
       security:
       - Bearer: []
       summary: This endpoint Update a user by ID
+      tags:
+      - User
+  /api/user/activate:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint Activate a user by token
+      parameters:
+      - description: Token de activación
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UserActivate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Usuario activado
+          schema:
+            type: boolean
+        "400":
+          description: Error de validación
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: This endpoint Activate a user by token
       tags:
       - User
 securityDefinitions:
