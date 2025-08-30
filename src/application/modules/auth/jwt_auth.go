@@ -10,8 +10,14 @@ import (
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
+	"gormgoskeleton/src/application/shared/services"
+	email_service "gormgoskeleton/src/application/shared/services/emails"
+	email_models "gormgoskeleton/src/application/shared/services/emails/models"
+	"gormgoskeleton/src/application/shared/settings"
 	"gormgoskeleton/src/application/shared/status"
+	"gormgoskeleton/src/application/shared/templates"
 	usecase "gormgoskeleton/src/application/shared/use_case"
+	"gormgoskeleton/src/domain/models"
 )
 
 type AuthenticateUseCase struct {
@@ -94,7 +100,33 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 
 	// OTP Login
 	if user.OTPLogin {
-		// otp, err := services.CreateOneTimePasswordService(user.ID, models.OneTimePasswordLogin, uc.hashProvider, uc.otpRepo)
+		otp, err := services.CreateOneTimePasswordService(user.ID, models.OneTimePasswordLogin, uc.hashProvider, uc.otpRepo)
+		otpEmailData := email_models.OneTimePasswordEmailData{
+			Name:              user.Name,
+			OTPCode:           otp,
+			ExpirationMinutes: int(settings.AppSettingsInstance.OneTimeTokenPasswordTTL),
+			AppName:           settings.AppSettingsInstance.AppName,
+			SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
+		}
+
+		if err := email_service.OneTimePasswordEmailServiceInstance.SendWithTemplate(
+			otpEmailData,
+			user.Email,
+			uc.locale,
+			templates.TemplateKeysInstance.OTPEmail,
+			email_service.SubjectKeysInstance.OTPEmail,
+		); err != nil {
+			uc.log.Error("Error sending email", err.ToError())
+			result.SetError(
+				err.Code,
+				uc.appMessages.Get(
+					uc.locale,
+					err.Context,
+				),
+			)
+			return result
+		}
+
 		if err != nil {
 			uc.log.Error("Error creating OTP", err.ToError())
 			result.SetError(
@@ -181,6 +213,7 @@ func NewAuthenticateUseCase(
 	log contracts_providers.ILoggerProvider,
 	pass contracts_repositories.IPasswordRepository,
 	userRepo contracts_repositories.IUserRepository,
+	otpRepo contracts_repositories.IOneTimePasswordRepository,
 	hashProvider contracts_providers.IHashProvider,
 	jwtProvider contracts_providers.IJWTProvider,
 ) *AuthenticateUseCase {
@@ -189,6 +222,7 @@ func NewAuthenticateUseCase(
 		log:          log,
 		pass:         pass,
 		userRepo:     userRepo,
+		otpRepo:      otpRepo,
 		jwtProvider:  jwtProvider,
 		hashProvider: hashProvider,
 	}

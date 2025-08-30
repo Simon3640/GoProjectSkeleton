@@ -36,10 +36,12 @@ func login(c *gin.Context) {
 
 	password_repository := repositories.NewPasswordRepository(database.DB, providers.Logger)
 	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
+	otpRepository := repositories.NewOneTimePasswordRepository(database.DB, providers.Logger)
 
 	uc_result := auth.NewAuthenticateUseCase(providers.Logger,
 		password_repository,
 		userRepository,
+		otpRepository,
 		providers.HashProviderInstance,
 		providers.JWTProviderInstance,
 	).Execute(c, locales.EN_US, userCredentials)
