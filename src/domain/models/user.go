@@ -57,6 +57,10 @@ func (u *UserWithRole) GetUserID() uint {
 	return u.ID
 }
 
+func (u *UserWithRole) GetUserIDString() string {
+	return string(rune(u.ID))
+}
+
 type User struct {
 	UserBase
 	DBBaseModel

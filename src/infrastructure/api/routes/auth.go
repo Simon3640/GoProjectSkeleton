@@ -128,3 +128,35 @@ func requestPasswordReset(c *gin.Context) {
 
 	c.JSON(statusCode, content)
 }
+
+// OTP login
+// @Summary      Login with OTP and get JWT tokens
+// @Description  This endpoint allows a user to log in with OTP and receive JWT access and
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        otp path string true "One Time Password"
+// @Success      200 {object} dtos.Token "Tokens generated successfully"
+// @Failure      400 {object} map[string]string "Validation error"
+// @Router       /api/auth/login-otp/{otp} [get]
+func loginOTP(c *gin.Context) {
+	otp := c.Param("otp")
+
+	password_repository := repositories.NewPasswordRepository(database.DB, providers.Logger)
+	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
+	otpRepository := repositories.NewOneTimePasswordRepository(database.DB, providers.Logger)
+
+	uc_result := auth.NewAuthenticateOTPUseCase(providers.Logger,
+		password_repository,
+		userRepository,
+		otpRepository,
+		providers.HashProviderInstance,
+		providers.JWTProviderInstance,
+	).Execute(c, locales.EN_US, otp)
+	headers := map[api.HTTPHeaderTypeEnum]string{
+		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	}
+	content, statusCode := api.NewRequestResolver[dtos.Token]().ResolveDTO(c, uc_result, headers)
+
+	c.JSON(statusCode, content)
+}

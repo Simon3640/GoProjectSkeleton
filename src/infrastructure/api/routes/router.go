@@ -29,5 +29,6 @@ func Router(r *gin.RouterGroup) {
 	r.POST("/auth/login", login)
 	r.POST("/auth/refresh", refreshAccessToken)
 	r.GET("/auth/password-reset/:identifier", requestPasswordReset)
+	r.GET("/auth/login-otp/:otp", loginOTP)
 
 }

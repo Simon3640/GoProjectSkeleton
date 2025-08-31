@@ -177,6 +177,34 @@ paths:
       summary: Login and get JWT tokens
       tags:
       - Auth
+  /api/auth/login-otp/{otp}:
+    get:
+      consumes:
+      - application/json
+      description: This endpoint allows a user to log in with OTP and receive JWT
+        access and
+      parameters:
+      - description: One Time Password
+        in: path
+        name: otp
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tokens generated successfully
+          schema:
+            $ref: '#/definitions/dtos.Token'
+        "400":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login with OTP and get JWT tokens
+      tags:
+      - Auth
   /api/auth/password-reset/{identifier}:
     get:
       consumes:
