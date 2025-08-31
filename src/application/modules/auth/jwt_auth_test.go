@@ -8,6 +8,7 @@ import (
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
+	dto_mocks "gormgoskeleton/src/application/shared/mocks/dtos"
 	"gormgoskeleton/src/application/shared/status"
 	"gormgoskeleton/src/domain/models"
 
@@ -47,12 +48,15 @@ func TestAuthenticationUseCase(t *testing.T) {
 	testHashProvider.On("VerifyPassword", passwordBase.Hash, userCredentials.Password).Return(true, nil)
 	testJWTProvider.On("GenerateAccessToken", ctx, "1", mock.Anything).Return("accessToken", time.Now().Add(1*time.Hour), nil)
 	testJWTProvider.On("GenerateRefreshToken", ctx, "1").Return("refreshToken", time.Now().Add(24*time.Hour), nil)
+	testUserRepository.On("GetUserWithRole", uint(1)).Return(&dto_mocks.UserWithRole, nil)
 	result := uc.Execute(ctx, locales.EN_US, userCredentials)
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())
 	assert.Equal("accessToken", result.Data.AccessToken)
 	assert.Equal("refreshToken", result.Data.RefreshToken)
 }
+
+//TODO: Add test for OTP when enabled
 
 func TestAuthenticationUseCase_InvalidCredentials(t *testing.T) {
 	assert := assert.New(t)
@@ -84,6 +88,7 @@ func TestAuthenticationUseCase_InvalidCredentials(t *testing.T) {
 		ID:           uint(1),
 	}, nil)
 	testHashProvider.On("VerifyPassword", passwordBase.Hash, userCredentials.Password).Return(false, nil)
+	testUserRepository.On("GetUserWithRole", uint(1)).Return(&dto_mocks.UserWithRole, nil)
 	result := uc.Execute(ctx, locales.EN_US, userCredentials)
 	assert.NotNil(result)
 	assert.False(result.IsSuccess())
