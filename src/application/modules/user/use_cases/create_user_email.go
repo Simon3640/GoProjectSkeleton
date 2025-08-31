@@ -70,10 +70,10 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 
 	if err := email_service.RegisterUserEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
-		input,
+		input.Email,
 		locale,
 		templates.TemplateKeysInstance.WelcomeEmail,
-		messages.MessageKeysInstance.NEW_USER_WELCOME,
+		email_service.SubjectKeysInstance.WelcomeEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(

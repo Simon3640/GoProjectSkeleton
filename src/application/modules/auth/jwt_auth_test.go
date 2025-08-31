@@ -24,8 +24,9 @@ func TestAuthenticationUseCase(t *testing.T) {
 	testHashProvider := new(mocks.MockHashProvider)
 	testPasswordRepository := new(mocks.MockPasswordRepository)
 	testUserRepository := new(mocks.MockUserRepository)
+	testOTPRepository := new(mocks.MockOneTimePasswordRepository)
 
-	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testUserRepository, testHashProvider, testJWTProvider)
+	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testUserRepository, testOTPRepository, testHashProvider, testJWTProvider)
 
 	// Valid User Authentication
 	userCredentials := dtos.UserCredentials{
@@ -62,8 +63,9 @@ func TestAuthenticationUseCase_InvalidCredentials(t *testing.T) {
 	testHashProvider := new(mocks.MockHashProvider)
 	testPasswordRepository := new(mocks.MockPasswordRepository)
 	testUserRepository := new(mocks.MockUserRepository)
+	testOTPRepository := new(mocks.MockOneTimePasswordRepository)
 
-	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testUserRepository, testHashProvider, testJWTProvider)
+	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testUserRepository, testOTPRepository, testHashProvider, testJWTProvider)
 
 	// Invalid User Authentication
 	userCredentials := dtos.UserCredentials{
