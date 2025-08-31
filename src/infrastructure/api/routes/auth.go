@@ -142,12 +142,10 @@ func requestPasswordReset(c *gin.Context) {
 func loginOTP(c *gin.Context) {
 	otp := c.Param("otp")
 
-	password_repository := repositories.NewPasswordRepository(database.DB, providers.Logger)
 	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
 	otpRepository := repositories.NewOneTimePasswordRepository(database.DB, providers.Logger)
 
 	uc_result := auth.NewAuthenticateOTPUseCase(providers.Logger,
-		password_repository,
 		userRepository,
 		otpRepository,
 		providers.HashProviderInstance,

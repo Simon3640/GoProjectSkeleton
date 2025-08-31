@@ -42,5 +42,4 @@ func (o *OneTimePasswordBase) Validate() []string {
 type OneTimePassword struct {
 	OneTimePasswordBase
 	DBBaseModel
-	Selector string `json:"selector"`
 }
