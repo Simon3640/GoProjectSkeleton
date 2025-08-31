@@ -66,11 +66,12 @@ func (ur *UserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *appli
 	}
 	userWithRoleModel := models.UserWithRole{
 		UserBase: models.UserBase{
-			Name:   userWithRole.Name,
-			Email:  userWithRole.Email,
-			Phone:  userWithRole.Phone,
-			Status: userWithRole.Status,
-			RoleID: userWithRole.RoleID,
+			Name:     userWithRole.Name,
+			Email:    userWithRole.Email,
+			Phone:    userWithRole.Phone,
+			Status:   userWithRole.Status,
+			RoleID:   userWithRole.RoleID,
+			OTPLogin: userWithRole.OTPLogin,
 		},
 		ID: userWithRole.ID,
 	}
@@ -120,11 +121,12 @@ func (uc *UserConverter) ToDomain(ormModel *db_models.User) *models.User {
 			DeletedAt: ormModel.DeletedAt.Time,
 		},
 		UserBase: models.UserBase{
-			Name:   ormModel.Name,
-			Email:  ormModel.Email,
-			Phone:  ormModel.Phone,
-			Status: ormModel.Status,
-			RoleID: ormModel.RoleID,
+			Name:     ormModel.Name,
+			Email:    ormModel.Email,
+			Phone:    ormModel.Phone,
+			Status:   ormModel.Status,
+			RoleID:   ormModel.RoleID,
+			OTPLogin: ormModel.OTPLogin,
 		},
 	}
 }

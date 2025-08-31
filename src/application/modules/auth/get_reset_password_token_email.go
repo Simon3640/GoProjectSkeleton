@@ -46,10 +46,10 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 
 	if err := email_service.ResetPasswordEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
-		input.User,
+		input.User.Email,
 		locale,
 		templates.TemplateKeysInstance.PasswordResetEmail,
-		messages.MessageKeysInstance.RESET_PASSWORD_SUBJECT,
+		email_service.SubjectKeysInstance.PasswordResetEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(

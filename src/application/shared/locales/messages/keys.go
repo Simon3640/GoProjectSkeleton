@@ -43,6 +43,8 @@ type MessageKeys struct {
 	AUTHORIZATION_GENERATED      MessageKeysEnum
 	INVALID_JWT_TOKEN            MessageKeysEnum
 	JWT_TOKEN_VIOLATED           MessageKeysEnum
+	OTP_LOGIN_ENABLED            MessageKeysEnum
+	INVALID_OTP                  MessageKeysEnum
 
 	INVALID_EMAIL         MessageKeysEnum
 	INVALID_PASSWORD      MessageKeysEnum
@@ -97,6 +99,8 @@ var MessageKeysInstance = MessageKeys{
 	AUTHORIZATION_GENERATED:      "AUTHORIZATION_GENERATED",
 	INVALID_JWT_TOKEN:            "INVALID_JWT_TOKEN",
 	JWT_TOKEN_VIOLATED:           "JWT_TOKEN_VIOLATED",
+	OTP_LOGIN_ENABLED:            "OTP_LOGIN_ENABLED",
+	INVALID_OTP:                  "INVALID_OTP",
 
 	APPLICATION_STATUS_OK: "APPLICATION_STATUS_OK",
 }

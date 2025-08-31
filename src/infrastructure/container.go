@@ -52,4 +52,9 @@ func Initialize() {
 		providers.RenderResetPasswordEmailInstance,
 		providers.EmailProviderInstance,
 	)
+
+	email_service.OneTimePasswordEmailServiceInstance.SetUp(
+		providers.RenderOTPEmailInstance,
+		providers.EmailProviderInstance,
+	)
 }
