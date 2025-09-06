@@ -57,3 +57,26 @@ func TestDagExecution(t *testing.T) {
 	assert.NotNil(result)
 
 }
+
+func TestDagConcurrentExecution(t *testing.T) {
+	assert := assert.New(t)
+
+	UC1 := &UCStringToInt{}
+	UC2 := &UCIntExponent{}
+	UC3 := &UCIntToString{}
+	ParallelUC := NewUseCaseParallelDag[string, int]()
+	ParallelUC.Usecases = []BaseUseCase[string, int]{UC1, UC1, UC1, UC1, UC1}
+	dag := NewDag(NewStep(UC1), locales.EN_US, context.Background())
+	dag2 := Then(dag, NewStep(UC2))
+	dag3 := Then(dag2, NewStep(UC3))
+	dagParallel := Then(dag3, NewStep(ParallelUC))
+
+	input := "5"
+	result := dagParallel.Execute(input)
+	// assert.Nil(err)
+	assert.NotNil(result)
+	assert.Equal(5, len(*result.Data))
+	for _, val := range *result.Data {
+		assert.Equal(42, val)
+	}
+}
