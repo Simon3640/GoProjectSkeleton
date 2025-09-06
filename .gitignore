@@ -22,9 +22,11 @@ go.work
 go.work.sum
 
 # env file
-.env
+*.env
 
 __debug_bin*
 .vscode/
 
 docs/*
+
+tmp/
