@@ -1,0 +1,19 @@
+root = "/app"
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -gcflags 'all=-N -l' -o /app/tmp/main /app/src/infrastructure/api/cmd"
+bin = "/app/tmp/main"
+include_ext = ["go", "mod", "sum", "yaml", "toml", "env"]
+exclude_dir = ["vendor", "tmp"]
+
+[polling]
+enable = true
+interval = 1000
+
+[log]
+color = true
+timestamp = true
+
+[misc]
+clean_on_exit = true

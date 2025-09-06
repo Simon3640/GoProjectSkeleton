@@ -9,7 +9,7 @@ import (
 
 type Config struct {
 	// Application
-	AppName         string `env:"APP_NAME" envDefault:"gormgoskeleton"`
+	AppName         string `env:"APP_NAME" envDefault:"0.0.0.1"`
 	AppEnv          string `env:"APP_ENV" envDefault:"development"`
 	AppPort         string `env:"APP_PORT" envDefault:"8080"`
 	AppVersion      string `env:"APP_VERSION" envDefault:"0.0.1"`
@@ -20,7 +20,7 @@ type Config struct {
 	TemplatesPath   string `env:"TEMPLATES_PATH" envDefault:"src/application/shared/templates/"`
 
 	// Database
-	DBHost     string `env:"DB_HOST" envDefault:"localhost"`
+	DBHost     string `env:"DB_HOST" envDefault:"gormgoskeleton"`
 	DBPort     string `env:"DB_PORT" envDefault:"5432"`
 	DBUser     string `env:"DB_USER" envDefault:"postgres"`
 	DBPassword string `env:"DB_PASSWORD" envDefault:"postgres"`
