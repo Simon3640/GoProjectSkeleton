@@ -1,11 +1,11 @@
-FROM golang:1.23-bullseye AS builder
+FROM golang:1.25-alpine AS builder
 
 # Alpine
-# RUN apk add --no-cache git build-base 
+RUN apk add --no-cache git build-base 
 # Debian
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git build-essential \
- && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     git build-essential \
+#  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -24,9 +24,9 @@ RUN swag init -g ./src/infrastructure/api/cmd/main.go -o /app/docs
 # RUN go build -gcflags "all=-N -l" -o /app/main ./src/infrastructure/api/cmd/main.go
 
 
-FROM golang:1.23-bullseye
+FROM golang:1.25-alpine
 
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 WORKDIR /app
 
