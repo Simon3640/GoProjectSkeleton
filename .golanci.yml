@@ -1,0 +1,39 @@
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - govet
+    - staticcheck
+    - errcheck
+    - gosimple
+    - unused
+    - ineffassign
+    - gocritic
+    - gofumpt
+    - goimports
+    - revive
+  disable:
+    - depguard
+    - exhaustivestruct
+    - maligned
+
+linters-settings:
+  revive:
+    rules:
+      - name: var-naming
+        disabled: false
+      - name: package-comments
+        disabled: true
+  goimports:
+    local-prefixes: github.com/tuusuario/tuproject
+  gofumpt:
+    extra-rules: true
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: true

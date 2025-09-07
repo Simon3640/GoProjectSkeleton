@@ -30,7 +30,7 @@ var _ contracts_providers.IHashProvider = (*HashProvider)(nil)
 func (hp *HashProvider) HashPassword(password string) (string, *application_errors.ApplicationError) {
 	// creating a salt of variable settings.AppSettingsInstance.OneTimePasswordLength
 	salt := make([]byte, hp.saltLen)
-	rand.Read(salt)
+	_, _ = rand.Read(salt)
 	// It never return error
 
 	hash := argon2.IDKey([]byte(password), salt, hp.time, hp.memory, hp.threads, hp.keyLen)
