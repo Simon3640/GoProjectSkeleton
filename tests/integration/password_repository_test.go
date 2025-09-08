@@ -1,11 +1,12 @@
-package postgres_test
+package integrationtest
 
 import (
+	"testing"
+
 	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
 	"gormgoskeleton/src/infrastructure/providers"
 	"gormgoskeleton/src/infrastructure/repositories"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -1,23 +1,24 @@
-package providers
+package integrationtest
 
 import (
+	"gormgoskeleton/src/application/shared/settings"
+	"gormgoskeleton/src/infrastructure/providers"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEmailProvider_Integration(t *testing.T) {
-	t.Skip("Skipping integration test for EmailProvider. Remove this line to run the test.")
 	assert := assert.New(t)
 
-	smtpHost := "localhost"
-	smtpPort := 1025
-	from := "noreply@goprojectekeleton.com"
+	smtpHost := settings.AppSettingsInstance.MailHost
+	smtpPort := settings.AppSettingsInstance.MailPort
+	from := settings.AppSettingsInstance.MailFrom
 	to := "recipient@example.com"
 	subject := "Test Email"
 	body := "This is a test email."
 
-	email_provider := NewEmailProvider()
+	email_provider := providers.NewEmailProvider()
 
 	email_provider.Setup(smtpHost, smtpPort, from, "password")
 
