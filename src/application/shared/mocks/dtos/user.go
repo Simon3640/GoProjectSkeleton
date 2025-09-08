@@ -1,4 +1,4 @@
-package dto_mocks
+package dtomocks
 
 import (
 	dtos "gormgoskeleton/src/application/shared/DTOs"

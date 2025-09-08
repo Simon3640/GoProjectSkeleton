@@ -7,8 +7,12 @@
   <body style="font-family: Arial, sans-serif; line-height:1.5;">
     <h2>¡Hola {{.Name}}!</h2>
     <p>
-      Gracias por registrarte en <b>{{.AppName}}</b>.  
+      Gracias por registrarte en <b>{{.AppName}}</b>.
       Estamos felices de tenerte con nosotros 🚀.
+    </p>
+    <p> Para activar tu cuenta, haz clic en el siguiente enlace:
+      <a href="{{.ActivationLink}}">{{.ActivationLink}}</a>
+      Recuerda que este enlace expirará en {{.ExpirationMinutes}} Minutos.
     </p>
     <p>
       Si tienes alguna duda, puedes escribirnos a <a href="mailto:{{.SupportEmail}}">{{.SupportEmail}}</a>.

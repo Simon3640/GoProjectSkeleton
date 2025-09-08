@@ -41,6 +41,9 @@ func (v *BaseUseCaseValidation[Input, Output]) Validate(
 			return
 		}
 	}
+	if len(v.Guards.list) == 0 {
+		return
+	}
 	user := ctx.Value(app_context.UserKey)
 	if user == nil {
 		result.SetError(

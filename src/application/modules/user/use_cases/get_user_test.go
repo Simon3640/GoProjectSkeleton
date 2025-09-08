@@ -8,7 +8,7 @@ import (
 	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
-	dto_mocks "gormgoskeleton/src/application/shared/mocks/dtos"
+	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
 	"gormgoskeleton/src/application/shared/status"
 	"gormgoskeleton/src/domain/models"
 
@@ -19,12 +19,12 @@ func TestGetUserUseCase(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	actor := dto_mocks.UserWithRole
+	actor := dtomocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
-	var testId uint = actor.ID
+	var testId = actor.ID
 
 	testUserRepository.On("GetByID", testId).Return(&models.User{
 		UserBase: models.UserBase{Name: "Test",
@@ -53,12 +53,12 @@ func TestGetUserUseCase_DifferentUser(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	actor := dto_mocks.UserWithRole
+	actor := dtomocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
-	var testId uint = actor.ID + 1 // Different user ID
+	var testId = actor.ID + 1 // Different user ID
 
 	testUserRepository.On("GetByID", testId).Return(&models.User{
 		UserBase: models.UserBase{Name: "Test",

@@ -2,8 +2,10 @@ package usecase
 
 import (
 	"context"
+	"sync"
 
 	"gormgoskeleton/src/application/shared/locales"
+	"gormgoskeleton/src/application/shared/status"
 )
 
 type DagStep[I any, O any] struct {
@@ -13,43 +15,6 @@ type DagStep[I any, O any] struct {
 func NewStep[I any, O any](uc BaseUseCase[I, O]) DagStep[I, O] {
 	return DagStep[I, O]{uc: uc}
 }
-
-// func Parallel(steps ...DagStep) DagStep {
-// 	return DagStep{run: func(input any) (*any, error) {
-// 		var wg sync.WaitGroup
-// 		results := make([]*any, len(steps))
-// 		errors := make(chan error, len(steps))
-// 		for i, step := range steps {
-// 			wg.Add(1)
-// 			go func(i int, step DagStep) {
-// 				defer wg.Done()
-// 				result, err := step.run(input)
-// 				if err != nil {
-// 					errors <- err
-// 					return
-// 				}
-// 				results[i] = result
-// 			}(i, step)
-// 		}
-// 		wg.Wait()
-// 		close(errors)
-// 		for err := range errors {
-// 			if err != nil {
-// 				return nil, err
-// 			}
-// 		}
-// 		// Convert []*any to []any, then take its address to match *any
-// 		finalResults := make([]any, len(results))
-// 		for i, r := range results {
-// 			if r != nil {
-// 				finalResults[i] = *r
-// 			} else {
-// 				finalResults[i] = nil
-// 			}
-// 		}
-// 		return any(&finalResults).(*any), nil
-// 	}}
-// }
 
 type DAG[I any, O any] struct {
 	run    func(I) *UseCaseResult[O]
@@ -98,4 +63,63 @@ func (d *DAG[I, O]) Execute(input I) *UseCaseResult[O] {
 		return nil
 	}
 	return d.run(input)
+}
+
+type UseCaseParallelDag[I any, O any] struct {
+	Usecases []BaseUseCase[I, O]
+}
+
+var _ BaseUseCase[any, []any] = (*UseCaseParallelDag[any, any])(nil)
+
+// Execute for pipe purposes, input is an array of use
+// cases to be executed in parallel and a list of outputs for next step
+func (d *UseCaseParallelDag[I, O]) Execute(
+	ctx context.Context,
+	locale locales.LocaleTypeEnum,
+	input I,
+) *UseCaseResult[[]O] {
+	result := NewUseCaseResult[[]O]()
+	outputs := make([]O, len(d.Usecases))
+
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
+	for i, uc := range d.Usecases {
+		go func(i int, uc BaseUseCase[I, O]) {
+			defer wg.Done()
+			res := uc.Execute(ctx, locale, input)
+			if res.HasError() {
+				mu.Lock()
+				if !result.HasError() {
+					result.SetError(res.StatusCode, res.GetError().Error())
+				}
+				mu.Unlock()
+				return
+			}
+			if res.Data != nil {
+				mu.Lock()
+				outputs[i] = *res.Data
+				mu.Unlock()
+			}
+		}(i, uc)
+		wg.Add(1)
+	}
+
+	wg.Wait()
+
+	if !result.HasError() {
+		result.SetData(
+			status.Success,
+			outputs,
+			"All use cases executed successfully",
+		)
+	}
+	return result
+}
+
+func (d *UseCaseParallelDag[I, O]) SetLocale(locale locales.LocaleTypeEnum) {
+}
+
+func NewUseCaseParallelDag[I any, O any]() *UseCaseParallelDag[I, O] {
+	return &UseCaseParallelDag[I, O]{}
 }

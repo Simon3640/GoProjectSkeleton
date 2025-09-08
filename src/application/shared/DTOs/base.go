@@ -1,6 +1,8 @@
 package dtos
 
-import "strconv"
+import (
+	"strconv"
+)
 
 type Link struct {
 	Self string  `json:"self"`

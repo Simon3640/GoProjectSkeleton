@@ -11,6 +11,7 @@ import (
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/application/shared/locales/messages"
+	"gormgoskeleton/src/application/shared/settings"
 	"gormgoskeleton/src/application/shared/status"
 
 	"golang.org/x/crypto/argon2"
@@ -27,9 +28,9 @@ type HashProvider struct {
 var _ contracts_providers.IHashProvider = (*HashProvider)(nil)
 
 func (hp *HashProvider) HashPassword(password string) (string, *application_errors.ApplicationError) {
-	// creating a salt of variable length
+	// creating a salt of variable settings.AppSettingsInstance.OneTimePasswordLength
 	salt := make([]byte, hp.saltLen)
-	rand.Read(salt)
+	_, _ = rand.Read(salt)
 	// It never return error
 
 	hash := argon2.IDKey([]byte(password), salt, hp.time, hp.memory, hp.threads, hp.keyLen)
@@ -88,7 +89,7 @@ func (hp *HashProvider) VerifyPassword(hashedPassword, password string) (bool, *
 }
 
 func (hp *HashProvider) OneTimeToken() (string, []byte, *application_errors.ApplicationError) {
-	// creating a salt of variable length
+	// creating a salt of variable settings.AppSettingsInstance.OneTimePasswordLength
 	salt := make([]byte, 32)
 	_, err := rand.Read(salt)
 	if err != nil {
@@ -109,6 +110,32 @@ func (hp *HashProvider) HashOneTimeToken(token string) []byte {
 func (hp *HashProvider) ValidateOneTimeToken(hashedToken []byte, token string) bool {
 	h := sha256.Sum256([]byte(token))
 	return subtle.ConstantTimeCompare(hashedToken, h[:]) == 1
+}
+
+func (hp *HashProvider) GenerateOTP() (string, []byte, *application_errors.ApplicationError) {
+	digits := "0123456789"
+	otp := make([]byte, settings.AppSettingsInstance.OneTimePasswordLength)
+
+	randomBytes := make([]byte, settings.AppSettingsInstance.OneTimePasswordLength)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		return "", nil, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"failed to generate random bytes for OTP",
+		)
+	}
+
+	for i := 0; i < settings.AppSettingsInstance.OneTimePasswordLength; i++ {
+		otp[i] = digits[int(randomBytes[i])%len(digits)]
+	}
+
+	return string(otp), hp.HashOneTimeToken(string(otp)), nil
+}
+
+// ValidateOTP checks if the provided OTP matches the hashed OTP
+func (hp *HashProvider) ValidateOTP(hashedOTP []byte, otp string) bool {
+	return hp.ValidateOneTimeToken(hashedOTP, otp)
 }
 
 func NewHashProvider() *HashProvider {

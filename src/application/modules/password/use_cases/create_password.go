@@ -9,6 +9,7 @@ import (
 	"gormgoskeleton/src/application/shared/guards"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
+	"gormgoskeleton/src/application/shared/services"
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
 )
@@ -39,9 +40,10 @@ func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 		return result
 	}
 
-	hashedPassword, err := uc.hashProvider.HashPassword(input.NoHashedPassword)
+	_, err := services.CreatePasswordService(input, uc.hashProvider, uc.repo)
+
 	if err != nil {
-		uc.log.Error("Error hashing password", err.ToError())
+		uc.log.Error("CreatePasswordUseCase: Execute: Error creating password", err.ToError())
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -50,38 +52,11 @@ func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 			),
 		)
 		return result
-	}
-
-	passwordCreate := dtos.NewPasswordCreate(
-		input.UserID,
-		hashedPassword,
-		input.ExpiresAt,
-		input.IsActive,
-	)
-
-	res, err := uc.repo.Create(passwordCreate)
-
-	if err != nil {
-		result.SetError(
-			err.Code,
-			uc.AppMessages.Get(
-				uc.Locale,
-				err.Context,
-			),
-		)
-		return result
-	}
-
-	var success bool
-	if res != nil {
-		success = true
-	} else {
-		success = false
 	}
 
 	result.SetData(
 		status.Success,
-		success,
+		true,
 		uc.AppMessages.Get(
 			uc.Locale,
 			messages.MessageKeysInstance.PASSWORD_CREATED,
@@ -94,6 +69,7 @@ func NewCreatePasswordUseCase(
 	log contracts_providers.ILoggerProvider,
 	repo contracts_repositories.IPasswordRepository,
 	hashProvider contracts_providers.IHashProvider,
+	skip_guards bool,
 ) *CreatePasswordUseCase {
 	return &CreatePasswordUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[dtos.PasswordCreateNoHash, bool]{

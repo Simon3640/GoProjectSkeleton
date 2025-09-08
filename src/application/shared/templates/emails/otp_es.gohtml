@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Hola {{.Name}} tú código de verificación</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height:1.5;">
+        <h2>¡Hola {{.Name}}!</h2>
+        <p>
+            Tu código de verificación para <b>{{.AppName}}</b> es:
+        </p>
+        <h1 style="font-size: 2em; color: #2E86C1;">{{.OTPCode}}</h1>
+        <p>Recuerda que este código expirará en {{.ExpirationMinutes}} Minutos.</p>
+        <p>
+            Si tienes alguna duda, puedes escribirnos a <a href="mailto:{{.SupportEmail}}">{{.SupportEmail}}</a>.
+        </p>
+        <hr>
+        <small>© {{.AppName}} - Todos los derechos reservados</small>
+    </body>
+</html>

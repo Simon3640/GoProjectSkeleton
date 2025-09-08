@@ -27,14 +27,18 @@ type AppSettings struct {
 	DBSSL      bool
 
 	// Security
-	JWTSecretKey             string
-	JWTIssuer                string
-	JWTAudience              string
-	JWTAccessTTL             int64 // in seconds
-	JWTRefreshTTL            int64 // in seconds
-	JWTClockSkew             int64 // in seconds
-	OneTimeTokenTTL          int64 // in minutes
-	FrontendResetPasswordURL string
+	JWTSecretKey               string
+	JWTIssuer                  string
+	JWTAudience                string
+	JWTAccessTTL               int64 // in seconds
+	JWTRefreshTTL              int64 // in seconds
+	JWTClockSkew               int64 // in seconds
+	OneTimeTokenPasswordTTL    int64 // in minutes
+	OneTimeTokenEmailVerifyTTL int64 // in minutes
+	FrontendResetPasswordURL   string
+	FrontendActivateAccountURL string
+	OneTimePasswordTTL         int64 // in minutes
+	OneTimePasswordLength      int   // length of the generated one-time password
 
 	// Mail
 	MailHost     string

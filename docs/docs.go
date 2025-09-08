@@ -46,6 +46,50 @@ const docTemplate = `{
                             "$ref": "#/definitions/dtos.Token"
                         }
                     },
+                    "204": {
+                        "description": "OTP login enabled, OTP Sended to user email or phone"
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/login-otp/{otp}": {
+            "get": {
+                "description": "This endpoint allows a user to log in with OTP and receive JWT access and",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login with OTP and get JWT tokens",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "One Time Password",
+                        "name": "otp",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tokens generated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.Token"
+                        }
+                    },
                     "400": {
                         "description": "Validation error",
                         "schema": {
@@ -191,6 +235,49 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "Usuario creado",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/password/reset-token": {
+            "post": {
+                "description": "This endpoint Create a new password reset token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Password"
+                ],
+                "summary": "This endpoint Create a new password reset token",
+                "parameters": [
+                    {
+                        "description": "Datos del usuario",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.PasswordTokenCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Token creado",
                         "schema": {
                             "type": "boolean"
                         }
@@ -366,6 +453,49 @@ const docTemplate = `{
                         "description": "Usuario creado",
                         "schema": {
                             "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/activate": {
+            "post": {
+                "description": "This endpoint Activate a user by token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "This endpoint Activate a user by token",
+                "parameters": [
+                    {
+                        "description": "Token de activación",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UserActivate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario activado",
+                        "schema": {
+                            "type": "boolean"
                         }
                     },
                     "400": {
@@ -573,6 +703,17 @@ const docTemplate = `{
                 }
             }
         },
+        "dtos.PasswordTokenCreate": {
+            "type": "object",
+            "properties": {
+                "no_hashed_password": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "dtos.Token": {
             "type": "object",
             "properties": {
@@ -593,6 +734,14 @@ const docTemplate = `{
                 }
             }
         },
+        "dtos.UserActivate": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "dtos.UserAndPasswordCreate": {
             "type": "object",
             "properties": {
@@ -601,6 +750,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "otp_login": {
+                    "type": "boolean"
                 },
                 "password": {
                     "type": "string"
@@ -624,6 +776,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "otp_login": {
+                    "type": "boolean"
                 },
                 "phone": {
                     "type": "string"
@@ -670,6 +825,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "otp_login": {
+                    "type": "boolean"
+                },
                 "phone": {
                     "type": "string"
                 },
@@ -698,6 +856,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "otp_login": {
+                    "type": "boolean"
                 },
                 "phone": {
                     "type": "string"

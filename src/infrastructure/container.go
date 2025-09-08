@@ -9,7 +9,10 @@ import (
 )
 
 func Initialize() {
-	settings.AppSettingsInstance.Initialize(config.ConfigInstance.ToMap())
+	if err := settings.AppSettingsInstance.Initialize(config.ConfigInstance.ToMap()); err != nil {
+		providers.Logger.Error("Failed to initialize app settings", err)
+		panic("Failed to initialize app settings: " + err.Error())
+	}
 	providers.Logger.Setup(
 		settings.AppSettingsInstance.EnableLog,
 		settings.AppSettingsInstance.DebugLog,
@@ -50,6 +53,11 @@ func Initialize() {
 
 	email_service.ResetPasswordEmailServiceInstance.SetUp(
 		providers.RenderResetPasswordEmailInstance,
+		providers.EmailProviderInstance,
+	)
+
+	email_service.OneTimePasswordEmailServiceInstance.SetUp(
+		providers.RenderOTPEmailInstance,
 		providers.EmailProviderInstance,
 	)
 }

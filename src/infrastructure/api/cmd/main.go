@@ -31,7 +31,7 @@ func main() {
 	defer app.Close()
 	loadGinApp(app)
 	loadSwagger(app)
-	if err := app.Run(":" + settings.AppSettingsInstance.AppPort); err != nil {
+	if err := app.Run("0.0.0.0:" + settings.AppSettingsInstance.AppPort); err != nil {
 		providers.Logger.Panic("Error running server", err)
 	}
 

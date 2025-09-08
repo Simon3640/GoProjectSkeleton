@@ -7,21 +7,25 @@ type TemplateKeysEnum string
 type TemplateKeys struct {
 	WelcomeEmail       TemplateKeysEnum
 	PasswordResetEmail TemplateKeysEnum
+	OTPEmail           TemplateKeysEnum
 }
 
 var TemplateKeysInstance = TemplateKeys{
 	WelcomeEmail:       "WELCOME_EMAIL",
 	PasswordResetEmail: "PASSWORD_RESET_EMAIL",
+	OTPEmail:           "OTP_EMAIL",
 }
 
 var EnTemplates = map[TemplateKeysEnum]string{
 	TemplateKeysInstance.WelcomeEmail:       "new_user_en.gohtml",
 	TemplateKeysInstance.PasswordResetEmail: "reset_password_en.gohtml",
+	TemplateKeysInstance.OTPEmail:           "otp_en.gohtml",
 }
 
 var EsTemplates = map[TemplateKeysEnum]string{
 	TemplateKeysInstance.WelcomeEmail:       "new_user_es.gohtml",
 	TemplateKeysInstance.PasswordResetEmail: "reset_password_es.gohtml",
+	TemplateKeysInstance.OTPEmail:           "otp_es.gohtml",
 }
 
 type Templates struct {
