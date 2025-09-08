@@ -13,7 +13,7 @@ type GormGoSkeletonDB struct{}
 var DB *gorm.DB
 
 func (ggsbd GormGoSkeletonDB) SetUp(host string, port string, user string, password string, dbname string, ssl *bool, logger contracts_providers.ILoggerProvider) {
-	sslmode := "disable"
+	var sslmode string
 	if ssl != nil && *ssl {
 		logger.Info("SSL is enabled")
 		sslmode = "require"

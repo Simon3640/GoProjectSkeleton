@@ -23,7 +23,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
-	var testIDToDelete uint = actor.ID
+	var testIDToDelete = actor.ID
 
 	testUserRepository.On("SoftDelete", testIDToDelete).Return(nil)
 
@@ -45,7 +45,7 @@ func TestDeleteUserUseCase_DifferentUser(t *testing.T) {
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
-	var testIDToDelete uint = actor.ID + 1
+	var testIDToDelete = actor.ID + 1
 
 	testUserRepository.On("Delete", testIDToDelete).Return(nil)
 
