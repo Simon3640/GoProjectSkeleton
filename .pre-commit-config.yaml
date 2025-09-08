@@ -1,0 +1,15 @@
+repos:
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v1.64.5
+    hooks:
+      - id: golangci-lint
+        args: ["run", "--timeout=5m"]
+
+  - repo: local
+    hooks:
+      - id: go-unit-tests
+        name: Run Go Unit Tests
+        entry: go test ./src/...
+        language: system
+        pass_filenames: false
+        always_run: true
