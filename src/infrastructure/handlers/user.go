@@ -1,6 +1,7 @@
-package routes
+package handlers
 
 import (
+	"encoding/json"
 	"go/types"
 	"net/http"
 	"strconv"
@@ -11,12 +12,9 @@ import (
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/domain/models"
 	domain_utils "gormgoskeleton/src/domain/utils"
-	"gormgoskeleton/src/infrastructure/api"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
 	"gormgoskeleton/src/infrastructure/providers"
 	"gormgoskeleton/src/infrastructure/repositories"
-
-	"github.com/gin-gonic/gin"
 )
 
 // CreateUser
@@ -30,23 +28,23 @@ import (
 // @Success 201 {object} models.User "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user [post]
-func createUser(c *gin.Context) {
+func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var userCreate dtos.UserCreate
 
-	if err := c.ShouldBindJSON(&userCreate); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(r.Body).Decode(&userCreate); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	uc_result := usecases_user.NewCreateUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c.Request.Context(), locales.EN_US, userCreate)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
-	}
-	content, statusCode := api.NewRequestResolver[models.User]().ResolveDTO(c, uc_result, headers)
+	).Execute(r.Context(), locales.EN_US, userCreate)
 
-	c.JSON(statusCode, content)
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
+	}
+	NewRequestResolver[models.User]().ResolveDTO(w, r, uc_result, headers)
+
 }
 
 // GetUser
@@ -60,22 +58,20 @@ func createUser(c *gin.Context) {
 // @Failure 404 {object} map[string]string "Usuario no encontrado"
 // @Router /api/user/{id} [get]
 // @Security Bearer
-func getUser(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.Header.Get("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	uc_result := usecases_user.NewGetUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c.Request.Context(), locales.EN_US, uint(id))
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	).Execute(r.Context(), locales.EN_US, uint(id))
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[models.User]().ResolveDTO(c, uc_result, headers)
-
-	c.JSON(statusCode, content)
+	NewRequestResolver[models.User]().ResolveDTO(w, r, uc_result, headers)
 }
 
 // UpdateUser
@@ -90,30 +86,27 @@ func getUser(c *gin.Context) {
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user/{id} [patch]
 // @Security Bearer
-func updateUser(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.Header.Get("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	var userUpdate dtos.UserUpdate
-
-	if err := c.ShouldBindJSON(&userUpdate); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(r.Body).Decode(&userUpdate); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	userUpdate.ID = uint(id)
 	uc_result := usecases_user.NewUpdateUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c.Request.Context(), locales.EN_US, userUpdate)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	).Execute(r.Context(), locales.EN_US, userUpdate)
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[models.User]().ResolveDTO(c, uc_result, headers)
-
-	c.JSON(statusCode, content)
+	NewRequestResolver[models.User]().ResolveDTO(w, r, uc_result, headers)
 }
 
 // DeleteUser
@@ -127,22 +120,20 @@ func updateUser(c *gin.Context) {
 // @Failure 404 {object} map[string]string "Usuario no encontrado"
 // @Router /api/user/{id} [delete]
 // @Security Bearer
-func deleteUser(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.Header.Get("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
 	uc_result := usecases_user.NewDeleteUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c.Request.Context(), locales.EN_US, uint(id))
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	).Execute(r.Context(), locales.EN_US, uint(id))
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[types.Nil]().ResolveDTO(c, uc_result, headers)
-
-	c.JSON(statusCode, content)
+	NewRequestResolver[types.Nil]().ResolveDTO(w, r, uc_result, headers)
 }
 
 // GetAllUser
@@ -163,21 +154,19 @@ func deleteUser(c *gin.Context) {
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Router /api/user [get]
-func getAllUser(c *gin.Context) {
-	queryParams, exists := c.Get("queryParams")
+func GetAllUser(w http.ResponseWriter, r *http.Request) {
+	queryParams, exists := r.Context().Value("queryParams").(domain_utils.QueryPayloadBuilder[models.User])
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Query parameters not found"})
+		http.Error(w, "Query parameters not found", http.StatusBadRequest)
 		return
 	}
 	uc_result := usecases_user.NewGetAllUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
-	).Execute(c.Request.Context(), locales.EN_US, queryParams.(domain_utils.QueryPayloadBuilder[models.User]))
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	).Execute(r.Context(), locales.EN_US, queryParams)
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[dtos.UserMultiResponse]().ResolveDTO(c, uc_result, headers)
-
-	c.JSON(statusCode, content)
+	NewRequestResolver[dtos.UserMultiResponse]().ResolveDTO(w, r, uc_result, headers)
 }
 
 // CreateUserAndPassword
@@ -191,44 +180,33 @@ func getAllUser(c *gin.Context) {
 // @Success 201 {object} models.User "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user-password [post]
-func createUserAndPassword(c *gin.Context) {
+func CreateUserAndPassword(w http.ResponseWriter, r *http.Request) {
 	var userCreate dtos.UserAndPasswordCreate
 
-	if err := c.ShouldBindJSON(&userCreate); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(r.Body).Decode(&userCreate); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
-	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.DB, providers.Logger)
-	hashProvider := providers.HashProviderInstance
-
 	uc_create_user_email := usecases_user.NewCreateUserSendEmailUseCase(
 		providers.Logger,
 		providers.HashProviderInstance,
-		oneTimeTokenRepository,
+		repositories.NewOneTimeTokenRepository(database.DB, providers.Logger),
 	)
 
 	uc_create_user_password := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
-		userRepository,
-		hashProvider,
+		repositories.NewUserRepository(database.DB, providers.Logger),
+		providers.HashProviderInstance,
 	)
-
-	uc_result := user_pipes.NewCreateUserPipe(c.Request.Context(),
+	uc_result := user_pipes.NewCreateUserPipe(r.Context(),
 		locales.EN_US,
 		uc_create_user_password,
 		uc_create_user_email,
 	).Execute(userCreate)
 
-	// uc_result := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
-	// 	userRepository,
-	// 	hashProvider,
-	// ).Execute(c.Request.Context(), locales.EN_US, userCreate)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[models.User]().ResolveDTO(c, uc_result, headers)
-
-	c.JSON(statusCode, content)
+	NewRequestResolver[models.User]().ResolveDTO(w, r, uc_result, headers)
 }
 
 // ActivateUser
@@ -242,28 +220,22 @@ func createUserAndPassword(c *gin.Context) {
 // @Success 200 {object} bool "Usuario activado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user/activate [post]
-func activateUser(c *gin.Context) {
+func ActivateUser(w http.ResponseWriter, r *http.Request) {
 	var userActivate dtos.UserActivate
 
-	if err := c.ShouldBindJSON(&userActivate); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(r.Body).Decode(&userActivate); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
-	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.DB, providers.Logger)
-	hashProvider := providers.HashProviderInstance
-
 	uc_result := usecases_user.NewActivateUserUseCase(
 		providers.Logger,
-		userRepository,
-		oneTimeTokenRepository,
-		hashProvider,
-	).Execute(c.Request.Context(), locales.EN_US, userActivate)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+		repositories.NewUserRepository(database.DB, providers.Logger),
+		repositories.NewOneTimeTokenRepository(database.DB, providers.Logger),
+		providers.HashProviderInstance,
+	).Execute(r.Context(), locales.EN_US, userActivate)
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[bool]().ResolveDTO(c, uc_result, headers)
-
-	c.JSON(statusCode, content)
+	NewRequestResolver[bool]().ResolveDTO(w, r, uc_result, headers)
 }

@@ -1,18 +1,16 @@
-package routes
+package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"gormgoskeleton/src/application/modules/auth"
 	auth_pipes "gormgoskeleton/src/application/modules/auth/pipe"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/infrastructure/api"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
 	"gormgoskeleton/src/infrastructure/providers"
 	"gormgoskeleton/src/infrastructure/repositories"
-
-	"github.com/gin-gonic/gin"
 )
 
 // access-token
@@ -25,12 +23,11 @@ import (
 // @Success      200 {object} dtos.Token "Tokens generated successfully"
 // @Success 	 204 {object} nil "OTP login enabled, OTP Sended to user email or phone"
 // @Failure      400 {object} map[string]string "Validation error"
-// @Router       /api/auth/login [post]
-func login(c *gin.Context) {
+// @Router       /auth/login [post]
+func Login(w http.ResponseWriter, r *http.Request) {
 	var userCredentials dtos.UserCredentials
-
-	if err := c.ShouldBindJSON(&userCredentials); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(r.Body).Decode(&userCredentials); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -44,13 +41,11 @@ func login(c *gin.Context) {
 		otpRepository,
 		providers.HashProviderInstance,
 		providers.JWTProviderInstance,
-	).Execute(c, locales.EN_US, userCredentials)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	).Execute(r.Context(), locales.EN_US, userCredentials)
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[dtos.Token]().ResolveDTO(c, uc_result, headers)
-
-	c.JSON(statusCode, content)
+	NewRequestResolver[dtos.Token]().ResolveDTO(w, r, uc_result, headers)
 }
 
 // access-token-refresh
@@ -62,24 +57,21 @@ func login(c *gin.Context) {
 // @Param        request body string true "Refresh token"
 // @Success      200 {object} dtos.Token
 // @Failure      400 {object} map[string]string "Validation error"
-// @Router       /api/auth/refresh [post]
-func refreshAccessToken(c *gin.Context) {
+// @Router       /auth/refresh [post]
+func RefreshAccessToken(w http.ResponseWriter, r *http.Request) {
 	var refreshToken string
-
-	if err := c.ShouldBindJSON(&refreshToken); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(r.Body).Decode(&refreshToken); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	uc_result := auth.NewAuthenticationRefreshUseCase(providers.Logger,
 		providers.JWTProviderInstance,
-	).Execute(c, locales.EN_US, refreshToken)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	).Execute(r.Context(), locales.EN_US, refreshToken)
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[dtos.Token]().ResolveDTO(c, uc_result, headers)
-
-	c.JSON(statusCode, content)
+	NewRequestResolver[dtos.Token]().ResolveDTO(w, r, uc_result, headers)
 }
 
 // password-reset
@@ -94,11 +86,11 @@ func refreshAccessToken(c *gin.Context) {
 // @Param        identifier path string true "Provided email or phone number"
 // @Success      200 {object} map[string]string "Password reset email sent"
 // @Failure      400 {object} map[string]string "Validation error"
-// @Router       /api/auth/password-reset/{identifier} [get]
-func requestPasswordReset(c *gin.Context) {
-	identifier := c.Param("identifier")
+// @Router       /auth/password-reset/{identifier} [get]
+func RequestPasswordReset(w http.ResponseWriter, r *http.Request) {
+	identifier := r.URL.Query().Get("identifier")
 	if identifier == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Identifier is required"})
+		http.Error(w, "identifier is required", http.StatusBadRequest)
 		return
 	}
 
@@ -116,17 +108,16 @@ func requestPasswordReset(c *gin.Context) {
 		providers.Logger)
 
 	uc_result := auth_pipes.NewGetResetPasswordPipe(
-		c.Request.Context(),
+		r.Context(),
 		locales.ES_ES,
 		uc_reset_password_token,
 		uc_reset_password_token_email,
 	).Execute(identifier)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[bool]().ResolveDTO(c, uc_result, headers)
 
-	c.JSON(statusCode, content)
+	NewRequestResolver[bool]().ResolveDTO(w, r, uc_result, headers)
 }
 
 // OTP login
@@ -138,9 +129,13 @@ func requestPasswordReset(c *gin.Context) {
 // @Param        otp path string true "One Time Password"
 // @Success      200 {object} dtos.Token "Tokens generated successfully"
 // @Failure      400 {object} map[string]string "Validation error"
-// @Router       /api/auth/login-otp/{otp} [get]
-func loginOTP(c *gin.Context) {
-	otp := c.Param("otp")
+// @Router       /auth/login-otp/{otp} [get]
+func LoginOTP(w http.ResponseWriter, r *http.Request) {
+	otp := r.Header.Get("otp")
+	if otp == "" {
+		http.Error(w, "otp is required", http.StatusBadRequest)
+		return
+	}
 
 	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
 	otpRepository := repositories.NewOneTimePasswordRepository(database.DB, providers.Logger)
@@ -150,11 +145,10 @@ func loginOTP(c *gin.Context) {
 		otpRepository,
 		providers.HashProviderInstance,
 		providers.JWTProviderInstance,
-	).Execute(c, locales.EN_US, otp)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	).Execute(r.Context(), locales.EN_US, otp)
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[dtos.Token]().ResolveDTO(c, uc_result, headers)
+	NewRequestResolver[dtos.Token]().ResolveDTO(w, r, uc_result, headers)
 
-	c.JSON(statusCode, content)
 }
