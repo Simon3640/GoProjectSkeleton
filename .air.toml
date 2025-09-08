@@ -1,19 +1,16 @@
 root = "/app"
-tmp_dir = "tmp"
 
 [build]
-cmd = "go build -gcflags 'all=-N -l' -o /app/tmp/main /app/src/infrastructure/api/cmd"
+cmd = "go build -gcflags 'all=-N -l' -o /app/tmp/main ./src/infrastructure/api/cmd/main.go"
 bin = "/app/tmp/main"
-include_ext = ["go", "mod", "sum", "yaml", "toml", "env"]
-exclude_dir = ["vendor", "tmp"]
+full_bin = "dlv exec /app/tmp/main --headless --listen=:40000 --api-version=2 --accept-multiclient"
+include_ext = ["go", "tpl", "tmpl", "html"]
+exclude_dir = ["tmp", "vendor", "docs"]
 
-[polling]
-enable = true
-interval = 1000
+log_color = "true"
+log_time = "true"
 
-[log]
-color = true
-timestamp = true
+poll=true
 
-[misc]
-clean_on_exit = true
+[run]
+cmd = "dlv exec /app/tmp/main --headless --listen=:40000 --api-version=2 --accept-multiclient --log"
