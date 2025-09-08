@@ -1,13 +1,16 @@
 repos:
+# Golangci-lint for linting Go code
   - repo: https://github.com/golangci/golangci-lint
     rev: v1.64.5
     hooks:
       - id: golangci-lint
-        args: ["./src/...", "--timeout=5m"]
+        args: ["./src/...", "--timeout=5m", "--config=.golangci.yml"]
         files: ^src/.*\.go$
         always_run: true
         pass_filenames: false
+        stages: [pre-commit, pre-push]
 
+# Custom hook to run Go unit tests
   - repo: local
     hooks:
       - id: go-unit-tests
@@ -16,3 +19,34 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+        stages: [pre-push]
+
+# Custom hook to ensure go.mod and go.sum are tidy
+  - repo: local
+    hooks:
+      - id: go-mod-tidy
+        name: Ensure go.mod is tidy
+        entry: bash -c "go mod tidy && git diff --exit-code go.mod go.sum"
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+# General hooks (whitespace, EOF, YAML/JSON/TOML checks, secrets)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+    stages: [commit]
+
+# Secrets detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ["--baseline", ".secrets.baseline"]
+    stages: [commit, push]

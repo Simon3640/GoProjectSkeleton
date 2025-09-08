@@ -22,7 +22,7 @@ func TestRenderBaseProvider(t *testing.T) {
 	}
 	settings.AppSettingsInstance.TemplatesPath = "../../application/shared/templates/"
 	templatePath := settings.AppSettingsInstance.TemplatesPath + "test/render_template.gohtml"
-	expectedOutput := "Hello, John Doe! You are 30 years old."
+	expectedOutput := "Hello, John Doe! You are 30 years old.\n"
 
 	result, err := renderer.Render(templatePath, data)
 

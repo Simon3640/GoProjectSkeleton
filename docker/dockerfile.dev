@@ -1,7 +1,7 @@
 FROM golang:1.25-alpine AS builder
 
 # Alpine
-RUN apk add --no-cache git build-base 
+RUN apk add --no-cache git build-base
 # Debian
 # RUN apt-get update && apt-get install -y --no-install-recommends \
 #     git build-essential \
