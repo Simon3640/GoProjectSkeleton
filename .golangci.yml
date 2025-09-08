@@ -1,24 +1,24 @@
+version: 2
+
 run:
   timeout: 5m
   tests: true
   modules-download-mode: readonly
+  formatting:
+    gofumpt: true
+    goimports: true
 
 linters:
   enable:
     - govet
     - staticcheck
     - errcheck
-    - gosimple
     - unused
     - ineffassign
     - gocritic
-    - gofumpt
-    - goimports
     - revive
   disable:
     - depguard
-    - exhaustivestruct
-    - maligned
 
 linters-settings:
   revive:
@@ -27,10 +27,10 @@ linters-settings:
         disabled: false
       - name: package-comments
         disabled: true
-  goimports:
-    local-prefixes: github.com/tuusuario/tuproject
   gofumpt:
     extra-rules: true
+  goimports:
+    local-prefixes: github.com/tuusuario/tuproject
 
 issues:
   exclude-use-default: false

@@ -1,4 +1,4 @@
-package dto_mocks
+package dtomocks
 
 import "gormgoskeleton/src/domain/models"
 

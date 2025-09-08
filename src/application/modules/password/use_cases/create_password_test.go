@@ -9,7 +9,7 @@ import (
 	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
-	dto_mocks "gormgoskeleton/src/application/shared/mocks/dtos"
+	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
 	"gormgoskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +20,7 @@ func TestCreatePasswordUseCase(t *testing.T) {
 
 	ctx := context.Background()
 
-	actor := dto_mocks.UserWithRole
+	actor := dtomocks.UserWithRole
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testPasswordRepository := new(mocks.MockPasswordRepository)

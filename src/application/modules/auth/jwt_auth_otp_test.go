@@ -7,7 +7,7 @@ import (
 
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
-	dto_mocks "gormgoskeleton/src/application/shared/mocks/dtos"
+	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
 	"gormgoskeleton/src/application/shared/status"
 
 	"github.com/stretchr/testify/assert"
@@ -33,35 +33,35 @@ func TestAuthenticateOTPUseCase_Valid(t *testing.T) {
 	)
 
 	// Mocking Methods
-	testHashProvider.On("HashOneTimeToken", "validOTP").Return(dto_mocks.OneTimePassword.Hash)
+	testHashProvider.On("HashOneTimeToken", "validOTP").Return(dtomocks.OneTimePassword.Hash)
 
 	testOTPRepository.On(
-		"GetByPasswordHash", dto_mocks.OneTimePassword.Hash,
-	).Return(&dto_mocks.OneTimePassword, nil)
+		"GetByPasswordHash", dtomocks.OneTimePassword.Hash,
+	).Return(&dtomocks.OneTimePassword, nil)
 
 	testUserRepository.On(
 		"GetUserWithRole",
-		dto_mocks.OneTimePassword.UserID,
-	).Return(&dto_mocks.UserWithRole, nil)
+		dtomocks.OneTimePassword.UserID,
+	).Return(&dtomocks.UserWithRole, nil)
 
 	testJWTProvider.On(
 		"GenerateAccessToken",
 		ctx,
-		string(rune(dto_mocks.OneTimePassword.UserID)),
+		string(rune(dtomocks.OneTimePassword.UserID)),
 		mock.Anything,
 	).Return("newAccessToken", time.Now().Add(1*time.Hour), nil)
 
 	testJWTProvider.On(
 		"GenerateRefreshToken",
 		ctx,
-		string(rune(dto_mocks.OneTimePassword.UserID)),
+		string(rune(dtomocks.OneTimePassword.UserID)),
 	).Return("newRefreshToken", time.Now().Add(24*time.Hour), nil)
 
 	testOTPRepository.On(
 		"Update",
 		mock.Anything,
 		mock.AnythingOfType("dtos.OneTimePasswordUpdate"),
-	).Return(&dto_mocks.OneTimePassword, nil)
+	).Return(&dtomocks.OneTimePassword, nil)
 
 	result := authOTPUseCase.Execute(ctx, locales.EN_US, "validOTP")
 
@@ -89,11 +89,11 @@ func TestAuthenticateOTPUseCase_InvalidOTP(t *testing.T) {
 	)
 
 	// Mocking Methods
-	testHashProvider.On("HashOneTimeToken", "invalidOTP").Return(dto_mocks.ExpiredOneTimePassword.Hash)
+	testHashProvider.On("HashOneTimeToken", "invalidOTP").Return(dtomocks.ExpiredOneTimePassword.Hash)
 
 	testOTPRepository.On(
-		"GetByPasswordHash", dto_mocks.ExpiredOneTimePassword.Hash,
-	).Return(&dto_mocks.ExpiredOneTimePassword, nil)
+		"GetByPasswordHash", dtomocks.ExpiredOneTimePassword.Hash,
+	).Return(&dtomocks.ExpiredOneTimePassword, nil)
 
 	result := authOTPUseCase.Execute(ctx, locales.EN_US, "invalidOTP")
 

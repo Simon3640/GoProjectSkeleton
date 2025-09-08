@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:17.2-alpine
+    environment:
+      POSTGRES_USER: gormgoskeleton
+      POSTGRES_PASSWORD: gormgoskeleton
+      POSTGRES_DB: gormgoskeleton
+    networks:
+      - gormgoskeleton-tests
+    tmpfs:
+      - /var/lib/postgresql/data:rw,noexec,nosuid,size=65536k
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gormgoskeleton"]
+      interval: 1s
+      retries: 5
+  gormgoskeleton-integration-tests:
+    build:
+      context: ..
+      dockerfile: docker/dockerfile.integration
+    env_file:
+      - ../test.env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../test.env:/app/.env:ro
+      - ../src:/app/src
+      - ../tests:/app/tests
+    networks:
+      - gormgoskeleton-tests
+    command: ["go", "test", "./tests/integration/...", "-v", "-count=1", "-cover"]
+
+  mailhog:
+    image: axllent/mailpit:latest
+    # platform: linux/amd64
+    restart: always
+    networks:
+      - gormgoskeleton-tests
+
+networks:
+  gormgoskeleton-tests:
+    external: true

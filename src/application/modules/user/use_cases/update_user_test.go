@@ -6,7 +6,7 @@ import (
 	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
-	dto_mocks "gormgoskeleton/src/application/shared/mocks/dtos"
+	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
 	"gormgoskeleton/src/application/shared/status"
 	"gormgoskeleton/src/domain/models"
 	"testing"
@@ -20,7 +20,7 @@ func TestUpdateUserUseCase(t *testing.T) {
 
 	ctx := context.Background()
 
-	actor := dto_mocks.UserWithRole
+	actor := dtomocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
 	testLogger := new(mocks.MockLoggerProvider)
@@ -59,7 +59,7 @@ func TestUpdateUserUseCase_DifferentUser(t *testing.T) {
 
 	ctx := context.Background()
 
-	actor := dto_mocks.UserWithRole
+	actor := dtomocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
 	testLogger := new(mocks.MockLoggerProvider)
