@@ -3,8 +3,10 @@ repos:
     rev: v1.64.5
     hooks:
       - id: golangci-lint
-        args: ["run","--timeout=5m", "./..."]
+        args: ["./src/...", "--timeout=5m"]
         files: ^src/.*\.go$
+        always_run: true
+        pass_filenames: false
 
   - repo: local
     hooks:
