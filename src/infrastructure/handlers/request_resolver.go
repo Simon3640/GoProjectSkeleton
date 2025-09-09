@@ -35,7 +35,6 @@ func NewRequestResolver[D any]() *RequestResolver[D] {
 
 func (rr *RequestResolver[D]) ResolveDTO(
 	w http.ResponseWriter,
-	r *http.Request,
 	result *usecase.UseCaseResult[D],
 	headersToAdd map[HTTPHeaderTypeEnum]string,
 ) {

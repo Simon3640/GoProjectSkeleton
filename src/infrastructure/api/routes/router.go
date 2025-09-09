@@ -4,16 +4,18 @@ import (
 	"gormgoskeleton/src/domain/models"
 	"gormgoskeleton/src/infrastructure/api/middlewares"
 	"gormgoskeleton/src/infrastructure/handlers"
-	"net/http"
+
+	// "net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func wrapHandler(h http.HandlerFunc) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		h(c.Writer, c.Request)
-	}
-}
+// func wrapHandler(h http.HandlerFunc) gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+
+// 		h(c.Writer, c.Request)
+// 	}
+// }
 
 func Router(r *gin.RouterGroup) {
 	r.GET("/health-check", getHealthCheck)

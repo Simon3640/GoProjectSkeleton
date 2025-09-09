@@ -7,7 +7,6 @@ import (
 	"gormgoskeleton/src/application/modules/auth"
 	auth_pipes "gormgoskeleton/src/application/modules/auth/pipe"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/locales"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
 	"gormgoskeleton/src/infrastructure/providers"
 	"gormgoskeleton/src/infrastructure/repositories"
@@ -24,10 +23,10 @@ import (
 // @Success 	 204 {object} nil "OTP login enabled, OTP Sended to user email or phone"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /auth/login [post]
-func Login(w http.ResponseWriter, r *http.Request) {
+func Login(ctx HandlerContext[dtos.UserCredentials]) {
 	var userCredentials dtos.UserCredentials
-	if err := json.NewDecoder(r.Body).Decode(&userCredentials); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := json.NewDecoder(ctx.Body).Decode(&userCredentials); err != nil {
+		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -41,11 +40,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		otpRepository,
 		providers.HashProviderInstance,
 		providers.JWTProviderInstance,
-	).Execute(r.Context(), locales.EN_US, userCredentials)
+	).Execute(ctx.c, ctx.Locale, userCredentials)
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	NewRequestResolver[dtos.Token]().ResolveDTO(w, r, uc_result, headers)
+	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, uc_result, headers)
 }
 
 // access-token-refresh
@@ -58,20 +57,20 @@ func Login(w http.ResponseWriter, r *http.Request) {
 // @Success      200 {object} dtos.Token
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /auth/refresh [post]
-func RefreshAccessToken(w http.ResponseWriter, r *http.Request) {
+func RefreshAccessToken(ctx HandlerContext[string]) {
 	var refreshToken string
-	if err := json.NewDecoder(r.Body).Decode(&refreshToken); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := json.NewDecoder(ctx.Body).Decode(&refreshToken); err != nil {
+		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	uc_result := auth.NewAuthenticationRefreshUseCase(providers.Logger,
 		providers.JWTProviderInstance,
-	).Execute(r.Context(), locales.EN_US, refreshToken)
+	).Execute(ctx.c, ctx.Locale, refreshToken)
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	NewRequestResolver[dtos.Token]().ResolveDTO(w, r, uc_result, headers)
+	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, uc_result, headers)
 }
 
 // password-reset
@@ -87,10 +86,10 @@ func RefreshAccessToken(w http.ResponseWriter, r *http.Request) {
 // @Success      200 {object} map[string]string "Password reset email sent"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /auth/password-reset/{identifier} [get]
-func RequestPasswordReset(w http.ResponseWriter, r *http.Request) {
-	identifier := r.URL.Query().Get("identifier")
+func RequestPasswordReset(ctx HandlerContext[any]) {
+	identifier := ctx.Params["identifier"]
 	if identifier == "" {
-		http.Error(w, "identifier is required", http.StatusBadRequest)
+		http.Error(ctx.ResponseWriter, "identifier is required", http.StatusBadRequest)
 		return
 	}
 
@@ -108,8 +107,8 @@ func RequestPasswordReset(w http.ResponseWriter, r *http.Request) {
 		providers.Logger)
 
 	uc_result := auth_pipes.NewGetResetPasswordPipe(
-		r.Context(),
-		locales.ES_ES,
+		ctx.c,
+		ctx.Locale,
 		uc_reset_password_token,
 		uc_reset_password_token_email,
 	).Execute(identifier)
@@ -117,7 +116,7 @@ func RequestPasswordReset(w http.ResponseWriter, r *http.Request) {
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
 
-	NewRequestResolver[bool]().ResolveDTO(w, r, uc_result, headers)
+	NewRequestResolver[bool]().ResolveDTO(ctx.ResponseWriter, uc_result, headers)
 }
 
 // OTP login
@@ -130,10 +129,10 @@ func RequestPasswordReset(w http.ResponseWriter, r *http.Request) {
 // @Success      200 {object} dtos.Token "Tokens generated successfully"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /auth/login-otp/{otp} [get]
-func LoginOTP(w http.ResponseWriter, r *http.Request) {
-	otp := r.Header.Get("otp")
+func LoginOTP(ctx HandlerContext[any]) {
+	otp := ctx.Params["otp"]
 	if otp == "" {
-		http.Error(w, "otp is required", http.StatusBadRequest)
+		http.Error(ctx.ResponseWriter, "otp is required", http.StatusBadRequest)
 		return
 	}
 
@@ -145,10 +144,10 @@ func LoginOTP(w http.ResponseWriter, r *http.Request) {
 		otpRepository,
 		providers.HashProviderInstance,
 		providers.JWTProviderInstance,
-	).Execute(r.Context(), locales.EN_US, otp)
+	).Execute(ctx.c, ctx.Locale, otp)
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	NewRequestResolver[dtos.Token]().ResolveDTO(w, r, uc_result, headers)
+	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, uc_result, headers)
 
 }

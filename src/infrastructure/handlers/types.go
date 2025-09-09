@@ -1,5 +1,13 @@
 package handlers
 
+import (
+	"context"
+	"gormgoskeleton/src/application/shared/locales"
+	domain_utils "gormgoskeleton/src/domain/utils"
+	"io"
+	"net/http"
+)
+
 type HTTPHeaderTypeEnum string
 
 func (h HTTPHeaderTypeEnum) String() string {
@@ -54,3 +62,41 @@ const (
 	CONNECT HTTPMethodEnum = "CONNECT"
 	TRACE   HTTPMethodEnum = "TRACE"
 )
+
+type HandlerContext[QueryModel any] struct {
+	c             context.Context
+	Locale        locales.LocaleTypeEnum
+	Params        map[string]string
+	Body          io.Reader
+	Query         domain_utils.QueryPayloadBuilder[QueryModel]
+	Authorization string
+
+	SerializationType SerializationTypeEnum
+	ContentType       HTTPContentTypeEnum
+
+	ResponseWriter http.ResponseWriter
+}
+
+func NewHandlerContext[QueryModel any](
+	c context.Context,
+	locale locales.LocaleTypeEnum,
+	params map[string]string,
+	body io.Reader,
+	authorization string,
+	query domain_utils.QueryPayloadBuilder[QueryModel],
+	serializationType SerializationTypeEnum,
+	contentType HTTPContentTypeEnum,
+	responseWriter http.ResponseWriter,
+) HandlerContext[QueryModel] {
+	return HandlerContext[QueryModel]{
+		c:                 c,
+		Locale:            locale,
+		Params:            params,
+		Body:              body,
+		Authorization:     authorization,
+		Query:             query,
+		SerializationType: serializationType,
+		ContentType:       contentType,
+		ResponseWriter:    responseWriter,
+	}
+}
