@@ -24,7 +24,7 @@ import (
 // @Accept json
 // @Produce json
 // @Param request body dtos.UserCreate true "Datos del usuario"
-// @Param header X-Locale string false "Locale for response messages" Enums(en_US, es_ES) default(en_US)
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Success 201 {object} models.User "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user [post]
@@ -54,7 +54,7 @@ func CreateUser(ctx HandlerContext) {
 // @Accept json
 // @Produce json
 // @Param id path int true "ID del usuario"
-// @Param header X-Locale string false "Locale for response messages" Enums(en_US, es_ES) default(en_US)
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Success 200 {object} models.User "Usuario"
 // @Failure 404 {object} map[string]string "Usuario no encontrado"
 // @Router /api/user/{id} [get]
@@ -82,7 +82,7 @@ func GetUser(ctx HandlerContext) {
 // @Accept json
 // @Produce json
 // @Param id path int true "ID del usuario"
-// @Param header X-Locale string false "Locale for response messages" Enums(en_US, es_ES) default(en_US)
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Param request body dtos.UserUpdateBase true "Datos del usuario"
 // @Success 200 {object} models.User "Usuario actualizado"
 // @Failure 400 {object} map[string]string "Error de validación"
@@ -118,7 +118,7 @@ func UpdateUser(ctx HandlerContext) {
 // @Accept json
 // @Produce json
 // @Param id path int true "ID del usuario"
-// @Param header X-Locale string false "Locale for response messages" Enums(en_US, es_ES) default(en_US)
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Success 204 {object} nil "Usuario eliminado"
 // @Failure 404 {object} map[string]string "Usuario no encontrado"
 // @Router /api/user/{id} [delete]
@@ -151,7 +151,7 @@ func DeleteUser(ctx HandlerContext) {
 // @Param sort query []string false "Sort users in the format column:asc|desc (e.g. Name:asc, CreatedAt:desc)"
 // @Param page query int false "Page number (default: 1)"
 // @Param page_size query int false "Number of items per page (default: 10)"
-// @Param header X-Locale string false "Locale for response messages" Enums(en_US, es_ES) default(en_US)
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 //
 // @Success 200 {object} dtos.UserMultiResponse "List of users"
 // @Failure 400 {object} map[string]string "Bad request"
@@ -177,7 +177,7 @@ func GetAllUser(ctx HandlerContext) {
 // @Accept json
 // @Produce json
 // @Param request body dtos.UserAndPasswordCreate true "Datos del usuario"
-// @Param header X-Locale string false "Locale for response messages" Enums(en_US, es_ES) default(en_US)
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Success 201 {object} models.User "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user-password [post]
@@ -218,7 +218,7 @@ func CreateUserAndPassword(ctx HandlerContext) {
 // @Accept json
 // @Produce json
 // @Param request body dtos.UserActivate true "Token de activación"
-// @Param header X-Locale string false "Locale for response messages" Enums(en_US, es_ES) default(en_US)
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Success 200 {object} bool "Usuario activado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user/activate [post]
