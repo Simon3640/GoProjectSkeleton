@@ -5,7 +5,12 @@
             "type": "go",
             "request": "attach",
             "mode": "remote",
-            "remotePath": "/app",
+            "substitutePath": [
+                {
+                    "from": "${workspaceFolder}",
+                    "to": "/app"
+                }
+            ],
             "port": 40000,
             "host": "127.0.0.1",
             "apiVersion": 2,

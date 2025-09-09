@@ -1,24 +1,14 @@
 package routes
 
 import (
-	"gormgoskeleton/src/domain/models"
 	"gormgoskeleton/src/infrastructure/api/middlewares"
 	"gormgoskeleton/src/infrastructure/handlers"
-
-	// "net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-// func wrapHandler(h http.HandlerFunc) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-
-// 		h(c.Writer, c.Request)
-// 	}
-// }
-
 func Router(r *gin.RouterGroup) {
-	r.GET("/health-check", getHealthCheck)
+	r.GET("/health-check", wrapHandler(handlers.GetHealthCheck))
 
 	private := r.Group("/")
 	private.Use(middlewares.AuthMiddleware())
@@ -27,13 +17,13 @@ func Router(r *gin.RouterGroup) {
 	private.GET("/user/:id", wrapHandler(handlers.GetUser))
 	private.PATCH("/user/:id", wrapHandler(handlers.UpdateUser))
 	private.DELETE("/user/:id", wrapHandler(handlers.DeleteUser))
-	private.GET("/user", middlewares.QueryMidleWare[models.User](), wrapHandler(handlers.GetAllUser))
+	private.GET("/user", middlewares.QueryMiddleware(), wrapHandler(handlers.GetAllUser))
 	r.POST("/user-password", wrapHandler(handlers.CreateUserAndPassword))
 	r.POST("/user/activate", wrapHandler(handlers.ActivateUser))
 
 	// Password routes
-	private.POST("/password", createPassword)
-	r.POST("/password/reset-token", createPasswordToken)
+	private.POST("/password", wrapHandler(handlers.CreatePassword))
+	private.POST("/password/reset-token", wrapHandler(handlers.CreatePasswordToken))
 
 	// Auth routes
 	r.POST("/auth/login", wrapHandler(handlers.Login))

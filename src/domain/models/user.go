@@ -1,5 +1,7 @@
 package models
 
+import "strconv"
+
 type UserBase struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
@@ -58,7 +60,7 @@ func (u *UserWithRole) GetUserID() uint {
 }
 
 func (u *UserWithRole) GetUserIDString() string {
-	return string(rune(u.ID))
+	return strconv.FormatUint(uint64(u.ID), 10)
 }
 
 type User struct {

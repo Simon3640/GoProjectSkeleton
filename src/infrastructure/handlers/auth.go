@@ -23,9 +23,9 @@ import (
 // @Success 	 204 {object} nil "OTP login enabled, OTP Sended to user email or phone"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /auth/login [post]
-func Login(ctx HandlerContext[dtos.UserCredentials]) {
+func Login(ctx HandlerContext) {
 	var userCredentials dtos.UserCredentials
-	if err := json.NewDecoder(ctx.Body).Decode(&userCredentials); err != nil {
+	if err := json.NewDecoder(*ctx.Body).Decode(&userCredentials); err != nil {
 		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -34,7 +34,7 @@ func Login(ctx HandlerContext[dtos.UserCredentials]) {
 	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
 	otpRepository := repositories.NewOneTimePasswordRepository(database.DB, providers.Logger)
 
-	uc_result := auth.NewAuthenticateUseCase(providers.Logger,
+	ucResult := auth.NewAuthenticateUseCase(providers.Logger,
 		password_repository,
 		userRepository,
 		otpRepository,
@@ -44,7 +44,7 @@ func Login(ctx HandlerContext[dtos.UserCredentials]) {
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, uc_result, headers)
+	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }
 
 // access-token-refresh
@@ -57,20 +57,20 @@ func Login(ctx HandlerContext[dtos.UserCredentials]) {
 // @Success      200 {object} dtos.Token
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /auth/refresh [post]
-func RefreshAccessToken(ctx HandlerContext[string]) {
+func RefreshAccessToken(ctx HandlerContext) {
 	var refreshToken string
-	if err := json.NewDecoder(ctx.Body).Decode(&refreshToken); err != nil {
+	if err := json.NewDecoder(*ctx.Body).Decode(&refreshToken); err != nil {
 		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	uc_result := auth.NewAuthenticationRefreshUseCase(providers.Logger,
+	ucResult := auth.NewAuthenticationRefreshUseCase(providers.Logger,
 		providers.JWTProviderInstance,
 	).Execute(ctx.c, ctx.Locale, refreshToken)
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, uc_result, headers)
+	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }
 
 // password-reset
@@ -86,7 +86,7 @@ func RefreshAccessToken(ctx HandlerContext[string]) {
 // @Success      200 {object} map[string]string "Password reset email sent"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /auth/password-reset/{identifier} [get]
-func RequestPasswordReset(ctx HandlerContext[any]) {
+func RequestPasswordReset(ctx HandlerContext) {
 	identifier := ctx.Params["identifier"]
 	if identifier == "" {
 		http.Error(ctx.ResponseWriter, "identifier is required", http.StatusBadRequest)
@@ -106,7 +106,7 @@ func RequestPasswordReset(ctx HandlerContext[any]) {
 	uc_reset_password_token_email := auth.NewGetResetPasswordSendEmailUseCase(
 		providers.Logger)
 
-	uc_result := auth_pipes.NewGetResetPasswordPipe(
+	ucResult := auth_pipes.NewGetResetPasswordPipe(
 		ctx.c,
 		ctx.Locale,
 		uc_reset_password_token,
@@ -116,7 +116,7 @@ func RequestPasswordReset(ctx HandlerContext[any]) {
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
 
-	NewRequestResolver[bool]().ResolveDTO(ctx.ResponseWriter, uc_result, headers)
+	NewRequestResolver[bool]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }
 
 // OTP login
@@ -129,7 +129,7 @@ func RequestPasswordReset(ctx HandlerContext[any]) {
 // @Success      200 {object} dtos.Token "Tokens generated successfully"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /auth/login-otp/{otp} [get]
-func LoginOTP(ctx HandlerContext[any]) {
+func LoginOTP(ctx HandlerContext) {
 	otp := ctx.Params["otp"]
 	if otp == "" {
 		http.Error(ctx.ResponseWriter, "otp is required", http.StatusBadRequest)
@@ -139,7 +139,7 @@ func LoginOTP(ctx HandlerContext[any]) {
 	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
 	otpRepository := repositories.NewOneTimePasswordRepository(database.DB, providers.Logger)
 
-	uc_result := auth.NewAuthenticateOTPUseCase(providers.Logger,
+	ucResult := auth.NewAuthenticateOTPUseCase(providers.Logger,
 		userRepository,
 		otpRepository,
 		providers.HashProviderInstance,
@@ -148,6 +148,6 @@ func LoginOTP(ctx HandlerContext[any]) {
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, uc_result, headers)
+	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 
 }
