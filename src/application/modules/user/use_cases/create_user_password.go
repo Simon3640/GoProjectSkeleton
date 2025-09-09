@@ -36,7 +36,7 @@ func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
-	uc.validate(input, result)
+	uc.validate(&input, result)
 
 	if result.HasError() {
 		return result
@@ -69,7 +69,7 @@ func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 }
 
 func (uc *CreateUserAndPasswordUseCase) validate(
-	input dtos.UserAndPasswordCreate,
+	input *dtos.UserAndPasswordCreate,
 	result *usecase.UseCaseResult[models.User]) {
 	msgs := input.Validate()
 

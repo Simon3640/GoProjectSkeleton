@@ -8,7 +8,7 @@ import (
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
-	dto_mocks "gormgoskeleton/src/application/shared/mocks/dtos"
+	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
 	"gormgoskeleton/src/application/shared/status"
 	"gormgoskeleton/src/domain/models"
 
@@ -22,7 +22,7 @@ func TestCreateUserUseCase(t *testing.T) {
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
-	testUser := dto_mocks.UserCreate
+	testUser := dtomocks.UserCreate
 
 	testUserRepository.On("Create", testUser).Return(&models.User{
 		UserBase: models.UserBase{Name: "Test",

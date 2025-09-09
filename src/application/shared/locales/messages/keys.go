@@ -25,6 +25,7 @@ type MessageKeys struct {
 	USER_UPDATE_SUCCESS            MessageKeysEnum
 	USER_DELETE_SUCCESS            MessageKeysEnum
 	INVALID_USER_ID                MessageKeysEnum
+	INVALID_USER_ACTIVATION_TOKEN  MessageKeysEnum
 
 	PASSWORD_REQUIRED                      MessageKeysEnum
 	PASSWORD_IS_SHORT                      MessageKeysEnum
@@ -33,6 +34,8 @@ type MessageKeys struct {
 	PASSWORD_TOKEN_CREATED                 MessageKeysEnum
 	RESET_PASSWORD_SUBJECT                 MessageKeysEnum
 	RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY MessageKeysEnum
+	INVALID_PASSWORD_RESET_TOKEN           MessageKeysEnum
+	RESET_PASSWORD_TOKEN_VALID             MessageKeysEnum
 
 	AUTHORIZATION_HEADER_MISSING MessageKeysEnum
 	AUTHORIZATION_HEADER_INVALID MessageKeysEnum
@@ -40,6 +43,8 @@ type MessageKeys struct {
 	AUTHORIZATION_GENERATED      MessageKeysEnum
 	INVALID_JWT_TOKEN            MessageKeysEnum
 	JWT_TOKEN_VIOLATED           MessageKeysEnum
+	OTP_LOGIN_ENABLED            MessageKeysEnum
+	INVALID_OTP                  MessageKeysEnum
 
 	INVALID_EMAIL         MessageKeysEnum
 	INVALID_PASSWORD      MessageKeysEnum
@@ -70,6 +75,7 @@ var MessageKeysInstance = MessageKeys{
 	USER_UPDATE_SUCCESS:            "USER_UPDATE_SUCCESS",
 	USER_DELETE_SUCCESS:            "USER_DELETE_SUCCESS",
 	INVALID_USER_ID:                "INVALID_USER_ID",
+	INVALID_USER_ACTIVATION_TOKEN:  "INVALID_USER_ACTIVATION_TOKEN",
 
 	INVALID_EMAIL:    "INVALID_EMAIL",
 	INVALID_PASSWORD: "INVALID_PASSWORD",
@@ -83,6 +89,8 @@ var MessageKeysInstance = MessageKeys{
 	PASSWORD_TOKEN_CREATED:                 "PASSWORD_TOKEN_CREATED",
 	RESET_PASSWORD_SUBJECT:                 "RESET_PASSWORD_SUBJECT",
 	RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY: "RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY",
+	INVALID_PASSWORD_RESET_TOKEN:           "INVALID_PASSWORD_RESET_TOKEN",
+	RESET_PASSWORD_TOKEN_VALID:             "RESET_PASSWORD_TOKEN_VALID",
 
 	// Authorization related messages
 	AUTHORIZATION_HEADER_MISSING: "AUTHORIZATION_HEADER_MISSING",
@@ -91,6 +99,8 @@ var MessageKeysInstance = MessageKeys{
 	AUTHORIZATION_GENERATED:      "AUTHORIZATION_GENERATED",
 	INVALID_JWT_TOKEN:            "INVALID_JWT_TOKEN",
 	JWT_TOKEN_VIOLATED:           "JWT_TOKEN_VIOLATED",
+	OTP_LOGIN_ENABLED:            "OTP_LOGIN_ENABLED",
+	INVALID_OTP:                  "INVALID_OTP",
 
 	APPLICATION_STATUS_OK: "APPLICATION_STATUS_OK",
 }

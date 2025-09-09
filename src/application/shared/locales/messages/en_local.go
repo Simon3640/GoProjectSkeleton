@@ -23,6 +23,7 @@ var EnMessages = map[MessageKeysEnum]string{
 	"USER_UPDATE_SUCCESS":            "User updated successfully.",
 	"USER_DELETE_SUCCESS":            "User deleted successfully.",
 	"INVALID_USER_ID":                "Invalid user ID.",
+	"INVALID_USER_ACTIVATION_TOKEN":  "Invalid user activation token.",
 
 	"PASSWORD_REQUIRED":                      "Password is required.",
 	"PASSWORD_IS_SHORT":                      "Password is too short.",
@@ -31,12 +32,16 @@ var EnMessages = map[MessageKeysEnum]string{
 	"PASSWORD_TOKEN_CREATED":                 "Reset password token created successfully.",
 	"RESET_PASSWORD_SUBJECT":                 "Password reset for your account",
 	"RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY": "Reset password email sent successfully.",
+	"INVALID_PASSWORD_RESET_TOKEN":           "Invalid password reset token.",
+	"RESET_PASSWORD_TOKEN_VALID":             "Password reset token is valid.",
 
 	"AUTHORIZATION_HEADER_MISSING": "Authorization header is missing.",
 	"AUTHORIZATION_HEADER_INVALID": "Authorization header is invalid.",
 	"AUTHORIZATION_TOKEN_EXPIRED":  "Authorization token has expired.",
 	"AUTHORIZATION_GENERATED":      "Authorization token generated successfully.",
 	"INVALID_JWT_TOKEN":            "Invalid JWT token.",
+	"OTP_LOGIN_ENABLED":            "OTP login is enabled for this user. An OTP code has been sent to your email or phone.",
+	"INVALID_OTP":                  "The provided OTP code is invalid. Is used, expired or incorrect.",
 
 	"INVALID_EMAIL":    "Invalid email.",
 	"INVALID_PASSWORD": "Invalid password.",

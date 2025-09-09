@@ -1,19 +1,43 @@
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
+
+# Alpine
+RUN apk add --no-cache git build-base
+# Debian
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     git build-essential \
+#  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY . .
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY ./src ./src
+COPY .air.toml ./
 
 RUN go install github.com/go-delve/delve/cmd/dlv@latest
-RUN go mod tidy
-RUN go build -gcflags "all=-N -l" -o /app/main /app/src/infrastructure/api/cmd/main.go
+RUN go install github.com/air-verse/air@v1.61.7
+RUN go install github.com/swaggo/swag/cmd/swag@latest
 
-FROM debian:bullseye-slim
+# Generate Swagger docs
+RUN swag init -g ./src/infrastructure/api/cmd/main.go -o /app/docs
+# RUN go build -gcflags "all=-N -l" -o /app/main ./src/infrastructure/api/cmd/main.go
+
+
+FROM golang:1.25-alpine
+
+# RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 WORKDIR /app
 
-# Copia el binario y delve desde la imagen anterior
-COPY --from=builder /app/main /src/main
+COPY --from=builder /go/bin/air /usr/local/bin/air
 COPY --from=builder /go/bin/dlv /usr/local/bin/dlv
+COPY --from=builder /go/bin/swag /usr/local/bin/swag
+
+COPY --from=builder /app .
+
+# RUN chown -R appuser:appuser /app
+
+# USER appuser
 
 EXPOSE 8080 40000

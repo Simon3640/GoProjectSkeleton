@@ -62,10 +62,7 @@ func (uc *OneTimeTokenConverter) ToDomain(ormModel *db_models.OneTimeToken) *mod
 func (uc *OneTimeTokenConverter) ToGormUpdate(model dtos.OneTimeTokenUpdate) *db_models.OneTimeToken {
 	OneTimeToken := &db_models.OneTimeToken{}
 
-	if model.IsUsed != nil {
-		OneTimeToken.IsUsed = *model.IsUsed
-	}
-
+	OneTimeToken.IsUsed = model.IsUsed
 	OneTimeToken.ID = model.ID
 	return OneTimeToken
 }

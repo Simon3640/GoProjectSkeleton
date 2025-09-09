@@ -7,8 +7,9 @@ type UserCreate struct {
 }
 
 // cant create admin role
-func (u UserCreate) Validate() []string {
+func (u *UserCreate) Validate() []string {
 	// super Validate
+	u.Status = "pending" // default status
 	errs := u.UserBase.Validate()
 	if u.RoleID == 1 { // TODO: replace with constant
 		errs = append(errs, "admin role is not allowed")
@@ -21,7 +22,7 @@ type UserAndPasswordCreate struct {
 	Password string `json:"password"`
 }
 
-func (u UserAndPasswordCreate) Validate() []string {
+func (u *UserAndPasswordCreate) Validate() []string {
 	errs := u.UserCreate.Validate()
 	if !models.IsValidPassword(u.Password) {
 		errs = append(errs, "password is invalid")
@@ -30,11 +31,12 @@ func (u UserAndPasswordCreate) Validate() []string {
 }
 
 type UserUpdateBase struct {
-	Name   *string `json:"name"`
-	Email  *string `json:"email"`
-	Phone  *string `json:"phone"`
-	Status *string `json:"status"`
-	RoleID *uint   `json:"role_id,omitempty"`
+	Name     *string `json:"name"`
+	Email    *string `json:"email"`
+	Phone    *string `json:"phone"`
+	Status   *string `json:"status"`
+	RoleID   *uint   `json:"role_id,omitempty"`
+	OTPLogin *bool   `json:"otp_login,omitempty"`
 }
 
 type UserUpdate struct {
@@ -55,6 +57,10 @@ func (u UserUpdate) Validate() []string {
 
 func (u UserUpdate) GetUserID() uint {
 	return u.ID
+}
+
+type UserActivate struct {
+	Token string `json:"token"`
 }
 
 type UserMultiResponse = MultipleResponse[models.User]

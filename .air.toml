@@ -1,0 +1,16 @@
+root = "/app"
+
+[build]
+cmd = "go build -gcflags 'all=-N -l' -o /app/tmp/main ./src/infrastructure/api/cmd/main.go"
+bin = "/app/tmp/main"
+full_bin = "dlv exec /app/tmp/main --headless --listen=:40000 --api-version=2 --accept-multiclient"
+include_ext = ["go", "tpl", "tmpl", "html"]
+exclude_dir = ["tmp", "vendor", "docs"]
+
+log_color = "true"
+log_time = "true"
+
+poll=true
+
+[run]
+cmd = "dlv exec /app/tmp/main --headless --listen=:40000 --api-version=2 --accept-multiclient --log"

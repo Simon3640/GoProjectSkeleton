@@ -2,11 +2,12 @@ package usecases_user
 
 import (
 	"context"
-	"fmt"
 
 	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
+	"gormgoskeleton/src/application/shared/services"
 	email_service "gormgoskeleton/src/application/shared/services/emails"
 	email_models "gormgoskeleton/src/application/shared/services/emails/models"
 	"gormgoskeleton/src/application/shared/settings"
@@ -19,8 +20,11 @@ import (
 type CreateUserSendEmailUseCase struct {
 	appMessages *locales.Locale
 	log         contracts_providers.ILoggerProvider
-	jwt         contracts_providers.IJWTProvider
 	locale      locales.LocaleTypeEnum
+
+	hashProvider contracts_providers.IHashProvider
+
+	tokenRepo contracts_repositories.IOneTimeTokenRepository
 }
 
 var _ usecase.BaseUseCase[models.User, models.User] = (*CreateUserSendEmailUseCase)(nil)
@@ -38,22 +42,38 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
 
-	token, exp, err := uc.jwt.GenerateAccessToken(ctx, fmt.Sprint(input.ID), nil)
+	token, err := services.CreateOneTimeTokenService(
+		input.ID,
+		models.OneTimeTokenPurposeEmailVerify,
+		uc.hashProvider,
+		uc.tokenRepo,
+	)
+	if err != nil {
+		uc.log.Error("Error creating one time token", err.ToError())
+		result.SetError(
+			err.Code,
+			uc.appMessages.Get(
+				uc.locale,
+				err.Context,
+			),
+		)
+		return result
+	}
 
 	newUserEmailData := email_models.NewUserEmailData{
-		Name:            input.Name,
-		ActivationToken: token,
-		Expiration:      exp,
-		AppName:         settings.AppSettingsInstance.AppName,
-		SupportEmail:    settings.AppSettingsInstance.AppSupportEmail,
+		Name:              input.Name,
+		ActivationLink:    settings.AppSettingsInstance.FrontendActivateAccountURL + "?token=" + token,
+		ExpirationMinutes: int(settings.AppSettingsInstance.OneTimeTokenEmailVerifyTTL),
+		AppName:           settings.AppSettingsInstance.AppName,
+		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
 
 	if err := email_service.RegisterUserEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
-		input,
+		input.Email,
 		locale,
 		templates.TemplateKeysInstance.WelcomeEmail,
-		messages.MessageKeysInstance.NEW_USER_WELCOME,
+		email_service.SubjectKeysInstance.WelcomeEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
@@ -66,17 +86,6 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 		return result
 	}
 
-	if err != nil {
-		uc.log.Error("Error generating token", err.ToError())
-		result.SetError(
-			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
-				err.Context,
-			),
-		)
-		return result
-	}
 	result.SetData(
 		status.Success,
 		input,
@@ -90,11 +99,13 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 
 func NewCreateUserSendEmailUseCase(
 	log contracts_providers.ILoggerProvider,
-	jwt contracts_providers.IJWTProvider,
+	hashProvider contracts_providers.IHashProvider,
+	tokenRepo contracts_repositories.IOneTimeTokenRepository,
 ) *CreateUserSendEmailUseCase {
 	return &CreateUserSendEmailUseCase{
-		appMessages: locales.NewLocale(locales.EN_US),
-		log:         log,
-		jwt:         jwt,
+		appMessages:  locales.NewLocale(locales.EN_US),
+		log:          log,
+		hashProvider: hashProvider,
+		tokenRepo:    tokenRepo,
 	}
 }

@@ -39,17 +39,17 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 	newUserEmailData := email_models.ResetPasswordEmailData{
 		Name:              input.User.Name,
 		ResetLink:         input.BuildURL(settings.AppSettingsInstance.FrontendResetPasswordURL),
-		ExpirationMinutes: settings.AppSettingsInstance.OneTimeTokenTTL,
+		ExpirationMinutes: settings.AppSettingsInstance.OneTimeTokenPasswordTTL,
 		AppName:           settings.AppSettingsInstance.AppName,
 		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
 
 	if err := email_service.ResetPasswordEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
-		input.User,
+		input.User.Email,
 		locale,
 		templates.TemplateKeysInstance.PasswordResetEmail,
-		messages.MessageKeysInstance.RESET_PASSWORD_SUBJECT,
+		email_service.SubjectKeysInstance.PasswordResetEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(

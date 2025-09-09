@@ -19,4 +19,3 @@ This project is inspired by the work of **Higuita, Victor** [NodeTskeleton](http
     - [UseCases](#usecases)
     - [Use Cases Iterator](#use-cases-iterator)
     - [Validator](#validator)
-

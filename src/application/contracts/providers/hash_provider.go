@@ -8,4 +8,6 @@ type IHashProvider interface {
 	OneTimeToken() (string, []byte, *application_errors.ApplicationError)
 	HashOneTimeToken(token string) []byte
 	ValidateOneTimeToken(hashedToken []byte, token string) bool
+	GenerateOTP() (string, []byte, *application_errors.ApplicationError)
+	ValidateOTP(hashedOTP []byte, otp string) bool
 }

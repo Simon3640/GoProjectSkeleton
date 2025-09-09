@@ -7,8 +7,13 @@
   <body style="font-family: Arial, sans-serif; line-height:1.5;">
     <h2>Hello {{.Name}}!</h2>
     <p>
-      Thank you for signing up at <b>{{.AppName}}</b>.  
+      Thank you for signing up at <b>{{.AppName}}</b>.
       We’re excited to have you with us 🚀.
+    </p>
+    <p>
+      To activate your account, please click on the following link:
+      <a href="{{.ActivationLink}}">{{.ActivationLink}}</a>
+      Remember that this link will expire on {{.ExpirationMinutes}} Minutes.
     </p>
     <p>
       If you have any questions, feel free to reach us at <a href="mailto:{{.SupportEmail}}">{{.SupportEmail}}</a>.

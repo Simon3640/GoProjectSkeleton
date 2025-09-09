@@ -54,6 +54,17 @@ type PasswordTokenCreate struct {
 	NoHashedPassword string `json:"no_hashed_password"`
 }
 
+func (p PasswordTokenCreate) Validate() []string {
+	var errs []string
+	if p.Token == "" {
+		errs = append(errs, "Token is required")
+	}
+	if !models.IsValidPassword(p.NoHashedPassword) {
+		errs = append(errs, "Invalid password")
+	}
+	return errs
+}
+
 type PasswordUpdateBase struct {
 	Hash      *string    `json:"hash"`
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`

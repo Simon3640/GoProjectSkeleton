@@ -29,4 +29,8 @@ func InitMigrate(db *gorm.DB, logger contracts_providers.ILoggerProvider) {
 	logger.Info("Auto migrating OneTimeToken model")
 	setups.NewSetupOneTimeToken().Setup(db, db_models.OneTimeToken{}, nil, logger)
 	logger.Info("OneTimeToken model migrated")
+
+	logger.Info("Auto migrating OneTimePassword model")
+	setups.NewSetupOneTimePassword().Setup(db, db_models.OneTimePassword{}, nil, logger)
+	logger.Info("OneTimePassword model migrated")
 }

@@ -17,6 +17,17 @@ type RepositoryBase[CreateModel any, UpdateModel any, Model any, DBModel any] st
 	modelConverter ModelConverter[CreateModel, UpdateModel, Model, DBModel]
 }
 
+func SetUpRepositoryBase[CreateModel, UpdateModel, Model, DBModel any](db *gorm.DB,
+	logger contracts_providers.ILoggerProvider,
+	modelConverter ModelConverter[CreateModel, UpdateModel, Model, DBModel],
+) RepositoryBase[CreateModel, UpdateModel, Model, DBModel] {
+	return RepositoryBase[CreateModel, UpdateModel, Model, DBModel]{
+		DB:             db,
+		logger:         logger,
+		modelConverter: modelConverter,
+	}
+}
+
 var _ contracts_repositories.IRepositoryBase[any, any, any, any] = (*RepositoryBase[any, any, any, any])(nil)
 
 func FilterToGorm(f domain_utils.Filter) (string, []interface{}, error) {
@@ -118,7 +129,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id ui
 	return nil
 }
 
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[Model], skip int, limit int) ([]Model, int64, *application_errors.ApplicationError) {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[Model], skip, limit int) ([]Model, int64, *application_errors.ApplicationError) {
 	var entities []DBModel
 	// Apply filters from payload
 

@@ -23,6 +23,7 @@ var EsMessages = map[MessageKeysEnum]string{
 	"USER_UPDATE_SUCCESS":            "Usuario actualizado con éxito.",
 	"USER_DELETE_SUCCESS":            "Usuario eliminado con éxito.",
 	"INVALID_USER_ID":                "El ID de usuario es inválido.",
+	"INVALID_USER_ACTIVATION_TOKEN":  "El token de activación de usuario es inválido.",
 
 	"PASSWORD_REQUIRED":                      "La contraseña es requerida.",
 	"PASSWORD_IS_SHORT":                      "La contraseña es demasiado corta.",
@@ -31,12 +32,16 @@ var EsMessages = map[MessageKeysEnum]string{
 	"PASSWORD_TOKEN_CREATED":                 "Token de restablecimiento de contraseña creado con éxito.",
 	"RESET_PASSWORD_SUBJECT":                 "Restablecimiento de contraseña para tu cuenta",
 	"RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY": "Correo de restablecimiento de contraseña enviado con éxito.",
+	"INVALID_PASSWORD_RESET_TOKEN":           "Token de restablecimiento de contraseña inválido.",
+	"RESET_PASSWORD_TOKEN_VALID":             "El token de restablecimiento de contraseña es válido.",
 
 	"AUTHORIZATION_HEADER_MISSING": "Falta el encabezado de autorización.",
 	"AUTHORIZATION_HEADER_INVALID": "El encabezado de autorización es inválido.",
 	"AUTHORIZATION_TOKEN_EXPIRED":  "El token de autorización ha expirado.",
 	"AUTHORIZATION_GENERATED":      "Token de autorización generado con éxito.",
 	"INVALID_JWT_TOKEN":            "Token JWT inválido.",
+	"OTP_LOGIN_ENABLED":            "El inicio de sesión OTP está habilitado para este usuario. Por favor, un código OTP ha sido enviado a tu correo electrónico o teléfono.",
+	"INVALID_OTP":                  "El código OTP proporcionado es inválido. Está usado, expirado o es incorrecto.",
 
 	"INVALID_EMAIL":    "El correo electrónico es inválido.",
 	"INVALID_PASSWORD": "La contraseña es inválida.",
