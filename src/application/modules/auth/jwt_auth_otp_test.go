@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"strconv"
 	"testing"
 	"time"
 
@@ -47,14 +48,14 @@ func TestAuthenticateOTPUseCase_Valid(t *testing.T) {
 	testJWTProvider.On(
 		"GenerateAccessToken",
 		ctx,
-		string(rune(dtomocks.OneTimePassword.UserID)),
+		strconv.FormatUint(uint64(dtomocks.OneTimePassword.UserID), 10),
 		mock.Anything,
 	).Return("newAccessToken", time.Now().Add(1*time.Hour), nil)
 
 	testJWTProvider.On(
 		"GenerateRefreshToken",
 		ctx,
-		string(rune(dtomocks.OneTimePassword.UserID)),
+		strconv.FormatUint(uint64(dtomocks.OneTimePassword.UserID), 10),
 	).Return("newRefreshToken", time.Now().Add(24*time.Hour), nil)
 
 	testOTPRepository.On(
