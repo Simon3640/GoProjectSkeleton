@@ -1,18 +1,15 @@
-package routes
+package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"gormgoskeleton/src/application/modules/auth"
 	auth_pipes "gormgoskeleton/src/application/modules/auth/pipe"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/infrastructure/api"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
 	"gormgoskeleton/src/infrastructure/providers"
 	"gormgoskeleton/src/infrastructure/repositories"
-
-	"github.com/gin-gonic/gin"
 )
 
 // access-token
@@ -22,15 +19,15 @@ import (
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.UserCredentials true "User credentials"
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Success      200 {object} dtos.Token "Tokens generated successfully"
 // @Success 	 204 {object} nil "OTP login enabled, OTP Sended to user email or phone"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/login [post]
-func login(c *gin.Context) {
+func Login(ctx HandlerContext) {
 	var userCredentials dtos.UserCredentials
-
-	if err := c.ShouldBindJSON(&userCredentials); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(*ctx.Body).Decode(&userCredentials); err != nil {
+		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -38,19 +35,17 @@ func login(c *gin.Context) {
 	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
 	otpRepository := repositories.NewOneTimePasswordRepository(database.DB, providers.Logger)
 
-	uc_result := auth.NewAuthenticateUseCase(providers.Logger,
+	ucResult := auth.NewAuthenticateUseCase(providers.Logger,
 		password_repository,
 		userRepository,
 		otpRepository,
 		providers.HashProviderInstance,
 		providers.JWTProviderInstance,
-	).Execute(c, locales.EN_US, userCredentials)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	).Execute(ctx.c, ctx.Locale, userCredentials)
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[dtos.Token]().ResolveDTO(c, uc_result, headers)
-
-	c.JSON(statusCode, content)
+	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }
 
 // access-token-refresh
@@ -58,28 +53,26 @@ func login(c *gin.Context) {
 // @Description  This endpoint allows a user to refresh their JWT access token using a valid refresh
 // @Tags         Auth
 // @Accept       json
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Produce      json
 // @Param        request body string true "Refresh token"
 // @Success      200 {object} dtos.Token
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/refresh [post]
-func refreshAccessToken(c *gin.Context) {
+func RefreshAccessToken(ctx HandlerContext) {
 	var refreshToken string
-
-	if err := c.ShouldBindJSON(&refreshToken); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(*ctx.Body).Decode(&refreshToken); err != nil {
+		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	uc_result := auth.NewAuthenticationRefreshUseCase(providers.Logger,
+	ucResult := auth.NewAuthenticationRefreshUseCase(providers.Logger,
 		providers.JWTProviderInstance,
-	).Execute(c, locales.EN_US, refreshToken)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	).Execute(ctx.c, ctx.Locale, refreshToken)
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[dtos.Token]().ResolveDTO(c, uc_result, headers)
-
-	c.JSON(statusCode, content)
+	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }
 
 // password-reset
@@ -92,13 +85,14 @@ func refreshAccessToken(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        identifier path string true "Provided email or phone number"
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Success      200 {object} map[string]string "Password reset email sent"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/password-reset/{identifier} [get]
-func requestPasswordReset(c *gin.Context) {
-	identifier := c.Param("identifier")
+func RequestPasswordReset(ctx HandlerContext) {
+	identifier := ctx.Params["identifier"]
 	if identifier == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Identifier is required"})
+		http.Error(ctx.ResponseWriter, "identifier is required", http.StatusBadRequest)
 		return
 	}
 
@@ -115,18 +109,17 @@ func requestPasswordReset(c *gin.Context) {
 	uc_reset_password_token_email := auth.NewGetResetPasswordSendEmailUseCase(
 		providers.Logger)
 
-	uc_result := auth_pipes.NewGetResetPasswordPipe(
-		c.Request.Context(),
-		locales.ES_ES,
+	ucResult := auth_pipes.NewGetResetPasswordPipe(
+		ctx.c,
+		ctx.Locale,
 		uc_reset_password_token,
 		uc_reset_password_token_email,
 	).Execute(identifier)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[bool]().ResolveDTO(c, uc_result, headers)
 
-	c.JSON(statusCode, content)
+	NewRequestResolver[bool]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }
 
 // OTP login
@@ -136,25 +129,29 @@ func requestPasswordReset(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        otp path string true "One Time Password"
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Success      200 {object} dtos.Token "Tokens generated successfully"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/login-otp/{otp} [get]
-func loginOTP(c *gin.Context) {
-	otp := c.Param("otp")
+func LoginOTP(ctx HandlerContext) {
+	otp := ctx.Params["otp"]
+	if otp == "" {
+		http.Error(ctx.ResponseWriter, "otp is required", http.StatusBadRequest)
+		return
+	}
 
 	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
 	otpRepository := repositories.NewOneTimePasswordRepository(database.DB, providers.Logger)
 
-	uc_result := auth.NewAuthenticateOTPUseCase(providers.Logger,
+	ucResult := auth.NewAuthenticateOTPUseCase(providers.Logger,
 		userRepository,
 		otpRepository,
 		providers.HashProviderInstance,
 		providers.JWTProviderInstance,
-	).Execute(c, locales.EN_US, otp)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	).Execute(ctx.c, ctx.Locale, otp)
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[dtos.Token]().ResolveDTO(c, uc_result, headers)
+	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 
-	c.JSON(statusCode, content)
 }
