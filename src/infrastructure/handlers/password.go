@@ -18,6 +18,7 @@ import (
 // @Tags Password
 // @Accept json
 // @Produce json
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Param request body dtos.PasswordCreateNoHash true "Datos del usuario"
 // @Success 201 {object} bool "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
@@ -50,6 +51,7 @@ func CreatePassword(ctx HandlerContext) {
 // @Tags Password
 // @Accept json
 // @Produce json
+// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Param request body dtos.PasswordTokenCreate true "Datos del usuario"
 // @Success 201 {object} bool "Token creado"
 // @Failure 400 {object} map[string]string "Error de validación"
