@@ -1,25 +1,25 @@
 package repositories
 
 import (
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/domain/models"
-	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
+	dbModels "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
 
 	"gorm.io/gorm"
 )
 
 type PasswordRepository struct {
-	RepositoryBase[dtos.PasswordCreate, dtos.PasswordUpdate, models.Password, db_models.Password]
+	RepositoryBase[dtos.PasswordCreate, dtos.PasswordUpdate, models.Password, dbModels.Password]
 }
 
 var _ contracts_repositories.IPasswordRepository = (*PasswordRepository)(nil)
 
 type PasswordConverter struct{}
 
-var _ ModelConverter[dtos.PasswordCreate, dtos.PasswordUpdate, models.Password, db_models.Password] = (*PasswordConverter)(nil)
+var _ ModelConverter[dtos.PasswordCreate, dtos.PasswordUpdate, models.Password, dbModels.Password] = (*PasswordConverter)(nil)
 
 func (r *PasswordRepository) Create(model dtos.PasswordCreate) (*models.Password, *application_errors.ApplicationError) {
 	// start a transaction thay clean all previous passwords for the user setting is_active to false
@@ -31,7 +31,7 @@ func (r *PasswordRepository) Create(model dtos.PasswordCreate) (*models.Password
 		}
 	}()
 
-	err := tx.Model(&db_models.Password{}).Where(
+	err := tx.Model(&dbModels.Password{}).Where(
 		"user_id = ? AND is_active = ?", model.UserID, true,
 	).Updates(map[string]interface{}{"is_active": false}).Error
 
@@ -57,7 +57,7 @@ func (r *PasswordRepository) Create(model dtos.PasswordCreate) (*models.Password
 }
 
 func (r *PasswordRepository) GetActivePassword(userEmail string) (*models.Password, *application_errors.ApplicationError) {
-	var password db_models.Password
+	var password dbModels.Password
 	// Select the user by email, then take the first active password
 	if err := r.DB.Joins(`JOIN "user" u ON u.id = password.user_id`).Where("u.email = ? AND password.is_active = ?", userEmail, true).First(&password).Error; err != nil {
 		r.logger.Debug("Error retrieving active password", err)
@@ -66,8 +66,8 @@ func (r *PasswordRepository) GetActivePassword(userEmail string) (*models.Passwo
 	return r.modelConverter.ToDomain(&password), nil
 }
 
-func (uc *PasswordConverter) ToGormCreate(model dtos.PasswordCreate) *db_models.Password {
-	return &db_models.Password{
+func (uc *PasswordConverter) ToGormCreate(model dtos.PasswordCreate) *dbModels.Password {
+	return &dbModels.Password{
 		Hash:      model.Hash,
 		ExpiresAt: model.ExpiresAt,
 		IsActive:  model.IsActive,
@@ -75,7 +75,7 @@ func (uc *PasswordConverter) ToGormCreate(model dtos.PasswordCreate) *db_models.
 	}
 }
 
-func (uc *PasswordConverter) ToDomain(ormModel *db_models.Password) *models.Password {
+func (uc *PasswordConverter) ToDomain(ormModel *dbModels.Password) *models.Password {
 	return &models.Password{
 		ID: ormModel.ID,
 		PasswordBase: models.PasswordBase{
@@ -87,8 +87,8 @@ func (uc *PasswordConverter) ToDomain(ormModel *db_models.Password) *models.Pass
 	}
 }
 
-func (uc *PasswordConverter) ToGormUpdate(model dtos.PasswordUpdate) *db_models.Password {
-	password := &db_models.Password{}
+func (uc *PasswordConverter) ToGormUpdate(model dtos.PasswordUpdate) *dbModels.Password {
+	password := &dbModels.Password{}
 
 	if model.Hash != nil {
 		password.Hash = *model.Hash
@@ -104,13 +104,13 @@ func (uc *PasswordConverter) ToGormUpdate(model dtos.PasswordUpdate) *db_models.
 	return password
 }
 
-func NewPasswordRepository(db *gorm.DB, logger contracts_providers.ILoggerProvider) *PasswordRepository {
+func NewPasswordRepository(db *gorm.DB, logger contractsProviders.ILoggerProvider) *PasswordRepository {
 	return &PasswordRepository{
 		RepositoryBase: RepositoryBase[
 			dtos.PasswordCreate,
 			dtos.PasswordUpdate,
 			models.Password,
-			db_models.Password,
+			dbModels.Password,
 		]{DB: db, modelConverter: &PasswordConverter{}, logger: logger},
 	}
 }
