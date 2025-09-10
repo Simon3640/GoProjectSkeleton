@@ -1,0 +1,60 @@
+services:
+  gormgoskeleton-e2e-tests:
+    build:
+      context: ..
+      dockerfile: docker/dockerfile.e2e
+    ports:
+      - "8080:8080"
+      - "40000:40000" #dlv
+    env_file:
+      - ../test.env
+    depends_on:
+      db:
+        condition: service_healthy
+    security_opt:
+      - seccomp:unconfined
+    networks:
+      - gormgoskeleton-e2e-tests
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/api/health-check"]
+      interval: 10s
+      retries: 5
+    command: [./main]
+  db:
+    image: postgres:17.2-alpine
+    environment:
+      POSTGRES_USER: gormgoskeleton
+      POSTGRES_PASSWORD: gormgoskeleton
+      POSTGRES_DB: gormgoskeleton
+    networks:
+      - gormgoskeleton-e2e-tests
+    tmpfs:
+      - /var/lib/postgresql/data:rw,noexec,nosuid,size=65536k
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gormgoskeleton"]
+      interval: 1s
+      retries: 5
+
+  mailhog:
+    image: axllent/mailpit:latest
+    # platform: linux/amd64
+    restart: always
+    networks:
+      - gormgoskeleton-e2e-tests
+
+  newman:
+    image: postman/newman:alpine
+    env_file:
+      - ../test.env
+    depends_on:
+      gormgoskeleton-e2e-tests:
+        condition: service_healthy
+    networks:
+      - gormgoskeleton-e2e-tests
+    volumes:
+      - ../tests/e2e:/etc/newman
+    command: ["run", "collection.json", "-e", "environment.json"]
+
+networks:
+  gormgoskeleton-e2e-tests:
+    external: true
