@@ -1,13 +1,13 @@
 package middlewares
 
 import (
-	domain_utils "gormgoskeleton/src/domain/utils"
+	"gormgoskeleton/src/infrastructure/handlers"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func QueryMidleWare[QueryModel any]() gin.HandlerFunc {
+func QueryMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Parse query parameters
 		filters := c.QueryArray("filter")
@@ -16,7 +16,12 @@ func QueryMidleWare[QueryModel any]() gin.HandlerFunc {
 		pageSize, _ := strconv.Atoi(c.Query("page_size"))
 
 		// Create query payload
-		queryParams := domain_utils.NewQueryPayloadBuilder[QueryModel](sorts, filters, &page, &pageSize)
+		queryParams := handlers.Query{
+			Filters:  filters,
+			Sorts:    sorts,
+			Page:     &page,
+			PageSize: &pageSize,
+		}
 
 		// Store query params in context
 		c.Set("queryParams", queryParams)

@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"gormgoskeleton/src/application/shared/locales"
-	domain_utils "gormgoskeleton/src/domain/utils"
 	"io"
 	"net/http"
 )
@@ -63,40 +62,42 @@ const (
 	TRACE   HTTPMethodEnum = "TRACE"
 )
 
-type HandlerContext[QueryModel any] struct {
-	c             context.Context
-	Locale        locales.LocaleTypeEnum
-	Params        map[string]string
-	Body          io.Reader
-	Query         domain_utils.QueryPayloadBuilder[QueryModel]
-	Authorization string
+type Query struct {
+	Filters  []string
+	Sorts    []string
+	Page     *int
+	PageSize *int
+}
 
-	SerializationType SerializationTypeEnum
-	ContentType       HTTPContentTypeEnum
+type HandlerContext struct {
+	c      context.Context
+	Locale locales.LocaleTypeEnum
+	Params map[string]string
+	Body   *io.ReadCloser
+	Query  *Query
 
 	ResponseWriter http.ResponseWriter
 }
 
-func NewHandlerContext[QueryModel any](
+func NewHandlerContext(
 	c context.Context,
-	locale locales.LocaleTypeEnum,
+	locale *string,
 	params map[string]string,
-	body io.Reader,
-	authorization string,
-	query domain_utils.QueryPayloadBuilder[QueryModel],
-	serializationType SerializationTypeEnum,
-	contentType HTTPContentTypeEnum,
+	body *io.ReadCloser,
+	query *Query,
 	responseWriter http.ResponseWriter,
-) HandlerContext[QueryModel] {
-	return HandlerContext[QueryModel]{
-		c:                 c,
-		Locale:            locale,
-		Params:            params,
-		Body:              body,
-		Authorization:     authorization,
-		Query:             query,
-		SerializationType: serializationType,
-		ContentType:       contentType,
-		ResponseWriter:    responseWriter,
+) HandlerContext {
+	if locale == nil || *locale == "" {
+		defaultLocale := "en-US"
+		locale = &defaultLocale
+	}
+
+	return HandlerContext{
+		c:              c,
+		Locale:         locales.LocaleTypeEnum(*locale),
+		Params:         params,
+		Body:           body,
+		Query:          query,
+		ResponseWriter: responseWriter,
 	}
 }

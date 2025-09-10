@@ -43,7 +43,7 @@ func (rr *RequestResolver[D]) ResolveDTO(
 	if result.HasError() {
 		w.WriteHeader(rr.statusMapping[result.StatusCode])
 		resp := map[string]any{
-			"details": result.Details,
+			"details": result.Error,
 		}
 		json.NewEncoder(w).Encode(resp)
 		return
