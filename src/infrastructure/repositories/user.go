@@ -104,11 +104,12 @@ var _ ModelConverter[dtos.UserCreate, dtos.UserUpdate, models.User, db_models.Us
 
 func (uc *UserConverter) ToGormCreate(model dtos.UserCreate) *db_models.User {
 	return &db_models.User{
-		Name:   model.Name,
-		Email:  model.Email,
-		Phone:  model.Phone,
-		Status: model.Status,
-		RoleID: model.RoleID,
+		Name:     model.Name,
+		Email:    model.Email,
+		Phone:    model.Phone,
+		Status:   model.Status,
+		RoleID:   model.RoleID,
+		OTPLogin: model.OTPLogin,
 	}
 }
 
@@ -151,6 +152,9 @@ func (uc *UserConverter) ToGormUpdate(model dtos.UserUpdate) *db_models.User {
 	}
 	if model.RoleID != nil {
 		user.RoleID = *model.RoleID
+	}
+	if model.OTPLogin != nil {
+		user.OTPLogin = *model.OTPLogin
 	}
 	user.ID = model.ID
 	return user
