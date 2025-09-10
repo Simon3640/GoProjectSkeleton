@@ -15,28 +15,6 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    services:
-      db:
-        image: postgres:17.2-alpine
-        env:
-          POSTGRES_USER: gormgoskeleton
-          POSTGRES_PASSWORD: gormgoskeleton
-          POSTGRES_DB: gormgoskeleton
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U gormgoskeleton"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-        volumes:
-          - pgdata:/var/lib/postgresql/data
-
-      mailhog:
-        image: axllent/mailpit:latest
-        ports:
-          - 8025:8025
-          - 1025:1025
 
     steps:
       - name: Checkout code
@@ -48,6 +26,11 @@ jobs:
 
       - name: Set up Docker Compose
         run: docker compose version
+
+      - name: Create Docker networks
+        run: |
+          docker network create gormgoskeleton-tests || true
+          docker network create gormgoskeleton-e2e-tests || true
 
       - name: Run Integration Tests
         run: docker compose -f docker/docker-compose.test.yml up --abort-on-container-exit --exit-code-from gormgoskeleton-integration-tests --build
