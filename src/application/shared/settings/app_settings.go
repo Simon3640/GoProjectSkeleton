@@ -26,6 +26,12 @@ type AppSettings struct {
 	DBName     string
 	DBSSL      bool
 
+	// Redis
+	RedisHost     string
+	RedisPassword string
+	RedisDB       int
+	RedisTTL      int // in seconds
+
 	// Security
 	JWTSecretKey               string
 	JWTIssuer                  string

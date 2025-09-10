@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
@@ -15,12 +15,12 @@ import (
 
 type GetResetPasswordTokenUseCase struct {
 	usecase.BaseUseCaseValidation[string, dtos.OneTimeTokenUser]
-	log contracts_providers.ILoggerProvider
+	log contractsProviders.ILoggerProvider
 
 	tokenRepo contracts_repositories.IOneTimeTokenRepository
 	userRepo  contracts_repositories.IUserRepository
 
-	hashProvider contracts_providers.IHashProvider
+	hashProvider contractsProviders.IHashProvider
 }
 
 func (uc *GetResetPasswordTokenUseCase) SetLocale(locale locales.LocaleTypeEnum) {
@@ -104,10 +104,10 @@ func (uc *GetResetPasswordTokenUseCase) Validate(
 }
 
 func NewGetResetPasswordTokenUseCase(
-	log contracts_providers.ILoggerProvider,
+	log contractsProviders.ILoggerProvider,
 	tokenRepo contracts_repositories.IOneTimeTokenRepository,
 	userRepo contracts_repositories.IUserRepository,
-	hashProvider contracts_providers.IHashProvider,
+	hashProvider contractsProviders.IHashProvider,
 ) *GetResetPasswordTokenUseCase {
 	return &GetResetPasswordTokenUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, dtos.OneTimeTokenUser]{

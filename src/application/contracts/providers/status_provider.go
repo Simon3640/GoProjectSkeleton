@@ -1,4 +1,4 @@
-package contracts_providers
+package contractsproviders
 
 import (
 	"gormgoskeleton/src/domain/models"
