@@ -44,7 +44,7 @@ on:
 
         - name: Create test.env file
           run: |
-            echo "${{ secrets.TEST_ENV_FILE }}" >> test.env
+            echo "${{ secrets.TEST_ENV_FILE }}" > test.env
 
         - name: Set up Docker Compose
           run: docker compose version
