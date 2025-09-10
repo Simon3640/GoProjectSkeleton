@@ -1,0 +1,56 @@
+name: Integration and E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'releases/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+      - 'releases/**'
+
+  jobs:
+    tests:
+      runs-on: ubuntu-latest
+      services:
+        db:
+          image: postgres:17.2-alpine
+          env:
+            POSTGRES_USER: gormgoskeleton
+            POSTGRES_PASSWORD: gormgoskeleton
+            POSTGRES_DB: gormgoskeleton
+          ports:
+            - 5432:5432
+          options: >-
+            --health-cmd="pg_isready -U gormgoskeleton"
+            --health-interval=10s
+            --health-timeout=5s
+            --health-retries=5
+          volumes:
+            - pgdata:/var/lib/postgresql/data
+
+        mailhog:
+          image: axllent/mailpit:latest
+          ports:
+            - 8025:8025
+            - 1025:1025
+
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - name: Create test.env file
+          run: |
+            echo "${{ secrets.TEST_ENV_FILE }}" >> test.env
+
+        - name: Set up Docker Compose
+          run: docker compose version
+
+        - name: Run Integration Tests
+          run: docker compose -f docker/docker-compose.test.yml up --abort-on-container-exit --exit-code-from gormgoskeleton-integration-tests --build
+
+        - name: Run E2E Tests
+          run: docker compose -f docker/docker-compose.e2e.yml up --abort-on-container-exit --exit-code-from newman --build
