@@ -1,4 +1,4 @@
-package contracts_providers
+package contractsproviders
 
 type ILoggerProvider interface {
 	Error(message string, err error)

@@ -162,6 +162,7 @@ func GetAllUser(ctx HandlerContext) {
 	queryParams := domain_utils.NewQueryPayloadBuilder[models.User](ctx.Query.Sorts, ctx.Query.Filters, ctx.Query.Page, ctx.Query.PageSize)
 	ucResult := usecases_user.NewGetAllUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.DB, providers.Logger),
+		providers.CacheProviderInstance,
 	).Execute(ctx.c, ctx.Locale, queryParams)
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),

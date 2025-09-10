@@ -4,7 +4,7 @@ import (
 	"context"
 	"go/types"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/application/shared/guards"
 	"gormgoskeleton/src/application/shared/locales"
@@ -15,7 +15,7 @@ import (
 
 type DeleteUserUseCase struct {
 	usecase.BaseUseCaseValidation[uint, types.Nil]
-	log  contracts_providers.ILoggerProvider
+	log  contractsProviders.ILoggerProvider
 	repo contracts_repositories.IUserRepository
 }
 
@@ -62,7 +62,7 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 }
 
 func NewDeleteUserUseCase(
-	log contracts_providers.ILoggerProvider,
+	log contractsProviders.ILoggerProvider,
 	repo contracts_repositories.IUserRepository,
 ) *DeleteUserUseCase {
 	return &DeleteUserUseCase{

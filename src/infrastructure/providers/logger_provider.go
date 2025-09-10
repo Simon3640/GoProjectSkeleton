@@ -5,7 +5,7 @@ import (
 	"log"
 	"log/slog"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 )
 
 type LoggerProvider struct {
@@ -18,7 +18,7 @@ func (lp *LoggerProvider) Setup(enableLog bool, debugLog bool) {
 	lp.debugLog = debugLog
 }
 
-var _ contracts_providers.ILoggerProvider = (*LoggerProvider)(nil)
+var _ contractsProviders.ILoggerProvider = (*LoggerProvider)(nil)
 
 func NewLoggerProvider() *LoggerProvider {
 	return &LoggerProvider{}

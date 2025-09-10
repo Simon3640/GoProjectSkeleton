@@ -3,7 +3,7 @@ package usecases_password
 import (
 	"context"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/guards"
@@ -16,9 +16,9 @@ import (
 
 type CreatePasswordUseCase struct {
 	usecase.BaseUseCaseValidation[dtos.PasswordCreateNoHash, bool]
-	log          contracts_providers.ILoggerProvider
+	log          contractsProviders.ILoggerProvider
 	repo         contracts_repositories.IPasswordRepository
-	hashProvider contracts_providers.IHashProvider
+	hashProvider contractsProviders.IHashProvider
 }
 
 var _ usecase.BaseUseCase[dtos.PasswordCreateNoHash, bool] = (*CreatePasswordUseCase)(nil)
@@ -66,9 +66,9 @@ func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 }
 
 func NewCreatePasswordUseCase(
-	log contracts_providers.ILoggerProvider,
+	log contractsProviders.ILoggerProvider,
 	repo contracts_repositories.IPasswordRepository,
-	hashProvider contracts_providers.IHashProvider,
+	hashProvider contractsProviders.IHashProvider,
 	skip_guards bool,
 ) *CreatePasswordUseCase {
 	return &CreatePasswordUseCase{
