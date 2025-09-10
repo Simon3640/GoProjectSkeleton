@@ -19,7 +19,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Param        request body dtos.UserCredentials true "User credentials"
-// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
+// @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Success      200 {object} dtos.Token "Tokens generated successfully"
 // @Success 	 204 {object} nil "OTP login enabled, OTP Sended to user email or phone"
 // @Failure      400 {object} map[string]string "Validation error"
@@ -53,7 +53,7 @@ func Login(ctx HandlerContext) {
 // @Description  This endpoint allows a user to refresh their JWT access token using a valid refresh
 // @Tags         Auth
 // @Accept       json
-// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
+// @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Produce      json
 // @Param        request body string true "Refresh token"
 // @Success      200 {object} dtos.Token
@@ -85,7 +85,7 @@ func RefreshAccessToken(ctx HandlerContext) {
 // @Accept       json
 // @Produce      json
 // @Param        identifier path string true "Provided email or phone number"
-// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
+// @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Success      200 {object} map[string]string "Password reset email sent"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/password-reset/{identifier} [get]
@@ -129,7 +129,7 @@ func RequestPasswordReset(ctx HandlerContext) {
 // @Accept       json
 // @Produce      json
 // @Param        otp path string true "One Time Password"
-// @Param X-Locale header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
+// @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Success      200 {object} dtos.Token "Tokens generated successfully"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/login-otp/{otp} [get]
