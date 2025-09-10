@@ -8,7 +8,7 @@ import (
 
 func wrapHandler(h func(handlers.HandlerContext)) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		locale := c.GetHeader("X-Locale")
+		locale := c.GetHeader("Accept-Language")
 
 		params := make(map[string]string)
 		for _, param := range c.Params {
