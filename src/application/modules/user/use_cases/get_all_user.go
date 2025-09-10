@@ -59,6 +59,7 @@ func (uc *GetAllUserUseCase) Execute(
 		if err != nil {
 			uc.log.Error("Error getting cache for users total", err.ToError())
 		}
+		uc.log.Debug("Cache hit for users", map[string]any{"cacheKey": cacheKey, "total": total})
 		if found {
 			result.SetData(
 				status.Success,
