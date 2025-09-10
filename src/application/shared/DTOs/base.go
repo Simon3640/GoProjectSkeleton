@@ -16,15 +16,16 @@ type MetaMultiResponse struct {
 	HasNext bool  `json:"has_next"`
 	HasPrev bool  `json:"has_prev"`
 	Links   *Link `json:"links"`
+	Cached  bool  `json:"cached"`
 }
 
-func NewMetaMultiResponse(count int, total int64, hasNext bool, hasPrev bool) MetaMultiResponse {
+func NewMetaMultiResponse(count int, total int64, hasNext bool, hasPrev bool, cached bool) MetaMultiResponse {
 	return MetaMultiResponse{
 		Count:   count,
 		Total:   total,
 		HasNext: hasNext,
 		HasPrev: hasPrev,
-		Links:   nil,
+		Cached:  cached,
 	}
 }
 
@@ -32,10 +33,10 @@ func (mr *MetaMultiResponse) BuildLinks(prefix string, page int, pageSize int, q
 	if mr.Links == nil {
 		mr.Links = &Link{}
 	}
-	mr.Links.Next = nil
-	mr.Links.Last = nil
+
 	mr.Links.Self = prefix + "?" + queryParamsUrl
 	if mr.HasNext {
+		mr.Links.Next = new(string)
 		*mr.Links.Next = (prefix +
 			"?page=" +
 			strconv.Itoa(page+1) +
@@ -44,6 +45,7 @@ func (mr *MetaMultiResponse) BuildLinks(prefix string, page int, pageSize int, q
 			"&" + queryParamsUrl)
 	}
 	if mr.HasPrev {
+		mr.Links.Last = new(string)
 		*mr.Links.Last = prefix + "?page=" + strconv.Itoa(page-1) + "&page_size=" + strconv.Itoa(pageSize)
 	}
 }

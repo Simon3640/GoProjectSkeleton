@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
@@ -17,7 +17,7 @@ import (
 
 type GetResetPasswordSendEmailUseCase struct {
 	appMessages *locales.Locale
-	log         contracts_providers.ILoggerProvider
+	log         contractsProviders.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 }
 
@@ -73,7 +73,7 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 }
 
 func NewGetResetPasswordSendEmailUseCase(
-	log contracts_providers.ILoggerProvider,
+	log contractsProviders.ILoggerProvider,
 ) *GetResetPasswordSendEmailUseCase {
 	return &GetResetPasswordSendEmailUseCase{
 		appMessages: locales.NewLocale(locales.EN_US),

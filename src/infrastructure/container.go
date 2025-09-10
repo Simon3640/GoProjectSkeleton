@@ -45,6 +45,13 @@ func Initialize() {
 		settings.AppSettingsInstance.MailPassword,
 	)
 
+	// Initialize Cache Provider
+	providers.CacheProviderInstance = providers.NewRedisCacheProvider(
+		settings.AppSettingsInstance.RedisHost,
+		settings.AppSettingsInstance.RedisPassword,
+		settings.AppSettingsInstance.RedisDB,
+	)
+
 	// Services
 	email_service.RegisterUserEmailServiceInstance.SetUp(
 		providers.RenderNewUserEmailInstance,
