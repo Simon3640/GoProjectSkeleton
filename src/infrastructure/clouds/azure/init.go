@@ -1,15 +1,17 @@
-package infrastructure
+package azure
 
 import (
 	email_service "gormgoskeleton/src/application/shared/services/emails"
 	settings "gormgoskeleton/src/application/shared/settings"
-	config "gormgoskeleton/src/infrastructure/config"
+	"gormgoskeleton/src/infrastructure/config"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	providers "gormgoskeleton/src/infrastructure/providers"
+	"gormgoskeleton/src/infrastructure/providers"
 )
 
-func Initialize() {
-	if err := settings.AppSettingsInstance.Initialize(config.NewConfig(nil).ToMap()); err != nil {
+var initialized bool
+
+func InitializeInfrastructure() {
+	if err := settings.AppSettingsInstance.Initialize(config.NewConfig(NewVaultConfigLoader()).ToMap()); err != nil {
 		providers.Logger.Error("Failed to initialize app settings", err)
 		panic("Failed to initialize app settings: " + err.Error())
 	}
