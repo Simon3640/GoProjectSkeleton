@@ -1,4 +1,7 @@
-package functions
+// Package main generates Azure Functions from templates.
+// Usage: go run generate.go functions.go
+// Or: go run *.go
+package main
 
 import (
 	"fmt"
@@ -10,7 +13,7 @@ import (
 
 const templatesDir = "templates"
 
-func GenerateFunctions() {
+func main() {
 	baseDir := "."
 	if len(os.Args) > 1 {
 		baseDir = os.Args[1]

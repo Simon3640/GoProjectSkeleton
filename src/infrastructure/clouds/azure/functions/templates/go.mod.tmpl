@@ -1,7 +1,12 @@
-module gormgoskeleton/azure/functions/{{.Path}}
+module gormgoskeleton/functions/azure
 
 go 1.25
 
-require gormgoskeleton v0.0.0
+require (
+	gormgoskeleton v0.0.0
+	gormgoskeleton/azure v0.0.0
+)
 
 replace gormgoskeleton => ../../../../../../../..
+
+replace gormgoskeleton/azure => ../../../..
