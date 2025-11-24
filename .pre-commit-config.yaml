@@ -1,13 +1,17 @@
 repos:
 # Golangci-lint for linting Go code
   - repo: https://github.com/golangci/golangci-lint
-    rev: v1.64.5
+    rev: v2.6.2
     hooks:
       - id: golangci-lint
-        args: ["./src/...", "--timeout=5m", "--config=.golangci.yml"]
+        language: system
+        entry: bash -c 'golangci-lint run'
+        pass_filenames: true
+        types: [go]
         files: ^src/.*\.go$
-        always_run: true
-        pass_filenames: false
+        args:
+          - --timeout=5m
+          - --config=.golangci.yml
         stages: [pre-commit, pre-push]
 
 # Custom hook to run Go unit tests

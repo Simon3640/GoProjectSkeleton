@@ -1,0 +1,76 @@
+package main
+
+import (
+	"log"
+	"net/http"
+	"os"
+
+	"gormgoskeleton/src/infrastructure/clouds/azure"
+	"gormgoskeleton/src/infrastructure/handlers"
+)
+
+func main() {
+	azure.InitializeInfrastructure()
+
+	port := os.Getenv("FUNCTIONS_CUSTOMHANDLER_PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	http.HandleFunc("/api/{{.Route}}", {{.HandlerName}})
+	log.Printf("Azure Function {{.HandlerName}} listening on %s", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
+}
+
+func {{.HandlerName}}(w http.ResponseWriter, r *http.Request) {
+	// Aplicar CORS middleware primero
+	handler := azure.CORSMiddleware(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.Method{{.MethodUpper}} && r.Method != http.MethodOptions {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Si es OPTIONS, ya fue manejado por CORSMiddleware
+		if r.Method == http.MethodOptions {
+			return
+		}
+
+{{if .NeedsQuery}}
+		// Apply query and authentication middlewares
+		innerHandler := azure.QueryMiddleware(azure.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+			adapter := azure.NewHTTPAdapter()
+			params := make(map[string]string)
+			ctx := adapter.ToHandlerContext(r, w, params)
+			handlers.{{.HandlerName}}(ctx)
+		}))
+		innerHandler(w, r)
+{{else if .NeedsAuth}}
+		// Apply authentication middleware
+		innerHandler := azure.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+			adapter := azure.NewHTTPAdapter()
+{{if .HasPathParams}}
+			// Extract path parameters
+			path := r.URL.Path
+			params := adapter.ParsePathParams("{{.PathParamRoute}}", path)
+{{else}}
+			params := make(map[string]string)
+{{end}}
+			ctx := adapter.ToHandlerContext(r, w, params)
+			handlers.{{.HandlerName}}(ctx)
+		})
+		innerHandler(w, r)
+{{else}}
+		adapter := azure.NewHTTPAdapter()
+{{if .HasPathParams}}
+		// Extract path parameters
+		path := r.URL.Path
+		params := adapter.ParsePathParams("{{.PathParamRoute}}", path)
+{{else}}
+		params := make(map[string]string)
+{{end}}
+		ctx := adapter.ToHandlerContext(r, w, params)
+		handlers.{{.HandlerName}}(ctx)
+{{end}}
+	})
+	handler(w, r)
+}
