@@ -3,7 +3,7 @@ package usecases_user
 import (
 	"context"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/guards"
@@ -16,7 +16,7 @@ import (
 
 type UpdateUserUseCase struct {
 	usecase.BaseUseCaseValidation[dtos.UserUpdate, models.User]
-	log  contracts_providers.ILoggerProvider
+	log  contractsProviders.ILoggerProvider
 	repo contracts_repositories.IUserRepository
 }
 
@@ -60,7 +60,7 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context,
 }
 
 func NewUpdateUserUseCase(
-	log contracts_providers.ILoggerProvider,
+	log contractsProviders.ILoggerProvider,
 	repo contracts_repositories.IUserRepository,
 ) *UpdateUserUseCase {
 	return &UpdateUserUseCase{

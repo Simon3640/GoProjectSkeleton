@@ -1,18 +1,18 @@
 package repositories
 
 import (
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/domain/models"
-	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
+	dbModels "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
 
 	"gorm.io/gorm"
 )
 
 type UserRepository struct {
-	RepositoryBase[dtos.UserCreate, dtos.UserUpdate, models.User, db_models.User]
+	RepositoryBase[dtos.UserCreate, dtos.UserUpdate, models.User, dbModels.User]
 }
 
 func (ur *UserRepository) CreateWithPassword(input dtos.UserAndPasswordCreate) (*models.User, *application_errors.ApplicationError) {
@@ -39,7 +39,7 @@ func (ur *UserRepository) CreateWithPassword(input dtos.UserAndPasswordCreate) (
 		},
 	}
 	passwordCreate.SetDefaultExpiresAt()
-	passwordModel := db_models.Password{
+	passwordModel := dbModels.Password{
 		Hash:      passwordCreate.Hash,
 		ExpiresAt: passwordCreate.ExpiresAt,
 		IsActive:  passwordCreate.IsActive,
@@ -59,7 +59,7 @@ func (ur *UserRepository) CreateWithPassword(input dtos.UserAndPasswordCreate) (
 }
 
 func (ur *UserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *application_errors.ApplicationError) {
-	var userWithRole db_models.User
+	var userWithRole dbModels.User
 	if err := ur.DB.Preload("Role").First(&userWithRole, id).Error; err != nil {
 		ur.logger.Debug("Error retrieving user with role", err)
 		return nil, MapOrmError(err)
@@ -87,7 +87,7 @@ func (ur *UserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *appli
 }
 
 func (ur *UserRepository) GetByEmailOrPhone(emailOrPhone string) (*models.User, *application_errors.ApplicationError) {
-	var user db_models.User
+	var user dbModels.User
 	if err := ur.DB.Where("email = ? OR phone = ?", emailOrPhone, emailOrPhone).First(&user).Error; err != nil {
 		ur.logger.Debug("Error retrieving user by email or phone", err)
 		return nil, MapOrmError(err)
@@ -100,19 +100,20 @@ var _ contracts_repositories.IUserRepository = (*UserRepository)(nil)
 
 type UserConverter struct{}
 
-var _ ModelConverter[dtos.UserCreate, dtos.UserUpdate, models.User, db_models.User] = (*UserConverter)(nil)
+var _ ModelConverter[dtos.UserCreate, dtos.UserUpdate, models.User, dbModels.User] = (*UserConverter)(nil)
 
-func (uc *UserConverter) ToGormCreate(model dtos.UserCreate) *db_models.User {
-	return &db_models.User{
-		Name:   model.Name,
-		Email:  model.Email,
-		Phone:  model.Phone,
-		Status: model.Status,
-		RoleID: model.RoleID,
+func (uc *UserConverter) ToGormCreate(model dtos.UserCreate) *dbModels.User {
+	return &dbModels.User{
+		Name:     model.Name,
+		Email:    model.Email,
+		Phone:    model.Phone,
+		Status:   model.Status,
+		RoleID:   model.RoleID,
+		OTPLogin: model.OTPLogin,
 	}
 }
 
-func (uc *UserConverter) ToDomain(ormModel *db_models.User) *models.User {
+func (uc *UserConverter) ToDomain(ormModel *dbModels.User) *models.User {
 	return &models.User{
 		DBBaseModel: models.DBBaseModel{
 			ID:        ormModel.ID,
@@ -131,8 +132,8 @@ func (uc *UserConverter) ToDomain(ormModel *db_models.User) *models.User {
 	}
 }
 
-func (uc *UserConverter) ToGormUpdate(model dtos.UserUpdate) *db_models.User {
-	user := &db_models.User{}
+func (uc *UserConverter) ToGormUpdate(model dtos.UserUpdate) *dbModels.User {
+	user := &dbModels.User{}
 
 	if model.Name != nil {
 		user.Name = *model.Name
@@ -152,17 +153,20 @@ func (uc *UserConverter) ToGormUpdate(model dtos.UserUpdate) *db_models.User {
 	if model.RoleID != nil {
 		user.RoleID = *model.RoleID
 	}
+	if model.OTPLogin != nil {
+		user.OTPLogin = *model.OTPLogin
+	}
 	user.ID = model.ID
 	return user
 }
 
-func NewUserRepository(db *gorm.DB, logger contracts_providers.ILoggerProvider) *UserRepository {
+func NewUserRepository(db *gorm.DB, logger contractsProviders.ILoggerProvider) *UserRepository {
 	return &UserRepository{
 		RepositoryBase: RepositoryBase[
 			dtos.UserCreate,
 			dtos.UserUpdate,
 			models.User,
-			db_models.User,
+			dbModels.User,
 		]{DB: db, modelConverter: &UserConverter{}, logger: logger},
 	}
 }

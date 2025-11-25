@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
@@ -15,11 +15,11 @@ import (
 
 type ActivateUserUseCase struct {
 	usecase.BaseUseCaseValidation[dtos.UserActivate, bool]
-	log              contracts_providers.ILoggerProvider
+	log              contractsProviders.ILoggerProvider
 	userRepo         contracts_repositories.IUserRepository
 	oneTimetokenRepo contracts_repositories.IOneTimeTokenRepository
 
-	hashProvider contracts_providers.IHashProvider
+	hashProvider contractsProviders.IHashProvider
 }
 
 var _ usecase.BaseUseCase[dtos.UserActivate, bool] = (*ActivateUserUseCase)(nil)
@@ -97,10 +97,10 @@ func (uc *ActivateUserUseCase) Execute(ctx context.Context,
 }
 
 func NewActivateUserUseCase(
-	log contracts_providers.ILoggerProvider,
+	log contractsProviders.ILoggerProvider,
 	userRepo contracts_repositories.IUserRepository,
 	oneTimeTokenRepository contracts_repositories.IOneTimeTokenRepository,
-	hashProvider contracts_providers.IHashProvider,
+	hashProvider contractsProviders.IHashProvider,
 ) *ActivateUserUseCase {
 	return &ActivateUserUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[dtos.UserActivate, bool]{

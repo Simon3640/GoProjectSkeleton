@@ -3,7 +3,7 @@ package repositories
 import (
 	"fmt"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	domain_utils "gormgoskeleton/src/domain/utils"
@@ -13,12 +13,12 @@ import (
 
 type RepositoryBase[CreateModel any, UpdateModel any, Model any, DBModel any] struct {
 	DB             *gorm.DB
-	logger         contracts_providers.ILoggerProvider
+	logger         contractsProviders.ILoggerProvider
 	modelConverter ModelConverter[CreateModel, UpdateModel, Model, DBModel]
 }
 
 func SetUpRepositoryBase[CreateModel, UpdateModel, Model, DBModel any](db *gorm.DB,
-	logger contracts_providers.ILoggerProvider,
+	logger contractsProviders.ILoggerProvider,
 	modelConverter ModelConverter[CreateModel, UpdateModel, Model, DBModel],
 ) RepositoryBase[CreateModel, UpdateModel, Model, DBModel] {
 	return RepositoryBase[CreateModel, UpdateModel, Model, DBModel]{

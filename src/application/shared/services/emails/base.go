@@ -1,7 +1,7 @@
 package email_service
 
 import (
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/settings"
@@ -9,13 +9,13 @@ import (
 )
 
 type EmailServiceBase[D any] struct {
-	Renderer contracts_providers.IRendererProvider[D]
-	Sender   contracts_providers.IEmailProvider
+	Renderer contractsProviders.IRendererProvider[D]
+	Sender   contractsProviders.IEmailProvider
 }
 
 func (svc *EmailServiceBase[D]) SetUp(
-	renderer contracts_providers.IRendererProvider[D],
-	sender contracts_providers.IEmailProvider,
+	renderer contractsProviders.IRendererProvider[D],
+	sender contractsProviders.IEmailProvider,
 ) {
 	svc.Renderer = renderer
 	svc.Sender = sender

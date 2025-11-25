@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	"gormgoskeleton/src/application/shared/locales"
@@ -16,9 +16,9 @@ import (
 
 type CreatePasswordTokenUseCase struct {
 	usecase.BaseUseCaseValidation[dtos.PasswordTokenCreate, bool]
-	log              contracts_providers.ILoggerProvider
+	log              contractsProviders.ILoggerProvider
 	passRepo         contracts_repositories.IPasswordRepository
-	hashProvider     contracts_providers.IHashProvider
+	hashProvider     contractsProviders.IHashProvider
 	oneTimetokenRepo contracts_repositories.IOneTimeTokenRepository
 }
 
@@ -117,9 +117,9 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx context.Context,
 }
 
 func NewCreatePasswordTokenUseCase(
-	log contracts_providers.ILoggerProvider,
+	log contractsProviders.ILoggerProvider,
 	passRepo contracts_repositories.IPasswordRepository,
-	hashProvider contracts_providers.IHashProvider,
+	hashProvider contractsProviders.IHashProvider,
 	repo contracts_repositories.IOneTimeTokenRepository,
 ) *CreatePasswordTokenUseCase {
 	return &CreatePasswordTokenUseCase{

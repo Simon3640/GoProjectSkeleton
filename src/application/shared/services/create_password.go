@@ -1,7 +1,7 @@
 package services
 
 import (
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	application_errors "gormgoskeleton/src/application/shared/errors"
@@ -10,7 +10,7 @@ import (
 
 func CreatePasswordService(
 	passwordCreateNoHash dtos.PasswordCreateNoHash,
-	hashProvider contracts_providers.IHashProvider,
+	hashProvider contractsProviders.IHashProvider,
 	passwordRepository contracts_repositories.IPasswordRepository,
 ) (*models.Password, *application_errors.ApplicationError) {
 	hashedPassword, err := hashProvider.HashPassword(passwordCreateNoHash.NoHashedPassword)

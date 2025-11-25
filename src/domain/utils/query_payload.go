@@ -119,6 +119,18 @@ type QueryPayloadBuilder[DBModel any] struct {
 	Pagination Pagination
 }
 
+func (qp *QueryPayloadBuilder[DBModel]) HasFilters() bool {
+	return len(qp.Filters) > 0
+}
+
+func (qp *QueryPayloadBuilder[DBModel]) HasSorts() bool {
+	return len(qp.Sorts) > 0
+}
+
+func (qp *QueryPayloadBuilder[DBModel]) HasPagination() bool {
+	return qp.Pagination != (Pagination{})
+}
+
 // Validate valida todo el payload
 func (qp QueryPayloadBuilder[DBModel]) Validate() []string {
 	var errors []string
@@ -232,28 +244,38 @@ func (qp *QueryPayloadBuilder[DBModel]) HasNextPrev(total int64) (bool, bool) {
 	return hasNext, hasPrev
 }
 
+func normalizeValue(v any) string {
+	switch x := v.(type) {
+	case *string:
+		return *x
+	case string:
+		return x
+	case int, int64, float64, bool:
+		return fmt.Sprintf("%v", x)
+	default:
+		return fmt.Sprintf("%v", v)
+	}
+}
+
 // GetQueryKey for caching purposes
 func (qp *QueryPayloadBuilder[DBModel]) GetQueryKey() string {
 	var sb strings.Builder
 	sb.WriteString("filter:")
 	for _, f := range qp.Filters {
-		sb.WriteString(fmt.Sprintf("%s|%s|%v;", f.Field, f.Operator, f.Value))
+		sb.WriteString(fmt.Sprintf("%s|%s|%v;", f.Field, f.Operator, normalizeValue(f.Value)))
 	}
 	sb.WriteString("sort:")
 	for _, s := range qp.Sorts {
 		sb.WriteString(fmt.Sprintf("%s|%s;", s.Field, s.Order))
 	}
+	sb.WriteString(fmt.Sprintf("page:%d;page_size:%d;", qp.Pagination.Page, qp.Pagination.PageSize))
 	return sb.String()
 }
 
 // BuildQueryParamsUrl constructs the query parameters string for URLs
-func (qp *QueryPayloadBuilder[DBModel]) BuildQueryParamsURL(
-	filter bool,
-	sort bool,
-	pages bool,
-) string {
+func (qp *QueryPayloadBuilder[DBModel]) BuildQueryParamsURL() string {
 	var sb strings.Builder
-	if filter {
+	if qp.HasFilters() {
 		for _, f := range qp.Filters {
 			if f.Value != nil {
 				sb.WriteString(fmt.Sprintf("filter=%s:%s:%s&", f.Field, f.Operator, *f.Value))
@@ -262,12 +284,12 @@ func (qp *QueryPayloadBuilder[DBModel]) BuildQueryParamsURL(
 			}
 		}
 	}
-	if sort {
+	if qp.HasSorts() {
 		for _, s := range qp.Sorts {
 			sb.WriteString(fmt.Sprintf("sort=%s:%s&", s.Field, s.Order))
 		}
 	}
-	if pages {
+	if qp.HasPagination() {
 		sb.WriteString(fmt.Sprintf("page=%d&page_size=%d", qp.Pagination.Page, qp.Pagination.PageSize))
 	}
 	return sb.String()

@@ -27,6 +27,12 @@ type Config struct {
 	DBName     string `env:"DB_NAME" envDefault:"gormgoskeleton"`
 	DBSSL      string `env:"DB_SSL" envDefault:"false"`
 
+	// Redis
+	RedisHost     string `env:"REDIS_HOST" envDefault:"localhost:6379"`
+	RedisPassword string `env:"REDIS_PASSWORD" envDefault:""`
+	RedisDB       string `env:"REDIS_DB" envDefault:"0"`
+	RedisTTL      string `env:"REDIS_TTL" envDefault:"300"`
+
 	// Security
 	JWTSecretKey               string `env:"JWT_SECRET_KEY" envDefault:"secret"`
 	JWTIssuer                  string `env:"JWT_ISSUER" envDefault:"test-issuer"`

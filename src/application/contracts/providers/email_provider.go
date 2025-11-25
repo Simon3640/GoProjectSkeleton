@@ -1,4 +1,4 @@
-package contracts_providers
+package contractsproviders
 
 import application_errors "gormgoskeleton/src/application/shared/errors"
 

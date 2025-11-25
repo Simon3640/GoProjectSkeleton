@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	application_errors "gormgoskeleton/src/application/shared/errors"
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/settings"
@@ -25,7 +25,7 @@ type HashProvider struct {
 	saltLen uint32
 }
 
-var _ contracts_providers.IHashProvider = (*HashProvider)(nil)
+var _ contractsProviders.IHashProvider = (*HashProvider)(nil)
 
 func (hp *HashProvider) HashPassword(password string) (string, *application_errors.ApplicationError) {
 	// creating a salt of variable settings.AppSettingsInstance.OneTimePasswordLength

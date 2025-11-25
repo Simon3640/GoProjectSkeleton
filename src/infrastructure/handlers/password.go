@@ -1,17 +1,14 @@
-package routes
+package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	usecases_password "gormgoskeleton/src/application/modules/password/use_cases"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/infrastructure/api"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
 	"gormgoskeleton/src/infrastructure/providers"
 	"gormgoskeleton/src/infrastructure/repositories"
-
-	"github.com/gin-gonic/gin"
 )
 
 // CreatePassword
@@ -21,30 +18,30 @@ import (
 // @Tags Password
 // @Accept json
 // @Produce json
+// @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Param request body dtos.PasswordCreateNoHash true "Datos del usuario"
 // @Success 201 {object} bool "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/password [post]
 // @Security Bearer
-func createPassword(c *gin.Context) {
+func CreatePassword(ctx HandlerContext) {
 	var passwordCreate dtos.PasswordCreateNoHash
 
-	if err := c.ShouldBindJSON(&passwordCreate); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(*ctx.Body).Decode(&passwordCreate); err != nil {
+		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	passwordRepository := repositories.NewPasswordRepository(database.DB, providers.Logger)
 
-	uc_result := usecases_password.NewCreatePasswordUseCase(providers.Logger,
+	ucResult := usecases_password.NewCreatePasswordUseCase(providers.Logger,
 		passwordRepository, providers.HashProviderInstance, false,
-	).Execute(c.Request.Context(), locales.EN_US, passwordCreate)
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	).Execute(ctx.c, ctx.Locale, passwordCreate)
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[bool]().ResolveDTO(c, uc_result, headers)
 
-	c.JSON(statusCode, content)
+	NewRequestResolver[bool]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }
 
 // CreatePasswordResetToken
@@ -54,32 +51,30 @@ func createPassword(c *gin.Context) {
 // @Tags Password
 // @Accept json
 // @Produce json
+// @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Param request body dtos.PasswordTokenCreate true "Datos del usuario"
 // @Success 201 {object} bool "Token creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/password/reset-token [post]
-func createPasswordToken(c *gin.Context) {
+func CreatePasswordToken(ctx HandlerContext) {
 	var passwordTokenCreate dtos.PasswordTokenCreate
 
-	if err := c.ShouldBindJSON(&passwordTokenCreate); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(*ctx.Body).Decode(&passwordTokenCreate); err != nil {
+		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	passwordRepository := repositories.NewPasswordRepository(database.DB, providers.Logger)
 	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.DB, providers.Logger)
 
-	uc_result := usecases_password.NewCreatePasswordTokenUseCase(providers.Logger,
+	ucResult := usecases_password.NewCreatePasswordTokenUseCase(providers.Logger,
 		passwordRepository,
 		providers.HashProviderInstance,
 		oneTimeTokenRepository,
-	).Execute(c.Request.Context(), locales.EN_US, passwordTokenCreate)
+	).Execute(ctx.c, ctx.Locale, passwordTokenCreate)
 
-	headers := map[api.HTTPHeaderTypeEnum]string{
-		api.CONTENT_TYPE: string(api.APPLICATION_JSON),
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	content, statusCode := api.NewRequestResolver[bool]().ResolveDTO(c, uc_result, headers)
-
-	c.JSON(statusCode, content)
-
+	NewRequestResolver[bool]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }

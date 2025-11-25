@@ -2,7 +2,7 @@ package mocks
 
 import (
 	"fmt"
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -11,7 +11,7 @@ type MockLoggerProvider struct {
 	mock.Mock
 }
 
-var _ contracts_providers.ILoggerProvider = (*MockLoggerProvider)(nil)
+var _ contractsProviders.ILoggerProvider = (*MockLoggerProvider)(nil)
 
 func (mlp *MockLoggerProvider) Error(message string, err error) {
 	fmt.Printf("Error: %s, %s", message, err)

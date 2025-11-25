@@ -1,4 +1,4 @@
-package db_models
+package dbmodels
 
 type DBModel interface {
 	TableName() string

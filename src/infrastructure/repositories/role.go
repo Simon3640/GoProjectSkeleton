@@ -1,33 +1,33 @@
 package repositories
 
 import (
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/domain/models"
-	db_models "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
+	dbModels "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
 
 	"gorm.io/gorm"
 )
 
 type RoleRepository struct {
-	RepositoryBase[models.RoleCreate, models.RoleUpdate, models.Role, db_models.Role]
+	RepositoryBase[models.RoleCreate, models.RoleUpdate, models.Role, dbModels.Role]
 }
 
 var _ contracts_repositories.IRoleRepository = (*RoleRepository)(nil)
 
 type RoleConverter struct{}
 
-var _ ModelConverter[models.RoleCreate, models.RoleUpdate, models.Role, db_models.Role] = (*RoleConverter)(nil)
+var _ ModelConverter[models.RoleCreate, models.RoleUpdate, models.Role, dbModels.Role] = (*RoleConverter)(nil)
 
-func (uc *RoleConverter) ToGormCreate(model models.RoleCreate) *db_models.Role {
-	return &db_models.Role{
+func (uc *RoleConverter) ToGormCreate(model models.RoleCreate) *dbModels.Role {
+	return &dbModels.Role{
 		Key:      model.Key,
 		IsActive: model.IsActive,
 		Priority: model.Priority,
 	}
 }
 
-func (uc *RoleConverter) ToDomain(ormModel *db_models.Role) *models.Role {
+func (uc *RoleConverter) ToDomain(ormModel *dbModels.Role) *models.Role {
 	return &models.Role{
 		ID: ormModel.ID,
 		RoleBase: models.RoleBase{
@@ -38,8 +38,8 @@ func (uc *RoleConverter) ToDomain(ormModel *db_models.Role) *models.Role {
 	}
 }
 
-func (uc *RoleConverter) ToGormUpdate(model models.RoleUpdate) *db_models.Role {
-	Role := &db_models.Role{}
+func (uc *RoleConverter) ToGormUpdate(model models.RoleUpdate) *dbModels.Role {
+	Role := &dbModels.Role{}
 
 	if model.Key != nil {
 		Role.Key = *model.Key
@@ -57,13 +57,13 @@ func (uc *RoleConverter) ToGormUpdate(model models.RoleUpdate) *db_models.Role {
 	return Role
 }
 
-func NewRoleRepository(db *gorm.DB, logger contracts_providers.ILoggerProvider) *RoleRepository {
+func NewRoleRepository(db *gorm.DB, logger contractsProviders.ILoggerProvider) *RoleRepository {
 	return &RoleRepository{
 		RepositoryBase: RepositoryBase[
 			models.RoleCreate,
 			models.RoleUpdate,
 			models.Role,
-			db_models.Role,
+			dbModels.Role,
 		]{DB: db, modelConverter: &RoleConverter{}, logger: logger},
 	}
 }

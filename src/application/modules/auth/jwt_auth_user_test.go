@@ -4,7 +4,7 @@ import (
 	"context"
 	// "errors"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/mocks"
 	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
@@ -29,7 +29,7 @@ func TestAuthUserCase(t *testing.T) {
 	)
 
 	validToken := "validToken.123"
-	claimsReturn := contracts_providers.JWTCLaims{
+	claimsReturn := contractsProviders.JWTCLaims{
 		"sub": "1",
 		"typ": "access",
 		"exp": float64(time.Now().Add(1 * time.Hour).Unix()),
@@ -88,7 +88,7 @@ func TestAuthUserCase_ExpiredToken(t *testing.T) {
 	)
 
 	expiredToken := "expiredToken.123"
-	claimsReturn := contracts_providers.JWTCLaims{
+	claimsReturn := contractsProviders.JWTCLaims{
 		"sub": "1",
 		"typ": "access",
 		"exp": float64(time.Now().Add(-1 * time.Hour).Unix()),
@@ -118,7 +118,7 @@ func TestAuthUserCase_NoAccessToken(t *testing.T) {
 	)
 
 	noAccessToken := "noAccessToken.123"
-	claimsReturn := contracts_providers.JWTCLaims{
+	claimsReturn := contractsProviders.JWTCLaims{
 		"sub": "1",
 		"typ": "refresh",
 		"exp": float64(time.Now().Add(1 * time.Hour).Unix()),

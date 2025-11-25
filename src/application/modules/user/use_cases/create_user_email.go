@@ -3,7 +3,7 @@ package usecases_user
 import (
 	"context"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
@@ -19,10 +19,10 @@ import (
 
 type CreateUserSendEmailUseCase struct {
 	appMessages *locales.Locale
-	log         contracts_providers.ILoggerProvider
+	log         contractsProviders.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
-	hashProvider contracts_providers.IHashProvider
+	hashProvider contractsProviders.IHashProvider
 
 	tokenRepo contracts_repositories.IOneTimeTokenRepository
 }
@@ -98,8 +98,8 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 }
 
 func NewCreateUserSendEmailUseCase(
-	log contracts_providers.ILoggerProvider,
-	hashProvider contracts_providers.IHashProvider,
+	log contractsProviders.ILoggerProvider,
+	hashProvider contractsProviders.IHashProvider,
 	tokenRepo contracts_repositories.IOneTimeTokenRepository,
 ) *CreateUserSendEmailUseCase {
 	return &CreateUserSendEmailUseCase{

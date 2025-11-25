@@ -1,7 +1,7 @@
 package services
 
 import (
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	application_errors "gormgoskeleton/src/application/shared/errors"
@@ -11,7 +11,7 @@ import (
 func CreateOneTimeTokenService(
 	userID uint,
 	purpose models.OneTimeTokenPurpose,
-	hashProvider contracts_providers.IHashProvider,
+	hashProvider contractsProviders.IHashProvider,
 	tokenRepository contracts_repositories.IOneTimeTokenRepository,
 ) (string, *application_errors.ApplicationError) {
 	token, hash, err := hashProvider.OneTimeToken()

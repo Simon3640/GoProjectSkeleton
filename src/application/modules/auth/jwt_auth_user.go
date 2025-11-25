@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/application/shared/locales/messages"
@@ -18,12 +18,12 @@ import (
 
 type AuthUserUseCase struct {
 	appMessages *locales.Locale
-	log         contracts_providers.ILoggerProvider
+	log         contractsProviders.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
 	userRepository contracts_repositories.IUserRepository
 
-	jwtProvider contracts_providers.IJWTProvider
+	jwtProvider contractsProviders.IJWTProvider
 }
 
 var _ usecase.BaseUseCase[string, models.UserWithRole] = (*AuthUserUseCase)(nil)
@@ -163,9 +163,9 @@ func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *use
 }
 
 func NewAuthUserUseCase(
-	log contracts_providers.ILoggerProvider,
+	log contractsProviders.ILoggerProvider,
 	userRepository contracts_repositories.IUserRepository,
-	jwtProvider contracts_providers.IJWTProvider,
+	jwtProvider contractsProviders.IJWTProvider,
 ) *AuthUserUseCase {
 	return &AuthUserUseCase{
 		appMessages:    locales.NewLocale(locales.EN_US),
