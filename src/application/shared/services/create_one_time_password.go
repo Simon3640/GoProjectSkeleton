@@ -1,7 +1,7 @@
 package services
 
 import (
-	contracts_providers "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "gormgoskeleton/src/application/contracts/providers"
 	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
 	dtos "gormgoskeleton/src/application/shared/DTOs"
 	application_errors "gormgoskeleton/src/application/shared/errors"
@@ -11,7 +11,7 @@ import (
 func CreateOneTimePasswordService(
 	userID uint,
 	purpose models.OneTimePasswordPurpose,
-	hashProvider contracts_providers.IHashProvider,
+	hashProvider contractsProviders.IHashProvider,
 	passwordRepository contracts_repositories.IOneTimePasswordRepository,
 ) (string, *application_errors.ApplicationError) {
 	password, hash, err := hashProvider.GenerateOTP()

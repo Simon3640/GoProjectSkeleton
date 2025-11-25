@@ -45,6 +45,28 @@ services:
     networks:
       - gormgoskeleton
 
+  redis:
+    image: redis:7.0-alpine
+    command: ["redis-server", "--requirepass", "secretPassword"]
+    ports:
+      - "6379:6379"
+    networks:
+      - gormgoskeleton
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOSTS=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=redis:6379
+      - REDIS_PASSWORD=secretPassword
+    networks:
+      - gormgoskeleton
+
 networks:
   gormgoskeleton:
     external: true
