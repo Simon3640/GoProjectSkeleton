@@ -37,6 +37,24 @@ output "redis_type" {
   value       = "Azure Redis Cache"
 }
 
+# Outputs de Function Apps generados desde JSON
+output "function_apps" {
+  description = "Mapa de todos los Function Apps creados desde functions.json"
+  value = {
+    for k, v in module.functions : k => {
+      name         = v.function_app_name
+      id           = v.function_app_id
+      hostname     = v.function_app_default_hostname
+      app_insights = v.application_insights_id
+    }
+  }
+}
+
+output "function_app_names" {
+  description = "Lista de nombres de todos los Function Apps"
+  value       = [for k, v in module.functions : v.function_app_name]
+}
+
 output "redis_primary_key" {
   description = "Primary access key de Redis (almacenado en Key Vault)"
   value       = "Ver en Key Vault: redis-password"

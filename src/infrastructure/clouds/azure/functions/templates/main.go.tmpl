@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"os"
 
-	"gormgoskeleton/src/infrastructure/clouds/azure"
+	"gormgoskeleton/azure"
 	"gormgoskeleton/src/infrastructure/handlers"
 )
 
 func main() {
+	log.Printf("Initializing Azure Infrastructure")
 	azure.InitializeInfrastructure()
 
 	port := os.Getenv("FUNCTIONS_CUSTOMHANDLER_PORT")
@@ -17,7 +18,7 @@ func main() {
 		port = "8080"
 	}
 
-	http.HandleFunc("/api/{{.Route}}", {{.HandlerName}})
+	http.HandleFunc("/", {{.HandlerName}})
 	log.Printf("Azure Function {{.HandlerName}} listening on %s", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
@@ -35,42 +36,13 @@ func {{.HandlerName}}(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-{{if .NeedsQuery}}
-		// Apply query and authentication middlewares
-		innerHandler := azure.QueryMiddleware(azure.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
-			adapter := azure.NewHTTPAdapter()
-			params := make(map[string]string)
-			ctx := adapter.ToHandlerContext(r, w, params)
-			handlers.{{.HandlerName}}(ctx)
-		}))
-		innerHandler(w, r)
-{{else if .NeedsAuth}}
-		// Apply authentication middleware
-		innerHandler := azure.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
-			adapter := azure.NewHTTPAdapter()
-{{if .HasPathParams}}
-			// Extract path parameters
-			path := r.URL.Path
-			params := adapter.ParsePathParams("{{.PathParamRoute}}", path)
-{{else}}
-			params := make(map[string]string)
-{{end}}
-			ctx := adapter.ToHandlerContext(r, w, params)
-			handlers.{{.HandlerName}}(ctx)
-		})
-		innerHandler(w, r)
-{{else}}
 		adapter := azure.NewHTTPAdapter()
-{{if .HasPathParams}}
-		// Extract path parameters
-		path := r.URL.Path
-		params := adapter.ParsePathParams("{{.PathParamRoute}}", path)
-{{else}}
+
 		params := make(map[string]string)
-{{end}}
+
 		ctx := adapter.ToHandlerContext(r, w, params)
 		handlers.{{.HandlerName}}(ctx)
-{{end}}
+
 	})
 	handler(w, r)
 }

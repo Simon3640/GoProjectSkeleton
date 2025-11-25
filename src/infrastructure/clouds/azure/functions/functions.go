@@ -1,4 +1,4 @@
-package functions
+package main
 
 // Config define la configuración de una función Azure
 type Config struct {
