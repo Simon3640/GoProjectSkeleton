@@ -2,9 +2,9 @@ package main
 
 import (
 	docs "gormgoskeleton/docs"
+	routes "gormgoskeleton/gin/routes"
 	"gormgoskeleton/src/application/shared/settings"
 	"gormgoskeleton/src/infrastructure"
-	routes "gormgoskeleton/src/infrastructure/api/routes"
 	providers "gormgoskeleton/src/infrastructure/providers"
 
 	"github.com/gin-contrib/cors"
