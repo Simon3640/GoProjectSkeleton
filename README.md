@@ -69,7 +69,7 @@ graph TB
         Repos["Repositories<br/>(GORM)"]
         Middlewares["Middlewares<br/>(Auth/CORS)"]
     end
-    
+
     subgraph Application["💼 Capa de Aplicación"]
         UseCases["Use Cases<br/>(Business Logic)"]
         Services["Services<br/>(Email/OTP)"]
@@ -78,16 +78,16 @@ graph TB
         DTOs["DTOs<br/>(Transfer)"]
         Errors["Errors<br/>(Handling)"]
     end
-    
+
     subgraph Domain["🎯 Capa de Dominio"]
         Models["Models<br/>(User/Role)"]
         Utils["Utils<br/>(Query)"]
         Entities["Entities<br/>(Business)"]
     end
-    
+
     Infrastructure --> Application
     Application --> Domain
-    
+
     style Infrastructure fill:#e1f5ff
     style Application fill:#fff4e1
     style Domain fill:#e8f5e9
@@ -103,50 +103,50 @@ graph LR
         REDIS_EXT["Redis"]
         EMAIL_EXT["SMTP"]
     end
-    
+
     subgraph Adapters["🔌 Adapters (Infrastructure)"]
         GinAdapter["Gin Adapter<br/>(HTTP)"]
         GORMAdapter["GORM Adapter<br/>(Database)"]
         RedisAdapter["Redis Adapter<br/>(Cache)"]
         SMTPAdapter["SMTP Adapter<br/>(Email)"]
     end
-    
+
     subgraph Ports["🔌 Ports (Contracts)"]
         HTTPPort["HTTP Port<br/>(Handlers)"]
         RepoPort["Repository Port<br/>(Interfaces)"]
         CachePort["Cache Port<br/>(Interface)"]
         EmailPort["Email Port<br/>(Interface)"]
     end
-    
+
     subgraph ApplicationCore["💼 Application Core"]
         UseCase["Use Cases"]
         Services["Services"]
     end
-    
+
     subgraph DomainCore["🎯 Domain Core"]
         Entities["Entities"]
         ValueObjects["Value Objects"]
     end
-    
+
     HTTP --> GinAdapter
     DB_EXT --> GORMAdapter
     REDIS_EXT --> RedisAdapter
     EMAIL_EXT --> SMTPAdapter
-    
+
     GinAdapter --> HTTPPort
     GORMAdapter --> RepoPort
     RedisAdapter --> CachePort
     SMTPAdapter --> EmailPort
-    
+
     HTTPPort --> UseCase
     RepoPort --> UseCase
     CachePort --> UseCase
     EmailPort --> Services
-    
+
     UseCase --> Services
     Services --> Entities
     UseCase --> Entities
-    
+
     style External fill:#ffebee
     style Adapters fill:#e3f2fd
     style Ports fill:#fff9c4
@@ -402,14 +402,14 @@ func CreateUserLambda(ctx context.Context, event APIGatewayEvent) (Response, err
    func CreateUserHandler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
        // Inicializar infraestructura
        infrastructure.Initialize()
-       
+
        // Adaptar evento a DTO
        var userCreate dtos.UserCreate
        json.Unmarshal([]byte(event.Body), &userCreate)
-       
+
        // Ejecutar caso de uso (mismo código)
        ucResult := usecases_user.NewCreateUserUseCase(...).Execute(...)
-       
+
        // Adaptar respuesta
        return adaptResponse(ucResult), nil
    }
@@ -435,47 +435,47 @@ graph TB
         Mobile[Mobile App]
         API_Client[API Clients]
     end
-    
+
     subgraph LB["Load Balancer"]
         Nginx[Nginx/HAProxy<br/>Health Checks]
     end
-    
+
     subgraph AppInstances["Instancias de Aplicación"]
         App1[App Instance 1<br/>Stateless]
         App2[App Instance 2<br/>Stateless]
         App3[App Instance N<br/>Stateless]
     end
-    
+
     subgraph DataLayer["Capa de Datos"]
         RedisCluster[(Redis Cluster<br/>Cache Distribuido)]
         PGPrimary[(PostgreSQL<br/>Primary)]
         PGReplica1[(PostgreSQL<br/>Read Replica 1)]
         PGReplica2[(PostgreSQL<br/>Read Replica 2)]
     end
-    
+
     Web --> Nginx
     Mobile --> Nginx
     API_Client --> Nginx
-    
+
     Nginx --> App1
     Nginx --> App2
     Nginx --> App3
-    
+
     App1 --> RedisCluster
     App2 --> RedisCluster
     App3 --> RedisCluster
-    
+
     App1 -->|Write| PGPrimary
     App2 -->|Write| PGPrimary
     App3 -->|Write| PGPrimary
-    
+
     App1 -->|Read| PGReplica1
     App2 -->|Read| PGReplica2
     App3 -->|Read| PGReplica1
-    
+
     PGPrimary -->|Replication| PGReplica1
     PGPrimary -->|Replication| PGReplica2
-    
+
     style App1 fill:#e3f2fd
     style App2 fill:#e3f2fd
     style App3 fill:#e3f2fd
@@ -507,6 +507,478 @@ graph TB
 
 ---
 
+## Despliegue e Inicialización AWS Serverless
+
+### Arquitectura de Módulos Go para Serverless
+
+**GoProjectSkeleton** utiliza una arquitectura de **múltiples módulos Go** para optimizar el despliegue en AWS Lambda. Cada función serverless tiene su propio módulo independiente que solo incluye las dependencias necesarias para ejecutarse.
+
+#### Estructura de Módulos
+
+```mermaid
+graph TB
+    subgraph RootModule["Módulo Raíz: gormgoskeleton"]
+        Domain[Domain Models]
+        Application[Application Layer]
+        Infrastructure[Infrastructure Core]
+    end
+
+    subgraph AWSModule["Módulo AWS: gormgoskeleton/aws"]
+        AWSInit[AWS Init]
+        LambdaAdapter[Lambda Adapter]
+        SecretsManager[Secrets Manager]
+    end
+
+    subgraph FunctionModules["Módulos de Funciones"]
+        HealthCheck[health-check<br/>gormgoskeleton/functions/aws/status/health_check]
+        AuthLogin[auth-login<br/>gormgoskeleton/functions/aws/auth/login]
+        UserGet[user-get<br/>gormgoskeleton/functions/aws/user/get]
+    end
+
+    RootModule --> AWSModule
+    AWSModule --> FunctionModules
+    RootModule --> FunctionModules
+
+    style RootModule fill:#e8f5e9
+    style AWSModule fill:#e3f2fd
+    style FunctionModules fill:#fff9c4
+```
+
+#### Resolución de Dependencias
+
+Cada función Lambda tiene su propio `go.mod` que utiliza **replace directives** para apuntar a los módulos locales:
+
+```go
+// go.mod de una función Lambda
+module gormgoskeleton/functions/aws/status/health_check
+
+go 1.25
+
+require (
+    github.com/aws/aws-lambda-go v1.47.0
+    gormgoskeleton v0.0.0
+    gormgoskeleton/aws v0.0.0
+)
+
+replace gormgoskeleton => ../../../../../../../..
+replace gormgoskeleton/aws => ../../../..
+```
+
+**Ventajas de esta arquitectura:**
+
+1. **Optimización de Binarios**: Go solo compila el código que realmente se usa
+2. **Dependencias Mínimas**: Cada función solo incluye lo necesario
+3. **Tree Shaking Automático**: Go elimina código no utilizado en tiempo de compilación
+4. **Módulos Independientes**: Cada función puede evolucionar independientemente
+
+### Proceso de Generación y Compilación
+
+#### 1. Generación de Funciones
+
+Las funciones Lambda se generan automáticamente desde `functions.json`:
+
+```json
+{
+  "name": "health-check",
+  "path": "status/health_check",
+  "handler": "GetHealthCheck",
+  "route": "health-check",
+  "method": "get",
+  "authLevel": "anonymous"
+}
+```
+
+**Proceso de generación:**
+
+```mermaid
+sequenceDiagram
+    participant Dev as Desarrollador
+    participant Gen as Generator
+    participant Template as Templates
+    participant Func as Función Lambda
+
+    Dev->>Gen: GenerateFunctions(functions.json)
+    Gen->>Gen: Lee functions.json
+    loop Para cada función
+        Gen->>Template: Carga main.go.tmpl
+        Gen->>Template: Carga go.mod.tmpl
+        Gen->>Func: Genera main.go
+        Gen->>Func: Genera go.mod
+        Gen->>Func: Crea estructura de directorios
+    end
+    Gen-->>Dev: ✅ Funciones generadas
+```
+
+**Estructura generada:**
+
+```
+tmp/
+└── status/
+    └── health_check/
+        ├── main.go          # Handler Lambda generado
+        ├── go.mod           # Módulo independiente
+        └── bin/             # Directorio de compilación
+            ├── bootstrap    # Binario compilado
+            └── src/         # Templates copiados
+```
+
+#### 2. Compilación Optimizada
+
+Cada función se compila con optimizaciones específicas para Lambda:
+
+```bash
+# Compilación desde el directorio de la función
+cd tmp/status/health_check
+go build -o bin/bootstrap \
+    -tags lambda.norpc \
+    -ldflags="-s -w" \
+    main.go
+
+# Variables de entorno de compilación
+GOOS=linux
+GOARCH=amd64
+CGO_ENABLED=0
+```
+
+**Optimizaciones aplicadas:**
+
+- **`-tags lambda.norpc`**: Desactiva RPC de Lambda (reduce tamaño)
+- **`-ldflags="-s -w"`**: Elimina símbolos de debug (reduce tamaño)
+- **`CGO_ENABLED=0`**: Compilación estática (sin dependencias C)
+- **`GOOS=linux`**: Binario para Linux (entorno Lambda)
+- **`GOARCH=amd64`**: Arquitectura x86_64
+
+#### 3. Tree Shaking y Eliminación de Código Muerto
+
+Go realiza **tree shaking automático** durante la compilación:
+
+```mermaid
+graph LR
+    subgraph SourceCode["Código Fuente"]
+        Used[✅ Código Usado<br/>handlers.GetHealthCheck<br/>aws.InitializeInfrastructure]
+        Unused[❌ Código No Usado<br/>handlers.CreateUser<br/>handlers.UpdateUser<br/>handlers.DeleteUser]
+    end
+
+    subgraph Compilation["Compilación Go"]
+        Analyzer[Go Compiler<br/>Análisis Estático]
+    end
+
+    subgraph Binary["Binario Final"]
+        Included[✅ Solo Código Usado<br/>~5-10 MB]
+    end
+
+    SourceCode --> Analyzer
+    Analyzer -->|Tree Shaking| Binary
+
+    style Used fill:#c8e6c9
+    style Unused fill:#ffcdd2
+    style Included fill:#c8e6c9
+```
+
+**Ejemplo real:**
+
+Para la función `health-check`, el binario final solo incluye:
+
+- ✅ `handlers.GetHealthCheck` (handler específico)
+- ✅ `aws.InitializeInfrastructure` (inicialización)
+- ✅ `aws.HandleLambdaEvent` (adaptador Lambda)
+- ✅ Dependencias transitivas necesarias (GORM, Redis, JWT, etc.)
+- ❌ **NO incluye**: Otros handlers (`CreateUser`, `UpdateUser`, etc.)
+- ❌ **NO incluye**: Código de módulos no utilizados
+
+**Resultado:** Binarios de 5-15 MB en lugar de 50+ MB si se incluyera todo.
+
+### Inicialización de Infraestructura
+
+#### Proceso de Inicialización
+
+Cada función Lambda inicializa su infraestructura en el `init()`:
+
+```go
+// main.go de una función Lambda
+func init() {
+    if !initialized {
+        log.Println("Initializing AWS Infrastructure")
+        aws.InitializeInfrastructure()
+        initialized = true
+        log.Println("AWS Infrastructure initialized successfully")
+    }
+}
+```
+
+#### Flujo de Inicialización
+
+```mermaid
+sequenceDiagram
+    participant Lambda as Lambda Function
+    participant Init as InitializeInfrastructure
+    participant Config as Config Loader
+    participant Secrets as Secrets Manager
+    participant Settings as App Settings
+    participant DB as Database
+    participant Providers as Providers
+
+    Lambda->>Init: aws.InitializeInfrastructure()
+    Init->>Config: NewSecretsManagerConfigLoader()
+    Config->>Secrets: Load secrets from AWS
+    Secrets-->>Config: Config values
+    Config->>Settings: Initialize settings
+    Settings->>DB: Setup database connection
+    Settings->>Providers: Setup JWT, Email, Cache
+    Providers-->>Init: ✅ Initialized
+    Init-->>Lambda: ✅ Ready
+```
+
+#### Componentes Inicializados
+
+1. **Configuración (Settings)**
+   ```go
+   // Carga desde AWS Secrets Manager o variables de entorno
+   settings.AppSettingsInstance.Initialize(config.ToMap())
+   ```
+
+2. **Base de Datos (GORM)**
+   ```go
+   database.Gormgoskeletondb.SetUp(
+       host, port, user, password, dbname, ssl, logger
+   )
+   ```
+
+3. **Providers**
+   - **JWT Provider**: Generación y validación de tokens
+   - **Email Provider**: Envío de emails (SMTP)
+   - **Cache Provider**: Redis para cache
+   - **Logger Provider**: Sistema de logging
+
+4. **Servicios**
+   - **Email Services**: Servicios de email (registro, reset, OTP)
+
+#### Carga de Configuración desde AWS Secrets Manager
+
+El sistema puede cargar configuración desde **AWS Secrets Manager**:
+
+```go
+// Si una variable de entorno es un ARN de Secrets Manager
+DB_PASSWORD=arn:aws:secretsmanager:us-east-1:123456789:secret:db-password
+
+// El sistema automáticamente:
+// 1. Detecta que es un ARN
+// 2. Obtiene el secreto de Secrets Manager
+// 3. Usa el valor en la configuración
+```
+
+**Ventajas:**
+
+- ✅ **Seguridad**: Secretos no en código o variables de entorno
+- ✅ **Rotación**: Secrets Manager puede rotar secretos automáticamente
+- ✅ **Auditoría**: Todas las accesos a secretos son auditados
+- ✅ **Fallback**: Si falla, usa valores por defecto
+
+### Proceso de Despliegue
+
+#### Flujo Completo de Despliegue
+
+```mermaid
+graph TB
+    subgraph Local["🖥️ Desarrollo Local"]
+        Dev[Desarrollador]
+        FunctionsJSON[functions.json]
+    end
+
+    subgraph Generation["📦 Generación"]
+        Generator[Generator Tool]
+        Templates[Templates]
+        FunctionCode[Código de Funciones]
+    end
+
+    subgraph Build["🔨 Compilación"]
+        GoBuild[go build]
+        Binary[Binario bootstrap]
+        TemplatesCopy[Templates copiados]
+        Zip[ZIP Package]
+    end
+
+    subgraph AWS["☁️ AWS"]
+        Lambda[AWS Lambda]
+        APIGateway[API Gateway]
+    end
+
+    Dev-->FunctionsJSON
+    FunctionsJSON-->|GenerateFunctions| Generator
+    Generator-->|Carga templates| Templates
+    Templates-->|Genera código| FunctionCode
+    FunctionCode-->|go build| GoBuild
+    GoBuild-->|Binario optimizado| Binary
+    Binary-->|Copia templates| TemplatesCopy
+    TemplatesCopy-->|Crea ZIP| Zip
+    Zip-->|Deploy function| Lambda
+    Lambda-->|Conecta endpoint| APIGateway
+
+    style Dev fill:#e3f2fd
+    style Lambda fill:#ff9800
+    style APIGateway fill:#ff9800
+```
+
+#### Comandos de Despliegue
+
+**1. Generar funciones:**
+```bash
+cd src/infrastructure/clouds/aws/functions
+go run main.go generate
+```
+
+**2. Compilar y desplegar:**
+```bash
+# Desplegar todas las funciones
+go run main.go deploy
+
+# Desplegar una función específica
+go run main.go deploy --function health-check
+```
+
+**3. Proceso interno de despliegue:**
+
+```bash
+# Para cada función:
+# 1. go mod tidy (resuelve dependencias)
+cd tmp/status/health_check
+go mod tidy
+
+# 2. Compilar binario
+go build -o bin/bootstrap -tags lambda.norpc main.go
+
+# 3. Copiar templates necesarios
+cp -r ../../../../../../application/shared/templates bin/src/application/shared/templates
+
+# 4. Crear ZIP
+cd bin
+zip -r health-check.zip bootstrap src/
+
+# 5. Desplegar a Lambda
+aws lambda update-function-code \
+    --function-name goprojectskeleton-dev-healthcheck \
+    --zip-file fileb://health-check.zip
+```
+
+### Optimizaciones de Tamaño
+
+#### Comparación de Tamaños
+
+| Función | Tamaño con Todo | Tamaño Optimizado | Reducción |
+|---------|----------------|-------------------|----------|
+| health-check | ~50 MB | ~8 MB | 84% |
+| auth-login | ~55 MB | ~12 MB | 78% |
+| user-get | ~60 MB | ~15 MB | 75% |
+
+#### Estrategias de Optimización
+
+1. **Tree Shaking de Go**
+   - Elimina código no utilizado automáticamente
+   - Solo incluye funciones y tipos referenciados
+
+2. **Módulos Independientes**
+   - Cada función tiene su propio `go.mod`
+   - Dependencias resueltas por función
+
+3. **Compilación Estática**
+   - `CGO_ENABLED=0`: Sin dependencias C
+   - Binario autocontenido
+
+4. **Eliminación de Debug**
+   - `-ldflags="-s -w"`: Elimina símbolos
+   - Reduce tamaño significativamente
+
+5. **Templates Selectivos**
+   - Solo se copian templates necesarios
+   - No se incluyen todos los templates
+
+### Estructura del Paquete Lambda
+
+```
+health-check.zip
+├── bootstrap                    # Binario Go compilado (~8 MB)
+└── src/
+    └── application/
+        └── shared/
+            └── templates/
+                └── emails/      # Solo templates necesarios
+                    ├── otp_en.gohtml
+                    └── otp_es.gohtml
+```
+
+**Tamaño total:** ~8-10 MB (vs ~50 MB sin optimización)
+
+### Ventajas de la Arquitectura
+
+#### 1. **Despliegues Rápidos**
+- Binarios pequeños = uploads rápidos
+- Cold start más rápido
+- Menor costo de almacenamiento
+
+#### 2. **Seguridad Mejorada**
+- Cada función es independiente
+- Menor superficie de ataque
+- Secretos en Secrets Manager
+
+#### 3. **Escalabilidad**
+- Cada función escala independientemente
+- Configuración por función
+- Optimización individual
+
+#### 4. **Mantenibilidad**
+- Código compartido en módulos
+- Cambios localizados
+- Testing independiente
+
+#### 5. **Costo Optimizado**
+- Menor tamaño = menor costo de almacenamiento
+- Cold start más rápido = menor latencia
+- Menor uso de memoria
+
+### Diagrama de Arquitectura Completa
+
+```mermaid
+graph TB
+    subgraph Client["🌐 Cliente"]
+        HTTP[HTTP Request]
+    end
+
+    subgraph AWSCloud["☁️ AWS Cloud"]
+        subgraph APIGW["API Gateway"]
+            Route[Route: /api/health-check]
+        end
+
+        subgraph Lambda["AWS Lambda"]
+            Function[health-check Function<br/>~8 MB]
+            Init[InitializeInfrastructure]
+            Handler[GetHealthCheck Handler]
+        end
+
+        subgraph Services["AWS Services"]
+            Secrets[Secrets Manager<br/>Configuración]
+            RDS[(RDS PostgreSQL<br/>Base de Datos)]
+            ElastiCache[(ElastiCache Redis<br/>Cache)]
+        end
+    end
+
+    HTTP-->Route
+    Route-->Function
+    Function-->Init
+    Init-->Secrets
+    Init-->RDS
+    Init-->ElastiCache
+    Init-->Handler
+    Handler-->RDS
+    Handler-->ElastiCache
+
+    style Function fill:#ff9800
+    style Secrets fill:#4caf50
+    style RDS fill:#2196f3
+    style ElastiCache fill:#f44336
+```
+
+---
+
 ## Flujo Completo de Request
 
 ### Diagrama de Flujo de Request
@@ -523,7 +995,7 @@ sequenceDiagram
     participant Repo as Repository
     participant DB as PostgreSQL
     participant Resolver as Request Resolver
-    
+
     Client->>Gin: HTTP Request
     Gin->>MW: Aplica middlewares
     MW->>AuthMW: Si ruta protegida
@@ -571,7 +1043,7 @@ flowchart TD
     Repo --> UseCase
     UseCase --> Resolver[Request Resolver<br/>Formatea respuesta]
     Resolver --> End([Respuesta JSON])
-    
+
     style Start fill:#e3f2fd
     style End fill:#c8e6c9
     style DB fill:#fff9c4
@@ -611,7 +1083,7 @@ func wrapHandler(h func(handlers.HandlerContext)) gin.HandlerFunc {
         locale := c.GetHeader("Accept-Language")
         params := extractParams(c)
         query := extractQuery(c)
-        
+
         hContext := handlers.NewHandlerContext(
             c.Request.Context(),
             &locale,
@@ -633,16 +1105,16 @@ func CreateUser(ctx HandlerContext) {
     // 1. Decodificar JSON
     var userCreate dtos.UserCreate
     json.NewDecoder(*ctx.Body).Decode(&userCreate)
-    
+
     // 2. Crear repositorio
     repo := repositories.NewUserRepository(database.DB, providers.Logger)
-    
+
     // 3. Crear y ejecutar caso de uso
     ucResult := usecases_user.NewCreateUserUseCase(
         providers.Logger,
         repo,
     ).Execute(ctx.c, ctx.Locale, userCreate)
-    
+
     // 4. Resolver respuesta
     headers := map[HTTPHeaderTypeEnum]string{
         CONTENT_TYPE: string(APPLICATION_JSON),
@@ -665,20 +1137,20 @@ func (uc *CreateUserUseCase) Execute(
     input dtos.UserCreate,
 ) *usecase.UseCaseResult[models.User] {
     result := usecase.NewUseCaseResult[models.User]()
-    
+
     // 1. Validar input
     uc.validate(input, result)
     if result.HasError() {
         return result
     }
-    
+
     // 2. Llamar a repositorio
     res, err := uc.repo.Create(input)
     if err != nil {
         result.SetError(err.Code, err.Context)
         return result
     }
-    
+
     // 3. Retornar éxito
     result.SetData(status.Created, *res, "User created")
     return result
@@ -692,12 +1164,12 @@ func (uc *CreateUserUseCase) Execute(
 func (ur *UserRepository) Create(input dtos.UserCreate) (*models.User, *application_errors.ApplicationError) {
     // 1. Convertir DTO a modelo GORM
     userCreate := ur.modelConverter.ToGormCreate(input)
-    
+
     // 2. Ejecutar query
     if err := ur.DB.Create(userCreate).Error; err != nil {
         return nil, MapOrmError(err)  // Mapea errores de BD
     }
-    
+
     // 3. Convertir modelo GORM a modelo de dominio
     userModel := ur.modelConverter.ToDomain(userCreate)
     return userModel, nil
@@ -715,7 +1187,7 @@ func (rr *RequestResolver[D]) ResolveDTO(
 ) {
     // 1. Agregar headers
     rr.setHeaders(w, headersToAdd)
-    
+
     // 2. Manejar errores
     if result.HasError() {
         w.WriteHeader(rr.statusMapping[result.StatusCode])
@@ -724,7 +1196,7 @@ func (rr *RequestResolver[D]) ResolveDTO(
         })
         return
     }
-    
+
     // 3. Respuesta exitosa
     w.WriteHeader(rr.statusMapping[result.StatusCode])
     json.NewEncoder(w).Encode(map[string]any{
@@ -748,7 +1220,7 @@ sequenceDiagram
     participant EmailSvc as Email Service
     participant DB as PostgreSQL
     participant SMTP as SMTP Server
-    
+
     Handler->>DAG: Execute(userCreate)
     DAG->>UC1: Execute(userCreate)
     UC1->>Repo: CreateWithPassword()
@@ -756,7 +1228,7 @@ sequenceDiagram
     DB-->>Repo: User creado
     Repo-->>UC1: User
     UC1-->>DAG: UseCaseResult[User]
-    
+
     alt Si no hay error
         DAG->>UC2: Execute(User)
         UC2->>EmailSvc: SendWelcomeEmail()
@@ -777,11 +1249,11 @@ graph LR
     Start([Input:<br/>UserCreate]) --> UC1[Use Case 1:<br/>CreateUserAndPassword]
     UC1 -->|Output: User| UC2[Use Case 2:<br/>CreateUserSendEmail]
     UC2 -->|Output: User| End([Result:<br/>User])
-    
+
     UC1 -.->|Error| Error[Error Handler]
     UC2 -.->|Error| Error
     Error --> End
-    
+
     style Start fill:#e3f2fd
     style End fill:#c8e6c9
     style Error fill:#ffcdd2
@@ -792,18 +1264,18 @@ graph LR
 ```mermaid
 graph TB
     Start([Input]) --> Parallel[Parallel DAG]
-    
+
     Parallel --> UC1[Use Case 1]
     Parallel --> UC2[Use Case 2]
     Parallel --> UC3[Use Case 3]
-    
+
     UC1 --> Wait[WaitGroup<br/>Espera todos]
     UC2 --> Wait
     UC3 --> Wait
-    
+
     Wait --> Merge[Merge Results]
     Merge --> End([Results Array])
-    
+
     style Parallel fill:#fff9c4
     style Wait fill:#e1f5ff
     style Merge fill:#e8f5e9
@@ -817,7 +1289,7 @@ func CreateUserAndPassword(ctx HandlerContext) {
     // 1. Crear casos de uso
     uc_create_user_password := usecases_user.NewCreateUserAndPasswordUseCase(...)
     uc_create_user_email := usecases_user.NewCreateUserSendEmailUseCase(...)
-    
+
     // 2. Crear pipe (DAG)
     pipe := user_pipes.NewCreateUserPipe(
         ctx.c,
@@ -825,10 +1297,10 @@ func CreateUserAndPassword(ctx HandlerContext) {
         uc_create_user_password,
         uc_create_user_email,
     )
-    
+
     // 3. Ejecutar pipe (ejecuta secuencialmente)
     ucResult := pipe.Execute(userCreate)
-    
+
     // 4. Resolver respuesta
     NewRequestResolver[models.User]().ResolveDTO(...)
 }
@@ -1873,7 +2345,7 @@ erDiagram
     USER }o--|| ROLE : "pertenece"
     USER ||--o{ ONE_TIME_PASSWORD : "genera"
     USER ||--o{ ONE_TIME_TOKEN : "genera"
-    
+
     USER {
         uint id PK
         string name
@@ -1886,7 +2358,7 @@ erDiagram
         datetime updated_at
         datetime deleted_at
     }
-    
+
     ROLE {
         uint id PK
         string key UK
@@ -1895,7 +2367,7 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
-    
+
     PASSWORD {
         uint id PK
         uint user_id FK
@@ -1905,7 +2377,7 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
-    
+
     ONE_TIME_PASSWORD {
         uint id PK
         uint user_id FK
@@ -1915,7 +2387,7 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
-    
+
     ONE_TIME_TOKEN {
         uint id PK
         uint user_id FK
@@ -1980,22 +2452,22 @@ graph LR
     subgraph UserDomain["👤 Usuario"]
         User[User<br/>ID, Name, Email, Phone<br/>Status, RoleID, OTPLogin]
     end
-    
+
     subgraph AuthDomain["🔐 Autenticación"]
         Password[Password<br/>UserID, Hash<br/>IsActive, ExpiresAt]
         OTP[OneTimePassword<br/>UserID, Code<br/>IsUsed, ExpiresAt]
         Token[OneTimeToken<br/>UserID, Token, Type<br/>IsUsed, ExpiresAt]
     end
-    
+
     subgraph RoleDomain["👥 Roles"]
         Role[Role<br/>ID, Key, Name<br/>IsActive, Priority]
     end
-    
+
     User -->|1:N| Password
     User -->|1:N| OTP
     User -->|1:N| Token
     User -->|N:1| Role
-    
+
     style User fill:#e3f2fd
     style Password fill:#fff9c4
     style OTP fill:#fff9c4
@@ -2018,19 +2490,19 @@ graph TB
         UseCase[Use Case]
         Cache[Cache Provider]
     end
-    
+
     subgraph Storage["Almacenamiento"]
         Redis[(Redis<br/>Cache)]
         DB[(PostgreSQL<br/>Base de Datos)]
     end
-    
+
     Handler --> UseCase
     UseCase --> Cache
     Cache -->|Cache Hit| Redis
     Cache -->|Cache Miss| DB
     Cache -->|Write| Redis
     UseCase -->|Direct Query| DB
-    
+
     style Redis fill:#ffcdd2
     style DB fill:#c8e6c9
 ```
@@ -2051,27 +2523,27 @@ sequenceDiagram
     participant Hash as Hash Provider
     participant JWT as JWT Provider
     participant DB as PostgreSQL
-    
+
     Client->>API: POST /api/auth/login<br/>{email, password}
     API->>AuthUC: Execute(credentials)
     AuthUC->>UserRepo: GetByEmailOrPhone()
     UserRepo->>DB: SELECT user
     DB-->>UserRepo: User
     UserRepo-->>AuthUC: User
-    
+
     AuthUC->>PassRepo: GetActivePassword()
     PassRepo->>DB: SELECT password
     DB-->>PassRepo: Password
     PassRepo-->>AuthUC: Password
-    
+
     AuthUC->>Hash: Compare(password, hash)
     Hash-->>AuthUC: Valid
-    
+
     AuthUC->>JWT: GenerateAccessToken()
     JWT-->>AuthUC: Access Token
     AuthUC->>JWT: GenerateRefreshToken()
     JWT-->>AuthUC: Refresh Token
-    
+
     AuthUC-->>API: Tokens
     API-->>Client: {access_token, refresh_token}
 ```
@@ -2088,12 +2560,12 @@ sequenceDiagram
     participant EmailSvc as Email Service
     participant DB as PostgreSQL
     participant SMTP as SMTP
-    
+
     Client->>API: POST /api/auth/login<br/>{email, password}
     API->>AuthUC: Execute(credentials)
     AuthUC->>AuthUC: Valida credenciales
     AuthUC->>AuthUC: ¿OTP Login activado?
-    
+
     alt OTP Login activado
         AuthUC->>OTPUC: GenerateOTP()
         OTPUC->>OTPRepo: Create()
@@ -2107,7 +2579,7 @@ sequenceDiagram
         AuthUC-->>API: Tokens
         API-->>Client: {access_token, refresh_token}
     end
-    
+
     Note over Client,SMTP: Usuario ingresa OTP
     Client->>API: GET /api/auth/login-otp/{otp}
     API->>OTPUC: ValidateOTP(otp)
@@ -2128,23 +2600,23 @@ graph TB
     subgraph TokenFlow["Flujo de Tokens"]
         Login[Login] --> AccessToken[Access Token<br/>TTL: 1 hora]
         Login --> RefreshToken[Refresh Token<br/>TTL: 24 horas]
-        
+
         AccessToken -->|Expira| Refresh[Refresh Endpoint]
         Refresh --> NewAccess[New Access Token]
-        
+
         AccessToken -->|Válido| Protected[Protected Resources]
     end
-    
+
     subgraph TokenStructure["Estructura JWT"]
         Header[Header<br/>alg: HS256<br/>typ: JWT]
         Payload[Payload<br/>iss, aud, sub<br/>iat, exp, typ]
         Signature[Signature<br/>HMAC SHA256]
-        
+
         Header --> JWT[JWT Token]
         Payload --> JWT
         Signature --> JWT
     end
-    
+
     style AccessToken fill:#c8e6c9
     style RefreshToken fill:#fff9c4
     style Protected fill:#e3f2fd
@@ -2163,14 +2635,14 @@ stateDiagram-v2
     Login --> CheckOTP: Validar
     CheckOTP --> GenerateOTP: OTP activado
     CheckOTP --> GenerateJWT: OTP desactivado
-    
+
     GenerateOTP --> SendEmail: Código generado
     SendEmail --> WaitOTP: Email enviado
     WaitOTP --> ValidateOTP: Usuario ingresa código
     ValidateOTP --> GenerateJWT: Código válido
     ValidateOTP --> Expired: Código expirado
     ValidateOTP --> Invalid: Código inválido
-    
+
     GenerateJWT --> [*]: Tokens generados
     Expired --> [*]
     Invalid --> [*]
@@ -2192,18 +2664,18 @@ graph TB
         CORS[CORS<br/>Cross-Origin]
         Sanitize[Sanitization<br/>SQL Injection]
     end
-    
+
     Request[HTTP Request] --> Input
     Input --> Auth
     Auth --> Authz
     Authz --> BusinessLogic[Business Logic]
-    
+
     Password[Password] --> Hash
     Hash --> Storage[(Database)]
-    
+
     Request --> CORS
     Request --> Sanitize
-    
+
     style Input fill:#e3f2fd
     style Auth fill:#fff9c4
     style Authz fill:#f3e5f5
@@ -2265,24 +2737,24 @@ graph TB
         subgraph AppContainer["Aplicación Go"]
             App[Go Application<br/>Port: 8080<br/>Hot Reload]
         end
-        
+
         subgraph DBServices["Servicios de Datos"]
             PostgreSQL[(PostgreSQL<br/>Port: 5432<br/>Volume: db-data)]
             Redis[(Redis<br/>Port: 6379<br/>Cache)]
         end
-        
+
         subgraph DevTools["Herramientas de Desarrollo"]
             Mailpit[Mailpit<br/>Port: 8025<br/>Email Testing]
             RedisCommander[Redis Commander<br/>Port: 8081<br/>Redis UI]
         end
     end
-    
+
     App -->|GORM| PostgreSQL
     App -->|go-redis| Redis
     App -->|SMTP| Mailpit
-    
+
     RedisCommander -->|UI| Redis
-    
+
     style App fill:#e3f2fd
     style PostgreSQL fill:#c8e6c9
     style Redis fill:#ffcdd2
@@ -2300,13 +2772,13 @@ graph TB
         DevRedis[(Redis<br/>Dev)]
         DevMail[Mailpit]
     end
-    
+
     subgraph Test["🧪 Testing"]
         TestApp[Go App<br/>Test Mode]
         TestDB[(PostgreSQL<br/>Test)]
         TestRedis[(Redis<br/>Test)]
     end
-    
+
     subgraph Prod["🚀 Producción"]
         LB[Load Balancer]
         App1[App Instance 1]
@@ -2317,27 +2789,27 @@ graph TB
         ProdRedis[(Redis<br/>Cluster)]
         ProdSMTP[SMTP Server]
     end
-    
+
     LB --> App1
     LB --> App2
     LB --> App3
-    
+
     App1 --> ProdDB
     App2 --> ProdDB
     App3 --> ProdDB
-    
+
     App1 --> ProdDBReplica
     App2 --> ProdDBReplica
     App3 --> ProdDBReplica
-    
+
     App1 --> ProdRedis
     App2 --> ProdRedis
     App3 --> ProdRedis
-    
+
     App1 --> ProdSMTP
     App2 --> ProdSMTP
     App3 --> ProdSMTP
-    
+
     style Dev fill:#e1f5ff
     style Test fill:#fff4e1
     style Prod fill:#e8f5e9
@@ -2384,7 +2856,7 @@ flowchart TD
     Handler --> Route[6. Routes<br/>Definir Endpoint]
     Route --> Tests[7. Tests<br/>Escribir Tests]
     Tests --> End([✅ Completado])
-    
+
     style Domain fill:#e8f5e9
     style Contracts fill:#fff9c4
     style UseCase fill:#e3f2fd
