@@ -39,4 +39,4 @@ services:
 
 networks:
   gormgoskeleton-tests:
-    external: true
+    external: false

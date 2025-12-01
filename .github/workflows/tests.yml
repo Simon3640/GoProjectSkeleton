@@ -27,11 +27,6 @@ jobs:
       - name: Set up Docker Compose
         run: docker compose version
 
-      - name: Create Docker networks
-        run: |
-          docker network create gormgoskeleton-tests || true
-          docker network create gormgoskeleton-e2e-tests || true
-
       - name: Run Integration Tests
         run: docker compose -f docker/docker-compose.test.yml up --abort-on-container-exit --exit-code-from gormgoskeleton-integration-tests --build
 

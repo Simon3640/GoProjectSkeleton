@@ -1,0 +1,112 @@
+# =============================================================================
+# Archivo de ejemplo de variables de Terraform
+# =============================================================================
+#
+# INSTRUCCIONES:
+# 1. Copia este archivo: cp terraform.tfvars.example terraform.tfvars
+# 2. Completa los valores requeridos (especialmente los secretos)
+# 3. NUNCA hagas commit de terraform.tfvars al repositorio
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Configuración General
+# -----------------------------------------------------------------------------
+project_name = "go-project-skeleton"
+location     = "centralus"  # eastus, westus2, westeurope, etc.
+environment  = "development"  # development, staging, production
+
+# -----------------------------------------------------------------------------
+# Aplicación
+# -----------------------------------------------------------------------------
+app_port        = "8080"
+app_version     = "0.0.1"
+app_description = "Gorm Go Skeleton Template"
+app_support_email = "support@example.com"
+
+enable_log  = true
+debug_log   = true
+templates_path = "src/application/shared/templates/"
+
+# -----------------------------------------------------------------------------
+# Base de Datos PostgreSQL
+# -----------------------------------------------------------------------------
+db_host     = "localhost"  # Se sobrescribe automáticamente por Container App
+db_port     = "5432"
+db_user     = "gormgoskeleton"
+db_password = "CAMBIAR-A-CONTRASEÑA-SEGURA"  # ⚠️ REQUERIDO: Cambiar por una contraseña segura
+db_name     = "gormgoskeleton"
+db_ssl      = false
+
+# Para generar una contraseña segura:
+# openssl rand -base64 32
+
+# -----------------------------------------------------------------------------
+# Redis Cache
+# -----------------------------------------------------------------------------
+# Por defecto usa Redis Container (inicia rápido, ideal para templates)
+# Para producción, configura: use_redis_cache = true (usa Azure Redis Cache)
+use_redis_cache = false  # false = Redis Container (rápido), true = Azure Redis Cache (robusto pero lento)
+redis_host     = "localhost:6379"  # Se sobrescribe automáticamente
+redis_password = ""  # Se genera automáticamente para Container, o usa clave de Azure para Cache
+redis_db       = 0
+redis_ttl      = 300
+
+# -----------------------------------------------------------------------------
+# JWT (JSON Web Tokens)
+# -----------------------------------------------------------------------------
+jwt_secret_key  = "CAMBIAR-A-CLAVE-JWT-SEGURA"  # ⚠️ REQUERIDO: Cambiar por una clave segura (mínimo 32 caracteres)
+jwt_issuer      = "gormgoskeleton"
+jwt_access_ttl  = 3600   # 1 hora
+jwt_refresh_ttl = 86400  # 24 horas
+jwt_clock_skew  = 60      # 1 minuto
+
+# Para generar una clave JWT segura:
+# openssl rand -hex 32
+
+# -----------------------------------------------------------------------------
+# One-Time Tokens y Passwords
+# -----------------------------------------------------------------------------
+one_time_token_ttl              = 15   # minutos
+one_time_token_email_verify_ttl = 60   # minutos
+one_time_password_length        = 6
+one_time_password_ttl           = 10   # minutos
+
+# -----------------------------------------------------------------------------
+# Frontend URLs
+# -----------------------------------------------------------------------------
+frontend_reset_password_url   = "http://localhost:3000/reset-password"
+frontend_activate_account_url = "http://localhost:3000/activate-account"
+
+# -----------------------------------------------------------------------------
+# Email (SendGrid u otro proveedor SMTP)
+# -----------------------------------------------------------------------------
+mail_host     = "smtp.sendgrid.net"
+mail_port     = 587
+mail_password = ""  # ⚠️ OPCIONAL: API Key de SendGrid (formato: SG.xxxxxxxx...)
+mail_from     = "noreply@example.com"
+
+# Si no usas email, puedes dejar mail_password vacío
+
+# =============================================================================
+# NOTAS IMPORTANTES:
+# =============================================================================
+#
+# 1. SECRETOS REQUERIDOS:
+#    - db_password: DEBE ser cambiado antes de aplicar
+#    - jwt_secret_key: DEBE ser cambiado antes de aplicar
+#
+# 2. SECRETOS OPCIONALES:
+#    - mail_password: Solo si usas funcionalidad de email
+#
+# 3. SEGURIDAD:
+#    - NUNCA hagas commit de terraform.tfvars
+#    - Usa contraseñas seguras y únicas
+#    - Genera secretos aleatorios para producción
+#    - Usa diferentes valores para cada entorno
+#
+# 4. GENERACIÓN DE SECRETOS:
+#    - Contraseña DB: openssl rand -base64 32
+#    - Clave JWT: openssl rand -hex 32
+#
+# =============================================================================

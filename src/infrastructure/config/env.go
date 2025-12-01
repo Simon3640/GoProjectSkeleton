@@ -9,7 +9,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func LoadConfig() (*Config, error) {
+// EnvConfigLoader loads configuration from environment variables.
+type EnvConfigLoader struct{}
+
+var _ Loader = (*EnvConfigLoader)(nil)
+
+// Load reads configuration from environment variables and .env file.
+func (e *EnvConfigLoader) Load() (*Config, error) {
 
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -37,7 +43,7 @@ func LoadConfig() (*Config, error) {
 			return nil, errors.New("cannot set value for field: " + field.Name)
 		}
 
-		if err := setFieldValue(fieldValue, envValue); err != nil {
+		if err := e.setFieldValue(fieldValue, envValue); err != nil {
 			return nil, err
 		}
 	}
@@ -46,10 +52,15 @@ func LoadConfig() (*Config, error) {
 	return cfg, nil
 }
 
-func setFieldValue(field reflect.Value, value string) error {
+func (e *EnvConfigLoader) setFieldValue(field reflect.Value, value string) error {
 	if value == "" {
 		return errors.New("empty value")
 	}
 	field.SetString(value)
 	return nil
+}
+
+// NewEnvConfigLoader creates a new environment-based configuration loader.
+func NewEnvConfigLoader() *EnvConfigLoader {
+	return &EnvConfigLoader{}
 }

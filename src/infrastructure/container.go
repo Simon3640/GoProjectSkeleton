@@ -9,7 +9,7 @@ import (
 )
 
 func Initialize() {
-	if err := settings.AppSettingsInstance.Initialize(config.ConfigInstance.ToMap()); err != nil {
+	if err := settings.AppSettingsInstance.Initialize(config.NewConfig(nil).ToMap()); err != nil {
 		providers.Logger.Error("Failed to initialize app settings", err)
 		panic("Failed to initialize app settings: " + err.Error())
 	}

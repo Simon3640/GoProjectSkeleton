@@ -1,0 +1,19 @@
+{
+  "bindings": [
+    {
+      "authLevel": "{{.AuthLevel}}",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "{{.Method}}"
+      ],
+      "route": "{{.Route}}"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    }
+  ]
+}

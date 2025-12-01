@@ -1,0 +1,48 @@
+package main
+
+import (
+	"log"
+	"net/http"
+	"os"
+
+	"gormgoskeleton/azure"
+	"gormgoskeleton/src/infrastructure/handlers"
+)
+
+func main() {
+	log.Printf("Initializing Azure Infrastructure")
+	azure.InitializeInfrastructure()
+
+	port := os.Getenv("FUNCTIONS_CUSTOMHANDLER_PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	http.HandleFunc("/", {{.HandlerName}})
+	log.Printf("Azure Function {{.HandlerName}} listening on %s", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
+}
+
+func {{.HandlerName}}(w http.ResponseWriter, r *http.Request) {
+	// Aplicar CORS middleware primero
+	handler := azure.CORSMiddleware(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.Method{{.MethodUpper}} && r.Method != http.MethodOptions {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Si es OPTIONS, ya fue manejado por CORSMiddleware
+		if r.Method == http.MethodOptions {
+			return
+		}
+
+		adapter := azure.NewHTTPAdapter()
+
+		params := make(map[string]string)
+
+		ctx := adapter.ToHandlerContext(r, w, params)
+		handlers.{{.HandlerName}}(ctx)
+
+	})
+	handler(w, r)
+}
