@@ -93,7 +93,7 @@
       "path": "user/update",
       "handler": "UpdateUser",
       "route": "user/{id}",
-      "method": "put",
+      "method": "patch",
       "authLevel": "function",
       "needsAuth": true,
       "hasPathParams": true,

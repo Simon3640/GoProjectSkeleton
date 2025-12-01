@@ -51,7 +51,7 @@ func GenerateFunction(fn FunctionConfig) error {
 	modulePath := fmt.Sprintf("gormgoskeleton/functions/aws/%s", strings.ReplaceAll(fn.Path, "/", "/"))
 
 	// Create function directory
-	funcDir := filepath.Join(fn.Path)
+	funcDir := filepath.Join("tmp", fn.Path)
 	if err := os.MkdirAll(funcDir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}

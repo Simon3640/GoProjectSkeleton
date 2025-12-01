@@ -59,10 +59,10 @@ output "lambda_functions" {
   description = "Map of all Lambda functions created from functions.json (equivalent to Azure Function Apps)"
   value = {
     for k, v in module.lambda_functions : k => {
-      name            = v.lambda_function_name
-      arn             = v.lambda_function_arn
-      invoke_url      = v.lambda_function_url
-      cloudwatch_logs = v.cloudwatch_log_group_name
+      name             = v.lambda_function_name
+      arn              = v.lambda_function_arn
+      invoke_url       = v.lambda_function_url
+      cloudwatch_logs  = v.cloudwatch_log_group_name
     }
   }
 }
@@ -70,4 +70,24 @@ output "lambda_functions" {
 output "lambda_function_names" {
   description = "List of all Lambda function names"
   value       = [for k, v in module.lambda_functions : v.lambda_function_name]
+}
+
+# Outputs for API Gateway HTTP API
+output "http_api_id" {
+  description = "ID of the HTTP API Gateway"
+  value       = aws_apigatewayv2_api.http_api.id
+}
+
+output "http_api_endpoint" {
+  description = "Base URL of the HTTP API Gateway"
+  value       = aws_apigatewayv2_api.http_api.api_endpoint
+}
+
+output "http_api_routes" {
+  description = "Map of routes configured in the HTTP API"
+  value = {
+    for k, v in aws_apigatewayv2_route.lambda_route : k => {
+      route_key = v.route_key
+    }
+  }
 }

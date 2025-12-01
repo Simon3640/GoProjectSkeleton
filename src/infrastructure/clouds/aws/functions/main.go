@@ -1,14 +1,15 @@
 // Package main provides CLI for generating and deploying AWS Lambda functions
 // Usage:
-//   go run main.go generate
-//   go run main.go deploy [function-name]
+//
+//	go run main.go generate
+//	go run main.go deploy [function-name]
 package main
 
 import (
 	"fmt"
 	"os"
 
-	"gormgoskeleton/functions/aws/utils"
+	"gormgoskeleton/aws/functions/utils"
 )
 
 func main() {
