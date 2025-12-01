@@ -17,5 +17,6 @@ COPY ./src/infrastructure/server/go.mod ./src/infrastructure/server/go.sum ./src
 WORKDIR /app/src/infrastructure/server
 RUN go mod download
 
+WORKDIR /app
 COPY ./src ./src
 COPY ./tests ./tests
