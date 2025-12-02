@@ -1,11 +1,18 @@
+// Package config provides configuration loading and management functionality.
 package config
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	logger "gormgoskeleton/src/infrastructure/providers"
 )
+
+// Loader defines the interface for loading configuration from various sources.
+type Loader interface {
+	Load() (*Config, error)
+}
 
 type Config struct {
 	// Application
@@ -56,6 +63,10 @@ type Config struct {
 
 func (c *Config) ToMap() map[string]string {
 	values := make(map[string]string)
+	if c == nil {
+		log.Println("Warning: ToMap() called on nil Config")
+		return values
+	}
 	cfgValue := reflect.ValueOf(c).Elem()
 
 	for i := 0; i < cfgValue.NumField(); i++ {
@@ -66,17 +77,19 @@ func (c *Config) ToMap() map[string]string {
 	return values
 }
 
-func NewConfig() *Config {
-	config, err := LoadConfig()
+// NewConfig creates a new configuration instance using the specified loader.
+func NewConfig(loader Loader) *Config {
+	if loader == nil {
+		loader = NewEnvConfigLoader()
+	}
+	config, err := loader.Load()
 	if err != nil {
 		fmt.Println("Error loading configuration")
 		logger.Logger.Panic("Error loading configuration", err)
+		// Si el logger no está habilitado, hacer panic explícitamente
+		panic(fmt.Sprintf("Error loading configuration: %v", err))
 	}
 	return config
 }
 
 var ConfigInstance *Config
-
-func init() {
-	ConfigInstance = NewConfig()
-}

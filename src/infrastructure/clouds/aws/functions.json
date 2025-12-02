@@ -1,0 +1,130 @@
+[
+    {
+      "name": "health-check",
+      "path": "status/health_check",
+      "handler": "GetHealthCheck",
+      "route": "health-check",
+      "method": "get",
+      "authLevel": "anonymous"
+    },
+    {
+      "name": "auth-login",
+      "path": "auth/login",
+      "handler": "Login",
+      "route": "auth/login",
+      "method": "post",
+      "authLevel": "anonymous"
+    },
+    {
+      "name": "auth-refresh",
+      "path": "auth/refresh",
+      "handler": "RefreshAccessToken",
+      "route": "auth/refresh",
+      "method": "post",
+      "authLevel": "anonymous"
+    },
+    {
+      "name": "auth-password-reset",
+      "path": "auth/password_reset",
+      "handler": "RequestPasswordReset",
+      "route": "auth/password-reset/{identifier}",
+      "method": "get",
+      "authLevel": "anonymous",
+      "hasPathParams": true,
+      "pathParamName": "identifier"
+    },
+    {
+      "name": "auth-login-otp",
+      "path": "auth/login_otp",
+      "handler": "LoginOTP",
+      "route": "auth/login-otp/{otp}",
+      "method": "get",
+      "authLevel": "anonymous",
+      "hasPathParams": true,
+      "pathParamName": "otp"
+    },
+    {
+      "name": "user-create",
+      "path": "user/create",
+      "handler": "CreateUser",
+      "route": "user",
+      "method": "post",
+      "authLevel": "anonymous"
+    },
+    {
+      "name": "user-create-password",
+      "path": "user/create_with_password",
+      "handler": "CreateUserAndPassword",
+      "route": "user-password",
+      "method": "post",
+      "authLevel": "anonymous"
+    },
+    {
+      "name": "user-activate",
+      "path": "user/activate",
+      "handler": "ActivateUser",
+      "route": "user/activate",
+      "method": "post",
+      "authLevel": "anonymous"
+    },
+    {
+      "name": "user-get",
+      "path": "user/get",
+      "handler": "GetUser",
+      "route": "user/{id}",
+      "method": "get",
+      "authLevel": "function",
+      "needsAuth": true,
+      "hasPathParams": true,
+      "pathParamName": "id"
+    },
+    {
+      "name": "user-get-all",
+      "path": "user/get_all",
+      "handler": "GetAllUser",
+      "route": "user",
+      "method": "get",
+      "authLevel": "function",
+      "needsAuth": true,
+      "needsQuery": true
+    },
+    {
+      "name": "user-update",
+      "path": "user/update",
+      "handler": "UpdateUser",
+      "route": "user/{id}",
+      "method": "patch",
+      "authLevel": "function",
+      "needsAuth": true,
+      "hasPathParams": true,
+      "pathParamName": "id"
+    },
+    {
+      "name": "user-delete",
+      "path": "user/delete",
+      "handler": "DeleteUser",
+      "route": "user/{id}",
+      "method": "delete",
+      "authLevel": "function",
+      "needsAuth": true,
+      "hasPathParams": true,
+      "pathParamName": "id"
+    },
+    {
+      "name": "password-create",
+      "path": "password/create",
+      "handler": "CreatePassword",
+      "route": "password",
+      "method": "post",
+      "authLevel": "function",
+      "needsAuth": true
+    },
+    {
+      "name": "password-reset-token",
+      "path": "password/reset_token",
+      "handler": "CreatePasswordToken",
+      "route": "password/reset-token",
+      "method": "post",
+      "authLevel": "anonymous"
+    }
+  ]

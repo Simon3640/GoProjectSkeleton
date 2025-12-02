@@ -1,0 +1,92 @@
+# =============================================================================
+# Example Terraform variables file for AWS
+# =============================================================================
+#
+# INSTRUCTIONS:
+# 1. Copy this file: cp terraform.tfvars.example terraform.tfvars
+# 2. Fill in the required values (especially secrets)
+# 3. NEVER commit terraform.tfvars to the repository
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# General Configuration
+# -----------------------------------------------------------------------------
+project_name = "go-project-skeleton"
+aws_region   = "us-east-1"  # us-east-1, us-west-2, eu-west-1, etc.
+environment  = "development"  # development, staging, production
+
+# -----------------------------------------------------------------------------
+# Application
+# -----------------------------------------------------------------------------
+app_port        = "8080"
+app_version     = "0.0.1"
+app_description = "Gorm Go Skeleton Template"
+app_support_email = "support@example.com"
+
+enable_log  = true
+debug_log   = true
+templates_path = "src/application/shared/templates/"
+
+# -----------------------------------------------------------------------------
+# PostgreSQL RDS Database
+# -----------------------------------------------------------------------------
+db_host     = "localhost"  # Will be overwritten automatically by RDS
+db_port     = "5432"
+db_user     = "gormgoskeleton"
+db_password = "CHANGE-TO-SECURE-PASSWORD"  # ⚠️ REQUIRED: Change to a secure password
+db_name     = "gormgoskeleton"
+db_ssl      = true
+
+# To generate a secure password:
+# openssl rand -base64 32
+
+# -----------------------------------------------------------------------------
+# ElastiCache Redis
+# -----------------------------------------------------------------------------
+use_redis_cache = true
+redis_host      = "localhost:6379"  # Will be overwritten automatically by ElastiCache
+redis_password  = ""  # Not used directly, obtained from ElastiCache when use_redis_cache=true
+redis_db        = 0
+redis_ttl       = 300
+
+# -----------------------------------------------------------------------------
+# JWT Configuration
+# -----------------------------------------------------------------------------
+jwt_secret_key = "CHANGE-TO-SECURE-JWT-SECRET"  # ⚠️ REQUIRED: Change to a secure JWT secret
+jwt_issuer     = "gormgoskeleton"
+
+jwt_access_ttl  = 3600   # 1 hour in seconds
+jwt_refresh_ttl = 86400  # 24 hours in seconds
+jwt_clock_skew  = 60     # 1 minute in seconds
+
+# To generate a secure JWT secret:
+# openssl rand -hex 32
+
+# -----------------------------------------------------------------------------
+# Token and OTP Configuration
+# -----------------------------------------------------------------------------
+one_time_token_ttl              = 15  # minutes
+one_time_token_email_verify_ttl = 60  # minutes
+one_time_password_length         = 6
+one_time_password_ttl            = 10  # minutes
+
+# -----------------------------------------------------------------------------
+# Frontend URLs
+# -----------------------------------------------------------------------------
+frontend_reset_password_url   = "http://localhost:3000/reset-password"
+frontend_activate_account_url = "http://localhost:3000/activate-account"
+
+# -----------------------------------------------------------------------------
+# Mail Configuration (SendGrid)
+# -----------------------------------------------------------------------------
+mail_host     = "smtp.sendgrid.net"
+mail_port     = 587
+mail_from     = "noreply@example.com"
+mail_password = "CHANGE-TO-SENDGRID-API-KEY"  # ⚠️ REQUIRED: Change to SendGrid API key
+
+# -----------------------------------------------------------------------------
+# VPC Configuration (AWS specific)
+# -----------------------------------------------------------------------------
+vpc_cidr          = "10.0.0.0/16"
+availability_zones = []  # Leave empty to use default availability zones
