@@ -6,7 +6,7 @@ import (
 	"log"
 	"reflect"
 
-	logger "gormgoskeleton/src/infrastructure/providers"
+	logger "goprojectskeleton/src/infrastructure/providers"
 )
 
 // Loader defines the interface for loading configuration from various sources.
@@ -21,17 +21,17 @@ type Config struct {
 	AppPort         string `env:"APP_PORT" envDefault:"8080"`
 	AppVersion      string `env:"APP_VERSION" envDefault:"0.0.1"`
 	AppDescription  string `env:"APP_DESCRIPTION" envDefault:"Description"`
-	AppSupportEmail string `env:"APP_SUPPORT_EMAIL" envDefault:"support@gormgoskeleton.com"`
+	AppSupportEmail string `env:"APP_SUPPORT_EMAIL" envDefault:"support@goprojectskeleton.com"`
 	EnableLog       string `env:"ENABLE_LOG" envDefault:"true"`
 	DebugLog        string `env:"DEBUG_LOG" envDefault:"true"`
 	TemplatesPath   string `env:"TEMPLATES_PATH" envDefault:"src/application/shared/templates/"`
 
 	// Database
-	DBHost     string `env:"DB_HOST" envDefault:"gormgoskeleton"`
+	DBHost     string `env:"DB_HOST" envDefault:"goprojectskeleton"`
 	DBPort     string `env:"DB_PORT" envDefault:"5432"`
 	DBUser     string `env:"DB_USER" envDefault:"postgres"`
 	DBPassword string `env:"DB_PASSWORD" envDefault:"postgres"`
-	DBName     string `env:"DB_NAME" envDefault:"gormgoskeleton"`
+	DBName     string `env:"DB_NAME" envDefault:"goprojectskeleton"`
 	DBSSL      string `env:"DB_SSL" envDefault:"false"`
 
 	// Redis

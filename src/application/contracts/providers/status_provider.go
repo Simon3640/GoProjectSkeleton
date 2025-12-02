@@ -1,7 +1,7 @@
 package contractsproviders
 
 import (
-	"gormgoskeleton/src/domain/models"
+	"goprojectskeleton/src/domain/models"
 	"time"
 )
 

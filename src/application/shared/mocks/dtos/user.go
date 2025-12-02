@@ -1,8 +1,8 @@
 package dtomocks
 
 import (
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/domain/models"
+	dtos "goprojectskeleton/src/application/shared/DTOs"
+	"goprojectskeleton/src/domain/models"
 )
 
 var userStatusActive = models.UserStatusActive

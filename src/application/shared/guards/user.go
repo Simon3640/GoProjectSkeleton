@@ -1,9 +1,9 @@
 package guards
 
 import (
-	"gormgoskeleton/src/application/shared/locales/messages"
-	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
+	"goprojectskeleton/src/application/shared/locales/messages"
+	usecase "goprojectskeleton/src/application/shared/use_case"
+	"goprojectskeleton/src/domain/models"
 )
 
 func RoleGuard(allowedRoles ...string) usecase.Guard {

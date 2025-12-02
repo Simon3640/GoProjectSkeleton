@@ -2,7 +2,7 @@ package mocks
 
 import (
 	"fmt"
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "goprojectskeleton/src/application/contracts/providers"
 
 	"github.com/stretchr/testify/mock"
 )

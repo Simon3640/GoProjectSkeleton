@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"os"
 
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
+	contractsProviders "goprojectskeleton/src/application/contracts/providers"
 )
 
 type LoggerProvider struct {

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"gormgoskeleton/src/infrastructure/handlers"
+	"goprojectskeleton/src/infrastructure/handlers"
 )
 
 // HTTPAdapter converts HTTP requests to handler contexts.

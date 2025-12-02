@@ -1,10 +1,10 @@
 {
 	"id": "4a225d0c-3e40-4a2b-b4a9-683bd8d6b3f3",
-	"name": "gormgoskeleton",
+	"name": "goprojectskeleton",
 	"values": [
 		{
 			"key": "baseURL",
-			"value": "http://gormgoskeleton-e2e-tests:8080/api",
+			"value": "http://goprojectskeleton-e2e-tests:8080/api",
 			"type": "default",
 			"description": {
 				"content": "",
@@ -34,7 +34,7 @@
 		},
 		{
 			"key": "userEmail",
-			"value": "newusertest@gormgoskeleton.com",
+			"value": "newusertest@goprojectskeleton.com",
 			"type": "default",
 			"description": {
 				"content": "",

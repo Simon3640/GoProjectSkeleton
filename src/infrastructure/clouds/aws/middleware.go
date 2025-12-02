@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"strings"
 
-	"gormgoskeleton/src/application/modules/auth"
-	app_context "gormgoskeleton/src/application/shared/context"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/status"
-	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	"gormgoskeleton/src/infrastructure/handlers"
-	"gormgoskeleton/src/infrastructure/providers"
-	"gormgoskeleton/src/infrastructure/repositories"
+	"goprojectskeleton/src/application/modules/auth"
+	app_context "goprojectskeleton/src/application/shared/context"
+	"goprojectskeleton/src/application/shared/locales"
+	"goprojectskeleton/src/application/shared/status"
+	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"goprojectskeleton/src/infrastructure/handlers"
+	"goprojectskeleton/src/infrastructure/providers"
+	"goprojectskeleton/src/infrastructure/repositories"
 )
 
 // AuthMiddleware validates JWT tokens from the Authorization header and injects user context.

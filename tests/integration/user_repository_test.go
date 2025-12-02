@@ -3,17 +3,17 @@ package integrationtest
 import (
 	"testing"
 
-	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
-	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	"gormgoskeleton/src/infrastructure/providers"
-	"gormgoskeleton/src/infrastructure/repositories"
+	dtomocks "goprojectskeleton/src/application/shared/mocks/dtos"
+	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"goprojectskeleton/src/infrastructure/providers"
+	"goprojectskeleton/src/infrastructure/repositories"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUserRepository_CreateWithPassword(t *testing.T) {
 	assert := assert.New(t)
-	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
+	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	// Test Create With password
 	createdUser, appErr := userRepository.CreateWithPassword(dtomocks.UserAndPasswordCreate)
@@ -35,7 +35,7 @@ func TestUserRepository_CreateWithPassword(t *testing.T) {
 
 func TestUserRepository_GetUserWithRole(t *testing.T) {
 	assert := assert.New(t)
-	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
+	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 	// Create user to test Get User With Role
 	createdUser, appErr := userRepository.CreateWithPassword(dtomocks.UserAndPasswordCreate)
 
@@ -57,7 +57,7 @@ func TestUserRepository_GetUserWithRole(t *testing.T) {
 
 func TestUserRepository_GetByEmailOrPhone(t *testing.T) {
 	assert := assert.New(t)
-	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
+	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	createdUser, _ := userRepository.CreateWithPassword(dtomocks.UserAndPasswordCreate)
 

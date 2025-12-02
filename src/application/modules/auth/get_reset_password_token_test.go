@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/mocks"
-	"gormgoskeleton/src/domain/models"
+	"goprojectskeleton/src/application/shared/locales"
+	"goprojectskeleton/src/application/shared/mocks"
+	"goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

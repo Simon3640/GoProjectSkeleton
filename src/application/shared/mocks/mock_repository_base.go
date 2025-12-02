@@ -1,9 +1,9 @@
 package mocks
 
 import (
-	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
-	application_errors "gormgoskeleton/src/application/shared/errors"
-	domain_utils "gormgoskeleton/src/domain/utils"
+	contracts_repositories "goprojectskeleton/src/application/contracts/repositories"
+	application_errors "goprojectskeleton/src/application/shared/errors"
+	domain_utils "goprojectskeleton/src/domain/utils"
 
 	"github.com/stretchr/testify/mock"
 )

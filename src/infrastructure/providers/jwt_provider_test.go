@@ -2,7 +2,7 @@ package providers
 
 import (
 	"context"
-	application_errors "gormgoskeleton/src/application/shared/errors"
+	application_errors "goprojectskeleton/src/application/shared/errors"
 	"testing"
 	"time"
 

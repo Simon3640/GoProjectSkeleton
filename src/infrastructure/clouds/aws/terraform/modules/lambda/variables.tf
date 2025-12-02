@@ -41,7 +41,7 @@ variable "app_description" {
 variable "app_support_email" {
   description = "Support email"
   type        = string
-  default     = "support@gormgoskeleton.com"
+  default     = "support@goprojectskeleton.com"
 }
 
 variable "enable_log" {
@@ -128,7 +128,7 @@ variable "jwt_secret_arn" {
 variable "jwt_issuer" {
   description = "JWT issuer"
   type        = string
-  default     = "gormgoskeleton"
+  default     = "goprojectskeleton"
 }
 
 variable "jwt_access_ttl" {
@@ -203,7 +203,7 @@ variable "mail_port" {
 variable "mail_from" {
   description = "Sender email"
   type        = string
-  default     = "noreply@gormgoskeleton.com"
+  default     = "noreply@goprojectskeleton.com"
 }
 
 variable "mail_password_secret_arn" {

@@ -5,7 +5,7 @@ package adapters
 import (
 	"net/http"
 
-	"gormgoskeleton/src/infrastructure/handlers"
+	"goprojectskeleton/src/infrastructure/handlers"
 )
 
 // Adapter defines the interface for converting requests to handler contexts.

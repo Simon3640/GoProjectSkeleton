@@ -2,14 +2,14 @@ package middlewares
 
 import (
 	"context"
-	api "gormgoskeleton/gin"
-	"gormgoskeleton/src/application/modules/auth"
-	app_context "gormgoskeleton/src/application/shared/context"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/domain/models"
-	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	"gormgoskeleton/src/infrastructure/providers"
-	"gormgoskeleton/src/infrastructure/repositories"
+	api "goprojectskeleton/gin"
+	"goprojectskeleton/src/application/modules/auth"
+	app_context "goprojectskeleton/src/application/shared/context"
+	"goprojectskeleton/src/application/shared/locales"
+	"goprojectskeleton/src/domain/models"
+	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"goprojectskeleton/src/infrastructure/providers"
+	"goprojectskeleton/src/infrastructure/repositories"
 
 	"github.com/gin-gonic/gin"
 )

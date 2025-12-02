@@ -517,22 +517,22 @@ graph TB
 
 ```mermaid
 graph TB
-    subgraph RootModule["Módulo Raíz: gormgoskeleton"]
+    subgraph RootModule["Módulo Raíz: goprojectskeleton"]
         Domain[Domain Models]
         Application[Application Layer]
         Infrastructure[Infrastructure Core]
     end
 
-    subgraph AWSModule["Módulo AWS: gormgoskeleton/aws"]
+    subgraph AWSModule["Módulo AWS: goprojectskeleton/aws"]
         AWSInit[AWS Init]
         LambdaAdapter[Lambda Adapter]
         SecretsManager[Secrets Manager]
     end
 
     subgraph FunctionModules["Módulos de Funciones"]
-        HealthCheck[health-check<br/>gormgoskeleton/functions/aws/status/health_check]
-        AuthLogin[auth-login<br/>gormgoskeleton/functions/aws/auth/login]
-        UserGet[user-get<br/>gormgoskeleton/functions/aws/user/get]
+        HealthCheck[health-check<br/>goprojectskeleton/functions/aws/status/health_check]
+        AuthLogin[auth-login<br/>goprojectskeleton/functions/aws/auth/login]
+        UserGet[user-get<br/>goprojectskeleton/functions/aws/user/get]
     end
 
     RootModule --> AWSModule
@@ -550,18 +550,18 @@ Cada función Lambda tiene su propio `go.mod` que utiliza **replace directives**
 
 ```go
 // go.mod de una función Lambda
-module gormgoskeleton/functions/aws/status/health_check
+module goprojectskeleton/functions/aws/status/health_check
 
 go 1.25
 
 require (
     github.com/aws/aws-lambda-go v1.47.0
-    gormgoskeleton v0.0.0
-    gormgoskeleton/aws v0.0.0
+    goprojectskeleton v0.0.0
+    goprojectskeleton/aws v0.0.0
 )
 
-replace gormgoskeleton => ../../../../../../../..
-replace gormgoskeleton/aws => ../../../..
+replace goprojectskeleton => ../../../../../../../..
+replace goprojectskeleton/aws => ../../../..
 ```
 
 **Ventajas de esta arquitectura:**
@@ -739,7 +739,7 @@ sequenceDiagram
 
 2. **Base de Datos (GORM)**
    ```go
-   database.Gormgoskeletondb.SetUp(
+   database.GoProjectSkeletondb.SetUp(
        host, port, user, password, dbname, ssl, logger
    )
    ```
@@ -1590,7 +1590,7 @@ infrastructure/
 │   ├── config.go         # Carga de configuración
 │   └── env.go            # Variables de entorno
 ├── database/              # Base de datos
-│   └── gormgoskeleton/   # Implementación GORM
+│   └── goprojectskeleton/   # Implementación GORM
 │       ├── models/       # Modelos de BD
 │       └── init_db/      # Inicialización
 ├── handlers/              # Handlers HTTP
@@ -1958,9 +1958,9 @@ Capa de API HTTP.
 
 #### `/src/infrastructure/database/`
 
-##### `/src/infrastructure/database/gormgoskeleton/`
+##### `/src/infrastructure/database/goprojectskeleton/`
 
-- **`gormgoskeleton.go`**: Configuración de GORM
+- **`goprojectskeleton.go`**: Configuración de GORM
   - Conexión a PostgreSQL
   - Configuración de SSL
 
@@ -2129,7 +2129,7 @@ El proyecto utiliza variables de entorno para toda la configuración:
 
 ```bash
 # Aplicación
-APP_NAME=gormgoskeleton
+APP_NAME=goprojectskeleton
 APP_ENV=development
 APP_PORT=8080
 APP_VERSION=0.0.1
@@ -2142,7 +2142,7 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres
-DB_NAME=gormgoskeleton
+DB_NAME=goprojectskeleton
 DB_SSL=false
 
 # Redis
@@ -2196,10 +2196,10 @@ go mod download
 4. **Ejecutar con Docker**
 ```bash
 # Crear red
-docker network create gormgoskeleton
+docker network create goprojectskeleton
 
 # Crear volumen
-docker volume create gormgoskeleton-db-data
+docker volume create goprojectskeleton-db-data
 
 # Ejecutar servicios
 docker-compose -f docker/docker-compose.dev.yml up -d
@@ -2733,7 +2733,7 @@ go test ./tests/integration/...
 
 ```mermaid
 graph TB
-    subgraph DockerNetwork["Docker Network: gormgoskeleton"]
+    subgraph DockerNetwork["Docker Network: goprojectskeleton"]
         subgraph AppContainer["Aplicación Go"]
             App[Go Application<br/>Port: 8080<br/>Hot Reload]
         end

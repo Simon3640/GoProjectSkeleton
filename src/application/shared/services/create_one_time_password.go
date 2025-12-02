@@ -1,11 +1,11 @@
 package services
 
 import (
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	application_errors "gormgoskeleton/src/application/shared/errors"
-	"gormgoskeleton/src/domain/models"
+	contractsProviders "goprojectskeleton/src/application/contracts/providers"
+	contracts_repositories "goprojectskeleton/src/application/contracts/repositories"
+	dtos "goprojectskeleton/src/application/shared/DTOs"
+	application_errors "goprojectskeleton/src/application/shared/errors"
+	"goprojectskeleton/src/domain/models"
 )
 
 func CreateOneTimePasswordService(

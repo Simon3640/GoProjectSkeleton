@@ -1,11 +1,11 @@
 package email_service
 
 import (
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	application_errors "gormgoskeleton/src/application/shared/errors"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/settings"
-	"gormgoskeleton/src/application/shared/templates"
+	contractsProviders "goprojectskeleton/src/application/contracts/providers"
+	application_errors "goprojectskeleton/src/application/shared/errors"
+	"goprojectskeleton/src/application/shared/locales"
+	"goprojectskeleton/src/application/shared/settings"
+	"goprojectskeleton/src/application/shared/templates"
 )
 
 type EmailServiceBase[D any] struct {

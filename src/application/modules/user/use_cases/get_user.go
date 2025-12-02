@@ -3,13 +3,13 @@ package usecases_user
 import (
 	"context"
 
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
-	"gormgoskeleton/src/application/shared/guards"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/status"
-	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
+	contractsProviders "goprojectskeleton/src/application/contracts/providers"
+	contracts_repositories "goprojectskeleton/src/application/contracts/repositories"
+	"goprojectskeleton/src/application/shared/guards"
+	"goprojectskeleton/src/application/shared/locales"
+	"goprojectskeleton/src/application/shared/status"
+	usecase "goprojectskeleton/src/application/shared/use_case"
+	"goprojectskeleton/src/domain/models"
 )
 
 type GetUserUseCase struct {

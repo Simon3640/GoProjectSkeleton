@@ -1,6 +1,6 @@
 package dtos
 
-import "gormgoskeleton/src/domain/models"
+import "goprojectskeleton/src/domain/models"
 
 type UserCreate struct {
 	models.UserBase

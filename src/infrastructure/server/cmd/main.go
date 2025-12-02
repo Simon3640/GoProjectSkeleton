@@ -1,11 +1,11 @@
 package main
 
 import (
-	docs "gormgoskeleton/docs"
-	routes "gormgoskeleton/gin/routes"
-	"gormgoskeleton/src/application/shared/settings"
-	"gormgoskeleton/src/infrastructure"
-	providers "gormgoskeleton/src/infrastructure/providers"
+	docs "goprojectskeleton/docs"
+	routes "goprojectskeleton/gin/routes"
+	"goprojectskeleton/src/application/shared/settings"
+	"goprojectskeleton/src/infrastructure"
+	providers "goprojectskeleton/src/infrastructure/providers"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/graceful"

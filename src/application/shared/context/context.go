@@ -3,7 +3,7 @@ package app_context
 import (
 	"context"
 
-	"gormgoskeleton/src/domain/models"
+	"goprojectskeleton/src/domain/models"
 )
 
 type AppContext struct {
