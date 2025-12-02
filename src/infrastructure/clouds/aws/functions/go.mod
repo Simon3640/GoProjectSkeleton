@@ -1,4 +1,4 @@
-module gormgoskeleton/functions/aws
+module gormgoskeleton/aws/functions
 
 go 1.25
 

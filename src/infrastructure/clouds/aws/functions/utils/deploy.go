@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -90,7 +91,7 @@ func deployFunction(fn FunctionConfig, lambdaFunctionName, region string) error 
 	fmt.Printf("📦 Deploying: %s → %s\n", fn.Path, lambdaFunctionName)
 
 	// Get absolute path to function directory
-	funcDir, err := filepath.Abs(fn.Path)
+	funcDir, err := filepath.Abs("tmp/" + fn.Path)
 	if err != nil {
 		return fmt.Errorf("failed to get absolute path: %w", err)
 	}
@@ -106,9 +107,15 @@ func deployFunction(fn FunctionConfig, lambdaFunctionName, region string) error 
 		return fmt.Errorf("go mod tidy failed: %w", err)
 	}
 
-	// Step 2: Build the function
+	// Ensure bin directory exists
+	binDir := filepath.Join(funcDir, "bin")
+	if err := os.MkdirAll(binDir, 0o755); err != nil {
+		return fmt.Errorf("failed to create bin directory: %w", err)
+	}
+
+	// Step 2: Build the function (bootstrap binary)
 	fmt.Printf("   🔨 Building function...\n")
-	bootstrapPath := filepath.Join(funcDir, "bin", "bootstrap")
+	bootstrapPath := filepath.Join(binDir, "bootstrap")
 	buildCmd := exec.Command("go", "build",
 		"-o", bootstrapPath,
 		"-tags", "lambda.norpc",
@@ -124,10 +131,37 @@ func deployFunction(fn FunctionConfig, lambdaFunctionName, region string) error 
 		return fmt.Errorf("build failed: %w\nOutput: %s", err, string(output))
 	}
 
-	// Step 3: Create zip file
+	// Step 3: Copy templates into the function package
+	//
+	// We need the templates inside the Lambda ZIP under:
+	//   src/application/shared/templates/
+	// to match TEMPLATES_PATH (envDefault:"src/application/shared/templates/").
+	//
+	// funcDir (from repo root) looks like:
+	//   src/infrastructure/clouds/aws/functions/<path>
+	// so to reach src/application/shared/templates we go up to src/ and then down.
+	templatesSrc := filepath.Join(
+		funcDir,
+		"..", "..", "..", "..", "..", "..", "..", // up to src/
+		"application", "shared", "templates",
+	)
+	templatesDst := filepath.Join(binDir, "src", "application", "shared", "templates")
+
+	fmt.Printf("   📁 Copying templates from %s to %s\n", templatesSrc, templatesDst)
+	if err := copyDir(templatesSrc, templatesDst); err != nil {
+		return fmt.Errorf("failed to copy templates: %w", err)
+	}
+
+	// Step 4: Create zip file including bootstrap and templates
 	fmt.Printf("   📦 Creating zip file...\n")
-	zipPath := filepath.Join(funcDir, "bin", fmt.Sprintf("%s.zip", fn.Name))
-	zipCmd := exec.Command("zip", "-j", zipPath, bootstrapPath)
+	zipName := fmt.Sprintf("%s.zip", fn.Name)
+	zipPath := filepath.Join(binDir, zipName)
+
+	// Run zip from bin directory so that entries are:
+	//   - bootstrap
+	//   - src/application/shared/templates/...
+	zipCmd := exec.Command("zip", "-r", zipName, "bootstrap", "src")
+	zipCmd.Dir = binDir
 	if output, err := zipCmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("zip creation failed: %w\nOutput: %s", err, string(output))
 	}
@@ -152,6 +186,74 @@ func runCommand(dir, command string, args ...string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+// copyDir copies a directory recursively from src to dst.
+// If dst does not exist, it will be created.
+func copyDir(src, dst string) error {
+	info, err := os.Stat(src)
+	if err != nil {
+		return fmt.Errorf("stat src dir: %w", err)
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("src is not a directory: %s", src)
+	}
+
+	if err := os.MkdirAll(dst, info.Mode()); err != nil {
+		return fmt.Errorf("mkdir dst dir: %w", err)
+	}
+
+	entries, err := os.ReadDir(src)
+	if err != nil {
+		return fmt.Errorf("readdir src: %w", err)
+	}
+
+	for _, entry := range entries {
+		srcPath := filepath.Join(src, entry.Name())
+		dstPath := filepath.Join(dst, entry.Name())
+
+		if entry.IsDir() {
+			if err := copyDir(srcPath, dstPath); err != nil {
+				return err
+			}
+			continue
+		}
+
+		if err := copyFile(srcPath, dstPath); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// copyFile copies a single file from src to dst.
+func copyFile(src, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf("open src file: %w", err)
+	}
+	defer srcFile.Close()
+
+	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+		return fmt.Errorf("mkdir dst parent: %w", err)
+	}
+
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return fmt.Errorf("create dst file: %w", err)
+	}
+	defer dstFile.Close()
+
+	if _, err := io.Copy(dstFile, srcFile); err != nil {
+		return fmt.Errorf("copy file contents: %w", err)
+	}
+
+	if info, err := srcFile.Stat(); err == nil {
+		_ = os.Chmod(dst, info.Mode())
+	}
+
+	return nil
 }
 
 func getLambdaFunctionName(namePrefix, functionName string) string {
