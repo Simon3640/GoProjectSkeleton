@@ -9,20 +9,29 @@ RUN apk add --no-cache git build-base
 
 WORKDIR /app
 
+# Copy and download dependencies from root module
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Copy and download dependencies from server gin module
+COPY ./src/infrastructure/server/go.mod ./src/infrastructure/server/go.sum ./src/infrastructure/server/
+WORKDIR /app/src/infrastructure/server
+RUN go mod download
+
+# Copy all source code
+WORKDIR /app
 COPY ./src ./src
+COPY ./docs ./docs
 COPY .air.toml ./
 
+# Install necessary tools
 RUN go install github.com/go-delve/delve/cmd/dlv@latest
 RUN go install github.com/air-verse/air@v1.61.7
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 
-# Generate Swagger docs
-RUN swag init -g ./src/infrastructure/api/cmd/main.go -o /app/docs
-# RUN go build -gcflags "all=-N -l" -o /app/main ./src/infrastructure/api/cmd/main.go
-
+# Generate Swagger docs from server gin module
+WORKDIR /app/src/infrastructure/server
+RUN swag init -g ./cmd/main.go -o /app/docs
 
 FROM golang:1.25-alpine
 
