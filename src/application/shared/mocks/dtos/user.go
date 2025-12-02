@@ -5,11 +5,13 @@ import (
 	"gormgoskeleton/src/domain/models"
 )
 
+var userStatusActive = models.UserStatusActive
+
 var UserBase = models.UserBase{
 	Name:   "Test User",
 	Email:  "testuser@example.com",
 	Phone:  "123",
-	Status: "active",
+	Status: &userStatusActive,
 	RoleID: 2,
 }
 

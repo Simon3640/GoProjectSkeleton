@@ -30,11 +30,12 @@ func TestGetResetPasswordTokenUseCase(t *testing.T) {
 	)
 
 	// mock models
+	userStatus := models.UserStatusActive
 	user := models.User{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
-			Status: "active"},
+			Status: &userStatus},
 		DBBaseModel: models.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
