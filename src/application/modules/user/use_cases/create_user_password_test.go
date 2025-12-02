@@ -22,11 +22,12 @@ func TestCreateUserAndPassword(t *testing.T) {
 	testUserRepository := new(mocks.MockUserRepository)
 	testHashProvider := new(mocks.MockHashProvider)
 
+	status := models.UserStatusPending
 	userBase := models.UserBase{
 		Name:   "Test User",
 		Email:  "test@example.com",
 		Phone:  "1234567890",
-		Status: "pending",
+		Status: &status,
 		RoleID: 2,
 	}
 

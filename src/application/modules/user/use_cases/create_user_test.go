@@ -23,12 +23,12 @@ func TestCreateUserUseCase(t *testing.T) {
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
 	testUser := dtomocks.UserCreate
-
+	userStatus := models.UserStatusPending
 	testUserRepository.On("Create", testUser).Return(&models.User{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
-			Status: "active",
+			Status: &userStatus,
 			RoleID: 2,
 		},
 		DBBaseModel: models.DBBaseModel{
@@ -55,11 +55,12 @@ func TestCreateUserUseCase_InvalidInput(t *testing.T) {
 
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
+	userStatus := models.UserStatusPending
 	testUserInvalidRoleID := dtos.UserCreate{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "invalid@gmail.com",
 			Phone:  "1234567890",
-			Status: "active",
+			Status: &userStatus,
 			RoleID: 1,
 		},
 	}

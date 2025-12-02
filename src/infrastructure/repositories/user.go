@@ -64,12 +64,13 @@ func (ur *UserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *appli
 		ur.logger.Debug("Error retrieving user with role", err)
 		return nil, MapOrmError(err)
 	}
+	userStatus := models.UserStatus(userWithRole.Status)
 	userWithRoleModel := models.UserWithRole{
 		UserBase: models.UserBase{
 			Name:     userWithRole.Name,
 			Email:    userWithRole.Email,
 			Phone:    userWithRole.Phone,
-			Status:   userWithRole.Status,
+			Status:   &userStatus,
 			RoleID:   userWithRole.RoleID,
 			OTPLogin: userWithRole.OTPLogin,
 		},
@@ -107,13 +108,14 @@ func (uc *UserConverter) ToGormCreate(model dtos.UserCreate) *dbModels.User {
 		Name:     model.Name,
 		Email:    model.Email,
 		Phone:    model.Phone,
-		Status:   model.Status,
+		Status:   string(*model.Status),
 		RoleID:   model.RoleID,
 		OTPLogin: model.OTPLogin,
 	}
 }
 
 func (uc *UserConverter) ToDomain(ormModel *dbModels.User) *models.User {
+	userStatus := models.UserStatus(ormModel.Status)
 	return &models.User{
 		DBBaseModel: models.DBBaseModel{
 			ID:        ormModel.ID,
@@ -125,7 +127,7 @@ func (uc *UserConverter) ToDomain(ormModel *dbModels.User) *models.User {
 			Name:     ormModel.Name,
 			Email:    ormModel.Email,
 			Phone:    ormModel.Phone,
-			Status:   ormModel.Status,
+			Status:   &userStatus,
 			RoleID:   ormModel.RoleID,
 			OTPLogin: ormModel.OTPLogin,
 		},
@@ -148,7 +150,7 @@ func (uc *UserConverter) ToGormUpdate(model dtos.UserUpdate) *dbModels.User {
 	}
 
 	if model.Status != nil {
-		user.Status = *model.Status
+		user.Status = string(*model.Status)
 	}
 	if model.RoleID != nil {
 		user.RoleID = *model.RoleID
