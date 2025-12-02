@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"gormgoskeleton/src/infrastructure/api/middlewares"
+	"gormgoskeleton/gin/middlewares"
 	"gormgoskeleton/src/infrastructure/handlers"
 
 	"github.com/gin-gonic/gin"
