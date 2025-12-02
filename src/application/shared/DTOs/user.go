@@ -41,5 +41,23 @@ type UserActivate struct {
 	Token string `json:"token"`
 }
 
+// ResendWelcomeEmailRequest is the request for the resend welcome email use case
+type ResendWelcomeEmailRequest struct {
+	Email string `json:"email"`
+}
+
+// Validate validates the resend welcome email request
+// returns a list of errors if the request is invalid
+func (r *ResendWelcomeEmailRequest) Validate() []string {
+	var errs []string
+	if r.Email == "" {
+		errs = append(errs, "email is required")
+	}
+	if !models.IsValidEmail(r.Email) {
+		errs = append(errs, "email is invalid")
+	}
+	return errs
+}
+
 type UserMultiResponse = MultipleResponse[models.User]
 type UserSingleResponse = SingleResponse[models.User]

@@ -24,6 +24,7 @@ var EnMessages = map[MessageKeysEnum]string{
 	"USER_DELETE_SUCCESS":            "User deleted successfully.",
 	"INVALID_USER_ID":                "Invalid user ID.",
 	"INVALID_USER_ACTIVATION_TOKEN":  "Invalid user activation token.",
+	"WELCOME_EMAIL_RESENT":           "Welcome email has been resent successfully.",
 
 	"PASSWORD_REQUIRED":                      "Password is required.",
 	"PASSWORD_IS_SHORT":                      "Password is too short.",

@@ -27,7 +27,7 @@ func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, D
 	args := m.Called(id)
 	errorArg := args.Get(1)
 	if errorArg != nil {
-		return args.Get(0).(*DomainModel), errorArg.(*application_errors.ApplicationError)
+		return nil, errorArg.(*application_errors.ApplicationError)
 	}
 	return args.Get(0).(*DomainModel), nil
 }
@@ -36,7 +36,7 @@ func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, D
 	args := m.Called(id, entity)
 	errorArg := args.Get(1)
 	if errorArg != nil {
-		return args.Get(0).(*DomainModel), errorArg.(*application_errors.ApplicationError)
+		return nil, errorArg.(*application_errors.ApplicationError)
 	}
 	return args.Get(0).(*DomainModel), nil
 }
@@ -63,7 +63,7 @@ func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, D
 	args := m.Called(payload, skip, limit)
 	errorArg := args.Get(2)
 	if errorArg != nil {
-		return args.Get(0).([]DomainModel), args.Get(1).(int64), errorArg.(*application_errors.ApplicationError)
+		return nil, 0, errorArg.(*application_errors.ApplicationError)
 	}
 	return args.Get(0).([]DomainModel), args.Get(1).(int64), nil
 }

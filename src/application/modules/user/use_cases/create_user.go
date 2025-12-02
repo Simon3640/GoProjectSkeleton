@@ -1,4 +1,4 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
@@ -14,6 +14,7 @@ import (
 	"goprojectskeleton/src/domain/models"
 )
 
+// CreateUserUseCase is a use case that creates a user
 type CreateUserUseCase struct {
 	appMessages *locales.Locale
 	log         contractsProviders.ILoggerProvider
@@ -23,12 +24,14 @@ type CreateUserUseCase struct {
 
 var _ usecase.BaseUseCase[dtos.UserCreate, models.User] = (*CreateUserUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *CreateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
 	}
 }
 
+// Execute executes the use case
 func (uc *CreateUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input dtos.UserCreate,
@@ -78,6 +81,7 @@ func (uc *CreateUserUseCase) validate(
 	}
 }
 
+// NewCreateUserUseCase creates a new create user use case
 func NewCreateUserUseCase(
 	log contractsProviders.ILoggerProvider,
 	repo contracts_repositories.IUserRepository,
