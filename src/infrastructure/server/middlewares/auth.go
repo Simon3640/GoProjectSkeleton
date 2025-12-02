@@ -2,11 +2,11 @@ package middlewares
 
 import (
 	"context"
+	api "gormgoskeleton/gin"
 	"gormgoskeleton/src/application/modules/auth"
 	app_context "gormgoskeleton/src/application/shared/context"
 	"gormgoskeleton/src/application/shared/locales"
 	"gormgoskeleton/src/domain/models"
-	"gormgoskeleton/src/infrastructure/api"
 	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
 	"gormgoskeleton/src/infrastructure/providers"
 	"gormgoskeleton/src/infrastructure/repositories"
