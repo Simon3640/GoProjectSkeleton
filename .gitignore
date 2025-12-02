@@ -27,7 +27,8 @@ go.work.sum
 __debug_bin*
 .vscode/
 
-docs/*
+docs/swagger.json
+docs/swagger.yaml
 
 tmp/
 

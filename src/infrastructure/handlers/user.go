@@ -83,7 +83,7 @@ func GetUser(ctx HandlerContext) {
 // @Produce json
 // @Param id path int true "ID del usuario"
 // @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
-// @Param request body dtos.UserUpdateBase true "Datos del usuario"
+// @Param request body models.UserUpdateBase true "Datos del usuario"
 // @Success 200 {object} models.User "Usuario actualizado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user/{id} [patch]
