@@ -20,7 +20,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		uc_result := auth.NewAuthUserUseCase(
 			providers.Logger,
-			repositories.NewUserRepository(database.DB, providers.Logger),
+			repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
 		).Execute(c, locales.EN_US, token)
 
