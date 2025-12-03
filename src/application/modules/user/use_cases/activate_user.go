@@ -11,6 +11,7 @@ import (
 	"gormgoskeleton/src/application/shared/locales/messages"
 	"gormgoskeleton/src/application/shared/status"
 	usecase "gormgoskeleton/src/application/shared/use_case"
+	"gormgoskeleton/src/domain/models"
 )
 
 type ActivateUserUseCase struct {
@@ -69,8 +70,8 @@ func (uc *ActivateUserUseCase) Execute(ctx context.Context,
 
 	updateUser := dtos.UserUpdate{}
 	updateUser.ID = oneTimeToken.UserID
-	_status := "active"
-	updateUser.Status = &_status
+	userStatus := models.UserStatusActive
+	updateUser.Status = &userStatus
 
 	_, err = uc.userRepo.Update(oneTimeToken.UserID, updateUser)
 

@@ -27,15 +27,15 @@ func TestUpdateUserUseCase(t *testing.T) {
 	testUserRepository := new(mocks.MockUserRepository)
 	name := "Update"
 	testUser := dtos.UserUpdate{
-		UserUpdateBase: dtos.UserUpdateBase{Name: &name},
+		UserUpdateBase: models.UserUpdateBase{Name: &name},
 		ID:             actor.ID,
 	}
-
+	userStatus := models.UserStatusActive
 	testUserRepository.On("Update", testUser.ID, testUser).Return(&models.User{
 		UserBase: models.UserBase{Name: "Update",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
-			Status: "active"},
+			Status: &userStatus},
 		DBBaseModel: models.DBBaseModel{
 			ID:        actor.ID,
 			CreatedAt: time.Now(),
@@ -66,7 +66,7 @@ func TestUpdateUserUseCase_DifferentUser(t *testing.T) {
 	testUserRepository := new(mocks.MockUserRepository)
 	name := "Update"
 	testUser := dtos.UserUpdate{
-		UserUpdateBase: dtos.UserUpdateBase{Name: &name},
+		UserUpdateBase: models.UserUpdateBase{Name: &name},
 		ID:             actor.ID + 1,
 	}
 
