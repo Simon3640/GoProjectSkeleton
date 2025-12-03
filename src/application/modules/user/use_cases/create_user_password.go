@@ -1,4 +1,4 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
@@ -14,6 +14,7 @@ import (
 	"goprojectskeleton/src/domain/models"
 )
 
+// CreateUserAndPasswordUseCase is a use case that creates a user and a password
 type CreateUserAndPasswordUseCase struct {
 	appMessages  *locales.Locale
 	log          contractsProviders.ILoggerProvider
@@ -24,12 +25,14 @@ type CreateUserAndPasswordUseCase struct {
 
 var _ usecase.BaseUseCase[dtos.UserAndPasswordCreate, models.User] = (*CreateUserAndPasswordUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *CreateUserAndPasswordUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
 	}
 }
 
+// Execute executes the use case
 func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input dtos.UserAndPasswordCreate,
@@ -81,6 +84,7 @@ func (uc *CreateUserAndPasswordUseCase) validate(
 	}
 }
 
+// NewCreateUserAndPasswordUseCase creates a new create user and password use case
 func NewCreateUserAndPasswordUseCase(
 	log contractsProviders.ILoggerProvider,
 	repo contracts_repositories.IUserRepository,

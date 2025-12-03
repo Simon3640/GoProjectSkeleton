@@ -24,6 +24,7 @@ var EsMessages = map[MessageKeysEnum]string{
 	"USER_DELETE_SUCCESS":            "Usuario eliminado con éxito.",
 	"INVALID_USER_ID":                "El ID de usuario es inválido.",
 	"INVALID_USER_ACTIVATION_TOKEN":  "El token de activación de usuario es inválido.",
+	"WELCOME_EMAIL_RESENT":           "El correo de bienvenida ha sido reenviado con éxito.",
 
 	"PASSWORD_REQUIRED":                      "La contraseña es requerida.",
 	"PASSWORD_IS_SHORT":                      "La contraseña es demasiado corta.",

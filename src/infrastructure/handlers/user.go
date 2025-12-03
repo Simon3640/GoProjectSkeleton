@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	user_pipes "goprojectskeleton/src/application/modules/user/pipes"
-	usecases_user "goprojectskeleton/src/application/modules/user/use_cases"
+	userpipes "goprojectskeleton/src/application/modules/user/pipes"
+	userusecases "goprojectskeleton/src/application/modules/user/use_cases"
 	dtos "goprojectskeleton/src/application/shared/DTOs"
 	"goprojectskeleton/src/domain/models"
 	domain_utils "goprojectskeleton/src/domain/utils"
@@ -36,7 +36,7 @@ func CreateUser(ctx HandlerContext) {
 		return
 	}
 
-	ucResult := usecases_user.NewCreateUserUseCase(providers.Logger,
+	ucResult := userusecases.NewCreateUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 	).Execute(ctx.c, ctx.Locale, userCreate)
 
@@ -66,7 +66,7 @@ func GetUser(ctx HandlerContext) {
 		return
 	}
 
-	ucResult := usecases_user.NewGetUserUseCase(providers.Logger,
+	ucResult := userusecases.NewGetUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 	).Execute(ctx.c, ctx.Locale, uint(id))
 	headers := map[HTTPHeaderTypeEnum]string{
@@ -102,7 +102,7 @@ func UpdateUser(ctx HandlerContext) {
 	}
 
 	userUpdate.ID = uint(id)
-	ucResult := usecases_user.NewUpdateUserUseCase(providers.Logger,
+	ucResult := userusecases.NewUpdateUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 	).Execute(ctx.c, ctx.Locale, userUpdate)
 	headers := map[HTTPHeaderTypeEnum]string{
@@ -130,7 +130,7 @@ func DeleteUser(ctx HandlerContext) {
 		return
 	}
 
-	ucResult := usecases_user.NewDeleteUserUseCase(providers.Logger,
+	ucResult := userusecases.NewDeleteUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 	).Execute(ctx.c, ctx.Locale, uint(id))
 	headers := map[HTTPHeaderTypeEnum]string{
@@ -160,7 +160,7 @@ func DeleteUser(ctx HandlerContext) {
 // @Router /api/user [get]
 func GetAllUser(ctx HandlerContext) {
 	queryParams := domain_utils.NewQueryPayloadBuilder[models.User](ctx.Query.Sorts, ctx.Query.Filters, ctx.Query.Page, ctx.Query.PageSize)
-	ucResult := usecases_user.NewGetAllUserUseCase(providers.Logger,
+	ucResult := userusecases.NewGetAllUserUseCase(providers.Logger,
 		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		providers.CacheProviderInstance,
 	).Execute(ctx.c, ctx.Locale, queryParams)
@@ -189,20 +189,20 @@ func CreateUserAndPassword(ctx HandlerContext) {
 		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
-	uc_create_user_email := usecases_user.NewCreateUserSendEmailUseCase(
+	createUserSendEmailUC := userusecases.NewCreateUserSendEmailUseCase(
 		providers.Logger,
 		providers.HashProviderInstance,
 		repositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 	)
 
-	uc_create_user_password := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
+	createUserPasswordUC := userusecases.NewCreateUserAndPasswordUseCase(providers.Logger,
 		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		providers.HashProviderInstance,
 	)
-	ucResult := user_pipes.NewCreateUserPipe(ctx.c,
+	ucResult := userpipes.NewCreateUserPipe(ctx.c,
 		ctx.Locale,
-		uc_create_user_password,
-		uc_create_user_email,
+		createUserPasswordUC,
+		createUserSendEmailUC,
 	).Execute(userCreate)
 
 	headers := map[HTTPHeaderTypeEnum]string{
@@ -231,7 +231,7 @@ func ActivateUser(ctx HandlerContext) {
 		return
 	}
 
-	ucResult := usecases_user.NewActivateUserUseCase(
+	ucResult := userusecases.NewActivateUserUseCase(
 		providers.Logger,
 		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		repositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger),

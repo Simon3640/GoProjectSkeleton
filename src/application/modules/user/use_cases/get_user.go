@@ -1,4 +1,5 @@
-package usecases_user
+// Package userusecases provides use cases for user management
+package userusecases
 
 import (
 	"context"

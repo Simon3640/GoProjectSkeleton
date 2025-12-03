@@ -1,4 +1,4 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
@@ -17,6 +17,7 @@ import (
 	domain_utils "goprojectskeleton/src/domain/utils"
 )
 
+// GetAllUserUseCase is a use case that gets all users
 type GetAllUserUseCase struct {
 	usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], dtos.UserMultiResponse]
 	log   contractsProviders.ILoggerProvider
@@ -26,12 +27,14 @@ type GetAllUserUseCase struct {
 
 var _ usecase.BaseUseCase[domain_utils.QueryPayloadBuilder[models.User], dtos.UserMultiResponse] = (*GetAllUserUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.Locale = locale
 	}
 }
 
+// Execute executes the use case
 func (uc *GetAllUserUseCase) Execute(
 	ctx context.Context,
 	locale locales.LocaleTypeEnum,
@@ -119,6 +122,7 @@ func (uc *GetAllUserUseCase) buildMultiRespose(data []models.User, total int64, 
 	return response
 }
 
+// NewGetAllUserUseCase creates a new get all user use case
 func NewGetAllUserUseCase(
 	log contractsProviders.ILoggerProvider,
 	repo contracts_repositories.IUserRepository,
