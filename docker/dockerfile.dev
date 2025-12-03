@@ -21,7 +21,6 @@ RUN go mod download
 # Copy all source code
 WORKDIR /app
 COPY ./src ./src
-COPY ./docs ./docs
 COPY .air.toml ./
 
 # Install necessary tools
@@ -29,9 +28,7 @@ RUN go install github.com/go-delve/delve/cmd/dlv@latest
 RUN go install github.com/air-verse/air@v1.61.7
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 
-# Generate Swagger docs from server gin module
-WORKDIR /app/src/infrastructure/server
-RUN swag init -g ./cmd/main.go -o /app/docs
+RUN swag init -g ./src/infrastructure/server/cmd/main.go -o docs
 
 FROM golang:1.25-alpine
 
