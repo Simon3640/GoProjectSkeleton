@@ -21,7 +21,7 @@ environment  = "development"  # development, staging, production
 # -----------------------------------------------------------------------------
 app_port        = "8080"
 app_version     = "0.0.1"
-app_description = "Gorm Go Skeleton Template"
+app_description = "Go Project Skeleton Template"
 app_support_email = "support@example.com"
 
 enable_log  = true
@@ -33,9 +33,9 @@ templates_path = "src/application/shared/templates/"
 # -----------------------------------------------------------------------------
 db_host     = "localhost"  # Will be overwritten automatically by RDS
 db_port     = "5432"
-db_user     = "gormgoskeleton"
+db_user     = "goprojectskeleton"
 db_password = "CHANGE-TO-SECURE-PASSWORD"  # ⚠️ REQUIRED: Change to a secure password
-db_name     = "gormgoskeleton"
+db_name     = "goprojectskeleton"
 db_ssl      = true
 
 # To generate a secure password:
@@ -54,7 +54,7 @@ redis_ttl       = 300
 # JWT Configuration
 # -----------------------------------------------------------------------------
 jwt_secret_key = "CHANGE-TO-SECURE-JWT-SECRET"  # ⚠️ REQUIRED: Change to a secure JWT secret
-jwt_issuer     = "gormgoskeleton"
+jwt_issuer     = "goprojectskeleton"
 
 jwt_access_ttl  = 3600   # 1 hour in seconds
 jwt_refresh_ttl = 86400  # 24 hours in seconds

@@ -1,7 +1,7 @@
-module gormgoskeleton/aws/functions
+module goprojectskeleton/aws/functions
 
 go 1.25
 
-replace gormgoskeleton => ../../../../../..
+replace goprojectskeleton => ../../../../../..
 
-replace gormgoskeleton/aws => ../..
+replace goprojectskeleton/aws => ../..

@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	locales "gormgoskeleton/src/application/shared/locales"
-	messages "gormgoskeleton/src/application/shared/locales/messages"
-	status "gormgoskeleton/src/application/shared/status"
-	usecase "gormgoskeleton/src/application/shared/use_case"
-	models "gormgoskeleton/src/domain/models"
+	contractsProviders "goprojectskeleton/src/application/contracts/providers"
+	locales "goprojectskeleton/src/application/shared/locales"
+	messages "goprojectskeleton/src/application/shared/locales/messages"
+	status "goprojectskeleton/src/application/shared/status"
+	usecase "goprojectskeleton/src/application/shared/use_case"
+	models "goprojectskeleton/src/domain/models"
 )
 
 type GetStatusUseCase struct {

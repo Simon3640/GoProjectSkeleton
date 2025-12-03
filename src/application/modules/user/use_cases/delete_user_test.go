@@ -4,11 +4,11 @@ import (
 	"context"
 	"testing"
 
-	app_context "gormgoskeleton/src/application/shared/context"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/mocks"
-	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
-	"gormgoskeleton/src/application/shared/status"
+	app_context "goprojectskeleton/src/application/shared/context"
+	"goprojectskeleton/src/application/shared/locales"
+	"goprojectskeleton/src/application/shared/mocks"
+	dtomocks "goprojectskeleton/src/application/shared/mocks/dtos"
+	"goprojectskeleton/src/application/shared/status"
 
 	"github.com/stretchr/testify/assert"
 )

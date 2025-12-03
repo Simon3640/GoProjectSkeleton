@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/locales/messages"
-	"gormgoskeleton/src/application/shared/status"
-	usecase "gormgoskeleton/src/application/shared/use_case"
+	contractsProviders "goprojectskeleton/src/application/contracts/providers"
+	dtos "goprojectskeleton/src/application/shared/DTOs"
+	"goprojectskeleton/src/application/shared/locales"
+	"goprojectskeleton/src/application/shared/locales/messages"
+	"goprojectskeleton/src/application/shared/status"
+	usecase "goprojectskeleton/src/application/shared/use_case"
 )
 
 type AuthenticationRefreshUseCase struct {

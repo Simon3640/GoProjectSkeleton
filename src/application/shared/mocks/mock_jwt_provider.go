@@ -2,8 +2,8 @@ package mocks
 
 import (
 	"context"
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	application_errors "gormgoskeleton/src/application/shared/errors"
+	contractsProviders "goprojectskeleton/src/application/contracts/providers"
+	application_errors "goprojectskeleton/src/application/shared/errors"
 	"time"
 
 	"github.com/stretchr/testify/mock"

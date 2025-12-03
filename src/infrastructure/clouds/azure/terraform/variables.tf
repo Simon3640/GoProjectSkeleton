@@ -43,7 +43,7 @@ variable "app_description" {
 variable "app_support_email" {
   description = "Email de soporte de la aplicación"
   type        = string
-  default     = "support@gormgoskeleton.com"
+  default     = "support@goprojectskeleton.com"
 }
 
 variable "enable_log" {
@@ -79,7 +79,7 @@ variable "db_port" {
 variable "db_user" {
   description = "Usuario de la base de datos"
   type        = string
-  default     = "gormgoskeleton"
+  default     = "goprojectskeleton"
 }
 
 variable "db_password" {
@@ -91,7 +91,7 @@ variable "db_password" {
 variable "db_name" {
   description = "Nombre de la base de datos"
   type        = string
-  default     = "gormgoskeleton"
+  default     = "goprojectskeleton"
 }
 
 variable "db_ssl" {
@@ -122,7 +122,7 @@ variable "jwt_secret_key" {
 variable "jwt_issuer" {
   description = "Issuer de JWT"
   type        = string
-  default     = "gormgoskeleton"
+  default     = "goprojectskeleton"
 }
 
 variable "redis_db" {
@@ -214,5 +214,5 @@ variable "mail_password" {
 variable "mail_from" {
   description = "Email remitente"
   type        = string
-  default     = "noreply@gormgoskeleton.com"
+  default     = "noreply@goprojectskeleton.com"
 }

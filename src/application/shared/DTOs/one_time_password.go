@@ -1,8 +1,8 @@
 package dtos
 
 import (
-	"gormgoskeleton/src/application/shared/settings"
-	"gormgoskeleton/src/domain/models"
+	"goprojectskeleton/src/application/shared/settings"
+	"goprojectskeleton/src/domain/models"
 	"time"
 )
 

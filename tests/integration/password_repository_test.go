@@ -3,17 +3,17 @@ package integrationtest
 import (
 	"testing"
 
-	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
-	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	"gormgoskeleton/src/infrastructure/providers"
-	"gormgoskeleton/src/infrastructure/repositories"
+	dtomocks "goprojectskeleton/src/application/shared/mocks/dtos"
+	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"goprojectskeleton/src/infrastructure/providers"
+	"goprojectskeleton/src/infrastructure/repositories"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPasswordCreate(t *testing.T) {
 	assert := assert.New(t)
-	passwordRepository := repositories.NewPasswordRepository(database.DB, providers.Logger)
+	passwordRepository := repositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	passwordCreated, appErr := passwordRepository.Create(dtomocks.PasswordCreate)
 
@@ -29,8 +29,8 @@ func TestPasswordCreate(t *testing.T) {
 
 func TestPasswordGetActivePassword(t *testing.T) {
 	assert := assert.New(t)
-	passwordRepository := repositories.NewPasswordRepository(database.DB, providers.Logger)
-	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
+	passwordRepository := repositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	// Create user to link the password
 	userCreated, appErr := userRepository.Create(dtomocks.UserCreate)

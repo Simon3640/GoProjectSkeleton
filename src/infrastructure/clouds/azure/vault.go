@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	"gormgoskeleton/src/infrastructure/config"
+	"goprojectskeleton/src/infrastructure/config"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/keyvault/azsecrets"

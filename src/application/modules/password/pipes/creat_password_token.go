@@ -3,11 +3,11 @@ package password_pipes
 import (
 	"context"
 
-	usecases_password "gormgoskeleton/src/application/modules/password/use_cases"
+	usecases_password "goprojectskeleton/src/application/modules/password/use_cases"
 
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/locales"
-	usecase "gormgoskeleton/src/application/shared/use_case"
+	dtos "goprojectskeleton/src/application/shared/DTOs"
+	"goprojectskeleton/src/application/shared/locales"
+	usecase "goprojectskeleton/src/application/shared/use_case"
 )
 
 func NewGetResetPasswordPipe(

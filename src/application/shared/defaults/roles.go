@@ -1,6 +1,6 @@
 package defaults
 
-import "gormgoskeleton/src/domain/models"
+import "goprojectskeleton/src/domain/models"
 
 // list of default roles
 

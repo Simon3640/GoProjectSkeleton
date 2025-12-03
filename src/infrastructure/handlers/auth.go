@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"gormgoskeleton/src/application/modules/auth"
-	auth_pipes "gormgoskeleton/src/application/modules/auth/pipe"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	"gormgoskeleton/src/infrastructure/providers"
-	"gormgoskeleton/src/infrastructure/repositories"
+	"goprojectskeleton/src/application/modules/auth"
+	authPipes "goprojectskeleton/src/application/modules/auth/pipe"
+	dtos "goprojectskeleton/src/application/shared/DTOs"
+	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"goprojectskeleton/src/infrastructure/providers"
+	"goprojectskeleton/src/infrastructure/repositories"
 )
 
 // access-token
@@ -31,12 +31,12 @@ func Login(ctx HandlerContext) {
 		return
 	}
 
-	password_repository := repositories.NewPasswordRepository(database.DB, providers.Logger)
-	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
-	otpRepository := repositories.NewOneTimePasswordRepository(database.DB, providers.Logger)
+	passwordRepository := repositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	otpRepository := repositories.NewOneTimePasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	ucResult := auth.NewAuthenticateUseCase(providers.Logger,
-		password_repository,
+		passwordRepository,
 		userRepository,
 		otpRepository,
 		providers.HashProviderInstance,
@@ -96,24 +96,24 @@ func RequestPasswordReset(ctx HandlerContext) {
 		return
 	}
 
-	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
-	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.DB, providers.Logger)
+	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
-	uc_reset_password_token := auth.NewGetResetPasswordTokenUseCase(
+	ucResetPasswordToken := auth.NewGetResetPasswordTokenUseCase(
 		providers.Logger,
 		oneTimeTokenRepository,
 		userRepository,
 		providers.HashProviderInstance,
 	)
 
-	uc_reset_password_token_email := auth.NewGetResetPasswordSendEmailUseCase(
+	ucResetPasswordTokenEmail := auth.NewGetResetPasswordSendEmailUseCase(
 		providers.Logger)
 
-	ucResult := auth_pipes.NewGetResetPasswordPipe(
+	ucResult := authPipes.NewGetResetPasswordPipe(
 		ctx.c,
 		ctx.Locale,
-		uc_reset_password_token,
-		uc_reset_password_token_email,
+		ucResetPasswordToken,
+		ucResetPasswordTokenEmail,
 	).Execute(identifier)
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
@@ -140,8 +140,8 @@ func LoginOTP(ctx HandlerContext) {
 		return
 	}
 
-	userRepository := repositories.NewUserRepository(database.DB, providers.Logger)
-	otpRepository := repositories.NewOneTimePasswordRepository(database.DB, providers.Logger)
+	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	otpRepository := repositories.NewOneTimePasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	ucResult := auth.NewAuthenticateOTPUseCase(providers.Logger,
 		userRepository,

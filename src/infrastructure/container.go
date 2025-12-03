@@ -1,11 +1,11 @@
 package infrastructure
 
 import (
-	email_service "gormgoskeleton/src/application/shared/services/emails"
-	settings "gormgoskeleton/src/application/shared/settings"
-	config "gormgoskeleton/src/infrastructure/config"
-	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	providers "gormgoskeleton/src/infrastructure/providers"
+	email_service "goprojectskeleton/src/application/shared/services/emails"
+	settings "goprojectskeleton/src/application/shared/settings"
+	config "goprojectskeleton/src/infrastructure/config"
+	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	providers "goprojectskeleton/src/infrastructure/providers"
 )
 
 func Initialize() {
@@ -17,7 +17,7 @@ func Initialize() {
 		settings.AppSettingsInstance.EnableLog,
 		settings.AppSettingsInstance.DebugLog,
 	)
-	database.Gormgoskeletondb.SetUp(
+	database.GoProjectSkeletondb.SetUp(
 		settings.AppSettingsInstance.DBHost,
 		settings.AppSettingsInstance.DBPort,
 		settings.AppSettingsInstance.DBUser,

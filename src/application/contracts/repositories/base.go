@@ -1,8 +1,8 @@
 package contracts_repositories
 
 import (
-	application_errors "gormgoskeleton/src/application/shared/errors"
-	domain_utils "gormgoskeleton/src/domain/utils"
+	application_errors "goprojectskeleton/src/application/shared/errors"
+	domain_utils "goprojectskeleton/src/domain/utils"
 )
 
 type IRepositoryBase[CreateDomainModel any, UpdateDomainModel any, DomainModel any, DBModel any] interface {

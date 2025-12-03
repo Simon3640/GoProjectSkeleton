@@ -1,7 +1,7 @@
-module gormgoskeleton/functions/azure
+module goprojectskeleton/functions/azure
 
 go 1.25
 
-replace gormgoskeleton => ../../../../../../
+replace goprojectskeleton => ../../../../../../
 
-replace gormgoskeleton/azure => ../../../..
+replace goprojectskeleton/azure => ../../../..

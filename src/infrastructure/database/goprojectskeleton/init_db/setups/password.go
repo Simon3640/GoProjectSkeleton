@@ -1,10 +1,10 @@
 package setups
 
 import (
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/domain/models"
-	dbModels "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
-	"gormgoskeleton/src/infrastructure/repositories"
+	dtos "goprojectskeleton/src/application/shared/DTOs"
+	"goprojectskeleton/src/domain/models"
+	dbModels "goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
+	"goprojectskeleton/src/infrastructure/repositories"
 )
 
 type SetupPassword struct {

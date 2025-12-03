@@ -1,8 +1,8 @@
 package integrationtest
 
 import (
-	"gormgoskeleton/src/application/shared/settings"
-	"gormgoskeleton/src/infrastructure/providers"
+	"goprojectskeleton/src/application/shared/settings"
+	"goprojectskeleton/src/infrastructure/providers"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

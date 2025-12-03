@@ -1,6 +1,6 @@
 package contractsproviders
 
-import application_errors "gormgoskeleton/src/application/shared/errors"
+import application_errors "goprojectskeleton/src/application/shared/errors"
 
 type IHashProvider interface {
 	HashPassword(password string) (string, *application_errors.ApplicationError)

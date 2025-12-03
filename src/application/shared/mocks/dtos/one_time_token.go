@@ -2,8 +2,8 @@ package dtomocks
 
 import (
 	"encoding/hex"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/domain/models"
+	dtos "goprojectskeleton/src/application/shared/DTOs"
+	"goprojectskeleton/src/domain/models"
 )
 
 var OneTimeTokenBase = models.OneTimeTokenBase{

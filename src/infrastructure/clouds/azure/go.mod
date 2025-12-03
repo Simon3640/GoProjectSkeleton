@@ -1,11 +1,11 @@
-module gormgoskeleton/azure
+module goprojectskeleton/azure
 
 go 1.25
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1
 	github.com/Azure/azure-sdk-for-go/sdk/keyvault/azsecrets v0.12.0
-	gormgoskeleton v0.0.0
+	goprojectskeleton v0.0.0
 )
 
 require (
@@ -36,4 +36,4 @@ require (
 	gorm.io/gorm v1.25.12 // indirect
 )
 
-replace gormgoskeleton => ../../../..
+replace goprojectskeleton => ../../../..

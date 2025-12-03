@@ -3,9 +3,9 @@ package providers
 import (
 	"time"
 
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	"gormgoskeleton/src/application/shared/settings"
-	"gormgoskeleton/src/domain/models"
+	contractsProviders "goprojectskeleton/src/application/contracts/providers"
+	"goprojectskeleton/src/application/shared/settings"
+	"goprojectskeleton/src/domain/models"
 )
 
 type ApiStatusProvider struct{}

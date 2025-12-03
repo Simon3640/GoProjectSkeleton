@@ -61,7 +61,7 @@ variable "app_description" {
 variable "app_support_email" {
   description = "Email de soporte"
   type        = string
-  default     = "support@gormgoskeleton.com"
+  default     = "support@goprojectskeleton.com"
 }
 
 variable "enable_log" {
@@ -147,7 +147,7 @@ variable "jwt_secret_uri" {
 variable "jwt_issuer" {
   description = "Issuer de JWT"
   type        = string
-  default     = "gormgoskeleton"
+  default     = "goprojectskeleton"
 }
 
 variable "jwt_access_ttl" {

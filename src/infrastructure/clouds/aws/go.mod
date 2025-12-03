@@ -1,14 +1,14 @@
-module gormgoskeleton/aws
+module goprojectskeleton/aws
 
 go 1.25
 
-replace gormgoskeleton => ../../../..
+replace goprojectskeleton => ../../../..
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.40.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.2
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.40.2
-	gormgoskeleton v0.0.0
+	goprojectskeleton v0.0.0
 )
 
 require (

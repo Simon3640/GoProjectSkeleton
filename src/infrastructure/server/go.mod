@@ -1,4 +1,4 @@
-module gormgoskeleton/gin
+module goprojectskeleton/gin
 
 go 1.25
 
@@ -8,7 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
-	gormgoskeleton v0.0.0
+	goprojectskeleton v0.0.0
 )
 
 require (
@@ -62,4 +62,4 @@ require (
 	gorm.io/gorm v1.25.12 // indirect
 )
 
-replace gormgoskeleton => ../../..
+replace goprojectskeleton => ../../..

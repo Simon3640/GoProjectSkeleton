@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"fmt"
-	"gormgoskeleton/src/application/shared/status"
+	"goprojectskeleton/src/application/shared/status"
 	"strconv"
 )
 

@@ -3,10 +3,10 @@ package initdb
 import (
 	"gorm.io/gorm"
 
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	"gormgoskeleton/src/application/shared/defaults"
-	"gormgoskeleton/src/infrastructure/database/gormgoskeleton/init_db/setups"
-	dbModels "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
+	contractsProviders "goprojectskeleton/src/application/contracts/providers"
+	"goprojectskeleton/src/application/shared/defaults"
+	"goprojectskeleton/src/infrastructure/database/goprojectskeleton/init_db/setups"
+	dbModels "goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
 )
 
 func InitMigrate(db *gorm.DB, logger contractsProviders.ILoggerProvider) {

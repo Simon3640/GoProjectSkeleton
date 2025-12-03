@@ -1,5 +1,5 @@
 services:
-  gormgoskeleton-e2e-tests:
+  goprojectskeleton-e2e-tests:
     build:
       context: ..
       dockerfile: docker/dockerfile.e2e
@@ -11,7 +11,7 @@ services:
     security_opt:
       - seccomp:unconfined
     networks:
-      - gormgoskeleton-e2e-tests
+      - goprojectskeleton-e2e-tests
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/api/health-check"]
       interval: 10s
@@ -20,15 +20,15 @@ services:
   db:
     image: postgres:17.2-alpine
     environment:
-      POSTGRES_USER: gormgoskeleton
-      POSTGRES_PASSWORD: gormgoskeleton
-      POSTGRES_DB: gormgoskeleton
+      POSTGRES_USER: goprojectskeleton
+      POSTGRES_PASSWORD: goprojectskeleton
+      POSTGRES_DB: goprojectskeleton
     networks:
-      - gormgoskeleton-e2e-tests
+      - goprojectskeleton-e2e-tests
     tmpfs:
       - /var/lib/postgresql/data:rw,noexec,nosuid,size=65536k
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gormgoskeleton"]
+      test: ["CMD-SHELL", "pg_isready -U goprojectskeleton"]
       interval: 1s
       retries: 5
 
@@ -37,21 +37,21 @@ services:
     # platform: linux/amd64
     restart: always
     networks:
-      - gormgoskeleton-e2e-tests
+      - goprojectskeleton-e2e-tests
 
   newman:
     image: postman/newman:alpine
     env_file:
       - ../test.env
     depends_on:
-      gormgoskeleton-e2e-tests:
+      goprojectskeleton-e2e-tests:
         condition: service_healthy
     networks:
-      - gormgoskeleton-e2e-tests
+      - goprojectskeleton-e2e-tests
     volumes:
       - ../tests/e2e:/etc/newman
     command: ["run", "collection.json", "-e", "environment.json"]
 
 networks:
-  gormgoskeleton-e2e-tests:
+  goprojectskeleton-e2e-tests:
     external: false

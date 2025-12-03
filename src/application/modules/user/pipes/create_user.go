@@ -3,11 +3,11 @@ package user_pipes
 import (
 	"context"
 
-	usecases_user "gormgoskeleton/src/application/modules/user/use_cases"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/locales"
-	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
+	usecases_user "goprojectskeleton/src/application/modules/user/use_cases"
+	dtos "goprojectskeleton/src/application/shared/DTOs"
+	"goprojectskeleton/src/application/shared/locales"
+	usecase "goprojectskeleton/src/application/shared/use_case"
+	"goprojectskeleton/src/domain/models"
 )
 
 func NewCreateUserPipe(

@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"context"
-	"gormgoskeleton/src/application/shared/locales"
+	"goprojectskeleton/src/application/shared/locales"
 	"io"
 	"net/http"
 )
