@@ -3,7 +3,7 @@ package middlewares
 import (
 	"context"
 	api "goprojectskeleton/gin"
-	"goprojectskeleton/src/application/modules/auth"
+	authusecases "goprojectskeleton/src/application/modules/auth/use_cases"
 	app_context "goprojectskeleton/src/application/shared/context"
 	"goprojectskeleton/src/application/shared/locales"
 	"goprojectskeleton/src/domain/models"
@@ -18,7 +18,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
 
-		uc_result := auth.NewAuthUserUseCase(
+		uc_result := authusecases.NewAuthUserUseCase(
 			providers.Logger,
 			repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
