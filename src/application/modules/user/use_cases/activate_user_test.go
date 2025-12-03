@@ -40,6 +40,7 @@ func TestActivateUserUseCase(t *testing.T) {
 
 	testHashProvider.On("HashOneTimeToken", "valid_token").Return(tokenHash)
 	testOneTimeTokenRepository.On("GetByTokenHash", tokenHash).Return(&oneTimeToken, nil)
+	userStatusActive := models.UserStatusActive
 	testUserRepository.On(
 		"Update",
 		oneTimeToken.UserID,
@@ -48,7 +49,7 @@ func TestActivateUserUseCase(t *testing.T) {
 		UserBase: models.UserBase{
 			Name:   "Test User",
 			Email:  "test@mail.com",
-			Status: "active",
+			Status: &userStatusActive,
 			RoleID: 2,
 		},
 		DBBaseModel: models.DBBaseModel{

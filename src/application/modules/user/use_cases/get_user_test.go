@@ -25,12 +25,12 @@ func TestGetUserUseCase(t *testing.T) {
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
 	var testId = actor.ID
-
+	userStatus := models.UserStatusActive
 	testUserRepository.On("GetByID", testId).Return(&models.User{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
-			Status: "active"},
+			Status: &userStatus},
 		DBBaseModel: models.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
@@ -59,12 +59,12 @@ func TestGetUserUseCase_DifferentUser(t *testing.T) {
 	testLogger := new(mocks.MockLoggerProvider)
 	testUserRepository := new(mocks.MockUserRepository)
 	var testId = actor.ID + 1 // Different user ID
-
+	userStatus := models.UserStatusActive
 	testUserRepository.On("GetByID", testId).Return(&models.User{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
-			Status: "active"},
+			Status: &userStatus},
 		DBBaseModel: models.DBBaseModel{
 			ID:        2,
 			CreatedAt: time.Now(),
