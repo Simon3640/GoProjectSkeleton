@@ -45,6 +45,8 @@ type AppSettings struct {
 	FrontendActivateAccountURL string
 	OneTimePasswordTTL         int64 // in minutes
 	OneTimePasswordLength      int   // length of the generated one-time password
+	LoginMaxAttempts           int   // maximum number of failed login attempts
+	LoginAttemptsWindowMinutes int64 // time window in minutes for counting failed attempts
 
 	// Mail
 	MailHost         string

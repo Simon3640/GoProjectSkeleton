@@ -19,4 +19,5 @@ const (
 	ChatProviderError         ApplicationStatusEnum = "CH_PR_ER"
 	ProviderEmptyResponse     ApplicationStatusEnum = "PR_EM_RE"
 	ProviderEmptyCacheContext ApplicationStatusEnum = "PR_EM_CA_CO"
+	TooManyRequests           ApplicationStatusEnum = "TO_MA_RE"
 )
