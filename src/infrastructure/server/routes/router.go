@@ -20,6 +20,7 @@ func Router(r *gin.RouterGroup) {
 	private.GET("/user", middlewares.QueryMiddleware(), wrapHandler(handlers.GetAllUser))
 	r.POST("/user-password", wrapHandler(handlers.CreateUserAndPassword))
 	r.POST("/user/activate", wrapHandler(handlers.ActivateUser))
+	r.POST("/user/resend-welcome-email", wrapHandler(handlers.ResendWelcomeEmail))
 
 	// Password routes
 	private.POST("/password", wrapHandler(handlers.CreatePassword))

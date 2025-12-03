@@ -1062,6 +1062,314 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "ResendEmail",
+			"item": [
+				{
+					"name": "NewUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"// Check if the status code is 200",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"// Extract and set user ID to environment variable",
+									"pm.environment.set(\"resendEmailUserId\", response.data.id);",
+									"",
+									"// Validate the user ID exists and is of correct type",
+									"pm.test(\"User ID is present and is a number\", function () {",
+									"    pm.expect(response.data.id).to.exist;",
+									"    pm.expect(response.data.id).to.be.a('number');",
+									"});",
+									"",
+									"// Store email for resend request",
+									"pm.environment.set(\"resendEmailUserEmail\", response.data.email);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"resendtest{{$randomInt}}@example.com\",\n  \"name\": \"Resend Email Test User\",\n  \"otp_login\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"role_id\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user-password",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ResendWelcomeEmail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has required fields: data and details\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.all.keys('data', 'details');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Data field is a boolean value\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.be.a('boolean');",
+									"    pm.expect(responseData.data).to.equal(true);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response content type is application/json\", function () {",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include(\"application/json\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{resendEmailUserEmail}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/resend-welcome-email",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"resend-welcome-email"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMailPitMessage",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get last message",
+									"",
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"status code\", function(){",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"",
+									"// Get token to activate user",
+									"pm.environment.set(\"resendEmailLastMessageID\", response.messages[0].ID)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/messages?limit=1",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"messages"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMailPitActivationToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let match = response.Text.match(/token=([A-Za-z0-9\\-_]+)/);",
+									"console.log(match);",
+									"",
+									"if (match && match[1]) {",
+									"    pm.environment.set(\"resendEmailActivateUserToken\", match[1]);",
+									"} else {",
+									"    console.warn(\"Token not found in response Text.\");",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/message/{{resendEmailLastMessageID}}",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"message",
+								"{{resendEmailLastMessageID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ActivateUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has required fields: data and details\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.all.keys('data', 'details');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Data field is a boolean value\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.be.a('boolean');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response content type is application/json\", function () {",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include(\"application/json\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"{{resendEmailActivateUserToken}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/activate",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"activate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }

@@ -15,7 +15,7 @@ func (m *MockOneTimePasswordRepository) GetByPasswordHash(tokenHash []byte) (*mo
 	args := m.Called(tokenHash)
 	errorArg := args.Get(1)
 	if errorArg != nil {
-		return args.Get(0).(*models.OneTimePassword), errorArg.(*application_errors.ApplicationError)
+		return nil, errorArg.(*application_errors.ApplicationError)
 	}
 	return args.Get(0).(*models.OneTimePassword), nil
 }

@@ -633,6 +633,69 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user/resend-welcome-email": {
+            "post": {
+                "description": "This endpoint resends the welcome email with a new activation token to the user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Resend welcome email to user",
+                "parameters": [
+                    {
+                        "description": "Email del usuario",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ResendWelcomeEmailRequest"
+                        }
+                    },
+                    {
+                        "enum": [
+                            "en-US",
+                            "es-ES"
+                        ],
+                        "type": "string",
+                        "default": "en-US",
+                        "description": "Locale for response messages",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Correo de bienvenida reenviado",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/{id}": {
             "get": {
                 "security": [
@@ -869,6 +932,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.ResendWelcomeEmailRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
                     "type": "string"
                 }
             }
