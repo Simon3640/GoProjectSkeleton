@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"goprojectskeleton/src/application/modules/auth"
+	authusecases "goprojectskeleton/src/application/modules/auth/use_cases"
 	app_context "goprojectskeleton/src/application/shared/context"
 	"goprojectskeleton/src/application/shared/locales"
 	"goprojectskeleton/src/application/shared/status"
@@ -27,9 +27,9 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			locale = "en-US"
 		}
 
-		ucResult := auth.NewAuthUserUseCase(
+		ucResult := authusecases.NewAuthUserUseCase(
 			providers.Logger,
-			repositories.NewUserRepository(database.DB, providers.Logger),
+			repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
 		).Execute(r.Context(), locales.LocaleTypeEnum(locale), token)
 
@@ -171,9 +171,9 @@ func LambdaAuthMiddleware(event interface{}) (context.Context, *LambdaResponse) 
 
 	ctx := context.Background()
 
-	ucResult := auth.NewAuthUserUseCase(
+	ucResult := authusecases.NewAuthUserUseCase(
 		providers.Logger,
-		repositories.NewUserRepository(database.DB, providers.Logger),
+		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		providers.JWTProviderInstance,
 	).Execute(ctx, locales.LocaleTypeEnum(locale), token)
 
@@ -267,9 +267,9 @@ func HandleLambdaEventWithOptionalAuth(
 
 	// Only validate if token is present
 	if token != "" && strings.TrimSpace(token) != "" {
-		ucResult := auth.NewAuthUserUseCase(
+		ucResult := authusecases.NewAuthUserUseCase(
 			providers.Logger,
-			repositories.NewUserRepository(database.DB, providers.Logger),
+			repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
 		).Execute(ctx, locales.LocaleTypeEnum(locale), token)
 
