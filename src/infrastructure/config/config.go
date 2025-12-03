@@ -55,10 +55,11 @@ type Config struct {
 	OneTimePasswordTTL         string `env:"ONE_TIME_PASSWORD_TTL" envDefault:"10"`
 
 	// Mail
-	MailHost     string `env:"MAIL_HOST" envDefault:"localhost"`
-	MailPort     string `env:"MAIL_PORT" envDefault:"1025"`
-	MailPassword string `env:"MAIL_PASSWORD" envDefault:"password"`
-	MailFrom     string `env:"MAIL_FROM" envDefault:"noreply@example.com"`
+	MailHost         string `env:"MAIL_HOST" envDefault:"localhost"`
+	MailPort         string `env:"MAIL_PORT" envDefault:"1025"`
+	MailPassword     string `env:"MAIL_PASSWORD" envDefault:"password"`
+	MailFrom         string `env:"MAIL_FROM" envDefault:"noreply@example.com"`
+	MailAuthRequired bool   `env:"MAIL_AUTH_REQUIRED" envDefault:"true"`
 }
 
 func (c *Config) ToMap() map[string]string {
