@@ -121,6 +121,54 @@ func TestResendWelcomeEmailUseCase_Execute_InvalidEmail(t *testing.T) {
 	assert.Equal(status.InvalidInput, result.StatusCode)
 }
 
+func TestResendWelcomeEmailUseCase_Execute_UserAlreadyVerified(t *testing.T) {
+	assert := assert.New(t)
+
+	ctx := context.Background()
+
+	testLogger := new(mocks.MockLoggerProvider)
+	testHashProvider := new(mocks.MockHashProvider)
+	testUserRepository := new(mocks.MockUserRepository)
+	testTokenRepository := new(mocks.MockOneTimeTokenRepository)
+
+	email := "test@example.com"
+	userStatus := models.UserStatusActive
+	testUser := &models.User{
+		UserBase: models.UserBase{
+			Name:   "Test User",
+			Email:  email,
+			Phone:  "1234567890",
+			Status: &userStatus,
+			RoleID: 2,
+		},
+		DBBaseModel: models.DBBaseModel{
+			ID:        1,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+	}
+
+	// Mock GetByEmailOrPhone
+	testUserRepository.On("GetByEmailOrPhone", email).Return(testUser, nil)
+
+	uc := NewResendWelcomeEmailUseCase(
+		testLogger,
+		testHashProvider,
+		testUserRepository,
+		testTokenRepository,
+	)
+
+	input := dtos.ResendWelcomeEmailRequest{
+		Email: email,
+	}
+
+	result := uc.Execute(ctx, locales.EN_US, input)
+
+	assert.NotNil(result)
+	assert.True(result.HasError())
+	assert.Equal(status.Conflict, result.StatusCode)
+}
+
 func TestResendWelcomeEmailUseCase_Execute_UserNotFound(t *testing.T) {
 	assert := assert.New(t)
 
