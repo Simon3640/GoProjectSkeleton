@@ -48,6 +48,7 @@ type MessageKeys struct {
 	JWT_TOKEN_VIOLATED           MessageKeysEnum
 	OTP_LOGIN_ENABLED            MessageKeysEnum
 	INVALID_OTP                  MessageKeysEnum
+	LoginMaxAttemptsExceeded     MessageKeysEnum
 
 	INVALID_EMAIL         MessageKeysEnum
 	INVALID_PASSWORD      MessageKeysEnum
@@ -106,6 +107,7 @@ var MessageKeysInstance = MessageKeys{
 	JWT_TOKEN_VIOLATED:           "JWT_TOKEN_VIOLATED",
 	OTP_LOGIN_ENABLED:            "OTP_LOGIN_ENABLED",
 	INVALID_OTP:                  "INVALID_OTP",
+	LoginMaxAttemptsExceeded:     "LOGIN_MAX_ATTEMPTS_EXCEEDED",
 
 	APPLICATION_STATUS_OK: "APPLICATION_STATUS_OK",
 }

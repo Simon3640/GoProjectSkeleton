@@ -8,6 +8,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     security_opt:
       - seccomp:unconfined
     networks:
@@ -38,6 +40,25 @@ services:
     restart: always
     networks:
       - goprojectskeleton-e2e-tests
+
+  redis:
+    image: redis:alpine  # o redis:7-alpine
+    command:
+      - redis-server
+      - --requirepass
+      - secretPassword
+      - --maxmemory
+      - 64mb
+      - --maxmemory-policy
+      - allkeys-lru
+      - --save
+      - "" # disable persistence for tests
+    networks:
+      - goprojectskeleton-e2e-tests
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      retries: 5
 
   newman:
     image: postman/newman:alpine
