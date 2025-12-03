@@ -41,6 +41,7 @@ func Login(ctx HandlerContext) {
 		otpRepository,
 		providers.HashProviderInstance,
 		providers.JWTProviderInstance,
+		providers.CacheProviderInstance,
 	).Execute(ctx.c, ctx.Locale, userCredentials)
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
