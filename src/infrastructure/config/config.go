@@ -59,7 +59,7 @@ type Config struct {
 	MailPort         string `env:"MAIL_PORT" envDefault:"1025"`
 	MailPassword     string `env:"MAIL_PASSWORD" envDefault:"password"`
 	MailFrom         string `env:"MAIL_FROM" envDefault:"noreply@example.com"`
-	MailAuthRequired bool   `env:"MAIL_AUTH_REQUIRED" envDefault:"true"`
+	MailAuthRequired string `env:"MAIL_AUTH_REQUIRED" envDefault:"true"`
 }
 
 func (c *Config) ToMap() map[string]string {
