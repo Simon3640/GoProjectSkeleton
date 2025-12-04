@@ -23,6 +23,7 @@ func NewRequestResolver[D any]() *RequestResolver[D] {
 			status.Unauthorized:              401,
 			status.NotFound:                  404,
 			status.Conflict:                  409,
+			status.TooManyRequests:            429,
 			status.InternalError:             500,
 			status.NotImplemented:            501,
 			status.ProviderError:             502,

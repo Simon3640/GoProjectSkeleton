@@ -69,8 +69,8 @@ services:
 
 networks:
   goprojectskeleton:
-    external: true
+    external: false
 
 volumes:
   goprojectskeleton-db-data:
-    external: true
+    external: false
