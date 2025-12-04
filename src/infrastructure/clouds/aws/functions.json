@@ -111,6 +111,14 @@
       "pathParamName": "id"
     },
     {
+      "name": "user-resend-welcome-email",
+      "path": "user/resend-welcome-email",
+      "handler": "ResendWelcomeEmail",
+      "route": "user/resend-welcome-email",
+      "method": "post",
+      "authLevel": "anonymous"
+    },
+    {
       "name": "password-create",
       "path": "password/create",
       "handler": "CreatePassword",
