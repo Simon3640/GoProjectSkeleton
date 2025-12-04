@@ -3,12 +3,15 @@ package authusecases
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	contractsProviders "goprojectskeleton/src/application/contracts/providers"
 	contracts_repositories "goprojectskeleton/src/application/contracts/repositories"
 	dtos "goprojectskeleton/src/application/shared/DTOs"
+	application_errors "goprojectskeleton/src/application/shared/errors"
 	"goprojectskeleton/src/application/shared/locales"
 	"goprojectskeleton/src/application/shared/locales/messages"
 	"goprojectskeleton/src/application/shared/services"
@@ -21,6 +24,7 @@ import (
 	"goprojectskeleton/src/domain/models"
 )
 
+// AuthenticateUseCase is the use case for the authentication of a user
 type AuthenticateUseCase struct {
 	appMessages *locales.Locale
 	log         contractsProviders.ILoggerProvider
@@ -30,18 +34,21 @@ type AuthenticateUseCase struct {
 	userRepo contracts_repositories.IUserRepository
 	otpRepo  contracts_repositories.IOneTimePasswordRepository
 
-	jwtProvider  contractsProviders.IJWTProvider
-	hashProvider contractsProviders.IHashProvider
+	jwtProvider   contractsProviders.IJWTProvider
+	hashProvider  contractsProviders.IHashProvider
+	cacheProvider contractsProviders.ICacheProvider
 }
 
 var _ usecase.BaseUseCase[dtos.UserCredentials, dtos.Token] = (*AuthenticateUseCase)(nil)
 
+// SetLocale set the locale for the use case
 func (uc *AuthenticateUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
 	}
 }
 
+// Execute execute the use case
 func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input dtos.UserCredentials,
@@ -58,10 +65,31 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 		return result
 	}
 
+	// Check rate limiting before attempting authentication
+	if uc.cacheProvider != nil {
+		exceeded, err := uc.checkRateLimit(input.Email)
+		if err != nil {
+			uc.log.Error("Error checking rate limit, continuing with authentication", err.ToError())
+		} else if exceeded {
+			result.SetError(
+				status.TooManyRequests,
+				uc.appMessages.Get(
+					uc.locale,
+					messages.MessageKeysInstance.LoginMaxAttemptsExceeded,
+				),
+			)
+			return result
+		}
+	}
+
 	// Get password from repository
 	password, err := uc.pass.GetActivePassword(input.Email)
 
 	if err != nil {
+		// Increment failed attempts counter
+		if uc.cacheProvider != nil {
+			uc.incrementFailedAttempts(input.Email)
+		}
 		result.SetError(
 			status.NotFound,
 			uc.appMessages.Get(
@@ -76,6 +104,10 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 	user, err := uc.userRepo.GetUserWithRole(password.UserID)
 
 	if err != nil {
+		// Increment failed attempts counter
+		if uc.cacheProvider != nil {
+			uc.incrementFailedAttempts(input.Email)
+		}
 		result.SetError(
 			status.NotFound,
 			uc.appMessages.Get(
@@ -89,6 +121,10 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 	// Validate password
 	valid, verifyErr := uc.hashProvider.VerifyPassword(password.Hash, input.Password)
 	if !valid || verifyErr != nil {
+		// Increment failed attempts counter
+		if uc.cacheProvider != nil {
+			uc.incrementFailedAttempts(input.Email)
+		}
 		result.SetError(
 			status.NotFound,
 			uc.appMessages.Get(
@@ -97,6 +133,11 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 			),
 		)
 		return result
+	}
+
+	// Clear failed attempts counter on successful authentication
+	if uc.cacheProvider != nil {
+		uc.clearFailedAttempts(input.Email)
 	}
 
 	// OTP Login
@@ -210,6 +251,88 @@ func (uc *AuthenticateUseCase) validate(input dtos.UserCredentials) (bool, []str
 	return len(validationErrors) == 0, validationErrors
 }
 
+// checkRateLimit verify if the user has exceeded the login failed attempts limit
+func (uc *AuthenticateUseCase) checkRateLimit(email string) (bool, *application_errors.ApplicationError) {
+	if uc.cacheProvider == nil {
+		return false, nil
+	}
+
+	maxAttempts := settings.AppSettingsInstance.LoginMaxAttempts
+	if maxAttempts <= 0 {
+		return false, nil
+	}
+
+	key := uc.getRateLimitKey(email)
+	var attempts int
+
+	exists, err := uc.cacheProvider.Get(key, &attempts)
+	if err != nil {
+		uc.log.Error("Error checking rate limit", err.ToError())
+		return false, err
+	}
+
+	if !exists {
+		return false, nil
+	}
+
+	// Log for debugging
+	uc.log.Info(fmt.Sprintf("Rate limit check: email=%s, attempts=%d, maxAttempts=%d", email, attempts, maxAttempts))
+
+	return attempts >= maxAttempts, nil
+}
+
+// incrementFailedAttempts increment the failed attempts counter for an email
+func (uc *AuthenticateUseCase) incrementFailedAttempts(email string) {
+	if uc.cacheProvider == nil {
+		return
+	}
+
+	key := uc.getRateLimitKey(email)
+	var attempts int
+
+	exists, err := uc.cacheProvider.Get(key, &attempts)
+	if err != nil {
+		uc.log.Error("Error getting failed attempts", err.ToError())
+		return
+	}
+
+	if !exists {
+		attempts = 0
+	}
+
+	attempts++
+
+	windowMinutes := settings.AppSettingsInstance.LoginAttemptsWindowMinutes
+	if windowMinutes <= 0 {
+		windowMinutes = 15 // Default to 15 minutes
+	}
+
+	ttl := time.Duration(windowMinutes) * time.Minute
+	if err := uc.cacheProvider.Set(key, attempts, ttl); err != nil {
+		uc.log.Error("Error setting failed attempts", err.ToError())
+	} else {
+		// Log for debugging
+		uc.log.Info(fmt.Sprintf("Incremented failed attempts: email=%s, attempts=%d, maxAttempts=%d", email, attempts, settings.AppSettingsInstance.LoginMaxAttempts))
+	}
+}
+
+// clearFailedAttempts clear the failed attempts counter for an email
+func (uc *AuthenticateUseCase) clearFailedAttempts(email string) {
+	if uc.cacheProvider == nil {
+		return
+	}
+
+	key := uc.getRateLimitKey(email)
+	if err := uc.cacheProvider.Delete(key); err != nil {
+		uc.log.Error("Error clearing failed attempts", err.ToError())
+	}
+}
+
+// getRateLimitKey generate the cache key for the rate limiting
+func (uc *AuthenticateUseCase) getRateLimitKey(email string) string {
+	return fmt.Sprintf("login_attempts:%s", email)
+}
+
 func NewAuthenticateUseCase(
 	log contractsProviders.ILoggerProvider,
 	pass contracts_repositories.IPasswordRepository,
@@ -217,14 +340,16 @@ func NewAuthenticateUseCase(
 	otpRepo contracts_repositories.IOneTimePasswordRepository,
 	hashProvider contractsProviders.IHashProvider,
 	jwtProvider contractsProviders.IJWTProvider,
+	cacheProvider contractsProviders.ICacheProvider,
 ) *AuthenticateUseCase {
 	return &AuthenticateUseCase{
-		appMessages:  locales.NewLocale(locales.EN_US),
-		log:          log,
-		pass:         pass,
-		userRepo:     userRepo,
-		otpRepo:      otpRepo,
-		jwtProvider:  jwtProvider,
-		hashProvider: hashProvider,
+		appMessages:   locales.NewLocale(locales.EN_US),
+		log:           log,
+		pass:          pass,
+		userRepo:      userRepo,
+		otpRepo:       otpRepo,
+		jwtProvider:   jwtProvider,
+		hashProvider:  hashProvider,
+		cacheProvider: cacheProvider,
 	}
 }
