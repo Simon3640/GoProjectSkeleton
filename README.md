@@ -1,6 +1,52 @@
-# Documentación Completa - GoProjectSkeleton
+<div align="center">
+  <img src="logo.png" alt="GoProjectSkeleton logo" height="400">
 
-## Tabla de Contenidos
+  *Una base para proyectos de arquitectura limpia en Go*
+
+  <!-- Badges -->
+  <p>
+    <img src="https://img.shields.io/badge/Go-1.25-blue?logo=go&logoColor=white" alt="Go Version">
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+    <img src="https://img.shields.io/badge/Architecture-Clean%20Architecture-blueviolet" alt="Architecture">
+    <img src="https://img.shields.io/badge/Pattern-Hexagonal%20Architecture-orange" alt="Pattern">
+    <img src="https://img.shields.io/badge/Status-Production%20Ready-success" alt="Status">
+    <img src="https://img.shields.io/badge/Serverless-AWS%20%7C%20Azure-lightgrey" alt="Serverless">
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/GORM-1.25.12-blue" alt="GORM">
+    <img src="https://img.shields.io/badge/Gin-1.10.0-cyan" alt="Gin">
+    <img src="https://img.shields.io/badge/PostgreSQL-Supported-blue" alt="PostgreSQL">
+    <img src="https://img.shields.io/badge/Redis-Supported-red" alt="Redis">
+    <img src="https://img.shields.io/badge/JWT-Supported-yellow" alt="JWT">
+    <img src="https://img.shields.io/badge/Swagger-Documented-green" alt="Swagger">
+  </p>
+</div>
+
+## 🚀 Quick Start
+
+```bash
+# 1. Clonar el repositorio
+git clone <repository-url>
+cd GoProjectSkeleton
+
+# 2. Configurar variables de entorno
+cp dev.env.example dev.env
+# Editar dev.env con tus configuraciones
+
+# 3. Iniciar servicios con Docker
+docker network create goprojectskeleton
+docker volume create goprojectskeleton-db-data
+docker-compose -f docker/docker-compose.dev.yml up -d
+
+# 4. Ejecutar la aplicación
+go run src/infrastructure/server/cmd/main.go
+
+# 5. Acceder a la documentación Swagger
+# http://localhost:8080/docs/
+```
+
+## 📋 Tabla de Contenidos
 
 1. [Introducción](#introducción)
 2. [Arquitectura del Proyecto](#arquitectura-del-proyecto)
@@ -36,20 +82,119 @@ La filosofía central de **GoProjectSkeleton** es que el **dominio** y la **lóg
 
 ### Características Principales
 
-- ✅ **Clean Architecture** - Separación clara de responsabilidades en capas
-- ✅ **Arquitectura Hexagonal** - Desacoplamiento total de dependencias externas
+#### 🏗️ Arquitectura y Diseño
+- ✅ **Clean Architecture** - Separación clara de responsabilidades en capas (Domain, Application, Infrastructure)
+- ✅ **Arquitectura Hexagonal** - Desacoplamiento total de dependencias externas mediante Ports & Adapters
 - ✅ **Inversión de Dependencias** - Las capas internas no dependen de las externas
-- ✅ **Autenticación JWT Completa** - Sistema robusto de autenticación
-- ✅ **Gestión de Usuarios** - CRUD completo con validaciones
-- ✅ **Sistema de Contraseñas** - Reset y gestión segura de contraseñas
-- ✅ **OTP (One-Time Password)** - Autenticación de dos factores
-- ✅ **Internacionalización (i18n)** - Soporte multiidioma
-- ✅ **Documentación Swagger** - API documentada automáticamente
+- ✅ **SOLID Principles** - Principios de diseño aplicados consistentemente
+- ✅ **Repository Pattern** - Abstracción del acceso a datos
+- ✅ **Use Case Pattern** - Encapsulación de lógica de negocio
+- ✅ **Factory Pattern** - Creación de instancias con inyección de dependencias
+
+#### 🔐 Autenticación y Seguridad
+- ✅ **Autenticación JWT Completa** - Access tokens y refresh tokens con configuración flexible
+- ✅ **OTP (One-Time Password)** - Autenticación de dos factores con códigos temporales
+- ✅ **Sistema de Contraseñas Seguro** - Hash con Bcrypt, reset de contraseñas con tokens
+- ✅ **Guards y Autorización** - Control de acceso basado en roles y permisos
+- ✅ **Validación Multi-capa** - Validación en DTOs, casos de uso y repositorios
+- ✅ **CORS Configurado** - Seguridad para aplicaciones web
+
+#### 👥 Gestión de Usuarios
+- ✅ **CRUD Completo** - Crear, leer, actualizar y eliminar usuarios
+- ✅ **Gestión de Roles** - Sistema de roles con prioridades
+- ✅ **Estados de Usuario** - Pending, Active, Inactive, Suspended, Deleted
+- ✅ **Activación de Cuentas** - Sistema de activación mediante tokens
+- ✅ **Paginación y Filtrado** - Consultas eficientes con Query Payload
+- ✅ **Cache Inteligente** - Cache de listados con Redis
+
+#### 🌐 Internacionalización y Comunicación
+- ✅ **Internacionalización (i18n)** - Soporte multiidioma (Español, Inglés, extensible)
+- ✅ **Sistema de Emails** - Templates HTML con renderizado dinámico
+- ✅ **Emails Transaccionales** - Registro, reset de contraseña, OTP
+- ✅ **Locale por Request** - Cada request puede tener su idioma
+
+#### 📚 Documentación y Testing
+- ✅ **Documentación Swagger** - API documentada automáticamente con ejemplos
 - ✅ **Testing Completo** - Unitarios, integración y E2E
-- ✅ **Docker Completo** - Containerización para desarrollo y producción
-- ✅ **Cache con Redis** - Optimización de rendimiento
-- ✅ **Sistema de Pipes (DAG)** - Orquestación de casos de uso
-- ✅ **Paralelización** - Ejecución concurrente de casos de uso
+- ✅ **Mocks Completos** - Mocks de repositorios y providers para testing
+- ✅ **Postman Collection** - Colección lista para pruebas E2E
+
+#### 🐳 DevOps y Despliegue
+- ✅ **Docker Completo** - Multi-servicio para desarrollo, test y E2E
+- ✅ **Serverless Ready** - Soporte para AWS Lambda y Azure Functions
+- ✅ **Terraform** - Infraestructura como código para AWS y Azure
+- ✅ **Secrets Management** - Integración con AWS Secrets Manager y Azure Key Vault
+- ✅ **Hot Reload** - Desarrollo eficiente con recarga automática
+
+#### ⚡ Rendimiento y Escalabilidad
+- ✅ **Cache con Redis** - Optimización de rendimiento con TTL configurable
+- ✅ **Connection Pooling** - Reutilización de conexiones a base de datos
+- ✅ **Sistema de Pipes (DAG)** - Orquestación de casos de uso secuenciales
+- ✅ **Paralelización** - Ejecución concurrente de casos de uso con goroutines
+- ✅ **Stateless Design** - Listo para escalabilidad horizontal
+- ✅ **Tree Shaking** - Optimización automática de binarios en serverless
+
+---
+
+## ☁️ Capacidades Cloud y Serverless
+
+**GoProjectSkeleton** está diseñado para funcionar tanto en entornos tradicionales como en arquitecturas serverless modernas.
+
+### 🚀 AWS Lambda
+
+El proyecto incluye soporte completo para **AWS Lambda** con:
+
+- ✅ **Generación Automática de Funciones** - Sistema de generación desde `functions.json`
+- ✅ **Módulos Independientes** - Cada función Lambda tiene su propio módulo Go
+- ✅ **Tree Shaking Optimizado** - Binarios de 5-15 MB vs 50+ MB sin optimización
+- ✅ **AWS Secrets Manager** - Carga automática de secretos desde Secrets Manager
+- ✅ **Lambda Adapter** - Adaptador para eventos de API Gateway
+- ✅ **Terraform** - Infraestructura como código lista para desplegar
+- ✅ **Compilación Optimizada** - Flags específicos para Lambda (`lambda.norpc`, `-ldflags="-s -w"`)
+
+**Estructura de funciones Lambda:**
+```
+src/infrastructure/clouds/aws/
+├── functions.json          # Definición de funciones
+├── init.go                 # Inicialización AWS
+├── lambda_adapter.go       # Adaptador Lambda
+├── secrets_manager.go      # Gestión de secretos
+├── terraform/              # Infraestructura Terraform
+└── functions/              # Generador de funciones
+```
+
+### 🔷 Azure Functions
+
+Soporte completo para **Azure Functions** con:
+
+- ✅ **HTTP Adapter** - Adaptador para Azure Functions HTTP triggers
+- ✅ **Azure Key Vault** - Integración con Azure Key Vault para secretos
+- ✅ **Terraform** - Infraestructura como código para Azure
+- ✅ **Módulos Independientes** - Cada función tiene su propio módulo
+- ✅ **Generación Automática** - Sistema de generación desde `functions.json`
+
+**Estructura de funciones Azure:**
+```
+src/infrastructure/clouds/azure/
+├── functions.json          # Definición de funciones
+├── init.go                 # Inicialización Azure
+├── http_adapter.go         # Adaptador HTTP
+├── vault.go                # Integración Key Vault
+├── terraform/              # Infraestructura Terraform
+└── functions/              # Generador de funciones
+```
+
+### 📊 Comparación de Arquitecturas
+
+| Característica | Monolito Tradicional | AWS Lambda | Azure Functions |
+|---------------|---------------------|------------|-----------------|
+| **Inicialización** | Una vez al inicio | Por función | Por función |
+| **Escalabilidad** | Manual/Horizontal | Automática | Automática |
+| **Costo** | Fijo | Por uso | Por uso |
+| **Cold Start** | N/A | ~100-500ms | ~200-800ms |
+| **Tamaño Binario** | ~50 MB | ~5-15 MB | ~5-15 MB |
+| **Gestión Secretos** | Variables de entorno | Secrets Manager | Key Vault |
+| **Despliegue** | Docker/VM | ZIP a Lambda | ZIP a Functions |
 
 ---
 
@@ -1449,6 +1594,21 @@ El DAG ejecuta:
 
 ---
 
+## 📊 Estadísticas del Proyecto
+
+| Métrica | Valor |
+|---------|-------|
+| **Archivos Go** | ~180+ archivos |
+| **Líneas de Código** | ~15,000+ líneas |
+| **Casos de Uso** | 20+ casos de uso |
+| **Módulos de Negocio** | 4 módulos (auth, user, password, status) |
+| **Providers** | 7 providers (JWT, Hash, Email, Cache, Logger, Renderer, Status) |
+| **Repositorios** | 6 repositorios |
+| **Handlers HTTP** | 15+ endpoints |
+| **Tests** | 20+ archivos de test |
+| **Templates** | 6+ templates HTML |
+| **Idiomas Soportados** | 2 (Español, Inglés) |
+
 ## Estructura del Proyecto - Capa por Capa
 
 ### Visión General de la Estructura
@@ -1456,13 +1616,36 @@ El DAG ejecuta:
 ```
 GoProjectSkeleton/
 ├── src/
-│   ├── domain/              # Capa de Dominio (Núcleo)
-│   ├── application/         # Capa de Aplicación (Lógica de Negocio)
-│   └── infrastructure/     # Capa de Infraestructura (Detalles Técnicos)
-├── docker/                  # Configuración Docker
-├── tests/                   # Tests del proyecto
-├── docs/                    # Documentación Swagger
-└── IDE/                     # Configuración del IDE
+│   ├── domain/              # 🎯 Capa de Dominio (Núcleo)
+│   │   ├── models/          # Entidades de negocio puras
+│   │   └── utils/           # Utilidades de dominio
+│   ├── application/         # 💼 Capa de Aplicación (Lógica de Negocio)
+│   │   ├── contracts/      # Interfaces (Ports)
+│   │   ├── modules/         # Módulos de negocio
+│   │   └── shared/         # Componentes compartidos
+│   └── infrastructure/     # 🔧 Capa de Infraestructura (Detalles Técnicos)
+│       ├── server/          # Servidor HTTP (Gin)
+│       ├── database/        # Base de datos (GORM)
+│       ├── providers/       # Implementaciones de providers
+│       ├── repositories/    # Implementaciones de repositorios
+│       ├── handlers/        # Handlers HTTP
+│       ├── config/          # Configuración
+│       └── clouds/          # Adaptadores Cloud (AWS, Azure)
+├── docker/                  # 🐳 Configuración Docker
+│   ├── docker-compose.dev.yml
+│   ├── docker-compose.test.yml
+│   ├── docker-compose.e2e.yml
+│   └── db/                  # Configuración de base de datos
+├── tests/                   # 🧪 Tests del proyecto
+│   ├── integration/         # Tests de integración
+│   └── e2e/                 # Tests end-to-end (Postman)
+├── docs/                    # 📚 Documentación Swagger
+│   ├── swagger.json
+│   ├── swagger.yaml
+│   └── docs.go
+└── IDE/                     # ⚙️ Configuración del IDE
+    ├── launch.json
+    └── tasks.json
 ```
 
 ### Capa 1: Domain (Dominio)
@@ -1914,18 +2097,45 @@ Mocks para testing:
 
 ### `/src/infrastructure/` - Capa de Infraestructura
 
-#### `/src/infrastructure/api/`
+#### `/src/infrastructure/server/`
 
-Capa de API HTTP.
+Capa de servidor HTTP con Gin.
 
-##### `/src/infrastructure/api/cmd/`
+##### `/src/infrastructure/server/cmd/`
 
 - **`main.go`**: Punto de entrada de la aplicación
-  - Inicialización de infraestructura
-  - Configuración de Gin
-  - Carga de rutas
-  - Configuración de Swagger
-  - Inicio del servidor
+  - Inicialización de infraestructura (`infrastructure.Initialize()`)
+  - Configuración de Gin con graceful shutdown
+  - Carga de middlewares (CORS, Recovery)
+  - Carga de rutas (`routes.Router()`)
+  - Configuración de Swagger (`/docs/*`)
+  - Inicio del servidor en puerto configurable
+
+**Flujo de inicialización:**
+```go
+1. infrastructure.Initialize()
+   ├── Carga configuración (Settings)
+   ├── Inicializa Logger
+   ├── Conecta a PostgreSQL (GORM)
+   ├── Configura JWT Provider
+   ├── Configura Email Provider
+   ├── Configura Cache Provider (Redis)
+   └── Configura Email Services
+
+2. buildGinApp()
+   └── Crea aplicación Gin con graceful shutdown
+
+3. loadGinApp()
+   ├── Configura CORS
+   ├── Configura Recovery middleware
+   └── Carga rutas
+
+4. loadSwagger()
+   └── Configura documentación Swagger
+
+5. app.Run()
+   └── Inicia servidor HTTP
+```
 
 ##### `/src/infrastructure/api/routes/`
 
@@ -2041,12 +2251,100 @@ Implementaciones de repositorios.
 
 #### `/src/infrastructure/container.go`
 
-Inicialización de infraestructura:
+Inicialización centralizada de infraestructura:
 
-- Configuración
-- Base de datos
-- Providers
-- Servicios
+- **Configuración**: Carga desde variables de entorno
+- **Base de datos**: Conexión a PostgreSQL con GORM
+- **Providers**: JWT, Email, Cache, Logger
+- **Servicios**: Email services (registro, reset, OTP)
+
+**Orden de inicialización:**
+1. Settings (configuración de aplicación)
+2. Logger (sistema de logging)
+3. Database (conexión PostgreSQL)
+4. JWT Provider (autenticación)
+5. Email Provider (SMTP)
+6. Cache Provider (Redis)
+7. Email Services (servicios de email)
+
+#### `/src/infrastructure/clouds/`
+
+Adaptadores para plataformas cloud y serverless.
+
+##### `/src/infrastructure/clouds/aws/`
+
+Implementación para **AWS Lambda**:
+
+- **`init.go`**: Inicialización de infraestructura AWS
+  - Carga configuración desde AWS Secrets Manager
+  - Inicializa base de datos, providers y servicios
+  - Optimizado para cold starts de Lambda
+
+- **`lambda_adapter.go`**: Adaptador para eventos Lambda
+  - Convierte eventos API Gateway a `HandlerContext`
+  - Maneja respuestas HTTP
+  - Gestiona errores y códigos de estado
+
+- **`secrets_manager.go`**: Integración con AWS Secrets Manager
+  - Carga automática de secretos desde ARNs
+  - Fallback a variables de entorno
+  - Cache de secretos para optimización
+
+- **`middleware.go`**: Middlewares específicos para Lambda
+  - Autenticación JWT
+  - Logging estructurado
+  - Manejo de errores
+
+- **`render_provider.go`**: Provider de renderizado para AWS
+  - Renderizado de templates HTML
+  - Optimizado para entorno serverless
+
+- **`functions/`**: Generador de funciones Lambda
+  - **`main.go`**: Herramienta CLI para generar y desplegar
+  - **`functions.json`**: Definición de funciones Lambda
+  - **`utils/generate.go`**: Generación de código desde templates
+  - **`utils/deploy.go`**: Despliegue a AWS Lambda
+
+- **`terraform/`**: Infraestructura como código
+  - Definición de funciones Lambda
+  - API Gateway
+  - IAM roles y políticas
+  - Variables y outputs
+
+##### `/src/infrastructure/clouds/azure/`
+
+Implementación para **Azure Functions**:
+
+- **`init.go`**: Inicialización de infraestructura Azure
+  - Carga configuración desde Azure Key Vault
+  - Inicializa base de datos, providers y servicios
+  - Optimizado para Azure Functions
+
+- **`http_adapter.go`**: Adaptador para HTTP triggers
+  - Convierte requests HTTP a `HandlerContext`
+  - Maneja respuestas HTTP
+  - Gestiona errores y códigos de estado
+
+- **`vault.go`**: Integración con Azure Key Vault
+  - Carga automática de secretos
+  - Autenticación con Managed Identity
+  - Cache de secretos
+
+- **`middleware.go`**: Middlewares específicos para Azure
+  - Autenticación JWT
+  - Logging estructurado
+  - Manejo de errores
+
+- **`functions/`**: Generador de funciones Azure
+  - **`functions.json`**: Definición de funciones
+  - **`generate.go`**: Generación de código
+  - Templates para Azure Functions
+
+- **`terraform/`**: Infraestructura como código
+  - Definición de Function Apps
+  - App Service Plans
+  - Key Vault integration
+  - Variables y outputs
 
 ### `/docker/` - Configuración Docker
 
@@ -2082,28 +2380,163 @@ Inicialización de infraestructura:
 
 ### Stack Tecnológico
 
-#### Lenguaje y Runtime
+#### 🚀 Lenguaje y Runtime
 - **Go 1.25**: Lenguaje de programación
+  - Concurrencia nativa con goroutines
+  - Compilación estática
+  - Tree shaking automático
+  - Excelente rendimiento
 
-#### Framework Web
+#### 🌐 Framework Web
 - **Gin v1.10.0**: Framework HTTP minimalista y rápido
+  - Router de alto rendimiento
+  - Middleware chain
+  - JSON binding automático
+  - Validación de requests
+
 - **gin-contrib/cors**: Middleware CORS
+  - Configuración flexible de orígenes
+  - Soporte para credenciales
+  - Headers personalizables
+
 - **gin-contrib/graceful**: Shutdown graceful
+  - Cierre ordenado del servidor
+  - Finalización de requests en curso
+  - Timeout configurable
 
-#### Base de Datos
+#### 💾 Base de Datos y Persistencia
 - **GORM v1.25.12**: ORM para Go
+  - Migraciones automáticas
+  - Hooks y callbacks
+  - Relaciones y asociaciones
+  - Query builder fluido
+
 - **PostgreSQL (pgx/v5)**: Driver de PostgreSQL
+  - Connection pooling nativo
+  - Transacciones
+  - Prepared statements
+  - Soporte para tipos avanzados
+
 - **Redis (go-redis/v9)**: Cliente Redis para cache
+  - Operaciones atómicas
+  - Pub/Sub
+  - Pipeline support
+  - Cluster support
 
-#### Autenticación y Seguridad
+#### 🔐 Autenticación y Seguridad
 - **golang-jwt/jwt/v5**: Implementación de JWT
-- **golang.org/x/crypto**: Utilidades criptográficas (bcrypt)
+  - Generación y validación de tokens
+  - Múltiples algoritmos (HS256, RS256, etc.)
+  - Claims personalizados
+  - Expiración y validación de tiempo
 
-#### Utilidades
-- **joho/godotenv**: Carga de variables de entorno
+- **golang.org/x/crypto**: Utilidades criptográficas
+  - Bcrypt para hash de contraseñas
+  - Salt automático
+  - Cost configurable
+
+#### 📚 Documentación y Testing
 - **swaggo/swag**: Generación de documentación Swagger
+  - Anotaciones en código Go
+  - Generación automática de OpenAPI
+  - Validación de esquemas
+
 - **swaggo/gin-swagger**: Integración Swagger con Gin
+  - UI interactiva
+  - Pruebas desde navegador
+  - Autenticación en Swagger UI
+
 - **stretchr/testify**: Framework de testing
+  - Assertions mejoradas
+  - Mocks y suites
+  - Test helpers
+
+#### 🛠️ Utilidades
+- **joho/godotenv**: Carga de variables de entorno
+  - Soporte para `.env` files
+  - Override de variables
+  - Validación de variables requeridas
+
+### Dependencias Principales
+
+```go
+require (
+    // Web Framework
+    github.com/gin-gonic/gin v1.10.0
+    github.com/gin-contrib/cors v1.7.0
+    github.com/gin-contrib/graceful v1.0.0
+
+    // Authentication
+    github.com/golang-jwt/jwt/v5 v5.3.0
+
+    // Database
+    github.com/jackc/pgx/v5 v5.7.2
+    gorm.io/gorm v1.25.12
+    gorm.io/driver/postgres v1.5.11
+
+    // Cache
+    github.com/redis/go-redis/v9 v9.13.0
+
+    // Security
+    golang.org/x/crypto v0.41.0
+
+    // Documentation
+    github.com/swaggo/swag v1.16.6
+    github.com/swaggo/gin-swagger v1.6.0
+
+    // Testing
+    github.com/stretchr/testify v1.10.0
+
+    // Utilities
+    github.com/joho/godotenv v1.5.1
+)
+```
+
+### Arquitectura de Dependencias
+
+```mermaid
+graph TB
+    subgraph Core["Núcleo"]
+        Go[Go 1.25]
+    end
+
+    subgraph Web["Capa Web"]
+        Gin[Gin Framework]
+        CORS[CORS Middleware]
+        Graceful[Graceful Shutdown]
+    end
+
+    subgraph Data["Capa de Datos"]
+        GORM[GORM ORM]
+        PostgreSQL[PostgreSQL Driver]
+        Redis[Redis Client]
+    end
+
+    subgraph Auth["Autenticación"]
+        JWT[JWT Library]
+        Crypto[Crypto Utils]
+    end
+
+    subgraph Docs["Documentación"]
+        Swag[Swag Generator]
+        SwaggerUI[Swagger UI]
+    end
+
+    Go --> Gin
+    Gin --> CORS
+    Gin --> Graceful
+    Gin --> GORM
+    GORM --> PostgreSQL
+    Gin --> Redis
+    Gin --> JWT
+    JWT --> Crypto
+    Gin --> Swag
+    Swag --> SwaggerUI
+
+    style Go fill:#00ADD8
+    style Gin fill:#00ADD8
+    style GORM fill:#00ADD8
+```
 
 ### Dependencias Principales
 
@@ -2214,59 +2647,247 @@ go run src/infrastructure/api/cmd/main.go
 
 ## Módulos de Negocio
 
-### Módulo de Autenticación (`auth`)
+### 🔐 Módulo de Autenticación (`auth`)
 
-**Funcionalidades:**
-- Login con email/contraseña
-- Login con OTP (One-Time Password)
-- Refresh de tokens JWT
-- Reset de contraseña
+**Responsabilidad**: Gestión completa de autenticación y autorización.
 
-**Casos de Uso:**
-- `AuthenticateUseCase`: Autenticación principal
-- `JWTRefreshUseCase`: Renovación de tokens
-- `OTPLoginUseCase`: Autenticación con OTP
-- `PasswordResetUseCase`: Reset de contraseña
-- `AuthUserUseCase`: Validación de usuario desde token
+#### Funcionalidades
 
-### Módulo de Usuarios (`user`)
+- ✅ **Login con Email/Contraseña** - Autenticación tradicional
+- ✅ **Login con OTP** - Autenticación de dos factores
+- ✅ **Refresh de Tokens** - Renovación de access tokens
+- ✅ **Reset de Contraseña** - Recuperación mediante tokens
+- ✅ **Validación de Usuario** - Verificación desde JWT token
 
-**Funcionalidades:**
-- CRUD completo de usuarios
-- Activación de cuentas
-- Gestión de roles
-- Paginación y filtrado
-- Cache para listados
+#### Casos de Uso Detallados
 
-**Casos de Uso:**
-- `CreateUserUseCase`: Crear usuario
-- `CreateUserAndPasswordUseCase`: Crear usuario con contraseña
-- `CreateUserSendEmailUseCase`: Enviar email de bienvenida
-- `GetUserUseCase`: Obtener usuario
-- `GetAllUserUseCase`: Listar usuarios (con cache)
-- `UpdateUserUseCase`: Actualizar usuario
-- `DeleteUserUseCase`: Eliminar usuario
-- `ActivateUserUseCase`: Activar usuario
+**`JwtAuthUseCase`** - Autenticación principal
+```go
+// Flujo:
+// 1. Valida credenciales (email/phone + password)
+// 2. Verifica contraseña con hash
+// 3. Si OTP activado → genera y envía OTP
+// 4. Si OTP desactivado → genera tokens JWT
+// 5. Retorna tokens o indica que se envió OTP
+```
 
-### Módulo de Contraseñas (`password`)
+**`JwtAuthRefreshUseCase`** - Renovación de tokens
+```go
+// Flujo:
+// 1. Valida refresh token
+// 2. Verifica expiración y firma
+// 3. Genera nuevo access token
+// 4. Retorna nuevo token
+```
 
-**Funcionalidades:**
-- Creación de contraseñas
-- Generación de tokens de reset
-- Validación de contraseñas
+**`JwtAuthOtpUseCase`** - Autenticación con OTP
+```go
+// Flujo:
+// 1. Valida código OTP
+// 2. Verifica expiración y uso
+// 3. Invalida OTP usado
+// 4. Genera tokens JWT
+// 5. Retorna tokens
+```
 
-**Casos de Uso:**
-- `CreatePasswordUseCase`: Crear contraseña
-- `CreatePasswordTokenUseCase`: Crear token de reset
+**`GetResetPasswordTokenUseCase`** - Generación de token de reset
+```go
+// Flujo:
+// 1. Busca usuario por email/phone
+// 2. Genera token único
+// 3. Crea registro en BD con expiración
+// 4. Envía email con link de reset
+```
 
-### Módulo de Estado (`status`)
+**`JwtAuthUserUseCase`** - Validación de usuario desde token
+```go
+// Flujo:
+// 1. Extrae token del contexto
+// 2. Valida y parsea token
+// 3. Busca usuario en BD
+// 4. Retorna usuario con rol
+```
 
-**Funcionalidades:**
-- Health check del sistema
-- Estado de la aplicación
+#### Pipes
 
-**Casos de Uso:**
-- `GetStatusUseCase`: Obtener estado del sistema
+**`GetResetPasswordPipe`** - Pipe para reset de contraseña
+- Orquesta generación de token y envío de email
+- Ejecución secuencial con manejo de errores
+
+### 👥 Módulo de Usuarios (`user`)
+
+**Responsabilidad**: Gestión completa del ciclo de vida de usuarios.
+
+#### Funcionalidades
+
+- ✅ **CRUD Completo** - Crear, leer, actualizar, eliminar
+- ✅ **Activación de Cuentas** - Activación mediante tokens
+- ✅ **Gestión de Roles** - Asignación y validación de roles
+- ✅ **Paginación y Filtrado** - Consultas eficientes
+- ✅ **Cache Inteligente** - Cache de listados con Redis
+- ✅ **Emails Transaccionales** - Bienvenida y reactivación
+
+#### Casos de Uso Detallados
+
+**`CreateUserUseCase`** - Crear usuario básico
+```go
+// Flujo:
+// 1. Valida datos de entrada
+// 2. Verifica que email/phone no existan
+// 3. Crea usuario con estado "pending"
+// 4. Retorna usuario creado
+```
+
+**`CreateUserAndPasswordUseCase`** - Crear usuario con contraseña
+```go
+// Flujo:
+// 1. Valida datos de usuario y contraseña
+// 2. Hash de contraseña con Bcrypt
+// 3. Crea usuario y contraseña en transacción
+// 4. Retorna usuario creado
+```
+
+**`CreateUserSendEmailUseCase`** - Enviar email de bienvenida
+```go
+// Flujo:
+// 1. Renderiza template de email
+// 2. Envía email con datos del usuario
+// 3. Maneja errores de envío
+```
+
+**`GetUserUseCase`** - Obtener usuario por ID
+```go
+// Flujo:
+// 1. Valida ID
+// 2. Busca usuario en BD
+// 3. Incluye información de rol
+// 4. Retorna usuario con rol
+```
+
+**`GetAllUserUseCase`** - Listar usuarios con filtros
+```go
+// Flujo:
+// 1. Verifica cache (Redis)
+// 2. Si cache hit → retorna desde cache
+// 3. Si cache miss → consulta BD con filtros
+// 4. Aplica paginación y ordenamiento
+// 5. Guarda en cache con TTL
+// 6. Retorna lista paginada
+```
+
+**`UpdateUserUseCase`** - Actualizar usuario
+```go
+// Flujo:
+// 1. Valida datos de actualización
+// 2. Busca usuario existente
+// 3. Aplica cambios parciales (PATCH)
+// 4. Valida reglas de negocio
+// 5. Actualiza en BD
+// 6. Retorna usuario actualizado
+```
+
+**`DeleteUserUseCase`** - Eliminar usuario (soft delete)
+```go
+// Flujo:
+// 1. Busca usuario
+// 2. Verifica permisos (no eliminar admin)
+// 3. Soft delete (marca como deleted)
+// 4. Invalida cache relacionado
+```
+
+**`ActivateUserUseCase`** - Activar cuenta de usuario
+```go
+// Flujo:
+// 1. Valida token de activación
+// 2. Verifica expiración
+// 3. Cambia estado a "active"
+// 4. Invalida token usado
+```
+
+**`ResendWelcomeEmailUseCase`** - Reenviar email de bienvenida
+```go
+// Flujo:
+// 1. Busca usuario
+// 2. Renderiza template
+// 3. Envía email
+```
+
+#### Pipes
+
+**`CreateUserPipe`** - Pipe para crear usuario completo
+- Ejecuta secuencialmente:
+  1. `CreateUserAndPasswordUseCase` → Crea usuario con contraseña
+  2. `CreateUserSendEmailUseCase` → Envía email de bienvenida
+- Manejo de errores: Si falla cualquier paso, se detiene la ejecución
+
+### 🔑 Módulo de Contraseñas (`password`)
+
+**Responsabilidad**: Gestión segura de contraseñas.
+
+#### Funcionalidades
+
+- ✅ **Creación de Contraseñas** - Hash seguro con Bcrypt
+- ✅ **Generación de Tokens de Reset** - Tokens únicos con expiración
+- ✅ **Validación de Fortaleza** - Reglas de contraseña segura
+- ✅ **Expiración de Contraseñas** - Contraseñas temporales
+
+#### Casos de Uso Detallados
+
+**`CreatePasswordUseCase`** - Crear nueva contraseña
+```go
+// Flujo:
+// 1. Valida fortaleza de contraseña
+// 2. Hash con Bcrypt
+// 3. Desactiva contraseñas anteriores
+// 4. Crea nueva contraseña activa
+// 5. Configura expiración si aplica
+```
+
+**`CreatePasswordTokenUseCase`** - Crear token de reset
+```go
+// Flujo:
+// 1. Busca usuario por email/phone
+// 2. Genera token único
+// 3. Crea registro con expiración
+// 4. Envía email con link de reset
+```
+
+#### Pipes
+
+**`CreatePasswordTokenPipe`** - Pipe para reset de contraseña
+- Orquesta creación de token y envío de email
+
+### 📊 Módulo de Estado (`status`)
+
+**Responsabilidad**: Monitoreo y salud del sistema.
+
+#### Funcionalidades
+
+- ✅ **Health Check** - Estado general del sistema
+- ✅ **Verificación de Servicios** - BD, Redis, etc.
+- ✅ **Información de Versión** - Versión de la aplicación
+
+#### Casos de Uso Detallados
+
+**`GetStatusUseCase`** - Obtener estado del sistema
+```go
+// Flujo:
+// 1. Verifica conexión a PostgreSQL
+// 2. Verifica conexión a Redis
+// 3. Verifica providers (JWT, Email)
+// 4. Retorna estado consolidado
+// 5. Incluye información de versión
+```
+
+### 📈 Estadísticas por Módulo
+
+| Módulo | Casos de Uso | Pipes | Tests | Endpoints |
+|--------|--------------|-------|-------|-----------|
+| **auth** | 5 | 1 | 5+ | 4 |
+| **user** | 9 | 1 | 9+ | 7 |
+| **password** | 2 | 1 | 2+ | 2 |
+| **status** | 1 | 0 | 1+ | 1 |
+| **Total** | **17** | **3** | **17+** | **14** |
 
 ---
 
@@ -2929,24 +3550,231 @@ r.POST("/new-entity", wrapHandler(handlers.CreateNewEntity))
 
 ---
 
+## 🎯 Mejores Prácticas y Convenciones
+
+### Convenciones de Código
+
+#### Nomenclatura
+- **Variables**: `camelCase` (ej: `userName`, `isActive`)
+- **Tipos y Structs**: `PascalCase` (ej: `User`, `UserRepository`)
+- **Interfaces**: `I` + `PascalCase` (ej: `IUserRepository`, `IHashProvider`)
+- **Constantes**: `UPPER_SNAKE_CASE` (ej: `USER_STATUS_ACTIVE`)
+- **Paquetes**: `lowercase` (ej: `user`, `auth`)
+
+#### Estructura de Archivos
+- **Use Cases**: `{action}_{entity}.go` (ej: `create_user.go`, `get_user.go`)
+- **Repositories**: `{entity}.go` (ej: `user.go`, `password.go`)
+- **Handlers**: `{entity}.go` o `{module}.go` (ej: `user.go`, `auth.go`)
+- **Tests**: `{file}_test.go` (ej: `create_user_test.go`)
+
+#### Organización de Código
+```go
+// 1. Imports (std, third-party, local)
+import (
+    "context"
+    "fmt"
+
+    "github.com/gin-gonic/gin"
+
+    "goprojectskeleton/src/domain/models"
+)
+
+// 2. Types y Structs
+type UserRepository struct {
+    // ...
+}
+
+// 3. Constructors
+func NewUserRepository(...) *UserRepository {
+    // ...
+}
+
+// 4. Métodos públicos
+func (r *UserRepository) Create(...) {
+    // ...
+}
+
+// 5. Métodos privados
+func (r *UserRepository) validate(...) {
+    // ...
+}
+```
+
+### Principios de Diseño Aplicados
+
+#### 1. Single Responsibility Principle (SRP)
+Cada componente tiene una única responsabilidad:
+- **Use Cases**: Lógica de negocio específica
+- **Repositories**: Acceso a datos
+- **Handlers**: Adaptación HTTP
+- **Providers**: Servicios externos
+
+#### 2. Dependency Inversion Principle (DIP)
+Las capas internas definen interfaces que las externas implementan:
+```go
+// Application define la interfaz
+type IUserRepository interface {
+    Create(input UserCreate) (*User, error)
+}
+
+// Infrastructure implementa la interfaz
+type UserRepository struct {
+    DB *gorm.DB
+}
+```
+
+#### 3. Open/Closed Principle (OCP)
+Abierto para extensión, cerrado para modificación:
+- Nuevos providers sin modificar código existente
+- Nuevos casos de uso sin afectar otros
+- Nuevos repositorios siguiendo interfaces
+
+#### 4. Interface Segregation Principle (ISP)
+Interfaces específicas y pequeñas:
+```go
+// En lugar de una interfaz grande
+type IProvider interface {
+    // 50 métodos...
+}
+
+// Interfaces específicas
+type IHashProvider interface {
+    Hash(password string) (string, error)
+    Compare(hashed, plain string) bool
+}
+```
+
+#### 5. Don't Repeat Yourself (DRY)
+Reutilización mediante:
+- `RepositoryBase` para operaciones CRUD comunes
+- `BaseUseCaseValidation` para validación común
+- Servicios compartidos en `application/shared/services`
+
+### Manejo de Errores
+
+#### Estructura de Errores
+```go
+type ApplicationError struct {
+    Code    status.ApplicationStatusCode
+    Context string
+    ErrMsg  string
+}
+```
+
+#### Estrategia de Errores
+1. **Domain Layer**: Errores de negocio (validaciones)
+2. **Application Layer**: Errores de aplicación (`ApplicationError`)
+3. **Infrastructure Layer**: Errores técnicos (mapeados a `ApplicationError`)
+
+### Logging
+
+#### Niveles de Logging
+- **Info**: Información general del flujo
+- **Error**: Errores que requieren atención
+- **Debug**: Información detallada para debugging
+- **Panic**: Errores críticos que detienen la aplicación
+
+#### Ejemplo de Uso
+```go
+providers.Logger.Info("User created successfully", map[string]interface{}{
+    "user_id": user.ID,
+    "email": user.Email,
+})
+
+providers.Logger.Error("Failed to create user", err)
+```
+
+### Testing
+
+#### Estructura de Tests
+```go
+func TestCreateUser(t *testing.T) {
+    // Arrange
+    mockRepo := &MockUserRepository{}
+    useCase := NewCreateUserUseCase(logger, mockRepo)
+
+    // Act
+    result := useCase.Execute(ctx, locale, input)
+
+    // Assert
+    assert.NoError(t, result.Error)
+    assert.NotNil(t, result.Data)
+}
+```
+
+#### Tipos de Tests
+1. **Unit Tests**: Casos de uso con mocks
+2. **Integration Tests**: Repositorios con BD real
+3. **E2E Tests**: Flujos completos con Postman
+
 ## Conclusión
 
 **GoProjectSkeleton** proporciona una base sólida, escalable y mantenible para desarrollar aplicaciones empresariales en Go. La arquitectura Clean Architecture, junto con patrones de diseño avanzados, proporciona una base excelente para el crecimiento del sistema.
 
-### Puntos Fuertes
+### 🎯 Puntos Fuertes
 
 - ✅ **Arquitectura sólida** y bien estructurada
 - ✅ **Escalabilidad** horizontal y vertical
-- ✅ **Serverless ready** - Fácil migración a serverless
+- ✅ **Serverless ready** - Fácil migración a serverless (AWS Lambda, Azure Functions)
 - ✅ **Testing completo** en múltiples capas
-- ✅ **Documentación** exhaustiva
+- ✅ **Documentación** exhaustiva con Swagger
 - ✅ **Docker completo** para desarrollo y producción
+- ✅ **Multi-cloud** - Soporte para AWS y Azure
+- ✅ **Seguridad** - JWT, OTP, hash seguro de contraseñas
+- ✅ **Internacionalización** - Soporte multiidioma
+- ✅ **Optimización** - Cache, tree shaking, connection pooling
 
-### Próximos Pasos
+### 🚀 Casos de Uso Ideales
 
-1. Revisar la documentación Swagger en `/docs/`
-2. Explorar los tests de ejemplo
-3. Adaptar a tus necesidades específicas
-4. Agregar nuevas funcionalidades siguiendo los patrones establecidos
+- **APIs RESTful** empresariales
+- **Microservicios** escalables
+- **Aplicaciones Serverless** (AWS Lambda, Azure Functions)
+- **Sistemas de autenticación** robustos
+- **APIs con alta concurrencia**
+- **Proyectos que requieren mantenibilidad** a largo plazo
 
-Para más información, consulta la documentación Swagger en `/docs/` o revisa los tests de ejemplo en la carpeta `tests/`.
+### 📚 Próximos Pasos
+
+1. **Explorar la Documentación**
+   - Revisar Swagger en `http://localhost:8080/docs/`
+   - Leer ejemplos de código en cada módulo
+
+2. **Ejecutar Tests**
+   ```bash
+   go test ./src/...
+   go test ./tests/integration/...
+   ```
+
+3. **Adaptar a tus Necesidades**
+   - Personalizar modelos de dominio
+   - Agregar nuevos módulos de negocio
+   - Configurar providers según tus servicios
+
+4. **Desplegar**
+   - Desarrollo: Docker Compose
+   - Producción: Monolito tradicional o Serverless
+   - Cloud: AWS Lambda o Azure Functions
+
+### 🤝 Contribuciones
+
+Este proyecto sigue las mejores prácticas de Go y arquitectura limpia. Al contribuir:
+
+1. Mantén la separación de capas
+2. Sigue las convenciones de código
+3. Escribe tests para nuevas funcionalidades
+4. Documenta cambios importantes
+5. Actualiza Swagger para nuevos endpoints
+
+### 📞 Soporte
+
+Para más información:
+- **Documentación Swagger**: `/docs/`
+- **Tests de Ejemplo**: `tests/`
+- **Código Fuente**: Explora `src/` para ver implementaciones
+
+---
+
+<div align="center">
+  <p>Hecho con ❤️ usando Go y Clean Architecture</p>
+  <p>⭐ Si este proyecto te es útil, considera darle una estrella</p>
+</div>
