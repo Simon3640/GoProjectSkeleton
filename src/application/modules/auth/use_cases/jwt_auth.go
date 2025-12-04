@@ -1,4 +1,5 @@
-package auth
+// Package authusecases contains the use cases for the authentication module.
+package authusecases
 
 import (
 	"context"
