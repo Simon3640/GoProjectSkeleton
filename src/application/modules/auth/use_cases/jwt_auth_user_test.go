@@ -6,8 +6,9 @@ import (
 
 	contractsProviders "goprojectskeleton/src/application/contracts/providers"
 	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/mocks"
 	dtomocks "goprojectskeleton/src/application/shared/mocks/dtos"
+	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
 	"goprojectskeleton/src/application/shared/status"
 	"testing"
 	"time"
@@ -18,9 +19,9 @@ import (
 func TestAuthUserCase(t *testing.T) {
 	asswert := assert.New(t)
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testJWTProvider := new(mocks.MockJWTProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
 		testLogger,
@@ -54,9 +55,9 @@ func TestAuthUserCase(t *testing.T) {
 func TestAuthUserCase_InvalidToken(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testJWTProvider := new(mocks.MockJWTProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
 		testLogger,
@@ -77,9 +78,9 @@ func TestAuthUserCase_InvalidToken(t *testing.T) {
 func TestAuthUserCase_ExpiredToken(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testJWTProvider := new(mocks.MockJWTProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
 		testLogger,
@@ -107,9 +108,9 @@ func TestAuthUserCase_ExpiredToken(t *testing.T) {
 func TestAuthUserCase_NoAccessToken(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testJWTProvider := new(mocks.MockJWTProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
 		testLogger,

@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/mocks"
+	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
 	"goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -18,10 +19,10 @@ func TestGetResetPasswordTokenUseCase(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testMockHashProvider := new(mocks.MockHashProvider)
-	testOneTimeTokenRepo := new(mocks.MockOneTimeTokenRepository)
-	testUserRepo := new(mocks.MockUserRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testMockHashProvider := new(providersmocks.MockHashProvider)
+	testOneTimeTokenRepo := new(repositoriesmocks.MockOneTimeTokenRepository)
+	testUserRepo := new(repositoriesmocks.MockUserRepository)
 
 	uc := NewGetResetPasswordTokenUseCase(testLogger,
 		testOneTimeTokenRepo,

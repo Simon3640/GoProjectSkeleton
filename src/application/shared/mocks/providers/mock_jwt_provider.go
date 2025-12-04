@@ -1,4 +1,4 @@
-package mocks
+package providersmocks
 
 import (
 	"context"

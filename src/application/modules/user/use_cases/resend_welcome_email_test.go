@@ -8,7 +8,8 @@ import (
 	dtos "goprojectskeleton/src/application/shared/DTOs"
 	application_errors "goprojectskeleton/src/application/shared/errors"
 	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/mocks"
+	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
 	email_service "goprojectskeleton/src/application/shared/services/emails"
 	email_models "goprojectskeleton/src/application/shared/services/emails/models"
 	"goprojectskeleton/src/application/shared/status"
@@ -23,13 +24,13 @@ func TestResendWelcomeEmailUseCase_Execute_Success(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testTokenRepository := new(mocks.MockOneTimeTokenRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
-	mockRenderProvider := new(mocks.MockRenderProvider[email_models.NewUserEmailData])
-	mockEmailProvider := new(mocks.MockEmailProvider)
+	mockRenderProvider := new(providersmocks.MockRenderProvider[email_models.NewUserEmailData])
+	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
 	email := "test@example.com"
 	userStatus := models.UserStatusPending
@@ -98,10 +99,10 @@ func TestResendWelcomeEmailUseCase_Execute_InvalidEmail(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testTokenRepository := new(mocks.MockOneTimeTokenRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
 	uc := NewResendWelcomeEmailUseCase(
 		testLogger,
@@ -126,10 +127,10 @@ func TestResendWelcomeEmailUseCase_Execute_UserAlreadyVerified(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testTokenRepository := new(mocks.MockOneTimeTokenRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
 	email := "test@example.com"
 	userStatus := models.UserStatusActive
@@ -174,10 +175,10 @@ func TestResendWelcomeEmailUseCase_Execute_UserNotFound(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testTokenRepository := new(mocks.MockOneTimeTokenRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
 	email := "notfound@example.com"
 
@@ -212,10 +213,10 @@ func TestResendWelcomeEmailUseCase_Execute_RepositoryError(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testTokenRepository := new(mocks.MockOneTimeTokenRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
 	email := "test@example.com"
 

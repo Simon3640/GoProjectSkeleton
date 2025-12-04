@@ -7,7 +7,7 @@ import (
 
 	contractsProviders "goprojectskeleton/src/application/contracts/providers"
 	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/mocks"
+	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -17,8 +17,8 @@ func TestAuthenticationRefreshUseCase(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testJWTProvider := new(mocks.MockJWTProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
 
 	uc := NewAuthenticationRefreshUseCase(testLogger, testJWTProvider)
 
