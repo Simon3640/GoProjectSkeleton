@@ -32,7 +32,7 @@ func (ep *EmailProvider) buildConnection() func(to string, message []byte) error
 	return func(to string, message []byte) error {
 		var auth smtp.Auth
 		// para testing con Mailpit: no hace falta autenticación
-		if settings.AppSettingsInstance.AppEnv == "development" || settings.AppSettingsInstance.AppEnv == "test" {
+		if !settings.AppSettingsInstance.MailAuthRequired {
 			auth = nil
 		} else {
 			auth = smtp.PlainAuth("", ep.from, ep.password, ep.smtpHost)

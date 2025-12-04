@@ -47,10 +47,11 @@ type AppSettings struct {
 	OneTimePasswordLength      int   // length of the generated one-time password
 
 	// Mail
-	MailHost     string
-	MailPort     int
-	MailPassword string
-	MailFrom     string
+	MailHost         string
+	MailPort         int
+	MailPassword     string
+	MailFrom         string
+	MailAuthRequired bool
 }
 
 func NewAppSettings() *AppSettings {
