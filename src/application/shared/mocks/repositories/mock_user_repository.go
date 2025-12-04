@@ -1,4 +1,5 @@
-package mocks
+// Package repositoriesmocks contains mock implementations of the contracts/repositories/ interfaces
+package repositoriesmocks
 
 import (
 	contracts_repositories "goprojectskeleton/src/application/contracts/repositories"

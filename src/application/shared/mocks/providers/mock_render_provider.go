@@ -1,4 +1,4 @@
-package mocks
+package providersmocks
 
 import (
 	contractsProviders "goprojectskeleton/src/application/contracts/providers"

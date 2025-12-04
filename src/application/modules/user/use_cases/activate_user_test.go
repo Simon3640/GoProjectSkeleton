@@ -8,7 +8,8 @@ import (
 
 	dtos "goprojectskeleton/src/application/shared/DTOs"
 	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/mocks"
+	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
 	"goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -19,10 +20,10 @@ func TestActivateUserUseCase(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testOneTimeTokenRepository := new(mocks.MockOneTimeTokenRepository)
-	testHashProvider := new(mocks.MockHashProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
+	testHashProvider := new(providersmocks.MockHashProvider)
 
 	// Entity Mocks
 
