@@ -54,7 +54,7 @@ resource "aws_db_instance" "postgres" {
   instance_class = "db.t3.micro" # Equivalent to B_Standard_B1ms in Azure
 
   # Storage configuration
-  allocated_storage     = 20 # GB (minimum for PostgreSQL)
+  allocated_storage     = 20  # GB (minimum for PostgreSQL)
   max_allocated_storage = 100 # Auto-scaling up to 100GB
   storage_type          = "gp3"
   storage_encrypted     = true
@@ -75,17 +75,17 @@ resource "aws_db_instance" "postgres" {
   # Backup configuration
   # Free tier allows max 1 day retention, production should use 7+
   backup_retention_period = 1 # days (free tier max, increase to 7+ for production)
-  backup_window          = "03:00-04:00"
-  maintenance_window     = "mon:04:00-mon:05:00"
+  backup_window           = "03:00-04:00"
+  maintenance_window      = "mon:04:00-mon:05:00"
 
   # Performance and availability
-  multi_az               = false # Set to true for production
-  performance_insights_enabled = true
+  multi_az                        = false # Set to true for production
+  performance_insights_enabled    = true
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
   # Deletion protection
   deletion_protection = false # Set to true for production
-  skip_final_snapshot = true   # Set to false for production
+  skip_final_snapshot = true  # Set to false for production
 
   tags = merge(
     local.common_tags,

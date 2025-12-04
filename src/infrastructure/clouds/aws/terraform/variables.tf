@@ -224,6 +224,12 @@ variable "mail_from" {
   default     = "noreply@goprojectskeleton.com"
 }
 
+variable "s3_templates_policy_arn" {
+  description = "ARN of S3 templates read policy"
+  type        = string
+}
+
+
 # VPC variables (AWS specific)
 variable "vpc_cidr" {
   description = "VPC CIDR block"

@@ -235,6 +235,11 @@ variable "secrets_manager_policy_arn" {
   type        = string
 }
 
+variable "s3_templates_policy_arn" {
+  description = "ARN of S3 templates read policy"
+  type        = string
+}
+
 # Additional variables
 variable "extra_environment_variables" {
   description = "Additional environment variables"
