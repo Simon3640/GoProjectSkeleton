@@ -7,7 +7,7 @@ import (
 
 	"goprojectskeleton/src/application/shared/locales"
 	"goprojectskeleton/src/application/shared/locales/messages"
-	"goprojectskeleton/src/application/shared/mocks"
+	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
 	"goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -18,8 +18,8 @@ func TestStatusUseCase(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testStatusProvider := new(mocks.MockStatusProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testStatusProvider := new(providersmocks.MockStatusProvider)
 	testTime := time.Now()
 	testStatusProvider.On(
 		"Get",

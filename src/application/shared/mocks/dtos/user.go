@@ -1,3 +1,4 @@
+// Package dtomocks contains mock data for DTOs for testing
 package dtomocks
 
 import (

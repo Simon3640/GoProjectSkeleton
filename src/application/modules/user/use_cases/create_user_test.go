@@ -7,8 +7,9 @@ import (
 
 	dtos "goprojectskeleton/src/application/shared/DTOs"
 	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/mocks"
 	dtomocks "goprojectskeleton/src/application/shared/mocks/dtos"
+	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
 	"goprojectskeleton/src/application/shared/status"
 	"goprojectskeleton/src/domain/models"
 
@@ -20,8 +21,8 @@ func TestCreateUserUseCase(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
 	testUser := dtomocks.UserCreate
 	userStatus := models.UserStatusPending
 	testUserRepository.On("Create", testUser).Return(&models.User{
@@ -53,8 +54,8 @@ func TestCreateUserUseCase_InvalidInput(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
 	userStatus := models.UserStatusPending
 	testUserInvalidRoleID := dtos.UserCreate{
 		UserBase: models.UserBase{Name: "Test",

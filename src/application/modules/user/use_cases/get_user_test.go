@@ -7,8 +7,9 @@ import (
 
 	app_context "goprojectskeleton/src/application/shared/context"
 	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/mocks"
 	dtomocks "goprojectskeleton/src/application/shared/mocks/dtos"
+	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
 	"goprojectskeleton/src/application/shared/status"
 	"goprojectskeleton/src/domain/models"
 
@@ -22,8 +23,8 @@ func TestGetUserUseCase(t *testing.T) {
 	actor := dtomocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
 	var testId = actor.ID
 	userStatus := models.UserStatusActive
 	testUserRepository.On("GetByID", testId).Return(&models.User{
@@ -56,8 +57,8 @@ func TestGetUserUseCase_DifferentUser(t *testing.T) {
 	actor := dtomocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
 	var testId = actor.ID + 1 // Different user ID
 	userStatus := models.UserStatusActive
 	testUserRepository.On("GetByID", testId).Return(&models.User{

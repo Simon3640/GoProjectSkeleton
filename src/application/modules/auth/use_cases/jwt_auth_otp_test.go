@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/mocks"
 	dtomocks "goprojectskeleton/src/application/shared/mocks/dtos"
+	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
 	"goprojectskeleton/src/application/shared/status"
 
 	"github.com/stretchr/testify/assert"
@@ -19,11 +20,11 @@ func TestAuthenticateOTPUseCase_Valid(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testOTPRepository := new(mocks.MockOneTimePasswordRepository)
-	testJWTProvider := new(mocks.MockJWTProvider)
-	testHashProvider := new(mocks.MockHashProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
 
 	authOTPUseCase := NewAuthenticateOTPUseCase(
 		testLogger,
@@ -75,11 +76,11 @@ func TestAuthenticateOTPUseCase_InvalidOTP(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testOTPRepository := new(mocks.MockOneTimePasswordRepository)
-	testJWTProvider := new(mocks.MockJWTProvider)
-	testHashProvider := new(mocks.MockHashProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
 
 	authOTPUseCase := NewAuthenticateOTPUseCase(
 		testLogger,

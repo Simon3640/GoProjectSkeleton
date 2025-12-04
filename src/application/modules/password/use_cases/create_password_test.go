@@ -8,8 +8,9 @@ import (
 	dtos "goprojectskeleton/src/application/shared/DTOs"
 	app_context "goprojectskeleton/src/application/shared/context"
 	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/mocks"
 	dtomocks "goprojectskeleton/src/application/shared/mocks/dtos"
+	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
 	"goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -22,9 +23,9 @@ func TestCreatePasswordUseCase(t *testing.T) {
 
 	actor := dtomocks.UserWithRole
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testPasswordRepository := new(mocks.MockPasswordRepository)
-	testHashProvider := new(mocks.MockHashProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testHashProvider := new(providersmocks.MockHashProvider)
 	testPassword := dtos.PasswordCreateNoHash{
 		UserID:           actor.ID,
 		NoHashedPassword: "TestPassword123!",

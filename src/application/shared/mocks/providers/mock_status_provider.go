@@ -1,4 +1,5 @@
-package mocks
+// Package providersmocks contains mock implementations of the contracts/providers/ interfaces
+package providersmocks
 
 import (
 	"time"

@@ -1,4 +1,4 @@
-package mocks
+package repositoriesmocks
 
 import (
 	contracts_repositories "goprojectskeleton/src/application/contracts/repositories"
