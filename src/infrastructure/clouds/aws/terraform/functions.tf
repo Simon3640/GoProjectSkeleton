@@ -6,16 +6,16 @@ locals {
   # Convert JSON to map for for_each
   functions_map = {
     for fn in local.functions_json : fn.name => {
-      name           = fn.name
-      path           = fn.path
-      handler        = fn.handler
-      route          = fn.route
-      method         = fn.method
-      authLevel      = fn.authLevel
-      needsAuth      = try(fn.needsAuth, false)
-      needsQuery     = try(fn.needsQuery, false)
-      hasPathParams  = try(fn.hasPathParams, false)
-      pathParamName  = try(fn.pathParamName, "")
+      name          = fn.name
+      path          = fn.path
+      handler       = fn.handler
+      route         = fn.route
+      method        = fn.method
+      authLevel     = fn.authLevel
+      needsAuth     = try(fn.needsAuth, false)
+      needsQuery    = try(fn.needsQuery, false)
+      hasPathParams = try(fn.hasPathParams, false)
+      pathParamName = try(fn.pathParamName, "")
     }
   }
 }
@@ -34,13 +34,13 @@ module "lambda_functions" {
   environment   = var.environment
 
   # Application variables
-  app_port         = var.app_port
-  app_version      = var.app_version
-  app_description  = var.app_description
+  app_port          = var.app_port
+  app_version       = var.app_version
+  app_description   = var.app_description
   app_support_email = var.app_support_email
-  enable_log       = var.enable_log
-  debug_log        = var.debug_log
-  templates_path   = var.templates_path
+  enable_log        = var.enable_log
+  debug_log         = var.debug_log
+  templates_path    = "s3://${aws_s3_bucket.templates.bucket}/templates/"
 
   # Database variables
   db_host                = aws_db_instance.postgres.address
@@ -58,17 +58,17 @@ module "lambda_functions" {
   redis_password_secret_arn = var.use_redis_cache && length(aws_secretsmanager_secret.redis_password) > 0 ? aws_secretsmanager_secret.redis_password[0].arn : ""
 
   # JWT variables
-  jwt_secret_arn = aws_secretsmanager_secret.jwt_secret.arn
-  jwt_issuer     = var.jwt_issuer
-  jwt_access_ttl = var.jwt_access_ttl
+  jwt_secret_arn  = aws_secretsmanager_secret.jwt_secret.arn
+  jwt_issuer      = var.jwt_issuer
+  jwt_access_ttl  = var.jwt_access_ttl
   jwt_refresh_ttl = var.jwt_refresh_ttl
   jwt_clock_skew  = var.jwt_clock_skew
 
   # Token and OTP variables
   one_time_token_ttl              = var.one_time_token_ttl
   one_time_token_email_verify_ttl = var.one_time_token_email_verify_ttl
-  one_time_password_length         = var.one_time_password_length
-  one_time_password_ttl            = var.one_time_password_ttl
+  one_time_password_length        = var.one_time_password_length
+  one_time_password_ttl           = var.one_time_password_ttl
 
   # Frontend variables
   frontend_reset_password_url   = var.frontend_reset_password_url
@@ -87,6 +87,7 @@ module "lambda_functions" {
 
   # IAM
   secrets_manager_policy_arn = aws_iam_policy.secrets_manager_access.arn
+  s3_templates_policy_arn    = aws_iam_policy.s3_templates_read.arn
 
   depends_on = [
     aws_db_instance.postgres,
@@ -94,6 +95,8 @@ module "lambda_functions" {
     aws_secretsmanager_secret.db_password,
     aws_secretsmanager_secret.jwt_secret,
     aws_secretsmanager_secret.sendgrid_key,
-    aws_iam_policy.secrets_manager_access
+    aws_iam_policy.secrets_manager_access,
+    aws_iam_policy.s3_templates_read,
+    aws_s3_object.email_templates
   ]
 }
