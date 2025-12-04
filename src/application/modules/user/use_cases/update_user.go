@@ -1,4 +1,4 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
@@ -14,6 +14,7 @@ import (
 	"goprojectskeleton/src/domain/models"
 )
 
+// UpdateUserUseCase is a use case that updates a user
 type UpdateUserUseCase struct {
 	usecase.BaseUseCaseValidation[dtos.UserUpdate, models.User]
 	log  contractsProviders.ILoggerProvider
@@ -22,12 +23,14 @@ type UpdateUserUseCase struct {
 
 var _ usecase.BaseUseCase[dtos.UserUpdate, models.User] = (*UpdateUserUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *UpdateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.Locale = locale
 	}
 }
 
+// Execute executes the use case
 func (uc *UpdateUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input dtos.UserUpdate,
@@ -59,6 +62,7 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context,
 	return result
 }
 
+// NewUpdateUserUseCase creates a new update user use case
 func NewUpdateUserUseCase(
 	log contractsProviders.ILoggerProvider,
 	repo contracts_repositories.IUserRepository,

@@ -1,4 +1,4 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
@@ -13,6 +13,7 @@ import (
 	usecase "goprojectskeleton/src/application/shared/use_case"
 )
 
+// DeleteUserUseCase is a use case that deletes a user
 type DeleteUserUseCase struct {
 	usecase.BaseUseCaseValidation[uint, types.Nil]
 	log  contractsProviders.ILoggerProvider
@@ -21,12 +22,14 @@ type DeleteUserUseCase struct {
 
 var _ usecase.BaseUseCase[uint, types.Nil] = (*DeleteUserUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *DeleteUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.Locale = locale
 	}
 }
 
+// Execute executes the use case
 func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input uint,
@@ -61,6 +64,7 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context,
 	return result
 }
 
+// NewDeleteUserUseCase creates a new delete user use case
 func NewDeleteUserUseCase(
 	log contractsProviders.ILoggerProvider,
 	repo contracts_repositories.IUserRepository,

@@ -2,7 +2,7 @@ root = "/app"
 
 [build]
 # Compile from server gin module
-cmd = "cd /app/src/infrastructure/server && swag init -g ./cmd/main.go -o /app/docs && go build -gcflags 'all=-N -l' -o /app/tmp/main ./cmd/main.go"
+cmd = "cd /app && swag init -g ./src/infrastructure/server/cmd/main.go -o docs && cd /app/src/infrastructure/server  && go build -gcflags 'all=-N -l' -o /app/tmp/main ./cmd/main.go"
 bin = "/app/tmp/main"
 full_bin = "dlv exec /app/tmp/main --headless --listen=:40000 --api-version=2 --accept-multiclient"
 include_ext = ["go", "tpl", "tmpl", "html"]

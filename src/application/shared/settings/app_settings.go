@@ -47,10 +47,11 @@ type AppSettings struct {
 	OneTimePasswordLength      int   // length of the generated one-time password
 
 	// Mail
-	MailHost     string
-	MailPort     int
-	MailPassword string
-	MailFrom     string
+	MailHost         string
+	MailPort         int
+	MailPassword     string
+	MailFrom         string
+	MailAuthRequired bool
 }
 
 func NewAppSettings() *AppSettings {
@@ -91,7 +92,7 @@ func setFieldValue(field reflect.Value, value string) error {
 	case reflect.String:
 		field.SetString(value)
 	case reflect.Bool:
-		field.SetBool(value == "true")
+		field.SetBool(value == "true" || value == "1" || value == "True" || value == "TRUE")
 	case reflect.Int:
 		intValue, err := strconv.Atoi(value)
 		if err != nil {

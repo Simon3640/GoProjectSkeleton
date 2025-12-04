@@ -35,7 +35,7 @@ func (m *MockUserRepository) GetByEmailOrPhone(emailOrPhone string) (*models.Use
 	args := m.Called(emailOrPhone)
 	errorArg := args.Get(1)
 	if errorArg != nil {
-		return args.Get(0).(*models.User), errorArg.(*application_errors.ApplicationError)
+		return nil, errorArg.(*application_errors.ApplicationError)
 	}
 	return args.Get(0).(*models.User), nil
 }

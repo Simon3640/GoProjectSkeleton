@@ -2,9 +2,11 @@ package userusecases
 
 import (
 	"context"
+	"strings"
 
 	contractsProviders "goprojectskeleton/src/application/contracts/providers"
 	contracts_repositories "goprojectskeleton/src/application/contracts/repositories"
+	dtos "goprojectskeleton/src/application/shared/DTOs"
 	"goprojectskeleton/src/application/shared/locales"
 	"goprojectskeleton/src/application/shared/locales/messages"
 	"goprojectskeleton/src/application/shared/services"
@@ -17,36 +19,69 @@ import (
 	"goprojectskeleton/src/domain/models"
 )
 
-// CreateUserSendEmailUseCase is a use case that sends an email to a user
-type CreateUserSendEmailUseCase struct {
+// ResendWelcomeEmailUseCase is a use case that resends the welcome email to the user
+type ResendWelcomeEmailUseCase struct {
 	appMessages *locales.Locale
 	log         contractsProviders.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
 	hashProvider contractsProviders.IHashProvider
-
-	tokenRepo contracts_repositories.IOneTimeTokenRepository
+	userRepo     contracts_repositories.IUserRepository
+	tokenRepo    contracts_repositories.IOneTimeTokenRepository
 }
 
-var _ usecase.BaseUseCase[models.User, models.User] = (*CreateUserSendEmailUseCase)(nil)
+var _ usecase.BaseUseCase[dtos.ResendWelcomeEmailRequest, bool] = (*ResendWelcomeEmailUseCase)(nil)
 
 // SetLocale sets the locale for the use case
-func (uc *CreateUserSendEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
+func (uc *ResendWelcomeEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
 	}
 }
 
 // Execute executes the use case
-func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
+func (uc *ResendWelcomeEmailUseCase) Execute(_ context.Context,
 	locale locales.LocaleTypeEnum,
-	input models.User,
-) *usecase.UseCaseResult[models.User] {
-	result := usecase.NewUseCaseResult[models.User]()
+	input dtos.ResendWelcomeEmailRequest,
+) *usecase.UseCaseResult[bool] {
+	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
 
+	// Validar input
+	uc.validate(&input, result)
+	if result.HasError() {
+		return result
+	}
+
+	// Search user by email or phone
+	user, err := uc.userRepo.GetByEmailOrPhone(input.Email)
+	if err != nil {
+		uc.log.Error("Error getting user by email", err.ToError())
+		result.SetError(
+			err.Code,
+			uc.appMessages.Get(
+				uc.locale,
+				err.Context,
+			),
+		)
+		return result
+	}
+
+	// Check if user is already verified
+	if *user.Status == models.UserStatusActive {
+		result.SetError(
+			status.Conflict,
+			uc.appMessages.Get(
+				uc.locale,
+				messages.MessageKeysInstance.UserAlreadyVerified,
+			),
+		)
+		return result
+	}
+
+	// Create new verification token
 	token, err := services.CreateOneTimeTokenService(
-		input.ID,
+		user.ID,
 		models.OneTimeTokenPurposeEmailVerify,
 		uc.hashProvider,
 		uc.tokenRepo,
@@ -63,17 +98,19 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 		return result
 	}
 
+	// Prepare email data
 	newUserEmailData := email_models.NewUserEmailData{
-		Name:              input.Name,
+		Name:              user.Name,
 		ActivationLink:    settings.AppSettingsInstance.FrontendActivateAccountURL + "?token=" + token,
 		ExpirationMinutes: int(settings.AppSettingsInstance.OneTimeTokenEmailVerifyTTL),
 		AppName:           settings.AppSettingsInstance.AppName,
 		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
 
+	// Send welcome email
 	if err := email_service.RegisterUserEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
-		input.Email,
+		user.Email,
 		locale,
 		templates.TemplateKeysInstance.WelcomeEmail,
 		email_service.SubjectKeysInstance.WelcomeEmail,
@@ -91,25 +128,40 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 
 	result.SetData(
 		status.Success,
-		input,
+		true,
 		uc.appMessages.Get(
 			uc.locale,
-			messages.MessageKeysInstance.USER_WAS_CREATED,
+			messages.MessageKeysInstance.WelcomeEmailResent,
 		),
 	)
 	return result
 }
 
-// NewCreateUserSendEmailUseCase creates a new create user send email use case
-func NewCreateUserSendEmailUseCase(
+func (uc *ResendWelcomeEmailUseCase) validate(
+	input *dtos.ResendWelcomeEmailRequest,
+	result *usecase.UseCaseResult[bool]) {
+	msgs := input.Validate()
+
+	if len(msgs) > 0 {
+		result.SetError(
+			status.InvalidInput,
+			strings.Join(msgs, "\n"),
+		)
+	}
+}
+
+// NewResendWelcomeEmailUseCase creates a new ResendWelcomeEmailUseCase
+func NewResendWelcomeEmailUseCase(
 	log contractsProviders.ILoggerProvider,
 	hashProvider contractsProviders.IHashProvider,
+	userRepo contracts_repositories.IUserRepository,
 	tokenRepo contracts_repositories.IOneTimeTokenRepository,
-) *CreateUserSendEmailUseCase {
-	return &CreateUserSendEmailUseCase{
+) *ResendWelcomeEmailUseCase {
+	return &ResendWelcomeEmailUseCase{
 		appMessages:  locales.NewLocale(locales.EN_US),
 		log:          log,
 		hashProvider: hashProvider,
+		userRepo:     userRepo,
 		tokenRepo:    tokenRepo,
 	}
 }
