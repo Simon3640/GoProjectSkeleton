@@ -1,7 +1,12 @@
 package aws
 
 import (
+	"fmt"
+	"strings"
+
+	contractsProviders "goprojectskeleton/src/application/contracts/providers"
 	email_service "goprojectskeleton/src/application/shared/services/emails"
+	email_models "goprojectskeleton/src/application/shared/services/emails/models"
 	settings "goprojectskeleton/src/application/shared/settings"
 	"goprojectskeleton/src/infrastructure/config"
 	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
@@ -48,25 +53,58 @@ func InitializeInfrastructure() {
 	)
 
 	// Initialize Cache Provider
-	providers.CacheProviderInstance = providers.NewRedisCacheProvider(
+	providers.CacheProviderInstance = providers.NewRedisCacheProviderTLS(
 		settings.AppSettingsInstance.RedisHost,
 		settings.AppSettingsInstance.RedisPassword,
 		settings.AppSettingsInstance.RedisDB,
 	)
 
+	// Initialize Render Providers (S3 or Local)
+	var renderNewUser contractsProviders.IRendererProvider[email_models.NewUserEmailData]
+	var renderResetPassword contractsProviders.IRendererProvider[email_models.ResetPasswordEmailData]
+	var renderOTP contractsProviders.IRendererProvider[email_models.OneTimePasswordEmailData]
+
+	// Check if templates are stored in S3
+	templatesPath := settings.AppSettingsInstance.TemplatesPath
+	if strings.HasPrefix(templatesPath, "s3://") {
+		// Extract bucket from S3 path: s3://bucket/path/
+		path := strings.TrimPrefix(templatesPath, "s3://")
+		parts := strings.SplitN(path, "/", 2)
+		if len(parts) < 1 {
+			providers.Logger.Error("Invalid S3 templates path", fmt.Errorf("path must be in format s3://bucket/path/"))
+			panic("Invalid S3 templates path")
+		}
+		bucket := parts[0]
+
+		s3RenderNewUser, s3RenderResetPassword, s3RenderOTP, err := NewS3RenderProviders(bucket)
+		if err != nil {
+			providers.Logger.Error("Failed to initialize S3 render providers", err)
+			panic("Failed to initialize S3 render providers: " + err.Error())
+		}
+
+		renderNewUser = s3RenderNewUser
+		renderResetPassword = s3RenderResetPassword
+		renderOTP = s3RenderOTP
+
+		providers.Logger.Info(fmt.Sprintf("Using S3 render providers with bucket: %s", bucket))
+	} else {
+		providers.Logger.Panic("Not s3 ", fmt.Errorf("templates path is not an S3 path: %s", templatesPath))
+		panic("Not s3 templates path: " + templatesPath)
+	}
+
 	// Services
 	email_service.RegisterUserEmailServiceInstance.SetUp(
-		providers.RenderNewUserEmailInstance,
+		renderNewUser,
 		providers.EmailProviderInstance,
 	)
 
 	email_service.ResetPasswordEmailServiceInstance.SetUp(
-		providers.RenderResetPasswordEmailInstance,
+		renderResetPassword,
 		providers.EmailProviderInstance,
 	)
 
 	email_service.OneTimePasswordEmailServiceInstance.SetUp(
-		providers.RenderOTPEmailInstance,
+		renderOTP,
 		providers.EmailProviderInstance,
 	)
 }
