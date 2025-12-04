@@ -53,7 +53,7 @@ func (uc *ResendWelcomeEmailUseCase) Execute(_ context.Context,
 		return result
 	}
 
-	// Buscar usuario por email
+	// Search user by email or phone
 	user, err := uc.userRepo.GetByEmailOrPhone(input.Email)
 	if err != nil {
 		uc.log.Error("Error getting user by email", err.ToError())
@@ -67,7 +67,19 @@ func (uc *ResendWelcomeEmailUseCase) Execute(_ context.Context,
 		return result
 	}
 
-	// Generar nuevo token de verificación
+	// Check if user is already verified
+	if *user.Status == models.UserStatusActive {
+		result.SetError(
+			status.Conflict,
+			uc.appMessages.Get(
+				uc.locale,
+				messages.MessageKeysInstance.UserAlreadyVerified,
+			),
+		)
+		return result
+	}
+
+	// Create new verification token
 	token, err := services.CreateOneTimeTokenService(
 		user.ID,
 		models.OneTimeTokenPurposeEmailVerify,
@@ -86,7 +98,7 @@ func (uc *ResendWelcomeEmailUseCase) Execute(_ context.Context,
 		return result
 	}
 
-	// Preparar datos del email
+	// Prepare email data
 	newUserEmailData := email_models.NewUserEmailData{
 		Name:              user.Name,
 		ActivationLink:    settings.AppSettingsInstance.FrontendActivateAccountURL + "?token=" + token,
@@ -95,7 +107,7 @@ func (uc *ResendWelcomeEmailUseCase) Execute(_ context.Context,
 		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
 
-	// Enviar correo de bienvenida
+	// Send welcome email
 	if err := email_service.RegisterUserEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
 		user.Email,
