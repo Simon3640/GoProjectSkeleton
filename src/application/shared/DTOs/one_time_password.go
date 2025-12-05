@@ -33,6 +33,6 @@ func NewOneTimePasswordCreate(userID uint, purpose models.OneTimePasswordPurpose
 }
 
 type OneTimePasswordUpdate struct {
-	IsUsed bool `json:"is_used,omitempty"`
+	IsUsed bool `json:"isUsed,omitempty"`
 	ID     uint `json:"id"`
 }

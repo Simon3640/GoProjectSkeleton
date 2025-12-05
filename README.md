@@ -1682,7 +1682,7 @@ type UserBase struct {
     Phone    string `json:"phone"`
     Status   string `json:"status"`
     RoleID   uint   `json:"role_id"`
-    OTPLogin bool   `json:"otp_login"`
+    OTPLogin bool   `json:"otpLogin"`
 }
 
 func (u UserBase) Validate() []string {
@@ -2950,7 +2950,7 @@ curl -X POST http://localhost:8080/api/user \
     "phone": "+1234567890",
     "role_id": 2,
     "status": "pending",
-    "otp_login": false
+    "otpLogin": false
   }'
 ```
 
@@ -2974,7 +2974,7 @@ erDiagram
         string phone UK
         string status
         uint role_id FK
-        bool otp_login
+        bool otpLogin
         datetime created_at
         datetime updated_at
         datetime deleted_at
@@ -2983,7 +2983,7 @@ erDiagram
     ROLE {
         uint id PK
         string key UK
-        bool is_active
+        bool isActive
         int priority
         datetime created_at
         datetime updated_at
@@ -2993,8 +2993,8 @@ erDiagram
         uint id PK
         uint user_id FK
         string hash
-        bool is_active
-        datetime expires_at
+        bool isActive
+        datetime expiresAt
         datetime created_at
         datetime updated_at
     }
@@ -3003,8 +3003,8 @@ erDiagram
         uint id PK
         uint user_id FK
         string code
-        bool is_used
-        datetime expires_at
+        bool isUsed
+        datetime expiresAt
         datetime created_at
         datetime updated_at
     }
@@ -3014,8 +3014,8 @@ erDiagram
         uint user_id FK
         string token
         string type
-        bool is_used
-        datetime expires_at
+        bool isUsed
+        datetime expiresAt
         datetime created_at
         datetime updated_at
     }
@@ -3166,7 +3166,7 @@ sequenceDiagram
     JWT-->>AuthUC: Refresh Token
 
     AuthUC-->>API: Tokens
-    API-->>Client: {access_token, refresh_token}
+    API-->>Client: {accessToken, refreshToken}
 ```
 
 ### Flujo de Autenticación con OTP
@@ -3198,7 +3198,7 @@ sequenceDiagram
     else OTP Login desactivado
         AuthUC->>JWT: GenerateTokens()
         AuthUC-->>API: Tokens
-        API-->>Client: {access_token, refresh_token}
+        API-->>Client: {accessToken, refreshToken}
     end
 
     Note over Client,SMTP: Usuario ingresa OTP
@@ -3209,7 +3209,7 @@ sequenceDiagram
     OTPUC->>OTPUC: Valida expiración
     OTPUC->>JWT: GenerateTokens()
     OTPUC-->>API: Tokens
-    API-->>Client: {access_token, refresh_token}
+    API-->>Client: {accessToken, refreshToken}
 ```
 
 ### JWT (JSON Web Tokens)

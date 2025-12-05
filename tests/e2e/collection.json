@@ -84,7 +84,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"name\": \"new user\",\n  \"otp_login\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"12345678901\",\n  \"role_id\": 2\n}",
+							"raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"name\": \"new user\",\n  \"otpLogin\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"12345678901\",\n  \"role_id\": 2\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -277,15 +277,15 @@
 									"const response = pm.response.json()",
 									"",
 									"pm.test(\"Access Token is present\", function () {",
-									"    pm.expect(response.data.access_token).to.not.be.null;",
+									"    pm.expect(response.data.accessToken).to.not.be.null;",
 									"});",
 									"",
 									"pm.test(\"Refresh Token is present\", function () {",
-									"    pm.expect(response.data.refresh_token).to.not.be.null;",
+									"    pm.expect(response.data.refreshToken).to.not.be.null;",
 									"});",
 									"",
-									"pm.environment.set(\"userToken\", response.data.access_token);",
-									"pm.environment.set(\"refreshUserToken\", response.data.refresh_token);"
+									"pm.environment.set(\"userToken\", response.data.accessToken);",
+									"pm.environment.set(\"refreshUserToken\", response.data.refreshToken);"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -355,7 +355,7 @@
 									"    ",
 									"    pm.expect(responseData).to.be.an('object');",
 									"    pm.expect(responseData.data).to.exist;",
-									"    pm.expect(responseData.data).to.have.all.keys('access_token', 'refresh_token', 'token_type', 'access_expires_at', 'refresh_expires_at');",
+									"    pm.expect(responseData.data).to.have.all.keys('accessToken', 'refreshToken', 'token_type', 'accessExpiresAt', 'refresExpiresAt');",
 									"});",
 									"",
 									"",
@@ -364,7 +364,7 @@
 									"    ",
 									"    pm.expect(responseData).to.be.an('object');",
 									"    pm.expect(responseData.data).to.exist.and.to.be.an('object');",
-									"    pm.expect(responseData.data.access_token).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Access token should not be empty\");",
+									"    pm.expect(responseData.data.accessToken).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Access token should not be empty\");",
 									"});",
 									"",
 									"",
@@ -373,7 +373,7 @@
 									"    ",
 									"    pm.expect(responseData).to.be.an('object');",
 									"    pm.expect(responseData.data).to.be.an('object');",
-									"    pm.expect(responseData.data.refresh_token).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Refresh token should not be empty\");",
+									"    pm.expect(responseData.data.refreshToken).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Refresh token should not be empty\");",
 									"});",
 									""
 								],
@@ -437,11 +437,11 @@
 									"    pm.expect(response.data).to.have.property(\"phone\");",
 									"    pm.expect(response.data).to.have.property(\"status\");",
 									"    pm.expect(response.data).to.have.property(\"role_id\");",
-									"    pm.expect(response.data).to.have.property(\"otp_login\");",
+									"    pm.expect(response.data).to.have.property(\"otpLogin\");",
 									"    pm.expect(response.data).to.have.property(\"id\");",
-									"    pm.expect(response.data).to.have.property(\"created_at\");",
-									"    pm.expect(response.data).to.have.property(\"updated_at\");",
-									"    pm.expect(response.data).to.have.property(\"deleted_at\");",
+									"    pm.expect(response.data).to.have.property(\"createdAt\");",
+									"    pm.expect(response.data).to.have.property(\"updatedAt\");",
+									"    pm.expect(response.data).to.have.property(\"deletedAt\");",
 									"});",
 									"",
 									"//Same ID",
@@ -756,7 +756,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"no_hashed_password\": \"{{strongPassword}}\",\n  \"token\": \"{{passwordUserToken}}\"\n}",
+							"raw": "{\n  \"noHashedPassword\": \"{{strongPassword}}\",\n  \"token\": \"{{passwordUserToken}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -812,7 +812,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"otp_login\": true\n}"
+							"raw": "{\n    \"otpLogin\": true\n}"
 						},
 						"url": {
 							"raw": "{{baseURL}}/user/{{userId}}",
@@ -998,7 +998,7 @@
 									"    pm.expect(responseData).to.be.an('object');",
 									"    pm.expect(responseData.data).to.exist.and.to.be.an('object');",
 									"    ",
-									"    pm.expect(responseData.data).to.have.all.keys('access_token', 'refresh_token', 'token_type', 'access_expires_at', 'refresh_expires_at');",
+									"    pm.expect(responseData.data).to.have.all.keys('accessToken', 'refreshToken', 'token_type', 'accessExpiresAt', 'refresExpiresAt');",
 									"});",
 									"",
 									"",
@@ -1007,7 +1007,7 @@
 									"    ",
 									"    pm.expect(responseData).to.be.an('object');",
 									"    pm.expect(responseData.data).to.exist.and.to.be.an('object');",
-									"    pm.expect(responseData.data.access_token).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Access token should not be empty\");",
+									"    pm.expect(responseData.data.accessToken).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Access token should not be empty\");",
 									"});",
 									"",
 									"",
@@ -1026,8 +1026,8 @@
 									"    pm.expect(responseData).to.be.an('object');",
 									"    pm.expect(responseData.data).to.exist.and.to.be.an('object');",
 									"    ",
-									"    const accessExpiresAt = responseData.data.access_expires_at;",
-									"    const refreshExpiresAt = responseData.data.refresh_expires_at;",
+									"    const accessExpiresAt = responseData.data.accessExpiresAt;",
+									"    const refreshExpiresAt = responseData.data.refresExpiresAt;",
 									"",
 									"    const isValidDate = (dateString) => {",
 									"        const date = new Date(dateString);",
@@ -1111,7 +1111,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"resendtest{{$randomInt}}@example.com\",\n  \"name\": \"Resend Email Test User\",\n  \"otp_login\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"role_id\": 2\n}",
+							"raw": "{\n  \"email\": \"resendtest{{$randomInt}}@example.com\",\n  \"name\": \"Resend Email Test User\",\n  \"otpLogin\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"role_id\": 2\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1413,7 +1413,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"ratelimit{{$randomInt}}@example.com\",\n  \"name\": \"Rate Limit Test User\",\n  \"otp_login\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"role_id\": 2\n}",
+							"raw": "{\n  \"email\": \"ratelimit{{$randomInt}}@example.com\",\n  \"name\": \"Rate Limit Test User\",\n  \"otpLogin\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"role_id\": 2\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1946,7 +1946,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"ratelimitreset{{$randomInt}}@example.com\",\n  \"name\": \"Rate Limit Reset Test User\",\n  \"otp_login\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"role_id\": 2\n}",
+							"raw": "{\n  \"email\": \"ratelimitreset{{$randomInt}}@example.com\",\n  \"name\": \"Rate Limit Reset Test User\",\n  \"otpLogin\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"role_id\": 2\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2191,14 +2191,14 @@
 									"",
 									"pm.test(\"Response contains access token\", function () {",
 									"    const response = pm.response.json();",
-									"    pm.expect(response.data).to.have.property('access_token');",
-									"    pm.expect(response.data.access_token).to.be.a('string').and.not.be.empty;",
+									"    pm.expect(response.data).to.have.property('accessToken');",
+									"    pm.expect(response.data.accessToken).to.be.a('string').and.not.be.empty;",
 									"});",
 									"",
 									"pm.test(\"Response contains refresh token\", function () {",
 									"    const response = pm.response.json();",
-									"    pm.expect(response.data).to.have.property('refresh_token');",
-									"    pm.expect(response.data.refresh_token).to.be.a('string').and.not.be.empty;",
+									"    pm.expect(response.data).to.have.property('refreshToken');",
+									"    pm.expect(response.data.refreshToken).to.be.a('string').and.not.be.empty;",
 									"});",
 									"",
 									"// Verificar que después de un login exitoso, el contador se resetea",

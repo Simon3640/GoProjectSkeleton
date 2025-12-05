@@ -13,7 +13,7 @@ type OneTimeTokenBase struct {
 	UserID  uint                `json:"user_id"`
 	Purpose OneTimeTokenPurpose `json:"purpose"`
 	Hash    []byte              `json:"hash"`
-	IsUsed  bool                `json:"is_used"`
+	IsUsed  bool                `json:"isUsed"`
 	Expires time.Time           `json:"expires"`
 }
 
