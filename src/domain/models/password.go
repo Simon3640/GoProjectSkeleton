@@ -7,8 +7,8 @@ import (
 
 type PasswordBase struct {
 	UserID    uint       `json:"user_id"`
-	ExpiresAt *time.Time `json:"expires_at,omitempty"`
-	IsActive  bool       `json:"is_active"`
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+	IsActive  bool       `json:"isActive"`
 	Hash      string     `json:"hash"`
 }
 

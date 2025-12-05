@@ -35,7 +35,7 @@ func NewOneTimeTokenCreate(userID uint, purpose models.OneTimeTokenPurpose, hash
 }
 
 type OneTimeTokenUpdate struct {
-	IsUsed bool `json:"is_used,omitempty"`
+	IsUsed bool `json:"isUsed,omitempty"`
 	ID     uint `json:"id"`
 }
 
