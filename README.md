@@ -49,21 +49,22 @@ go run src/infrastructure/server/cmd/main.go
 ## 📋 Table of Contents
 
 1. [Introduction](#introduction)
-2. [Project Architecture](#project-architecture)
-3. [Scalability and Serverless](#scalability-and-serverless)
-4. [Complete Request Flow](#complete-request-flow)
-5. [Virtues and Benefits](#virtues-and-benefits)
-6. [Project Structure - Layer by Layer](#project-structure---layer-by-layer)
-7. [Exhaustive Review by Folders](#exhaustive-review-by-folders)
-8. [Technologies and Dependencies](#technologies-and-dependencies)
-9. [Configuration and Setup](#configuration-and-setup)
-10. [Business Modules](#business-modules)
-11. [API and Endpoints](#api-and-endpoints)
-12. [Database and Persistence](#database-and-persistence)
-13. [Authentication and Security](#authentication-and-security)
-14. [Testing](#testing)
-15. [Docker and Deployment](#docker-and-deployment)
-16. [Development Guide](#development-guide)
+2. [Complete Development Environment](#-complete-development-environment)
+3. [Project Architecture](#project-architecture)
+4. [Scalability and Serverless](#scalability-and-serverless)
+5. [Complete Request Flow](#complete-request-flow)
+6. [Virtues and Benefits](#virtues-and-benefits)
+7. [Project Structure - Layer by Layer](#project-structure---layer-by-layer)
+8. [Exhaustive Review by Folders](#exhaustive-review-by-folders)
+9. [Technologies and Dependencies](#technologies-and-dependencies)
+10. [Configuration and Setup](#configuration-and-setup)
+11. [Business Modules](#business-modules)
+12. [API and Endpoints](#api-and-endpoints)
+13. [Database and Persistence](#database-and-persistence)
+14. [Authentication and Security](#authentication-and-security)
+15. [Testing](#testing)
+16. [Docker and Deployment](#docker-and-deployment)
+17. [Development Guide](#development-guide)
 
 ---
 
@@ -119,6 +120,16 @@ The core philosophy of **GoProjectSkeleton** is that the **domain** and **applic
 - ✅ **Complete Mocks** - Repository and provider mocks for testing
 - ✅ **Postman Collection** - Ready-to-use collection for E2E testing
 
+#### 🛠️ Development Environment
+- ✅ **Complete IDE Configuration** - Pre-configured VS Code/IDE settings for debugging
+- ✅ **Hot Reload with Air** - Automatic code reloading on file changes
+- ✅ **Remote Debugging** - Delve debugger configured for Docker and local development
+- ✅ **Development Docker Setup** - Complete development environment with all tools pre-installed
+- ✅ **Swagger Auto-generation** - Automatic API documentation generation on build
+- ✅ **Development Tools Included** - Air, Delve, Swag pre-configured and ready to use
+- ✅ **Email Testing** - Mailpit integrated for email testing in development
+- ✅ **Redis Management UI** - Redis Commander for cache inspection
+
 #### 🐳 DevOps and Deployment
 - ✅ **Complete Docker** - Multi-service for development, test, and E2E
 - ✅ **Serverless Ready** - Support for AWS Lambda and Azure Functions
@@ -133,6 +144,256 @@ The core philosophy of **GoProjectSkeleton** is that the **domain** and **applic
 - ✅ **Parallelization** - Concurrent execution of use cases with goroutines
 - ✅ **Stateless Design** - Ready for horizontal scalability
 - ✅ **Tree Shaking** - Automatic binary optimization in serverless
+
+---
+
+## 🛠️ Complete Development Environment
+
+**GoProjectSkeleton** comes with a **fully configured development environment** that allows developers to start coding immediately without spending time on setup. Everything is pre-configured and ready to use.
+
+### Development Environment Features
+
+#### ✅ Pre-configured IDE Settings
+
+The project includes complete IDE configuration files in the `IDE/` directory:
+
+- **`launch.json`**: VS Code debugging configurations
+  - **Attach to Docker Go (Delve)**: Remote debugging configuration for Docker containers
+  - **Launch Go Program**: Local debugging with automatic Swagger generation
+  - Pre-configured environment variables for development
+  - Automatic path mapping for Docker debugging
+
+- **`tasks.json`**: Build tasks
+  - Automatic Swagger documentation generation
+  - Pre-configured build commands
+
+**Usage:**
+```bash
+# Copy IDE configuration to your workspace
+cp -r IDE/.vscode .  # For VS Code
+# Or use the IDE/ folder directly
+```
+
+#### ✅ Hot Reload with Air
+
+The project uses **Air** for automatic code reloading during development:
+
+```toml
+# .air.toml configuration
+[build]
+cmd = "swag init && go build -gcflags 'all=-N -l' -o /app/tmp/main"
+bin = "/app/tmp/main"
+full_bin = "dlv exec /app/tmp/main --headless --listen=:40000"
+include_ext = ["go", "tpl", "tmpl", "html"]
+```
+
+**Features:**
+- ✅ Automatic rebuild on file changes
+- ✅ Integrated with Delve debugger
+- ✅ Watches Go files, templates, and HTML
+- ✅ Colored and timestamped logs
+- ✅ Polling mode for better file system compatibility
+
+**How it works:**
+1. Air watches for file changes
+2. Automatically regenerates Swagger documentation
+3. Rebuilds the application with debug symbols (`-N -l` flags)
+4. Restarts the application with Delve debugger attached
+5. Ready for remote debugging on port 40000
+
+#### ✅ Remote Debugging with Delve
+
+**Delve (dlv)** is pre-configured for both local and remote debugging:
+
+**Docker Remote Debugging:**
+```json
+{
+  "name": "Attach to Docker Go (Delve)",
+  "type": "go",
+  "request": "attach",
+  "mode": "remote",
+  "port": 40000,
+  "host": "127.0.0.1"
+}
+```
+
+**Features:**
+- ✅ Debug running application in Docker
+- ✅ Set breakpoints in VS Code
+- ✅ Inspect variables and call stack
+- ✅ Step through code execution
+- ✅ Path mapping for seamless debugging
+
+**Debugging Workflow:**
+1. Start Docker development environment: `docker-compose -f docker/docker-compose.dev.yml up -d`
+2. Application starts with Delve on port 40000
+3. Attach debugger from VS Code using "Attach to Docker Go (Delve)"
+4. Set breakpoints and debug as if running locally
+
+#### ✅ Complete Docker Development Setup
+
+The `docker-compose.dev.yml` includes everything needed for development:
+
+**Services:**
+- **Application**: Go application with hot reload and debugging
+- **PostgreSQL**: Database on port 5436
+- **Redis**: Cache server
+- **Mailpit**: Email testing (port 8025 for UI, 1025 for SMTP)
+- **Redis Commander**: Redis management UI (port 8081)
+
+**Development Features:**
+```yaml
+services:
+  goprojectskeleton:
+    ports:
+      - "8080:8080"    # Application
+      - "40000:40000"  # Delve debugger
+    volumes:
+      - ../src:/app/src              # Live code sync
+      - ../dev.env:/app/.env:ro       # Environment variables
+      - ../.air.toml:/app/.air.toml   # Air configuration
+    command: ["air", "-c", ".air.toml"]  # Hot reload
+```
+
+**Pre-installed Tools in Docker:**
+- ✅ **Air** (v1.61.7) - Hot reload
+- ✅ **Delve** (dlv) - Debugger
+- ✅ **Swag** - Swagger generator
+- ✅ All Go dependencies
+
+#### ✅ Automatic Swagger Generation
+
+Swagger documentation is automatically generated:
+
+**On Build:**
+- Air automatically runs `swag init` before building
+- Documentation is generated in `docs/` directory
+- Available at `http://localhost:8080/docs/`
+
+**Pre-launch Task:**
+- VS Code configuration includes `preLaunchTask: "go: swag init"`
+- Swagger is always up-to-date when debugging
+
+#### ✅ Development Tools Integration
+
+**Email Testing with Mailpit:**
+- Web UI: `http://localhost:8025`
+- SMTP: `localhost:1025`
+- Test all transactional emails without real SMTP server
+
+**Redis Management:**
+- Redis Commander: `http://localhost:8081`
+- Visual cache inspection
+- Key browsing and editing
+
+**Database Access:**
+- PostgreSQL: `localhost:5436`
+- Direct database access for debugging
+- Persistent data with Docker volumes
+
+### Quick Start Development
+
+**1. Start Development Environment:**
+```bash
+# Create network and volume
+docker network create goprojectskeleton
+docker volume create goprojectskeleton-db-data
+
+# Start all services
+docker-compose -f docker/docker-compose.dev.yml up -d
+```
+
+**2. Configure IDE:**
+```bash
+# Copy IDE configuration (if using VS Code)
+cp -r IDE/.vscode .
+```
+
+**3. Start Debugging:**
+- Open VS Code
+- Go to Run and Debug (F5)
+- Select "Attach to Docker Go (Delve)"
+- Set breakpoints and start debugging!
+
+**4. Development Workflow:**
+- Edit code in `src/` directory
+- Air automatically detects changes
+- Application rebuilds and restarts
+- Debugger reattaches automatically
+- See changes immediately
+
+### Development Environment Architecture
+
+```mermaid
+graph TB
+    subgraph Developer["👨‍💻 Developer"]
+        IDE[VS Code/IDE<br/>Breakpoints & Debugging]
+        Code[Source Code<br/>src/]
+    end
+
+    subgraph Docker["🐳 Docker Container"]
+        Air[Air<br/>Hot Reload Watcher]
+        Delve[Delve Debugger<br/>Port 40000]
+        App[Go Application<br/>Port 8080]
+    end
+
+    subgraph Services["🔧 Development Services"]
+        DB[(PostgreSQL<br/>Port 5436)]
+        Redis[(Redis)]
+        Mailpit[Mailpit<br/>Port 8025/1025]
+        RedisUI[Redis Commander<br/>Port 8081]
+    end
+
+    Code -->|File Changes| Air
+    Air -->|Rebuild & Restart| Delve
+    Delve -->|Debug Session| App
+    IDE -->|Attach Debugger| Delve
+    App --> DB
+    App --> Redis
+    App -->|Send Emails| Mailpit
+
+    style Air fill:#e3f2fd
+    style Delve fill:#fff9c4
+    style App fill:#c8e6c9
+```
+
+### Development Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `IDE/launch.json` | VS Code debugging configurations |
+| `IDE/tasks.json` | Build tasks (Swagger generation) |
+| `.air.toml` | Air hot reload configuration |
+| `docker/dockerfile.dev` | Development Docker image |
+| `docker/docker-compose.dev.yml` | Complete development stack |
+| `dev.env.example` | Development environment variables template |
+
+### Benefits for Developers
+
+1. **Zero Setup Time**
+   - Everything pre-configured
+   - Start coding immediately
+   - No manual tool installation needed
+
+2. **Productive Debugging**
+   - Remote debugging in Docker
+   - Breakpoints work seamlessly
+   - Variable inspection and call stack
+
+3. **Fast Development Cycle**
+   - Hot reload on file changes
+   - No manual restarts needed
+   - See changes instantly
+
+4. **Complete Tooling**
+   - Email testing without SMTP
+   - Redis inspection UI
+   - Database access ready
+
+5. **Team Consistency**
+   - Same environment for all developers
+   - No "works on my machine" issues
+   - Docker ensures consistency
 
 ---
 
