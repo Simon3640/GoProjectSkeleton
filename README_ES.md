@@ -1,7 +1,7 @@
 <div align="center">
   <img src="logo.png" alt="GoProjectSkeleton logo" height="400">
 
-  *A foundation for clean architecture projects in Go*
+  *Una base para proyectos de arquitectura limpia en Go*
 
   <!-- Badges -->
   <p>
@@ -26,162 +26,162 @@
 ## 🚀 Quick Start
 
 ```bash
-# 1. Clone the repository
+# 1. Clonar el repositorio
 git clone <repository-url>
 cd GoProjectSkeleton
 
-# 2. Configure environment variables
+# 2. Configurar variables de entorno
 cp dev.env.example dev.env
-# Edit dev.env with your configurations
+# Editar dev.env con tus configuraciones
 
-# 3. Start services with Docker
+# 3. Iniciar servicios con Docker
 docker network create goprojectskeleton
 docker volume create goprojectskeleton-db-data
 docker-compose -f docker/docker-compose.dev.yml up -d
 
-# 4. Run the application
+# 4. Ejecutar la aplicación
 go run src/infrastructure/server/cmd/main.go
 
-# 5. Access Swagger documentation (independent service)
-# Swagger runs as a separate service on port 8081
+# 5. Acceder a la documentación Swagger (servicio independiente)
+# Swagger se ejecuta como un servicio separado en el puerto 8081
 # http://localhost:8081/docs/
 ```
 
-## 📋 Table of Contents
+## 📋 Tabla de Contenidos
 
-1. [Introduction](#introduction)
-2. [Complete Development Environment](#-complete-development-environment)
-3. [Project Architecture](#project-architecture)
-4. [Scalability and Serverless](#scalability-and-serverless)
-5. [Complete Request Flow](#complete-request-flow)
-6. [Virtues and Benefits](#virtues-and-benefits)
-7. [Project Structure - Layer by Layer](#project-structure---layer-by-layer)
-8. [Exhaustive Review by Folders](#exhaustive-review-by-folders)
-9. [Technologies and Dependencies](#technologies-and-dependencies)
-10. [Configuration and Setup](#configuration-and-setup)
-11. [Business Modules](#business-modules)
-12. [API and Endpoints](#api-and-endpoints)
-13. [Database and Persistence](#database-and-persistence)
-14. [Authentication and Security](#authentication-and-security)
+1. [Introducción](#introducción)
+2. [Ambiente de Desarrollo Completo](#-ambiente-de-desarrollo-completo)
+3. [Arquitectura del Proyecto](#arquitectura-del-proyecto)
+4. [Escalabilidad y Serverless](#escalabilidad-y-serverless)
+5. [Flujo Completo de Request](#flujo-completo-de-request)
+6. [Virtudes y Beneficios](#virtudes-y-beneficios)
+7. [Estructura del Proyecto - Capa por Capa](#estructura-del-proyecto---capa-por-capa)
+8. [Revisión Exhaustiva por Carpetas](#revisión-exhaustiva-por-carpetas)
+9. [Tecnologías y Dependencias](#tecnologías-y-dependencias)
+10. [Configuración y Setup](#configuración-y-setup)
+11. [Módulos de Negocio](#módulos-de-negocio)
+12. [API y Endpoints](#api-y-endpoints)
+13. [Base de Datos y Persistencia](#base-de-datos-y-persistencia)
+14. [Autenticación y Seguridad](#autenticación-y-seguridad)
 15. [Testing](#testing)
-16. [Docker and Deployment](#docker-and-deployment)
-17. [Development Guide](#development-guide)
+16. [Docker y Despliegue](#docker-y-despliegue)
+17. [Guía de Desarrollo](#guía-de-desarrollo)
 
 ---
 
-## Introduction
+## Introducción
 
-**GoProjectSkeleton** is a professional Go project skeleton that implements **Clean Architecture** and **Hexagonal Architecture** (Ports & Adapters). This project provides a solid, scalable, and maintainable foundation for building enterprise applications in Go.
+**GoProjectSkeleton** es un esqueleto de proyecto Go profesional que implementa **Clean Architecture** y **Arquitectura Hexagonal** (Ports & Adapters). Este proyecto proporciona una base sólida, escalable y mantenible para construir aplicaciones empresariales en Go.
 
-### Project Philosophy
+### Filosofía del Proyecto
 
-The core philosophy of **GoProjectSkeleton** is that the **domain** and **application logic** (business logic) must be completely independent of **infrastructure** (frameworks, libraries, databases, etc.). This enables:
+La filosofía central de **GoProjectSkeleton** es que el **dominio** y la **lógica de aplicación** (business logic) deben ser completamente independientes de la **infraestructura** (frameworks, librerías, bases de datos, etc.). Esto permite:
 
-- **Interchangeability**: Change any infrastructure component without affecting the business
-- **Testability**: Test business logic without external dependencies
-- **Scalability**: Migrate to serverless or microservices architectures without rewriting code
-- **Maintainability**: Clean and well-structured code
+- **Intercambiabilidad**: Cambiar cualquier componente de infraestructura sin afectar el negocio
+- **Testabilidad**: Probar la lógica de negocio sin dependencias externas
+- **Escalabilidad**: Migrar a arquitecturas serverless o microservicios sin reescribir código
+- **Mantenibilidad**: Código limpio y bien estructurado
 
-### Main Features
+### Características Principales
 
-#### 🏗️ Architecture and Design
-- ✅ **Clean Architecture** - Clear separation of responsibilities in layers (Domain, Application, Infrastructure)
-- ✅ **Hexagonal Architecture** - Complete decoupling of external dependencies through Ports & Adapters
-- ✅ **Dependency Inversion** - Inner layers do not depend on outer layers
-- ✅ **SOLID Principles** - Design principles applied consistently
-- ✅ **Repository Pattern** - Data access abstraction
-- ✅ **Use Case Pattern** - Business logic encapsulation
-- ✅ **Factory Pattern** - Instance creation with dependency injection
+#### 🏗️ Arquitectura y Diseño
+- ✅ **Clean Architecture** - Separación clara de responsabilidades en capas (Domain, Application, Infrastructure)
+- ✅ **Arquitectura Hexagonal** - Desacoplamiento total de dependencias externas mediante Ports & Adapters
+- ✅ **Inversión de Dependencias** - Las capas internas no dependen de las externas
+- ✅ **SOLID Principles** - Principios de diseño aplicados consistentemente
+- ✅ **Repository Pattern** - Abstracción del acceso a datos
+- ✅ **Use Case Pattern** - Encapsulación de lógica de negocio
+- ✅ **Factory Pattern** - Creación de instancias con inyección de dependencias
 
-#### 🔐 Authentication and Security
-- ✅ **Complete JWT Authentication** - Access tokens and refresh tokens with flexible configuration
-- ✅ **OTP (One-Time Password)** - Two-factor authentication with temporary codes
-- ✅ **Secure Password System** - Bcrypt hashing, password reset with tokens
-- ✅ **Guards and Authorization** - Access control based on roles and permissions
-- ✅ **Multi-layer Validation** - Validation in DTOs, use cases, and repositories
-- ✅ **CORS Configured** - Security for web applications
+#### 🔐 Autenticación y Seguridad
+- ✅ **Autenticación JWT Completa** - Access tokens y refresh tokens con configuración flexible
+- ✅ **OTP (One-Time Password)** - Autenticación de dos factores con códigos temporales
+- ✅ **Sistema de Contraseñas Seguro** - Hash con Bcrypt, reset de contraseñas con tokens
+- ✅ **Guards y Autorización** - Control de acceso basado en roles y permisos
+- ✅ **Validación Multi-capa** - Validación en DTOs, casos de uso y repositorios
+- ✅ **CORS Configurado** - Seguridad para aplicaciones web
 
-#### 👥 User Management
-- ✅ **Complete CRUD** - Create, read, update, and delete users
-- ✅ **Role Management** - Role system with priorities
-- ✅ **User States** - Pending, Active, Inactive, Suspended, Deleted
-- ✅ **Account Activation** - Activation system through tokens
-- ✅ **Pagination and Filtering** - Efficient queries with Query Payload
-- ✅ **Smart Cache** - List caching with Redis
+#### 👥 Gestión de Usuarios
+- ✅ **CRUD Completo** - Crear, leer, actualizar y eliminar usuarios
+- ✅ **Gestión de Roles** - Sistema de roles con prioridades
+- ✅ **Estados de Usuario** - Pending, Active, Inactive, Suspended, Deleted
+- ✅ **Activación de Cuentas** - Sistema de activación mediante tokens
+- ✅ **Paginación y Filtrado** - Consultas eficientes con Query Payload
+- ✅ **Cache Inteligente** - Cache de listados con Redis
 
-#### 🌐 Internationalization and Communication
-- ✅ **Internationalization (i18n)** - Multi-language support (Spanish, English, extensible)
-- ✅ **Email System** - HTML templates with dynamic rendering
-- ✅ **Transactional Emails** - Registration, password reset, OTP
-- ✅ **Locale per Request** - Each request can have its own language
+#### 🌐 Internacionalización y Comunicación
+- ✅ **Internacionalización (i18n)** - Soporte multiidioma (Español, Inglés, extensible)
+- ✅ **Sistema de Emails** - Templates HTML con renderizado dinámico
+- ✅ **Emails Transaccionales** - Registro, reset de contraseña, OTP
+- ✅ **Locale por Request** - Cada request puede tener su idioma
 
-#### 📚 Documentation and Testing
-- ✅ **Independent Swagger Service** - Swagger runs as a separate, deployable service (port 8081)
-- ✅ **Docker Registry Ready** - Swagger can be built and deployed independently
-- ✅ **Complete Testing** - Unit, integration, and E2E tests
-- ✅ **Complete Mocks** - Repository and provider mocks for testing
-- ✅ **Postman Collection** - Ready-to-use collection for E2E testing
+#### 📚 Documentación y Testing
+- ✅ **Servicio Swagger Independiente** - Swagger se ejecuta como un servicio separado y desplegable (puerto 8081)
+- ✅ **Listo para Docker Registry** - Swagger puede construirse y desplegarse independientemente
+- ✅ **Testing Completo** - Unitarios, integración y E2E
+- ✅ **Mocks Completos** - Mocks de repositorios y providers para testing
+- ✅ **Postman Collection** - Colección lista para pruebas E2E
 
-#### 🛠️ Development Environment
-- ✅ **Complete IDE Configuration** - Pre-configured VS Code/IDE settings for debugging
-- ✅ **Hot Reload with Air** - Automatic code reloading on file changes
-- ✅ **Remote Debugging** - Delve debugger configured for Docker and local development
-- ✅ **Development Docker Setup** - Complete development environment with all tools pre-installed
-- ✅ **Independent Swagger Service** - Swagger runs in separate container with hot reload
-- ✅ **Development Tools Included** - Air, Delve, Swag pre-configured and ready to use
-- ✅ **Email Testing** - Mailpit integrated for email testing in development
-- ✅ **Redis Management UI** - Redis Commander for cache inspection
+#### 🛠️ Ambiente de Desarrollo
+- ✅ **Configuración IDE Completa** - Configuración preestablecida de VS Code/IDE para debugging
+- ✅ **Hot Reload con Air** - Recarga automática de código al cambiar archivos
+- ✅ **Debugging Remoto** - Debugger Delve configurado para Docker y desarrollo local
+- ✅ **Setup Docker de Desarrollo** - Ambiente de desarrollo completo con todas las herramientas preinstaladas
+- ✅ **Servicio Swagger Independiente** - Swagger se ejecuta en contenedor separado con hot reload
+- ✅ **Herramientas de Desarrollo Incluidas** - Air, Delve, Swag preconfiguradas y listas para usar
+- ✅ **Testing de Emails** - Mailpit integrado para pruebas de email en desarrollo
+- ✅ **UI de Gestión Redis** - Redis Commander para inspección de cache
 
-#### 🐳 DevOps and Deployment
-- ✅ **Complete Docker** - Multi-service for development, test, and E2E
-- ✅ **Serverless Ready** - Support for AWS Lambda and Azure Functions
-- ✅ **Terraform** - Infrastructure as code for AWS and Azure
-- ✅ **Secrets Management** - Integration with AWS Secrets Manager and Azure Key Vault
-- ✅ **Hot Reload** - Efficient development with automatic reloading
+#### 🐳 DevOps y Despliegue
+- ✅ **Docker Completo** - Multi-servicio para desarrollo, test y E2E
+- ✅ **Serverless Ready** - Soporte para AWS Lambda y Azure Functions
+- ✅ **Terraform** - Infraestructura como código para AWS y Azure
+- ✅ **Secrets Management** - Integración con AWS Secrets Manager y Azure Key Vault
+- ✅ **Hot Reload** - Desarrollo eficiente con recarga automática
 
-#### ⚡ Performance and Scalability
-- ✅ **Redis Cache** - Performance optimization with configurable TTL
-- ✅ **Connection Pooling** - Database connection reuse
-- ✅ **Pipes System (DAG)** - Sequential use case orchestration
-- ✅ **Parallelization** - Concurrent execution of use cases with goroutines
-- ✅ **Stateless Design** - Ready for horizontal scalability
-- ✅ **Tree Shaking** - Automatic binary optimization in serverless
+#### ⚡ Rendimiento y Escalabilidad
+- ✅ **Cache con Redis** - Optimización de rendimiento con TTL configurable
+- ✅ **Connection Pooling** - Reutilización de conexiones a base de datos
+- ✅ **Sistema de Pipes (DAG)** - Orquestación de casos de uso secuenciales
+- ✅ **Paralelización** - Ejecución concurrente de casos de uso con goroutines
+- ✅ **Stateless Design** - Listo para escalabilidad horizontal
+- ✅ **Tree Shaking** - Optimización automática de binarios en serverless
 
 ---
 
-## 🛠️ Complete Development Environment
+## 🛠️ Ambiente de Desarrollo Completo
 
-**GoProjectSkeleton** comes with a **fully configured development environment** that allows developers to start coding immediately without spending time on setup. Everything is pre-configured and ready to use.
+**GoProjectSkeleton** viene con un **ambiente de desarrollo completamente configurado** que permite a los desarrolladores comenzar a codificar inmediatamente sin perder tiempo en configuración. Todo está preconfigurado y listo para usar.
 
-### Development Environment Features
+### Características del Ambiente de Desarrollo
 
-#### ✅ Pre-configured IDE Settings
+#### ✅ Configuración IDE Preestablecida
 
-The project includes complete IDE configuration files in the `IDE/` directory:
+El proyecto incluye archivos de configuración completos del IDE en el directorio `IDE/`:
 
-- **`launch.json`**: VS Code debugging configurations
-  - **Attach to Docker Go (Delve)**: Remote debugging configuration for Docker containers
-  - **Launch Go Program**: Local debugging with automatic Swagger generation
-  - Pre-configured environment variables for development
-  - Automatic path mapping for Docker debugging
+- **`launch.json`**: Configuraciones de debugging para VS Code
+  - **Attach to Docker Go (Delve)**: Configuración de debugging remoto para contenedores Docker
+  - **Launch Go Program**: Debugging local con generación automática de Swagger
+  - Variables de entorno preconfiguradas para desarrollo
+  - Mapeo automático de rutas para debugging en Docker
 
-- **`tasks.json`**: Build tasks
-  - Automatic Swagger documentation generation
-  - Pre-configured build commands
+- **`tasks.json`**: Tareas de compilación
+  - Generación automática de documentación Swagger
+  - Comandos de compilación preconfigurados
 
-**Usage:**
+**Uso:**
 ```bash
-# Copy IDE configuration to your workspace
-cp -r IDE/.vscode .  # For VS Code
-# Or use the IDE/ folder directly
+# Copiar configuración del IDE a tu workspace
+cp -r IDE/.vscode .  # Para VS Code
+# O usar la carpeta IDE/ directamente
 ```
 
-#### ✅ Hot Reload with Air
+#### ✅ Hot Reload con Air
 
-The project uses **Air** for automatic code reloading during development:
+El proyecto usa **Air** para recarga automática de código durante el desarrollo:
 
 ```toml
-# .air.toml configuration
+# Configuración .air.toml
 [build]
 cmd = "swag init && go build -gcflags 'all=-N -l' -o /app/tmp/main"
 bin = "/app/tmp/main"
@@ -189,25 +189,25 @@ full_bin = "dlv exec /app/tmp/main --headless --listen=:40000"
 include_ext = ["go", "tpl", "tmpl", "html"]
 ```
 
-**Features:**
-- ✅ Automatic rebuild on file changes
-- ✅ Integrated with Delve debugger
-- ✅ Watches Go files, templates, and HTML
-- ✅ Colored and timestamped logs
-- ✅ Polling mode for better file system compatibility
+**Características:**
+- ✅ Recompilación automática al cambiar archivos
+- ✅ Integrado con debugger Delve
+- ✅ Observa archivos Go, templates y HTML
+- ✅ Logs con colores y timestamps
+- ✅ Modo polling para mejor compatibilidad con sistemas de archivos
 
-**How it works:**
-1. Air watches for file changes
-2. Automatically regenerates Swagger documentation
-3. Rebuilds the application with debug symbols (`-N -l` flags)
-4. Restarts the application with Delve debugger attached
-5. Ready for remote debugging on port 40000
+**Cómo funciona:**
+1. Air observa cambios en archivos
+2. Regenera automáticamente la documentación Swagger
+3. Recompila la aplicación con símbolos de debug (flags `-N -l`)
+4. Reinicia la aplicación con debugger Delve adjunto
+5. Listo para debugging remoto en el puerto 40000
 
-#### ✅ Remote Debugging with Delve
+#### ✅ Debugging Remoto con Delve
 
-**Delve (dlv)** is pre-configured for both local and remote debugging:
+**Delve (dlv)** está preconfigurado para debugging local y remoto:
 
-**Docker Remote Debugging:**
+**Debugging Remoto en Docker:**
 ```json
 {
   "name": "Attach to Docker Go (Delve)",
@@ -219,273 +219,273 @@ include_ext = ["go", "tpl", "tmpl", "html"]
 }
 ```
 
-**Features:**
-- ✅ Debug running application in Docker
-- ✅ Set breakpoints in VS Code
-- ✅ Inspect variables and call stack
-- ✅ Step through code execution
-- ✅ Path mapping for seamless debugging
+**Características:**
+- ✅ Depurar aplicación ejecutándose en Docker
+- ✅ Establecer breakpoints en VS Code
+- ✅ Inspeccionar variables y call stack
+- ✅ Ejecutar paso a paso
+- ✅ Mapeo de rutas para debugging sin problemas
 
-**Debugging Workflow:**
-1. Start Docker development environment: `docker-compose -f docker/docker-compose.dev.yml up -d`
-2. Application starts with Delve on port 40000
-3. Attach debugger from VS Code using "Attach to Docker Go (Delve)"
-4. Set breakpoints and debug as if running locally
+**Flujo de Debugging:**
+1. Iniciar ambiente de desarrollo Docker: `docker-compose -f docker/docker-compose.dev.yml up -d`
+2. La aplicación inicia con Delve en el puerto 40000
+3. Adjuntar debugger desde VS Code usando "Attach to Docker Go (Delve)"
+4. Establecer breakpoints y depurar como si fuera local
 
-#### ✅ Complete Docker Development Setup
+#### ✅ Setup Docker de Desarrollo Completo
 
-The `docker-compose.dev.yml` includes everything needed for development:
+El `docker-compose.dev.yml` incluye todo lo necesario para desarrollo:
 
-**Services:**
-- **Application**: Go application with hot reload and debugging
-- **PostgreSQL**: Database on port 5436
-- **Redis**: Cache server
-- **Mailpit**: Email testing (port 8025 for UI, 1025 for SMTP)
-- **Redis Commander**: Redis management UI (port 8081)
+**Servicios:**
+- **Aplicación**: Aplicación Go con hot reload y debugging
+- **PostgreSQL**: Base de datos en puerto 5436
+- **Redis**: Servidor de cache
+- **Mailpit**: Testing de emails (puerto 8025 para UI, 1025 para SMTP)
+- **Redis Commander**: UI de gestión de Redis (puerto 8081)
 
-**Development Features:**
+**Características de Desarrollo:**
 ```yaml
 services:
   goprojectskeleton:
     ports:
-      - "8080:8080"    # Application
-      - "40000:40000"  # Delve debugger
+      - "8080:8080"    # Aplicación
+      - "40000:40000"  # Debugger Delve
     volumes:
-      - ../src:/app/src              # Live code sync
-      - ../dev.env:/app/.env:ro       # Environment variables
-      - ../.air.toml:/app/.air.toml   # Air configuration
+      - ../src:/app/src              # Sincronización de código en vivo
+      - ../dev.env:/app/.env:ro       # Variables de entorno
+      - ../.air.toml:/app/.air.toml   # Configuración de Air
     command: ["air", "-c", ".air.toml"]  # Hot reload
 ```
 
-**Pre-installed Tools in Docker:**
+**Herramientas Preinstaladas en Docker:**
 - ✅ **Air** (v1.61.7) - Hot reload
 - ✅ **Delve** (dlv) - Debugger
-- ✅ **Swag** - Swagger generator
-- ✅ All Go dependencies
+- ✅ **Swag** - Generador de Swagger
+- ✅ Todas las dependencias de Go
 
-#### ✅ Independent Swagger Documentation Service
+#### ✅ Servicio de Documentación Swagger Independiente
 
-Swagger documentation is now a **completely independent service** that runs separately from the main application:
+La documentación Swagger es ahora un **servicio completamente independiente** que se ejecuta por separado de la aplicación principal:
 
-**Architecture:**
-- **Independent Server**: Swagger runs on its own HTTP server (port 8081)
-- **Separate Deployment**: Can be deployed independently using `dockerfile.swagger`
-- **Docker Registry Ready**: Can be pushed to any Docker registry and deployed separately
-- **No Dependencies**: Completely decoupled from the main application
+**Arquitectura:**
+- **Servidor Independiente**: Swagger se ejecuta en su propio servidor HTTP (puerto 8081)
+- **Despliegue Separado**: Puede desplegarse independientemente usando `dockerfile.swagger`
+- **Listo para Docker Registry**: Puede subirse a cualquier Docker registry y desplegarse por separado
+- **Sin Dependencias**: Completamente desacoplado de la aplicación principal
 
-**Development:**
-- Swagger service runs in a separate Docker container
-- Automatically regenerates documentation on code changes
-- Available at `http://localhost:8081/docs/`
-- Configured via environment variables (see `dev.env.example`)
+**Desarrollo:**
+- El servicio Swagger se ejecuta en un contenedor Docker separado
+- Regenera automáticamente la documentación al cambiar el código
+- Disponible en `http://localhost:8081/docs/`
+- Configurado mediante variables de entorno (ver `dev.env.example`)
 
-**Production Deployment:**
-- Build: `docker build -f docker/dockerfile.swagger -t your-registry/swagger:latest .`
-- Push: `docker push your-registry/swagger:latest`
-- Run: `docker run -p 8081:8081 -e API_HOST=your-api-host your-registry/swagger:latest`
+**Despliegue en Producción:**
+- Construir: `docker build -f docker/dockerfile.swagger -t your-registry/swagger:latest .`
+- Subir: `docker push your-registry/swagger:latest`
+- Ejecutar: `docker run -p 8081:8081 -e API_HOST=your-api-host your-registry/swagger:latest`
 
-**Configuration:**
-- `SWAGGER_PORT`: Port for Swagger server (default: 8081)
-- `API_HOST`: Host of the main API (e.g., `api.example.com:8080`)
-- `API_TITLE`: API title in Swagger UI
-- `API_VERSION`: API version
-- `API_DESCRIPTION`: API description
-- `API_BASE_PATH`: Base path for API endpoints
+**Configuración:**
+- `SWAGGER_PORT`: Puerto para el servidor Swagger (por defecto: 8081)
+- `API_HOST`: Host de la API principal (ej: `api.example.com:8080`)
+- `API_TITLE`: Título de la API en Swagger UI
+- `API_VERSION`: Versión de la API
+- `API_DESCRIPTION`: Descripción de la API
+- `API_BASE_PATH`: Ruta base para los endpoints de la API
 
-#### ✅ Development Tools Integration
+#### ✅ Integración de Herramientas de Desarrollo
 
-**Email Testing with Mailpit:**
+**Testing de Emails con Mailpit:**
 - Web UI: `http://localhost:8025`
 - SMTP: `localhost:1025`
-- Test all transactional emails without real SMTP server
+- Probar todos los emails transaccionales sin servidor SMTP real
 
-**Redis Management:**
+**Gestión de Redis:**
 - Redis Commander: `http://localhost:8081`
-- Visual cache inspection
-- Key browsing and editing
+- Inspección visual de cache
+- Navegación y edición de claves
 
-**Database Access:**
+**Acceso a Base de Datos:**
 - PostgreSQL: `localhost:5436`
-- Direct database access for debugging
-- Persistent data with Docker volumes
+- Acceso directo a base de datos para debugging
+- Datos persistentes con volúmenes Docker
 
-### Quick Start Development
+### Inicio Rápido de Desarrollo
 
-**1. Start Development Environment:**
+**1. Iniciar Ambiente de Desarrollo:**
 ```bash
-# Create network and volume
+# Crear red y volumen
 docker network create goprojectskeleton
 docker volume create goprojectskeleton-db-data
 
-# Start all services
+# Iniciar todos los servicios
 docker-compose -f docker/docker-compose.dev.yml up -d
 ```
 
-**2. Configure IDE:**
+**2. Configurar IDE:**
 ```bash
-# Copy IDE configuration (if using VS Code)
+# Copiar configuración del IDE (si usas VS Code)
 cp -r IDE/.vscode .
 ```
 
-**3. Start Debugging:**
-- Open VS Code
-- Go to Run and Debug (F5)
-- Select "Attach to Docker Go (Delve)"
-- Set breakpoints and start debugging!
+**3. Iniciar Debugging:**
+- Abrir VS Code
+- Ir a Run and Debug (F5)
+- Seleccionar "Attach to Docker Go (Delve)"
+- ¡Establecer breakpoints y comenzar a depurar!
 
-**4. Development Workflow:**
-- Edit code in `src/` directory
-- Air automatically detects changes
-- Application rebuilds and restarts
-- Debugger reattaches automatically
-- See changes immediately
+**4. Flujo de Desarrollo:**
+- Editar código en directorio `src/`
+- Air detecta automáticamente los cambios
+- La aplicación se recompila y reinicia
+- El debugger se readjunta automáticamente
+- Ver cambios inmediatamente
 
-### Development Environment Architecture
+### Arquitectura del Ambiente de Desarrollo
 
 ```mermaid
 graph TB
-    subgraph Developer["👨‍💻 Developer"]
+    subgraph Developer["👨‍💻 Desarrollador"]
         IDE[VS Code/IDE<br/>Breakpoints & Debugging]
-        Code[Source Code<br/>src/]
+        Code[Código Fuente<br/>src/]
     end
 
-    subgraph Docker["🐳 Docker Container"]
+    subgraph Docker["🐳 Contenedor Docker"]
         Air[Air<br/>Hot Reload Watcher]
-        Delve[Delve Debugger<br/>Port 40000]
-        App[Go Application<br/>Port 8080]
+        Delve[Delve Debugger<br/>Puerto 40000]
+        App[Aplicación Go<br/>Puerto 8080]
     end
 
-    subgraph Services["🔧 Development Services"]
-        DB[(PostgreSQL<br/>Port 5436)]
+    subgraph Services["🔧 Servicios de Desarrollo"]
+        DB[(PostgreSQL<br/>Puerto 5436)]
         Redis[(Redis)]
-        Mailpit[Mailpit<br/>Port 8025/1025]
-        RedisUI[Redis Commander<br/>Port 8081]
+        Mailpit[Mailpit<br/>Puerto 8025/1025]
+        RedisUI[Redis Commander<br/>Puerto 8081]
     end
 
-    Code -->|File Changes| Air
-    Air -->|Rebuild & Restart| Delve
-    Delve -->|Debug Session| App
-    IDE -->|Attach Debugger| Delve
+    Code -->|Cambios de Archivos| Air
+    Air -->|Recompilar & Reiniciar| Delve
+    Delve -->|Sesión de Debug| App
+    IDE -->|Adjuntar Debugger| Delve
     App --> DB
     App --> Redis
-    App -->|Send Emails| Mailpit
+    App -->|Enviar Emails| Mailpit
 
     style Air fill:#e3f2fd
     style Delve fill:#fff9c4
     style App fill:#c8e6c9
 ```
 
-### Development Configuration Files
+### Archivos de Configuración de Desarrollo
 
-| File | Purpose |
-|------|---------|
-| `IDE/launch.json` | VS Code debugging configurations |
-| `IDE/tasks.json` | Build tasks (Swagger generation) |
-| `.air.toml` | Air hot reload configuration |
-| `docker/dockerfile.dev` | Development Docker image |
-| `docker/docker-compose.dev.yml` | Complete development stack |
-| `dev.env.example` | Development environment variables template |
+| Archivo | Propósito |
+|---------|----------|
+| `IDE/launch.json` | Configuraciones de debugging de VS Code |
+| `IDE/tasks.json` | Tareas de compilación (generación de Swagger) |
+| `.air.toml` | Configuración de hot reload de Air |
+| `docker/dockerfile.dev` | Imagen Docker de desarrollo |
+| `docker/docker-compose.dev.yml` | Stack completo de desarrollo |
+| `dev.env.example` | Plantilla de variables de entorno de desarrollo |
 
-### Benefits for Developers
+### Beneficios para Desarrolladores
 
-1. **Zero Setup Time**
-   - Everything pre-configured
-   - Start coding immediately
-   - No manual tool installation needed
+1. **Tiempo de Configuración Cero**
+   - Todo preconfigurado
+   - Comenzar a codificar inmediatamente
+   - No se necesita instalación manual de herramientas
 
-2. **Productive Debugging**
-   - Remote debugging in Docker
-   - Breakpoints work seamlessly
-   - Variable inspection and call stack
+2. **Debugging Productivo**
+   - Debugging remoto en Docker
+   - Breakpoints funcionan sin problemas
+   - Inspección de variables y call stack
 
-3. **Fast Development Cycle**
-   - Hot reload on file changes
-   - No manual restarts needed
-   - See changes instantly
+3. **Ciclo de Desarrollo Rápido**
+   - Hot reload al cambiar archivos
+   - No se necesitan reinicios manuales
+   - Ver cambios instantáneamente
 
-4. **Complete Tooling**
-   - Email testing without SMTP
-   - Redis inspection UI
-   - Database access ready
+4. **Herramientas Completas**
+   - Testing de emails sin SMTP
+   - UI de inspección de Redis
+   - Acceso a base de datos listo
 
-5. **Team Consistency**
-   - Same environment for all developers
-   - No "works on my machine" issues
-   - Docker ensures consistency
+5. **Consistencia del Equipo**
+   - Mismo ambiente para todos los desarrolladores
+   - No hay problemas de "funciona en mi máquina"
+   - Docker asegura consistencia
 
 ---
 
-## ☁️ Cloud and Serverless Capabilities
+## ☁️ Capacidades Cloud y Serverless
 
-**GoProjectSkeleton** is designed to work in both traditional environments and modern serverless architectures.
+**GoProjectSkeleton** está diseñado para funcionar tanto en entornos tradicionales como en arquitecturas serverless modernas.
 
 ### 🚀 AWS Lambda
 
-The project includes complete support for **AWS Lambda** with:
+El proyecto incluye soporte completo para **AWS Lambda** con:
 
-- ✅ **Automatic Function Generation** - Generation system from `functions.json`
-- ✅ **Independent Modules** - Each Lambda function has its own Go module
-- ✅ **Optimized Tree Shaking** - 5-15 MB binaries vs 50+ MB without optimization
-- ✅ **AWS Secrets Manager** - Automatic secret loading from Secrets Manager
-- ✅ **Lambda Adapter** - Adapter for API Gateway events
-- ✅ **Terraform** - Infrastructure as code ready to deploy
-- ✅ **Optimized Compilation** - Specific flags for Lambda (`lambda.norpc`, `-ldflags="-s -w"`)
+- ✅ **Generación Automática de Funciones** - Sistema de generación desde `functions.json`
+- ✅ **Módulos Independientes** - Cada función Lambda tiene su propio módulo Go
+- ✅ **Tree Shaking Optimizado** - Binarios de 5-15 MB vs 50+ MB sin optimización
+- ✅ **AWS Secrets Manager** - Carga automática de secretos desde Secrets Manager
+- ✅ **Lambda Adapter** - Adaptador para eventos de API Gateway
+- ✅ **Terraform** - Infraestructura como código lista para desplegar
+- ✅ **Compilación Optimizada** - Flags específicos para Lambda (`lambda.norpc`, `-ldflags="-s -w"`)
 
-**Lambda functions structure:**
+**Estructura de funciones Lambda:**
 ```
 src/infrastructure/clouds/aws/
-├── functions.json          # Function definitions
-├── init.go                 # AWS initialization
-├── lambda_adapter.go       # Lambda adapter
-├── secrets_manager.go      # Secrets management
-├── terraform/              # Terraform infrastructure
-└── functions/              # Function generator
+├── functions.json          # Definición de funciones
+├── init.go                 # Inicialización AWS
+├── lambda_adapter.go       # Adaptador Lambda
+├── secrets_manager.go      # Gestión de secretos
+├── terraform/              # Infraestructura Terraform
+└── functions/              # Generador de funciones
 ```
 
 ### 🔷 Azure Functions
 
-Complete support for **Azure Functions** with:
+Soporte completo para **Azure Functions** con:
 
-- ✅ **HTTP Adapter** - Adapter for Azure Functions HTTP triggers
-- ✅ **Azure Key Vault** - Integration with Azure Key Vault for secrets
-- ✅ **Terraform** - Infrastructure as code for Azure
-- ✅ **Independent Modules** - Each function has its own module
-- ✅ **Automatic Generation** - Generation system from `functions.json`
+- ✅ **HTTP Adapter** - Adaptador para Azure Functions HTTP triggers
+- ✅ **Azure Key Vault** - Integración con Azure Key Vault para secretos
+- ✅ **Terraform** - Infraestructura como código para Azure
+- ✅ **Módulos Independientes** - Cada función tiene su propio módulo
+- ✅ **Generación Automática** - Sistema de generación desde `functions.json`
 
-**Azure functions structure:**
+**Estructura de funciones Azure:**
 ```
 src/infrastructure/clouds/azure/
-├── functions.json          # Function definitions
-├── init.go                 # Azure initialization
-├── http_adapter.go         # HTTP adapter
-├── vault.go                # Key Vault integration
-├── terraform/              # Terraform infrastructure
-└── functions/              # Function generator
+├── functions.json          # Definición de funciones
+├── init.go                 # Inicialización Azure
+├── http_adapter.go         # Adaptador HTTP
+├── vault.go                # Integración Key Vault
+├── terraform/              # Infraestructura Terraform
+└── functions/              # Generador de funciones
 ```
 
-### 📊 Architecture Comparison
+### 📊 Comparación de Arquitecturas
 
-| Feature | Traditional Monolith | AWS Lambda | Azure Functions |
-|---------|---------------------|------------|-----------------|
-| **Initialization** | Once at startup | Per function | Per function |
-| **Scalability** | Manual/Horizontal | Automatic | Automatic |
-| **Cost** | Fixed | Pay per use | Pay per use |
+| Característica | Monolito Tradicional | AWS Lambda | Azure Functions |
+|---------------|---------------------|------------|-----------------|
+| **Inicialización** | Una vez al inicio | Por función | Por función |
+| **Escalabilidad** | Manual/Horizontal | Automática | Automática |
+| **Costo** | Fijo | Por uso | Por uso |
 | **Cold Start** | N/A | ~100-500ms | ~200-800ms |
-| **Binary Size** | ~50 MB | ~5-15 MB | ~5-15 MB |
-| **Secrets Management** | Environment variables | Secrets Manager | Key Vault |
-| **Deployment** | Docker/VM | ZIP to Lambda | ZIP to Functions |
+| **Tamaño Binario** | ~50 MB | ~5-15 MB | ~5-15 MB |
+| **Gestión Secretos** | Variables de entorno | Secrets Manager | Key Vault |
+| **Despliegue** | Docker/VM | ZIP a Lambda | ZIP a Functions |
 
 ---
 
-## Project Architecture
+## Arquitectura del Proyecto
 
-### Architecture Overview
+### Visión General de la Arquitectura
 
-The project implements **Clean Architecture** with three main layers:
+El proyecto implementa **Clean Architecture** con tres capas principales:
 
 ```mermaid
 graph TB
-    subgraph Infrastructure["🔧 Infrastructure Layer"]
+    subgraph Infrastructure["🔧 Capa de Infraestructura"]
         API["API Layer<br/>(Gin HTTP)"]
         DB["Database<br/>(GORM/Redis)"]
         Providers["Providers<br/>(JWT/Email)"]
@@ -494,7 +494,7 @@ graph TB
         Middlewares["Middlewares<br/>(Auth/CORS)"]
     end
 
-    subgraph Application["💼 Application Layer"]
+    subgraph Application["💼 Capa de Aplicación"]
         UseCases["Use Cases<br/>(Business Logic)"]
         Services["Services<br/>(Email/OTP)"]
         Contracts["Contracts<br/>(Interfaces)"]
@@ -503,7 +503,7 @@ graph TB
         Errors["Errors<br/>(Handling)"]
     end
 
-    subgraph Domain["🎯 Domain Layer"]
+    subgraph Domain["🎯 Capa de Dominio"]
         Models["Models<br/>(User/Role)"]
         Utils["Utils<br/>(Query)"]
         Entities["Entities<br/>(Business)"]
@@ -517,11 +517,11 @@ graph TB
     style Domain fill:#e8f5e9
 ```
 
-### Hexagonal Architecture Diagram
+### Diagrama de Arquitectura Hexagonal
 
 ```mermaid
 graph LR
-    subgraph External["🌐 External World"]
+    subgraph External["🌐 Mundo Externo"]
         HTTP["HTTP Clients"]
         DB_EXT["PostgreSQL"]
         REDIS_EXT["Redis"]
@@ -578,57 +578,57 @@ graph LR
     style DomainCore fill:#f3e5f5
 ```
 
-### Design Principles
+### Principios de Diseño
 
-#### 1. Dependency Inversion
+#### 1. Inversión de Dependencias (Dependency Inversion)
 
-Inner layers (Domain and Application) **never** depend on outer layers (Infrastructure). Instead, they define **interfaces (contracts)** that infrastructure implements.
+Las capas internas (Domain y Application) **nunca** dependen de las capas externas (Infrastructure). En su lugar, definen **interfaces (contratos)** que la infraestructura implementa.
 
-**Example:**
+**Ejemplo:**
 ```go
-// Domain/Application defines the interface
+// Domain/Application define la interfaz
 type IUserRepository interface {
     Create(input UserCreate) (*User, error)
     GetByID(id uint) (*User, error)
 }
 
-// Infrastructure implements the interface
+// Infrastructure implementa la interfaz
 type UserRepository struct {
     DB *gorm.DB
 }
 
 func (r *UserRepository) Create(input UserCreate) (*User, error) {
-    // Implementation with GORM
+    // Implementación con GORM
 }
 ```
 
-#### 2. Separation of Concerns
+#### 2. Separación de Responsabilidades (Separation of Concerns)
 
-Each layer has a single, well-defined responsibility:
+Cada capa tiene una responsabilidad única y bien definida:
 
-- **Domain**: Pure business entities, no dependencies
-- **Application**: Business logic and use cases
-- **Infrastructure**: Technical implementations (HTTP, DB, etc.)
+- **Domain**: Entidades de negocio puras, sin dependencias
+- **Application**: Lógica de negocio y casos de uso
+- **Infrastructure**: Implementaciones técnicas (HTTP, BD, etc.)
 
-#### 3. Testability
+#### 3. Testabilidad
 
-Thanks to interfaces, we can test business logic without needing real databases or services:
+Gracias a las interfaces, podemos testear la lógica de negocio sin necesidad de bases de datos o servicios reales:
 
 ```go
-// In tests, we use mocks
+// En tests, usamos mocks
 mockRepo := &MockUserRepository{}
 useCase := NewCreateUserUseCase(logger, mockRepo)
 ```
 
-#### 4. Extensibility
+#### 4. Extensibilidad
 
-Adding new features is simple and doesn't affect existing code:
+Agregar nuevas funcionalidades es simple y no afecta código existente:
 
-1. Create model in `domain/models/`
-2. Define interface in `application/contracts/`
-3. Implement use case in `application/modules/`
-4. Create repository in `infrastructure/repositories/`
-5. Add handler in `infrastructure/handlers/`
+1. Crear modelo en `domain/models/`
+2. Definir interfaz en `application/contracts/`
+3. Implementar caso de uso en `application/modules/`
+4. Crear repositorio en `infrastructure/repositories/`
+5. Agregar handler en `infrastructure/handlers/`
 
 ### Patrones de Diseño Implementados
 
@@ -710,7 +710,7 @@ type Argon2HashProvider struct {}
 
 ---
 
-## Scalability and Serverless
+## Escalabilidad y Serverless
 
 ### Capacidades de Escalabilidad
 
@@ -931,7 +931,7 @@ graph TB
 
 ---
 
-## AWS Serverless Deployment and Initialization
+## Despliegue e Inicialización AWS Serverless
 
 ### Arquitectura de Módulos Go para Serverless
 
@@ -1403,7 +1403,7 @@ graph TB
 
 ---
 
-## Complete Request Flow
+## Flujo Completo de Request
 
 ### Diagrama de Flujo de Request
 
@@ -1736,7 +1736,7 @@ El DAG ejecuta:
 
 ---
 
-## Virtues and Benefits
+## Virtudes y Beneficios
 
 ### 1. Arquitectura Sólida y Escalable
 
@@ -1873,7 +1873,7 @@ El DAG ejecuta:
 
 ---
 
-## 📊 Project Statistics
+## 📊 Estadísticas del Proyecto
 
 | Métrica | Valor |
 |---------|-------|
@@ -1888,7 +1888,7 @@ El DAG ejecuta:
 | **Templates** | 6+ templates HTML |
 | **Idiomas Soportados** | 2 (Español, Inglés) |
 
-## Project Structure - Layer by Layer
+## Estructura del Proyecto - Capa por Capa
 
 ### Visión General de la Estructura
 
@@ -2097,7 +2097,7 @@ func (r *UserRepository) Create(input UserCreate) (*User, error) {
 
 ---
 
-## Exhaustive Review by Folders
+## Revisión Exhaustiva por Carpetas
 
 ### `/src/domain/` - Capa de Dominio
 
@@ -2392,7 +2392,7 @@ Capa de servidor HTTP con Gin.
   - Carga de middlewares (CORS, Recovery)
   - Carga de rutas (`routes.Router()`)
   - Inicio del servidor en puerto configurable
-  - **Note**: Swagger documentation runs as an independent service (see `/src/infrastructure/docs/`)
+  - **Nota**: La documentación Swagger se ejecuta como un servicio independiente (ver `/src/infrastructure/docs/`)
 
 **Flujo de inicialización:**
 ```go
@@ -2416,7 +2416,7 @@ Capa de servidor HTTP con Gin.
 4. app.Run()
    └── Inicia servidor HTTP
 
-**Note**: Swagger documentation runs as an independent service in `/src/infrastructure/docs/`
+**Nota**: La documentación Swagger se ejecuta como un servicio independiente en `/src/infrastructure/docs/`
 ```
 
 ##### `/src/infrastructure/api/routes/`
@@ -2658,7 +2658,7 @@ Servicio HTTP independiente para documentación Swagger.
 
 - **`main.go`**: Servidor HTTP independiente para Swagger UI
   - Configuración desde variables de entorno
-  - Servidor en puerto configurable (default: 8081)
+  - Servidor en puerto configurable (por defecto: 8081)
   - Redirección automática a `/docs/`
 - **`config/`**: Configuración del servidor Swagger
   - `config.go`: Carga de variables de entorno
@@ -2670,7 +2670,7 @@ Servicio HTTP independiente para documentación Swagger.
 
 ---
 
-## Technologies and Dependencies
+## Tecnologías y Dependencias
 
 ### Stack Tecnológico
 
@@ -2826,8 +2826,8 @@ graph TB
     Gin --> Redis
     Gin --> JWT
     JWT --> Crypto
+    Gin --> Swag
     Swag --> SwaggerUI
-    SwaggerUI -.->|Independent Service| SwaggerServer[Swagger HTTP Server<br/>Port: 8081]
 
     style Go fill:#00ADD8
     style Gin fill:#00ADD8
@@ -2842,7 +2842,7 @@ require (
     github.com/golang-jwt/jwt/v5 v5.3.0
     github.com/jackc/pgx/v5 v5.7.2
     github.com/redis/go-redis/v9 v9.13.0
-    github.com/swaggo/gin-swagger v1.6.0
+    github.com/swaggo/http-swagger v1.6.0
     gorm.io/gorm v1.25.12
     golang.org/x/crypto v0.41.0
 )
@@ -2850,7 +2850,7 @@ require (
 
 ---
 
-## Configuration and Setup
+## Configuración y Setup
 
 ### Variables de Entorno
 
@@ -2941,7 +2941,7 @@ go run src/infrastructure/api/cmd/main.go
 
 ---
 
-## Business Modules
+## Módulos de Negocio
 
 ### 🔐 Módulo de Autenticación (`auth`)
 
@@ -3187,7 +3187,7 @@ go run src/infrastructure/api/cmd/main.go
 
 ---
 
-## API and Endpoints
+## API y Endpoints
 
 ### Autenticación
 
@@ -3223,7 +3223,7 @@ go run src/infrastructure/api/cmd/main.go
 |--------|----------|-------------|---------------|
 | GET | `/api/health-check` | Health check | No |
 
-**Note**: Swagger documentation is available as an independent service on port 8081 at `http://localhost:8081/docs/`
+**Nota**: La documentación Swagger está disponible como un servicio independiente en el puerto 8081 en `http://localhost:8081/docs/`
 
 ### Ejemplos de Uso
 
@@ -3253,7 +3253,7 @@ curl -X POST http://localhost:8080/api/user \
 
 ---
 
-## Database and Persistence
+## Base de Datos y Persistencia
 
 ### Diagrama Entidad-Relación (ERD)
 
@@ -3427,7 +3427,7 @@ graph TB
 
 ---
 
-## Authentication and Security
+## Autenticación y Seguridad
 
 ### Diagrama de Flujo de Autenticación
 
@@ -3645,7 +3645,7 @@ go test ./tests/integration/...
 
 ---
 
-## Docker and Deployment
+## Docker y Despliegue
 
 ### Arquitectura Docker
 
@@ -3797,9 +3797,9 @@ docker run -d \
   -p 8081:8081 \
   -e SWAGGER_PORT=8081 \
   -e API_HOST=api.example.com:8080 \
-  -e API_TITLE="My API Documentation" \
+  -e API_TITLE="Mi Documentación API" \
   -e API_VERSION="1.0" \
-  -e API_DESCRIPTION="API documentation" \
+  -e API_DESCRIPTION="Documentación de la API" \
   -e API_BASE_PATH="/api" \
   --name swagger-docs \
   your-registry/swagger:latest
@@ -3840,7 +3840,7 @@ spec:
         - name: API_HOST
           value: "api.example.com:8080"
         - name: API_TITLE
-          value: "My API Documentation"
+          value: "Mi Documentación API"
 ---
 apiVersion: v1
 kind: Service
@@ -3866,7 +3866,7 @@ spec:
 
 ---
 
-## Development Guide
+## Guía de Desarrollo
 
 ### Agregar Nueva Funcionalidad
 
@@ -3955,7 +3955,7 @@ r.POST("/new-entity", wrapHandler(handlers.CreateNewEntity))
 
 ---
 
-## 🎯 Best Practices and Conventions
+## 🎯 Mejores Prácticas y Convenciones
 
 ### Convenciones de Código
 
@@ -4112,74 +4112,74 @@ func TestCreateUser(t *testing.T) {
 2. **Integration Tests**: Repositorios con BD real
 3. **E2E Tests**: Flujos completos con Postman
 
-## Conclusion
+## Conclusión
 
-**GoProjectSkeleton** provides a solid, scalable, and maintainable foundation for developing enterprise applications in Go. The Clean Architecture, along with advanced design patterns, provides an excellent foundation for system growth.
+**GoProjectSkeleton** proporciona una base sólida, escalable y mantenible para desarrollar aplicaciones empresariales en Go. La arquitectura Clean Architecture, junto con patrones de diseño avanzados, proporciona una base excelente para el crecimiento del sistema.
 
-### 🎯 Key Strengths
+### 🎯 Puntos Fuertes
 
-- ✅ **Solid architecture** and well-structured
-- ✅ **Scalability** horizontal and vertical
-- ✅ **Serverless ready** - Easy migration to serverless (AWS Lambda, Azure Functions)
-- ✅ **Complete testing** in multiple layers
-- ✅ **Exhaustive documentation** with Swagger
-- ✅ **Complete Docker** for development and production
-- ✅ **Multi-cloud** - Support for AWS and Azure
-- ✅ **Security** - JWT, OTP, secure password hashing
-- ✅ **Internationalization** - Multi-language support
-- ✅ **Optimization** - Cache, tree shaking, connection pooling
+- ✅ **Arquitectura sólida** y bien estructurada
+- ✅ **Escalabilidad** horizontal y vertical
+- ✅ **Serverless ready** - Fácil migración a serverless (AWS Lambda, Azure Functions)
+- ✅ **Testing completo** en múltiples capas
+- ✅ **Documentación** exhaustiva con Swagger
+- ✅ **Docker completo** para desarrollo y producción
+- ✅ **Multi-cloud** - Soporte para AWS y Azure
+- ✅ **Seguridad** - JWT, OTP, hash seguro de contraseñas
+- ✅ **Internacionalización** - Soporte multiidioma
+- ✅ **Optimización** - Cache, tree shaking, connection pooling
 
-### 🚀 Ideal Use Cases
+### 🚀 Casos de Uso Ideales
 
-- **Enterprise RESTful APIs**
-- **Scalable microservices**
-- **Serverless applications** (AWS Lambda, Azure Functions)
-- **Robust authentication systems**
-- **High-concurrency APIs**
-- **Projects requiring long-term maintainability**
+- **APIs RESTful** empresariales
+- **Microservicios** escalables
+- **Aplicaciones Serverless** (AWS Lambda, Azure Functions)
+- **Sistemas de autenticación** robustos
+- **APIs con alta concurrencia**
+- **Proyectos que requieren mantenibilidad** a largo plazo
 
-### 📚 Next Steps
+### 📚 Próximos Pasos
 
-1. **Explore the Documentation**
-   - Review Swagger at `http://localhost:8081/docs/` (independent service)
-   - Read code examples in each module
+1. **Explorar la Documentación**
+   - Revisar Swagger en `http://localhost:8081/docs/` (servicio independiente)
+   - Leer ejemplos de código en cada módulo
 
-2. **Run Tests**
+2. **Ejecutar Tests**
    ```bash
    go test ./src/...
    go test ./tests/integration/...
    ```
 
-3. **Adapt to Your Needs**
-   - Customize domain models
-   - Add new business modules
-   - Configure providers according to your services
+3. **Adaptar a tus Necesidades**
+   - Personalizar modelos de dominio
+   - Agregar nuevos módulos de negocio
+   - Configurar providers según tus servicios
 
-4. **Deploy**
-   - Development: Docker Compose
-   - Production: Traditional monolith or Serverless
-   - Cloud: AWS Lambda or Azure Functions
+4. **Desplegar**
+   - Desarrollo: Docker Compose
+   - Producción: Monolito tradicional o Serverless
+   - Cloud: AWS Lambda o Azure Functions
 
-### 🤝 Contributions
+### 🤝 Contribuciones
 
-This project follows Go best practices and clean architecture. When contributing:
+Este proyecto sigue las mejores prácticas de Go y arquitectura limpia. Al contribuir:
 
-1. Maintain layer separation
-2. Follow code conventions
-3. Write tests for new features
-4. Document important changes
-5. Update Swagger for new endpoints
+1. Mantén la separación de capas
+2. Sigue las convenciones de código
+3. Escribe tests para nuevas funcionalidades
+4. Documenta cambios importantes
+5. Actualiza Swagger para nuevos endpoints
 
-### 📞 Support
+### 📞 Soporte
 
-For more information:
-- **Swagger Documentation**: `/docs/`
-- **Example Tests**: `tests/`
-- **Source Code**: Explore `src/` to see implementations
+Para más información:
+- **Documentación Swagger**: `http://localhost:8081/docs/` (servicio independiente)
+- **Tests de Ejemplo**: `tests/`
+- **Código Fuente**: Explora `src/` para ver implementaciones
 
 ---
 
 <div align="center">
-  <p>Made with ❤️ using Go and Clean Architecture</p>
-  <p>⭐ If this project is useful to you, consider giving it a star</p>
+  <p>Hecho con ❤️ usando Go y Clean Architecture</p>
+  <p>⭐ Si este proyecto te es útil, considera darle una estrella</p>
 </div>
