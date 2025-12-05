@@ -7,7 +7,8 @@ import (
 
 	dtos "goprojectskeleton/src/application/shared/DTOs"
 	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/mocks"
+	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
 	"goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -18,9 +19,9 @@ func TestCreateUserAndPassword(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testHashProvider := new(mocks.MockHashProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testHashProvider := new(providersmocks.MockHashProvider)
 
 	status := models.UserStatusPending
 	userBase := models.UserBase{

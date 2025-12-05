@@ -7,8 +7,9 @@ import (
 
 	dtos "goprojectskeleton/src/application/shared/DTOs"
 	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/mocks"
 	dtomocks "goprojectskeleton/src/application/shared/mocks/dtos"
+	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
 	"goprojectskeleton/src/application/shared/settings"
 	"goprojectskeleton/src/application/shared/status"
 	"goprojectskeleton/src/domain/models"
@@ -21,12 +22,12 @@ func TestAuthenticationUseCase(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testJWTProvider := new(mocks.MockJWTProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testPasswordRepository := new(mocks.MockPasswordRepository)
-	testUserRepository := new(mocks.MockUserRepository)
-	testOTPRepository := new(mocks.MockOneTimePasswordRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
 
 	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testUserRepository, testOTPRepository, testHashProvider, testJWTProvider, nil)
 
@@ -63,12 +64,12 @@ func TestAuthenticationUseCase_InvalidCredentials(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testJWTProvider := new(mocks.MockJWTProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testPasswordRepository := new(mocks.MockPasswordRepository)
-	testUserRepository := new(mocks.MockUserRepository)
-	testOTPRepository := new(mocks.MockOneTimePasswordRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
 
 	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testUserRepository, testOTPRepository, testHashProvider, testJWTProvider, nil)
 
@@ -113,13 +114,13 @@ func TestAuthenticationUseCase_RateLimitExceeded(t *testing.T) {
 	// Configurar max attempts para el test
 	settings.AppSettingsInstance.LoginMaxAttempts = 5
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testJWTProvider := new(mocks.MockJWTProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testPasswordRepository := new(mocks.MockPasswordRepository)
-	testUserRepository := new(mocks.MockUserRepository)
-	testOTPRepository := new(mocks.MockOneTimePasswordRepository)
-	cacheProvider := new(mocks.MockCacheProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
+	cacheProvider := new(providersmocks.MockCacheProvider)
 
 	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testUserRepository, testOTPRepository, testHashProvider, testJWTProvider, cacheProvider)
 
@@ -157,13 +158,13 @@ func TestAuthenticationUseCase_RateLimitNotExceeded(t *testing.T) {
 	// Configurar max attempts para el test
 	settings.AppSettingsInstance.LoginMaxAttempts = 5
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testJWTProvider := new(mocks.MockJWTProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testPasswordRepository := new(mocks.MockPasswordRepository)
-	testUserRepository := new(mocks.MockUserRepository)
-	testOTPRepository := new(mocks.MockOneTimePasswordRepository)
-	cacheProvider := new(mocks.MockCacheProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
+	cacheProvider := new(providersmocks.MockCacheProvider)
 
 	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testUserRepository, testOTPRepository, testHashProvider, testJWTProvider, cacheProvider)
 
@@ -223,13 +224,13 @@ func TestAuthenticationUseCase_IncrementFailedAttempts(t *testing.T) {
 	settings.AppSettingsInstance.LoginMaxAttempts = 5
 	settings.AppSettingsInstance.LoginAttemptsWindowMinutes = 15
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testJWTProvider := new(mocks.MockJWTProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testPasswordRepository := new(mocks.MockPasswordRepository)
-	testUserRepository := new(mocks.MockUserRepository)
-	testOTPRepository := new(mocks.MockOneTimePasswordRepository)
-	cacheProvider := new(mocks.MockCacheProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
+	cacheProvider := new(providersmocks.MockCacheProvider)
 
 	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testUserRepository, testOTPRepository, testHashProvider, testJWTProvider, cacheProvider)
 
@@ -280,12 +281,12 @@ func TestAuthenticationUseCase_RateLimitWithNoCacheProvider(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testJWTProvider := new(mocks.MockJWTProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testPasswordRepository := new(mocks.MockPasswordRepository)
-	testUserRepository := new(mocks.MockUserRepository)
-	testOTPRepository := new(mocks.MockOneTimePasswordRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
 
 	// Cache provider es nil - no debe aplicar rate limiting
 	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testUserRepository, testOTPRepository, testHashProvider, testJWTProvider, nil)
@@ -335,13 +336,13 @@ func TestAuthenticationUseCase_IncrementFailedAttemptsWhenNoPreviousAttempts(t *
 	settings.AppSettingsInstance.LoginMaxAttempts = 5
 	settings.AppSettingsInstance.LoginAttemptsWindowMinutes = 15
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testJWTProvider := new(mocks.MockJWTProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testPasswordRepository := new(mocks.MockPasswordRepository)
-	testUserRepository := new(mocks.MockUserRepository)
-	testOTPRepository := new(mocks.MockOneTimePasswordRepository)
-	cacheProvider := new(mocks.MockCacheProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
+	cacheProvider := new(providersmocks.MockCacheProvider)
 
 	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testUserRepository, testOTPRepository, testHashProvider, testJWTProvider, cacheProvider)
 
@@ -392,13 +393,13 @@ func TestAuthenticationUseCase_RateLimitWithMaxAttemptsZero(t *testing.T) {
 	// Configurar max attempts a 0 - no debe aplicar rate limiting
 	settings.AppSettingsInstance.LoginMaxAttempts = 0
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testJWTProvider := new(mocks.MockJWTProvider)
-	testHashProvider := new(mocks.MockHashProvider)
-	testPasswordRepository := new(mocks.MockPasswordRepository)
-	testUserRepository := new(mocks.MockUserRepository)
-	testOTPRepository := new(mocks.MockOneTimePasswordRepository)
-	cacheProvider := new(mocks.MockCacheProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
+	cacheProvider := new(providersmocks.MockCacheProvider)
 
 	uc := NewAuthenticateUseCase(testLogger, testPasswordRepository, testUserRepository, testOTPRepository, testHashProvider, testJWTProvider, cacheProvider)
 

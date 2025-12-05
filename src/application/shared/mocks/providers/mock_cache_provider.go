@@ -1,5 +1,5 @@
 // Package mocks provides mock implementations of the contracts/providers/cache_provider.go interface
-package mocks
+package providersmocks
 
 import (
 	contractsProviders "goprojectskeleton/src/application/contracts/providers"
