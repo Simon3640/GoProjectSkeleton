@@ -27,6 +27,13 @@ linters-settings:
         disabled: false
       - name: package-comments
         disabled: true
+      - name: comment-format
+        disabled: true
+      - name: exported
+        arguments:
+          - checkPrivateReceivers
+          - "false"
+        disabled: false
   gofumpt:
     extra-rules: true
   goimports:
@@ -37,3 +44,12 @@ issues:
   max-issues-per-linter: 0
   max-same-issues: 0
   new: true
+  exclude-rules:
+    # Exclude all revive issues in handlers (Swagger comments provide documentation)
+    - path: _test\.go$
+      linters:
+        - revive
+        - gocritic
+    - path: src/infrastructure/handlers/
+      linters:
+        - revive
