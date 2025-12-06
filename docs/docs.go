@@ -894,10 +894,10 @@ const docTemplate = `{
                 "count": {
                     "type": "integer"
                 },
-                "has_next": {
+                "hasNext": {
                     "type": "boolean"
                 },
-                "has_prev": {
+                "hasPrev": {
                     "type": "boolean"
                 },
                 "links": {
@@ -911,13 +911,13 @@ const docTemplate = `{
         "dtos.PasswordCreateNoHash": {
             "type": "object",
             "properties": {
-                "expires_at": {
+                "expiresAt": {
                     "type": "string"
                 },
-                "is_active": {
+                "isActive": {
                     "type": "boolean"
                 },
-                "no_hashed_password": {
+                "noHashedPassword": {
                     "type": "string"
                 },
                 "user_id": {
@@ -928,7 +928,7 @@ const docTemplate = `{
         "dtos.PasswordTokenCreate": {
             "type": "object",
             "properties": {
-                "no_hashed_password": {
+                "noHashedPassword": {
                     "type": "string"
                 },
                 "token": {
@@ -947,16 +947,16 @@ const docTemplate = `{
         "dtos.Token": {
             "type": "object",
             "properties": {
-                "access_expires_at": {
+                "accessExpiresAt": {
                     "type": "string"
                 },
-                "access_token": {
+                "accessToken": {
                     "type": "string"
                 },
-                "refresh_expires_at": {
+                "refresExpiresAt": {
                     "type": "string"
                 },
-                "refresh_token": {
+                "refreshToken": {
                     "type": "string"
                 },
                 "token_type": {
@@ -981,7 +981,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "otp_login": {
+                "otpLogin": {
                     "type": "boolean"
                 },
                 "password": {
@@ -1007,7 +1007,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "otp_login": {
+                "otpLogin": {
                     "type": "boolean"
                 },
                 "phone": {
@@ -1064,7 +1064,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "otp_login": {
+                "otpLogin": {
                     "type": "boolean"
                 },
                 "phone": {
@@ -1107,7 +1107,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "otp_login": {
+                "otpLogin": {
                     "type": "boolean"
                 },
                 "phone": {

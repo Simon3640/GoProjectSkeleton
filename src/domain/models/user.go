@@ -40,7 +40,7 @@ type UserBase struct {
 	Phone    string      `json:"phone"`
 	Status   *UserStatus `json:"status,omitempty"`
 	RoleID   uint        `json:"role_id"`
-	OTPLogin bool        `json:"otp_login"`
+	OTPLogin bool        `json:"otpLogin"`
 }
 
 // Validate validates the user base
@@ -85,7 +85,7 @@ type UserUpdateBase struct {
 	Phone    *string     `json:"phone"`
 	Status   *UserStatus `json:"status,omitempty"`
 	RoleID   *uint       `json:"role_id,omitempty"`
-	OTPLogin *bool       `json:"otp_login,omitempty"`
+	OTPLogin *bool       `json:"otpLogin,omitempty"`
 }
 
 // Validate validates the user update base
