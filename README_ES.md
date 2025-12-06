@@ -42,8 +42,9 @@ docker-compose -f docker/docker-compose.dev.yml up -d
 # 4. Ejecutar la aplicación
 go run src/infrastructure/server/cmd/main.go
 
-# 5. Acceder a la documentación Swagger
-# http://localhost:8080/docs/
+# 5. Acceder a la documentación Swagger (servicio independiente)
+# Swagger se ejecuta como un servicio separado en el puerto 8081
+# http://localhost:8081/docs/
 ```
 
 ## 📋 Tabla de Contenidos
@@ -115,7 +116,8 @@ La filosofía central de **GoProjectSkeleton** es que el **dominio** y la **lóg
 - ✅ **Locale por Request** - Cada request puede tener su idioma
 
 #### 📚 Documentación y Testing
-- ✅ **Documentación Swagger** - API documentada automáticamente con ejemplos
+- ✅ **Servicio Swagger Independiente** - Swagger se ejecuta como un servicio separado y desplegable (puerto 8081)
+- ✅ **Listo para Docker Registry** - Swagger puede construirse y desplegarse independientemente
 - ✅ **Testing Completo** - Unitarios, integración y E2E
 - ✅ **Mocks Completos** - Mocks de repositorios y providers para testing
 - ✅ **Postman Collection** - Colección lista para pruebas E2E
@@ -125,7 +127,7 @@ La filosofía central de **GoProjectSkeleton** es que el **dominio** y la **lóg
 - ✅ **Hot Reload con Air** - Recarga automática de código al cambiar archivos
 - ✅ **Debugging Remoto** - Debugger Delve configurado para Docker y desarrollo local
 - ✅ **Setup Docker de Desarrollo** - Ambiente de desarrollo completo con todas las herramientas preinstaladas
-- ✅ **Auto-generación de Swagger** - Generación automática de documentación API al compilar
+- ✅ **Servicio Swagger Independiente** - Swagger se ejecuta en contenedor separado con hot reload
 - ✅ **Herramientas de Desarrollo Incluidas** - Air, Delve, Swag preconfiguradas y listas para usar
 - ✅ **Testing de Emails** - Mailpit integrado para pruebas de email en desarrollo
 - ✅ **UI de Gestión Redis** - Redis Commander para inspección de cache
@@ -261,18 +263,34 @@ services:
 - ✅ **Swag** - Generador de Swagger
 - ✅ Todas las dependencias de Go
 
-#### ✅ Generación Automática de Swagger
+#### ✅ Servicio de Documentación Swagger Independiente
 
-La documentación Swagger se genera automáticamente:
+La documentación Swagger es ahora un **servicio completamente independiente** que se ejecuta por separado de la aplicación principal:
 
-**Al Compilar:**
-- Air ejecuta automáticamente `swag init` antes de compilar
-- La documentación se genera en el directorio `docs/`
-- Disponible en `http://localhost:8080/docs/`
+**Arquitectura:**
+- **Servidor Independiente**: Swagger se ejecuta en su propio servidor HTTP (puerto 8081)
+- **Despliegue Separado**: Puede desplegarse independientemente usando `dockerfile.swagger`
+- **Listo para Docker Registry**: Puede subirse a cualquier Docker registry y desplegarse por separado
+- **Sin Dependencias**: Completamente desacoplado de la aplicación principal
 
-**Tarea Pre-lanzamiento:**
-- La configuración de VS Code incluye `preLaunchTask: "go: swag init"`
-- Swagger siempre está actualizado al depurar
+**Desarrollo:**
+- El servicio Swagger se ejecuta en un contenedor Docker separado
+- Regenera automáticamente la documentación al cambiar el código
+- Disponible en `http://localhost:8081/docs/`
+- Configurado mediante variables de entorno (ver `dev.env.example`)
+
+**Despliegue en Producción:**
+- Construir: `docker build -f docker/dockerfile.swagger -t your-registry/swagger:latest .`
+- Subir: `docker push your-registry/swagger:latest`
+- Ejecutar: `docker run -p 8081:8081 -e API_HOST=your-api-host your-registry/swagger:latest`
+
+**Configuración:**
+- `SWAGGER_PORT`: Puerto para el servidor Swagger (por defecto: 8081)
+- `API_HOST`: Host de la API principal (ej: `api.example.com:8080`)
+- `API_TITLE`: Título de la API en Swagger UI
+- `API_VERSION`: Versión de la API
+- `API_DESCRIPTION`: Descripción de la API
+- `API_BASE_PATH`: Ruta base para los endpoints de la API
 
 #### ✅ Integración de Herramientas de Desarrollo
 
@@ -1900,10 +1918,14 @@ GoProjectSkeleton/
 ├── tests/                   # 🧪 Tests del proyecto
 │   ├── integration/         # Tests de integración
 │   └── e2e/                 # Tests end-to-end (Postman)
-├── docs/                    # 📚 Documentación Swagger
-│   ├── swagger.json
-│   ├── swagger.yaml
-│   └── docs.go
+├── src/infrastructure/docs/ # 📚 Servicio Swagger Independiente
+│   ├── main.go              # Servidor HTTP independiente para Swagger
+│   ├── config/              # Configuración del servidor Swagger
+│   ├── swagger/             # Archivos generados de Swagger
+│   │   ├── swagger.json
+│   │   ├── swagger.yaml
+│   │   └── docs.go
+│   └── go.mod               # Módulo independiente para Swagger
 └── IDE/                     # ⚙️ Configuración del IDE
     ├── launch.json
     └── tasks.json
@@ -2369,8 +2391,8 @@ Capa de servidor HTTP con Gin.
   - Configuración de Gin con graceful shutdown
   - Carga de middlewares (CORS, Recovery)
   - Carga de rutas (`routes.Router()`)
-  - Configuración de Swagger (`/docs/*`)
   - Inicio del servidor en puerto configurable
+  - **Nota**: La documentación Swagger se ejecuta como un servicio independiente (ver `/src/infrastructure/docs/`)
 
 **Flujo de inicialización:**
 ```go
@@ -2391,11 +2413,10 @@ Capa de servidor HTTP con Gin.
    ├── Configura Recovery middleware
    └── Carga rutas
 
-4. loadSwagger()
-   └── Configura documentación Swagger
-
-5. app.Run()
+4. app.Run()
    └── Inicia servidor HTTP
+
+**Nota**: La documentación Swagger se ejecuta como un servicio independiente en `/src/infrastructure/docs/`
 ```
 
 ##### `/src/infrastructure/api/routes/`
@@ -2609,10 +2630,12 @@ Implementación para **Azure Functions**:
 
 ### `/docker/` - Configuración Docker
 
-- **`docker-compose.dev.yml`**: Servicios de desarrollo
+- **`docker-compose.dev.yml`**: Servicios de desarrollo (incluye servicio Swagger independiente)
 - **`docker-compose.test.yml`**: Servicios de testing
 - **`docker-compose.e2e.yml`**: Servicios de E2E
 - **`dockerfile.dev`**: Dockerfile de desarrollo
+- **`dockerfile.swagger`**: Dockerfile de producción para servicio Swagger independiente
+- **`dockerfile.swagger.debug`**: Dockerfile de desarrollo para servicio Swagger con hot reload
 - **`dockerfile.e2e`**: Dockerfile de E2E
 - **`dockerfile.integration`**: Dockerfile de integración
 - **`db/`**: Configuración de base de datos
@@ -2629,11 +2652,21 @@ Implementación para **Azure Functions**:
   - `collection.json`: Postman collection
   - `environment.json`: Postman environment
 
-### `/docs/` - Documentación
+### `/src/infrastructure/docs/` - Servicio Swagger Independiente
 
-- **`swagger.json`**: Especificación Swagger
-- **`swagger.yaml`**: Especificación Swagger (YAML)
-- **`docs.go`**: Generación de Swagger
+Servicio HTTP independiente para documentación Swagger.
+
+- **`main.go`**: Servidor HTTP independiente para Swagger UI
+  - Configuración desde variables de entorno
+  - Servidor en puerto configurable (por defecto: 8081)
+  - Redirección automática a `/docs/`
+- **`config/`**: Configuración del servidor Swagger
+  - `config.go`: Carga de variables de entorno
+- **`swagger/`**: Archivos generados de Swagger
+  - `swagger.json`: Especificación Swagger (JSON)
+  - `swagger.yaml`: Especificación Swagger (YAML)
+  - `docs.go`: Código generado de Swagger
+- **`go.mod`**: Módulo independiente para el servicio Swagger
 
 ---
 
@@ -2702,10 +2735,12 @@ Implementación para **Azure Functions**:
   - Generación automática de OpenAPI
   - Validación de esquemas
 
-- **swaggo/gin-swagger**: Integración Swagger con Gin
+- **swaggo/http-swagger**: Servidor HTTP independiente para Swagger UI
+  - Servicio completamente independiente
   - UI interactiva
   - Pruebas desde navegador
   - Autenticación en Swagger UI
+  - Despliegue independiente en Docker registry
 
 - **stretchr/testify**: Framework de testing
   - Assertions mejoradas
@@ -2741,9 +2776,9 @@ require (
     // Security
     golang.org/x/crypto v0.41.0
 
-    // Documentation
+    // Documentation (Independent Swagger Service)
     github.com/swaggo/swag v1.16.6
-    github.com/swaggo/gin-swagger v1.6.0
+    github.com/swaggo/http-swagger v1.6.0
 
     // Testing
     github.com/stretchr/testify v1.10.0
@@ -2807,7 +2842,7 @@ require (
     github.com/golang-jwt/jwt/v5 v5.3.0
     github.com/jackc/pgx/v5 v5.7.2
     github.com/redis/go-redis/v9 v9.13.0
-    github.com/swaggo/gin-swagger v1.6.0
+    github.com/swaggo/http-swagger v1.6.0
     gorm.io/gorm v1.25.12
     golang.org/x/crypto v0.41.0
 )
@@ -3187,7 +3222,8 @@ go run src/infrastructure/api/cmd/main.go
 | Método | Endpoint | Descripción | Autenticación |
 |--------|----------|-------------|---------------|
 | GET | `/api/health-check` | Health check | No |
-| GET | `/docs/*` | Documentación Swagger | No |
+
+**Nota**: La documentación Swagger está disponible como un servicio independiente en el puerto 8081 en `http://localhost:8081/docs/`
 
 ### Ejemplos de Uso
 
@@ -3625,9 +3661,13 @@ graph TB
             Redis[(Redis<br/>Port: 6379<br/>Cache)]
         end
 
+        subgraph SwaggerService["Servicio Swagger Independiente"]
+            Swagger[Swagger Server<br/>Port: 8081<br/>Independent]
+        end
+
         subgraph DevTools["Herramientas de Desarrollo"]
             Mailpit[Mailpit<br/>Port: 8025<br/>Email Testing]
-            RedisCommander[Redis Commander<br/>Port: 8081<br/>Redis UI]
+            RedisCommander[Redis Commander<br/>Port: 18081<br/>Redis UI]
         end
     end
 
@@ -3635,6 +3675,7 @@ graph TB
     App -->|go-redis| Redis
     App -->|SMTP| Mailpit
 
+    Swagger -.->|Documentation| App
     RedisCommander -->|UI| Redis
 
     style App fill:#e3f2fd
@@ -3701,11 +3742,12 @@ graph TB
 
 El proyecto incluye configuración Docker para desarrollo:
 
-- **Aplicación**: Servidor Go con hot reload
+- **Aplicación**: Servidor Go con hot reload (puerto 8080)
+- **Swagger**: Servicio independiente de documentación (puerto 8081)
 - **PostgreSQL**: Base de datos principal
 - **Redis**: Cache y sesiones
 - **Mailpit**: Servidor de email para desarrollo
-- **Redis Commander**: Interfaz web para Redis
+- **Redis Commander**: Interfaz web para Redis (puerto 18081)
 
 ### Comandos Docker
 
@@ -3719,6 +3761,108 @@ docker-compose -f docker/docker-compose.test.yml up -d
 # E2E Testing
 docker-compose -f docker/docker-compose.e2e.yml up -d
 ```
+
+### Despliegue Independiente de Swagger
+
+El servicio Swagger puede desplegarse completamente independiente de la aplicación principal:
+
+#### Construcción de la Imagen
+
+```bash
+# Construir imagen de Swagger
+docker build -f docker/dockerfile.swagger -t your-registry/swagger:latest .
+
+# Etiquetar para versión específica
+docker tag your-registry/swagger:latest your-registry/swagger:v1.0.0
+```
+
+#### Push a Docker Registry
+
+```bash
+# Push a Docker Hub
+docker push your-registry/swagger:latest
+
+# Push a otros registries (ej: AWS ECR, Google GCR, Azure ACR)
+# AWS ECR
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
+docker tag your-registry/swagger:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/swagger:latest
+docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/swagger:latest
+```
+
+#### Ejecución del Contenedor
+
+```bash
+# Ejecutar con variables de entorno
+docker run -d \
+  -p 8081:8081 \
+  -e SWAGGER_PORT=8081 \
+  -e API_HOST=api.example.com:8080 \
+  -e API_TITLE="Mi Documentación API" \
+  -e API_VERSION="1.0" \
+  -e API_DESCRIPTION="Documentación de la API" \
+  -e API_BASE_PATH="/api" \
+  --name swagger-docs \
+  your-registry/swagger:latest
+
+# O usando un archivo .env
+docker run -d \
+  -p 8081:8081 \
+  --env-file swagger.env \
+  --name swagger-docs \
+  your-registry/swagger:latest
+```
+
+#### Despliegue en Kubernetes
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swagger-docs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: swagger-docs
+  template:
+    metadata:
+      labels:
+        app: swagger-docs
+    spec:
+      containers:
+      - name: swagger
+        image: your-registry/swagger:latest
+        ports:
+        - containerPort: 8081
+        env:
+        - name: SWAGGER_PORT
+          value: "8081"
+        - name: API_HOST
+          value: "api.example.com:8080"
+        - name: API_TITLE
+          value: "Mi Documentación API"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: swagger-docs-service
+spec:
+  selector:
+    app: swagger-docs
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8081
+  type: LoadBalancer
+```
+
+#### Ventajas del Despliegue Independiente
+
+- ✅ **Escalabilidad independiente**: Escalar Swagger sin afectar la aplicación principal
+- ✅ **Actualizaciones sin downtime**: Actualizar documentación sin reiniciar la API
+- ✅ **Separación de responsabilidades**: Documentación separada de la lógica de negocio
+- ✅ **Diferentes entornos**: Diferentes versiones de documentación para dev/staging/prod
+- ✅ **CDN y caching**: Servir documentación desde CDN para mejor rendimiento
 
 ---
 
@@ -3997,7 +4141,7 @@ func TestCreateUser(t *testing.T) {
 ### 📚 Próximos Pasos
 
 1. **Explorar la Documentación**
-   - Revisar Swagger en `http://localhost:8080/docs/`
+   - Revisar Swagger en `http://localhost:8081/docs/` (servicio independiente)
    - Leer ejemplos de código en cada módulo
 
 2. **Ejecutar Tests**
@@ -4029,7 +4173,7 @@ Este proyecto sigue las mejores prácticas de Go y arquitectura limpia. Al contr
 ### 📞 Soporte
 
 Para más información:
-- **Documentación Swagger**: `/docs/`
+- **Documentación Swagger**: `http://localhost:8081/docs/` (servicio independiente)
 - **Tests de Ejemplo**: `tests/`
 - **Código Fuente**: Explora `src/` para ver implementaciones
 
