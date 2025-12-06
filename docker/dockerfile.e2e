@@ -21,7 +21,6 @@ WORKDIR /app
 
 COPY ./src ./src
 COPY ./test.env .env
-COPY ./docs ./docs
 
 WORKDIR /app/src/infrastructure/server
 
