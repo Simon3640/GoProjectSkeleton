@@ -1,0 +1,17 @@
+root = "/app"
+
+[build]
+# Compile from docs module
+cmd = "cd /app && swag init -g main.go -o  swagger && go build -gcflags 'all=-N -l' -o /app/tmp/swagger-server ./main.go"
+bin = "/app/tmp/swagger-server"
+include_ext = ["go", "tpl", "tmpl", "html"]
+# Exclude dirs
+exclude_dir = ["tmp", "vendor", "docs", "bin", "swagger"]
+
+log_color = "true"
+log_time = "true"
+
+poll = true
+
+[run]
+cmd = "/app/tmp/swagger-server"

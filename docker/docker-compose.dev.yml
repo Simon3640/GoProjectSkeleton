@@ -16,9 +16,31 @@ services:
       - ../src:/app/src
       - ../dev.env:/app/.env:ro
       - ../.air.toml:/app/.air.toml
+      - goprojectskeleton-swagger-data:/app/src/infrastructure/docs/swagger
     networks:
       - goprojectskeleton
     command: ["air", "-c", ".air.toml"]
+
+  swagger:
+    build:
+      context: ..
+      dockerfile: docker/dockerfile.swagger.debug
+    ports:
+      - "8081:8081"
+    env_file:
+      - ../dev.env
+    volumes:
+      - ../src/infrastructure/docs/config:/app/config
+      - ../src/infrastructure/docs/main.go:/app/main.go
+      - ../src/infrastructure/handlers:/app/handlers
+      - ../src/domain/models:/app/models
+      - ../src/application/shared/DTOs:/app/DTOs
+      - ../src/infrastructure/docs/swagger:/app/swagger
+      - ../.air.swagger.toml:/app/.air.swagger.toml
+    networks:
+      - goprojectskeleton
+    command: ["air", "-c", ".air.swagger.toml"]
+
   db:
     build:
       context: ./db
@@ -26,7 +48,7 @@ services:
     expose:
       - 5432
     ports:
-      - "5436:5432"
+      - "15436:5432"
     environment:
       POSTGRES_USER: goprojectskeleton
       POSTGRES_PASSWORD: goprojectskeleton
@@ -54,7 +76,7 @@ services:
   redis-commander:
     image: rediscommander/redis-commander:latest
     ports:
-      - "8081:8081"
+      - "18081:8081"
     depends_on:
       - redis
     environment:
@@ -71,4 +93,7 @@ networks:
 
 volumes:
   goprojectskeleton-db-data:
+    external: false
+  # Reload purposes
+  goprojectskeleton-swagger-data:
     external: false

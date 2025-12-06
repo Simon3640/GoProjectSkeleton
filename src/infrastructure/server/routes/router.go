@@ -8,7 +8,7 @@ import (
 )
 
 func Router(r *gin.RouterGroup) {
-	r.GET("/health-check", wrapHandler(handlers.GetHealthCheck))
+	r.GET("/status", wrapHandler(handlers.GetHealthCheck))
 
 	private := r.Group("/")
 	private.Use(middlewares.AuthMiddleware())

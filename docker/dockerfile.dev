@@ -26,9 +26,7 @@ COPY .air.toml ./
 # Install necessary tools
 RUN go install github.com/go-delve/delve/cmd/dlv@latest
 RUN go install github.com/air-verse/air@v1.61.7
-RUN go install github.com/swaggo/swag/cmd/swag@latest
 
-RUN swag init -g ./src/infrastructure/server/cmd/main.go -o docs
 
 FROM golang:1.25-alpine
 
@@ -38,7 +36,6 @@ WORKDIR /app
 
 COPY --from=builder /go/bin/air /usr/local/bin/air
 COPY --from=builder /go/bin/dlv /usr/local/bin/dlv
-COPY --from=builder /go/bin/swag /usr/local/bin/swag
 
 COPY --from=builder /app .
 

@@ -1,0 +1,34 @@
+FROM golang:1.25-alpine AS builder
+
+# Alpine
+RUN apk add --no-cache git build-base
+
+WORKDIR /app
+
+# Copy and download dependencies from docs module
+COPY ./src/infrastructure/docs/go.mod ./src/infrastructure/docs/go.sum ./
+RUN go mod download
+
+COPY ./src/infrastructure/docs/config ./config
+COPY ./src/infrastructure/docs/main.go ./main.go
+COPY ./src/infrastructure/handlers ./handlers
+COPY .air.swagger.toml ./.air.swagger.toml
+
+# Copy models and dto to docs module
+COPY ./src/domain/models ./models
+COPY ./src/application/shared/DTOs ./DTOs
+
+# Install necessary tools
+RUN go install github.com/air-verse/air@v1.61.7
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+
+FROM golang:1.25-alpine
+
+WORKDIR /app
+
+COPY --from=builder /go/bin/air /usr/local/bin/air
+COPY --from=builder /go/bin/swag /usr/local/bin/swag
+
+COPY --from=builder /app .
+
+EXPOSE 8081
