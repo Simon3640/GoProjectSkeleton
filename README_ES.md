@@ -1,7 +1,7 @@
 <div align="center">
   <img src="logo.png" alt="GoProjectSkeleton logo" height="400">
 
-  *A foundation for clean architecture projects in Go*
+  *Una base para proyectos de arquitectura limpia en Go*
 
   <!-- Badges -->
   <p>
@@ -26,187 +26,187 @@
 ## 🚀 Quick Start
 
 ```bash
-# 1. Clone the repository
+# 1. Clonar el repositorio
 git clone <repository-url>
 cd GoProjectSkeleton
 
-# 2. Configure environment variables
+# 2. Configurar variables de entorno
 cp dev.env.example dev.env
-# Edit dev.env with your configurations
+# Editar dev.env con tus configuraciones
 
-# 3. Start services with Docker
+# 3. Iniciar servicios con Docker
 docker network create goprojectskeleton
 docker volume create goprojectskeleton-db-data
 docker-compose -f docker/docker-compose.dev.yml up -d
 
-# 4. Run the application
+# 4. Ejecutar la aplicación
 go run src/infrastructure/server/cmd/main.go
 
-# 5. Access Swagger documentation
+# 5. Acceder a la documentación Swagger
 # http://localhost:8080/docs/
 ```
 
-## 📋 Table of Contents
+## 📋 Tabla de Contenidos
 
-1. [Introduction](#introduction)
-2. [Project Architecture](#project-architecture)
-3. [Scalability and Serverless](#scalability-and-serverless)
-4. [Complete Request Flow](#complete-request-flow)
-5. [Virtues and Benefits](#virtues-and-benefits)
-6. [Project Structure - Layer by Layer](#project-structure---layer-by-layer)
-7. [Exhaustive Review by Folders](#exhaustive-review-by-folders)
-8. [Technologies and Dependencies](#technologies-and-dependencies)
-9. [Configuration and Setup](#configuration-and-setup)
-10. [Business Modules](#business-modules)
-11. [API and Endpoints](#api-and-endpoints)
-12. [Database and Persistence](#database-and-persistence)
-13. [Authentication and Security](#authentication-and-security)
+1. [Introducción](#introducción)
+2. [Arquitectura del Proyecto](#arquitectura-del-proyecto)
+3. [Escalabilidad y Serverless](#escalabilidad-y-serverless)
+4. [Flujo Completo de Request](#flujo-completo-de-request)
+5. [Virtudes y Beneficios](#virtudes-y-beneficios)
+6. [Estructura del Proyecto - Capa por Capa](#estructura-del-proyecto---capa-por-capa)
+7. [Revisión Exhaustiva por Carpetas](#revisión-exhaustiva-por-carpetas)
+8. [Tecnologías y Dependencias](#tecnologías-y-dependencias)
+9. [Configuración y Setup](#configuración-y-setup)
+10. [Módulos de Negocio](#módulos-de-negocio)
+11. [API y Endpoints](#api-y-endpoints)
+12. [Base de Datos y Persistencia](#base-de-datos-y-persistencia)
+13. [Autenticación y Seguridad](#autenticación-y-seguridad)
 14. [Testing](#testing)
-15. [Docker and Deployment](#docker-and-deployment)
-16. [Development Guide](#development-guide)
+15. [Docker y Despliegue](#docker-y-despliegue)
+16. [Guía de Desarrollo](#guía-de-desarrollo)
 
 ---
 
-## Introduction
+## Introducción
 
-**GoProjectSkeleton** is a professional Go project skeleton that implements **Clean Architecture** and **Hexagonal Architecture** (Ports & Adapters). This project provides a solid, scalable, and maintainable foundation for building enterprise applications in Go.
+**GoProjectSkeleton** es un esqueleto de proyecto Go profesional que implementa **Clean Architecture** y **Arquitectura Hexagonal** (Ports & Adapters). Este proyecto proporciona una base sólida, escalable y mantenible para construir aplicaciones empresariales en Go.
 
-### Project Philosophy
+### Filosofía del Proyecto
 
-The core philosophy of **GoProjectSkeleton** is that the **domain** and **application logic** (business logic) must be completely independent of **infrastructure** (frameworks, libraries, databases, etc.). This enables:
+La filosofía central de **GoProjectSkeleton** es que el **dominio** y la **lógica de aplicación** (business logic) deben ser completamente independientes de la **infraestructura** (frameworks, librerías, bases de datos, etc.). Esto permite:
 
-- **Interchangeability**: Change any infrastructure component without affecting the business
-- **Testability**: Test business logic without external dependencies
-- **Scalability**: Migrate to serverless or microservices architectures without rewriting code
-- **Maintainability**: Clean and well-structured code
+- **Intercambiabilidad**: Cambiar cualquier componente de infraestructura sin afectar el negocio
+- **Testabilidad**: Probar la lógica de negocio sin dependencias externas
+- **Escalabilidad**: Migrar a arquitecturas serverless o microservicios sin reescribir código
+- **Mantenibilidad**: Código limpio y bien estructurado
 
-### Main Features
+### Características Principales
 
-#### 🏗️ Architecture and Design
-- ✅ **Clean Architecture** - Clear separation of responsibilities in layers (Domain, Application, Infrastructure)
-- ✅ **Hexagonal Architecture** - Complete decoupling of external dependencies through Ports & Adapters
-- ✅ **Dependency Inversion** - Inner layers do not depend on outer layers
-- ✅ **SOLID Principles** - Design principles applied consistently
-- ✅ **Repository Pattern** - Data access abstraction
-- ✅ **Use Case Pattern** - Business logic encapsulation
-- ✅ **Factory Pattern** - Instance creation with dependency injection
+#### 🏗️ Arquitectura y Diseño
+- ✅ **Clean Architecture** - Separación clara de responsabilidades en capas (Domain, Application, Infrastructure)
+- ✅ **Arquitectura Hexagonal** - Desacoplamiento total de dependencias externas mediante Ports & Adapters
+- ✅ **Inversión de Dependencias** - Las capas internas no dependen de las externas
+- ✅ **SOLID Principles** - Principios de diseño aplicados consistentemente
+- ✅ **Repository Pattern** - Abstracción del acceso a datos
+- ✅ **Use Case Pattern** - Encapsulación de lógica de negocio
+- ✅ **Factory Pattern** - Creación de instancias con inyección de dependencias
 
-#### 🔐 Authentication and Security
-- ✅ **Complete JWT Authentication** - Access tokens and refresh tokens with flexible configuration
-- ✅ **OTP (One-Time Password)** - Two-factor authentication with temporary codes
-- ✅ **Secure Password System** - Bcrypt hashing, password reset with tokens
-- ✅ **Guards and Authorization** - Access control based on roles and permissions
-- ✅ **Multi-layer Validation** - Validation in DTOs, use cases, and repositories
-- ✅ **CORS Configured** - Security for web applications
+#### 🔐 Autenticación y Seguridad
+- ✅ **Autenticación JWT Completa** - Access tokens y refresh tokens con configuración flexible
+- ✅ **OTP (One-Time Password)** - Autenticación de dos factores con códigos temporales
+- ✅ **Sistema de Contraseñas Seguro** - Hash con Bcrypt, reset de contraseñas con tokens
+- ✅ **Guards y Autorización** - Control de acceso basado en roles y permisos
+- ✅ **Validación Multi-capa** - Validación en DTOs, casos de uso y repositorios
+- ✅ **CORS Configurado** - Seguridad para aplicaciones web
 
-#### 👥 User Management
-- ✅ **Complete CRUD** - Create, read, update, and delete users
-- ✅ **Role Management** - Role system with priorities
-- ✅ **User States** - Pending, Active, Inactive, Suspended, Deleted
-- ✅ **Account Activation** - Activation system through tokens
-- ✅ **Pagination and Filtering** - Efficient queries with Query Payload
-- ✅ **Smart Cache** - List caching with Redis
+#### 👥 Gestión de Usuarios
+- ✅ **CRUD Completo** - Crear, leer, actualizar y eliminar usuarios
+- ✅ **Gestión de Roles** - Sistema de roles con prioridades
+- ✅ **Estados de Usuario** - Pending, Active, Inactive, Suspended, Deleted
+- ✅ **Activación de Cuentas** - Sistema de activación mediante tokens
+- ✅ **Paginación y Filtrado** - Consultas eficientes con Query Payload
+- ✅ **Cache Inteligente** - Cache de listados con Redis
 
-#### 🌐 Internationalization and Communication
-- ✅ **Internationalization (i18n)** - Multi-language support (Spanish, English, extensible)
-- ✅ **Email System** - HTML templates with dynamic rendering
-- ✅ **Transactional Emails** - Registration, password reset, OTP
-- ✅ **Locale per Request** - Each request can have its own language
+#### 🌐 Internacionalización y Comunicación
+- ✅ **Internacionalización (i18n)** - Soporte multiidioma (Español, Inglés, extensible)
+- ✅ **Sistema de Emails** - Templates HTML con renderizado dinámico
+- ✅ **Emails Transaccionales** - Registro, reset de contraseña, OTP
+- ✅ **Locale por Request** - Cada request puede tener su idioma
 
-#### 📚 Documentation and Testing
-- ✅ **Swagger Documentation** - API automatically documented with examples
-- ✅ **Complete Testing** - Unit, integration, and E2E tests
-- ✅ **Complete Mocks** - Repository and provider mocks for testing
-- ✅ **Postman Collection** - Ready-to-use collection for E2E testing
+#### 📚 Documentación y Testing
+- ✅ **Documentación Swagger** - API documentada automáticamente con ejemplos
+- ✅ **Testing Completo** - Unitarios, integración y E2E
+- ✅ **Mocks Completos** - Mocks de repositorios y providers para testing
+- ✅ **Postman Collection** - Colección lista para pruebas E2E
 
-#### 🐳 DevOps and Deployment
-- ✅ **Complete Docker** - Multi-service for development, test, and E2E
-- ✅ **Serverless Ready** - Support for AWS Lambda and Azure Functions
-- ✅ **Terraform** - Infrastructure as code for AWS and Azure
-- ✅ **Secrets Management** - Integration with AWS Secrets Manager and Azure Key Vault
-- ✅ **Hot Reload** - Efficient development with automatic reloading
+#### 🐳 DevOps y Despliegue
+- ✅ **Docker Completo** - Multi-servicio para desarrollo, test y E2E
+- ✅ **Serverless Ready** - Soporte para AWS Lambda y Azure Functions
+- ✅ **Terraform** - Infraestructura como código para AWS y Azure
+- ✅ **Secrets Management** - Integración con AWS Secrets Manager y Azure Key Vault
+- ✅ **Hot Reload** - Desarrollo eficiente con recarga automática
 
-#### ⚡ Performance and Scalability
-- ✅ **Redis Cache** - Performance optimization with configurable TTL
-- ✅ **Connection Pooling** - Database connection reuse
-- ✅ **Pipes System (DAG)** - Sequential use case orchestration
-- ✅ **Parallelization** - Concurrent execution of use cases with goroutines
-- ✅ **Stateless Design** - Ready for horizontal scalability
-- ✅ **Tree Shaking** - Automatic binary optimization in serverless
+#### ⚡ Rendimiento y Escalabilidad
+- ✅ **Cache con Redis** - Optimización de rendimiento con TTL configurable
+- ✅ **Connection Pooling** - Reutilización de conexiones a base de datos
+- ✅ **Sistema de Pipes (DAG)** - Orquestación de casos de uso secuenciales
+- ✅ **Paralelización** - Ejecución concurrente de casos de uso con goroutines
+- ✅ **Stateless Design** - Listo para escalabilidad horizontal
+- ✅ **Tree Shaking** - Optimización automática de binarios en serverless
 
 ---
 
-## ☁️ Cloud and Serverless Capabilities
+## ☁️ Capacidades Cloud y Serverless
 
-**GoProjectSkeleton** is designed to work in both traditional environments and modern serverless architectures.
+**GoProjectSkeleton** está diseñado para funcionar tanto en entornos tradicionales como en arquitecturas serverless modernas.
 
 ### 🚀 AWS Lambda
 
-The project includes complete support for **AWS Lambda** with:
+El proyecto incluye soporte completo para **AWS Lambda** con:
 
-- ✅ **Automatic Function Generation** - Generation system from `functions.json`
-- ✅ **Independent Modules** - Each Lambda function has its own Go module
-- ✅ **Optimized Tree Shaking** - 5-15 MB binaries vs 50+ MB without optimization
-- ✅ **AWS Secrets Manager** - Automatic secret loading from Secrets Manager
-- ✅ **Lambda Adapter** - Adapter for API Gateway events
-- ✅ **Terraform** - Infrastructure as code ready to deploy
-- ✅ **Optimized Compilation** - Specific flags for Lambda (`lambda.norpc`, `-ldflags="-s -w"`)
+- ✅ **Generación Automática de Funciones** - Sistema de generación desde `functions.json`
+- ✅ **Módulos Independientes** - Cada función Lambda tiene su propio módulo Go
+- ✅ **Tree Shaking Optimizado** - Binarios de 5-15 MB vs 50+ MB sin optimización
+- ✅ **AWS Secrets Manager** - Carga automática de secretos desde Secrets Manager
+- ✅ **Lambda Adapter** - Adaptador para eventos de API Gateway
+- ✅ **Terraform** - Infraestructura como código lista para desplegar
+- ✅ **Compilación Optimizada** - Flags específicos para Lambda (`lambda.norpc`, `-ldflags="-s -w"`)
 
-**Lambda functions structure:**
+**Estructura de funciones Lambda:**
 ```
 src/infrastructure/clouds/aws/
-├── functions.json          # Function definitions
-├── init.go                 # AWS initialization
-├── lambda_adapter.go       # Lambda adapter
-├── secrets_manager.go      # Secrets management
-├── terraform/              # Terraform infrastructure
-└── functions/              # Function generator
+├── functions.json          # Definición de funciones
+├── init.go                 # Inicialización AWS
+├── lambda_adapter.go       # Adaptador Lambda
+├── secrets_manager.go      # Gestión de secretos
+├── terraform/              # Infraestructura Terraform
+└── functions/              # Generador de funciones
 ```
 
 ### 🔷 Azure Functions
 
-Complete support for **Azure Functions** with:
+Soporte completo para **Azure Functions** con:
 
-- ✅ **HTTP Adapter** - Adapter for Azure Functions HTTP triggers
-- ✅ **Azure Key Vault** - Integration with Azure Key Vault for secrets
-- ✅ **Terraform** - Infrastructure as code for Azure
-- ✅ **Independent Modules** - Each function has its own module
-- ✅ **Automatic Generation** - Generation system from `functions.json`
+- ✅ **HTTP Adapter** - Adaptador para Azure Functions HTTP triggers
+- ✅ **Azure Key Vault** - Integración con Azure Key Vault para secretos
+- ✅ **Terraform** - Infraestructura como código para Azure
+- ✅ **Módulos Independientes** - Cada función tiene su propio módulo
+- ✅ **Generación Automática** - Sistema de generación desde `functions.json`
 
-**Azure functions structure:**
+**Estructura de funciones Azure:**
 ```
 src/infrastructure/clouds/azure/
-├── functions.json          # Function definitions
-├── init.go                 # Azure initialization
-├── http_adapter.go         # HTTP adapter
-├── vault.go                # Key Vault integration
-├── terraform/              # Terraform infrastructure
-└── functions/              # Function generator
+├── functions.json          # Definición de funciones
+├── init.go                 # Inicialización Azure
+├── http_adapter.go         # Adaptador HTTP
+├── vault.go                # Integración Key Vault
+├── terraform/              # Infraestructura Terraform
+└── functions/              # Generador de funciones
 ```
 
-### 📊 Architecture Comparison
+### 📊 Comparación de Arquitecturas
 
-| Feature | Traditional Monolith | AWS Lambda | Azure Functions |
-|---------|---------------------|------------|-----------------|
-| **Initialization** | Once at startup | Per function | Per function |
-| **Scalability** | Manual/Horizontal | Automatic | Automatic |
-| **Cost** | Fixed | Pay per use | Pay per use |
+| Característica | Monolito Tradicional | AWS Lambda | Azure Functions |
+|---------------|---------------------|------------|-----------------|
+| **Inicialización** | Una vez al inicio | Por función | Por función |
+| **Escalabilidad** | Manual/Horizontal | Automática | Automática |
+| **Costo** | Fijo | Por uso | Por uso |
 | **Cold Start** | N/A | ~100-500ms | ~200-800ms |
-| **Binary Size** | ~50 MB | ~5-15 MB | ~5-15 MB |
-| **Secrets Management** | Environment variables | Secrets Manager | Key Vault |
-| **Deployment** | Docker/VM | ZIP to Lambda | ZIP to Functions |
+| **Tamaño Binario** | ~50 MB | ~5-15 MB | ~5-15 MB |
+| **Gestión Secretos** | Variables de entorno | Secrets Manager | Key Vault |
+| **Despliegue** | Docker/VM | ZIP a Lambda | ZIP a Functions |
 
 ---
 
-## Project Architecture
+## Arquitectura del Proyecto
 
-### Architecture Overview
+### Visión General de la Arquitectura
 
-The project implements **Clean Architecture** with three main layers:
+El proyecto implementa **Clean Architecture** con tres capas principales:
 
 ```mermaid
 graph TB
-    subgraph Infrastructure["🔧 Infrastructure Layer"]
+    subgraph Infrastructure["🔧 Capa de Infraestructura"]
         API["API Layer<br/>(Gin HTTP)"]
         DB["Database<br/>(GORM/Redis)"]
         Providers["Providers<br/>(JWT/Email)"]
@@ -215,7 +215,7 @@ graph TB
         Middlewares["Middlewares<br/>(Auth/CORS)"]
     end
 
-    subgraph Application["💼 Application Layer"]
+    subgraph Application["💼 Capa de Aplicación"]
         UseCases["Use Cases<br/>(Business Logic)"]
         Services["Services<br/>(Email/OTP)"]
         Contracts["Contracts<br/>(Interfaces)"]
@@ -224,7 +224,7 @@ graph TB
         Errors["Errors<br/>(Handling)"]
     end
 
-    subgraph Domain["🎯 Domain Layer"]
+    subgraph Domain["🎯 Capa de Dominio"]
         Models["Models<br/>(User/Role)"]
         Utils["Utils<br/>(Query)"]
         Entities["Entities<br/>(Business)"]
@@ -238,11 +238,11 @@ graph TB
     style Domain fill:#e8f5e9
 ```
 
-### Hexagonal Architecture Diagram
+### Diagrama de Arquitectura Hexagonal
 
 ```mermaid
 graph LR
-    subgraph External["🌐 External World"]
+    subgraph External["🌐 Mundo Externo"]
         HTTP["HTTP Clients"]
         DB_EXT["PostgreSQL"]
         REDIS_EXT["Redis"]
@@ -299,57 +299,57 @@ graph LR
     style DomainCore fill:#f3e5f5
 ```
 
-### Design Principles
+### Principios de Diseño
 
-#### 1. Dependency Inversion
+#### 1. Inversión de Dependencias (Dependency Inversion)
 
-Inner layers (Domain and Application) **never** depend on outer layers (Infrastructure). Instead, they define **interfaces (contracts)** that infrastructure implements.
+Las capas internas (Domain y Application) **nunca** dependen de las capas externas (Infrastructure). En su lugar, definen **interfaces (contratos)** que la infraestructura implementa.
 
-**Example:**
+**Ejemplo:**
 ```go
-// Domain/Application defines the interface
+// Domain/Application define la interfaz
 type IUserRepository interface {
     Create(input UserCreate) (*User, error)
     GetByID(id uint) (*User, error)
 }
 
-// Infrastructure implements the interface
+// Infrastructure implementa la interfaz
 type UserRepository struct {
     DB *gorm.DB
 }
 
 func (r *UserRepository) Create(input UserCreate) (*User, error) {
-    // Implementation with GORM
+    // Implementación con GORM
 }
 ```
 
-#### 2. Separation of Concerns
+#### 2. Separación de Responsabilidades (Separation of Concerns)
 
-Each layer has a single, well-defined responsibility:
+Cada capa tiene una responsabilidad única y bien definida:
 
-- **Domain**: Pure business entities, no dependencies
-- **Application**: Business logic and use cases
-- **Infrastructure**: Technical implementations (HTTP, DB, etc.)
+- **Domain**: Entidades de negocio puras, sin dependencias
+- **Application**: Lógica de negocio y casos de uso
+- **Infrastructure**: Implementaciones técnicas (HTTP, BD, etc.)
 
-#### 3. Testability
+#### 3. Testabilidad
 
-Thanks to interfaces, we can test business logic without needing real databases or services:
+Gracias a las interfaces, podemos testear la lógica de negocio sin necesidad de bases de datos o servicios reales:
 
 ```go
-// In tests, we use mocks
+// En tests, usamos mocks
 mockRepo := &MockUserRepository{}
 useCase := NewCreateUserUseCase(logger, mockRepo)
 ```
 
-#### 4. Extensibility
+#### 4. Extensibilidad
 
-Adding new features is simple and doesn't affect existing code:
+Agregar nuevas funcionalidades es simple y no afecta código existente:
 
-1. Create model in `domain/models/`
-2. Define interface in `application/contracts/`
-3. Implement use case in `application/modules/`
-4. Create repository in `infrastructure/repositories/`
-5. Add handler in `infrastructure/handlers/`
+1. Crear modelo en `domain/models/`
+2. Definir interfaz en `application/contracts/`
+3. Implementar caso de uso en `application/modules/`
+4. Crear repositorio en `infrastructure/repositories/`
+5. Agregar handler en `infrastructure/handlers/`
 
 ### Patrones de Diseño Implementados
 
@@ -431,7 +431,7 @@ type Argon2HashProvider struct {}
 
 ---
 
-## Scalability and Serverless
+## Escalabilidad y Serverless
 
 ### Capacidades de Escalabilidad
 
@@ -652,7 +652,7 @@ graph TB
 
 ---
 
-## AWS Serverless Deployment and Initialization
+## Despliegue e Inicialización AWS Serverless
 
 ### Arquitectura de Módulos Go para Serverless
 
@@ -1124,7 +1124,7 @@ graph TB
 
 ---
 
-## Complete Request Flow
+## Flujo Completo de Request
 
 ### Diagrama de Flujo de Request
 
@@ -1457,7 +1457,7 @@ El DAG ejecuta:
 
 ---
 
-## Virtues and Benefits
+## Virtudes y Beneficios
 
 ### 1. Arquitectura Sólida y Escalable
 
@@ -1594,7 +1594,7 @@ El DAG ejecuta:
 
 ---
 
-## 📊 Project Statistics
+## 📊 Estadísticas del Proyecto
 
 | Métrica | Valor |
 |---------|-------|
@@ -1609,7 +1609,7 @@ El DAG ejecuta:
 | **Templates** | 6+ templates HTML |
 | **Idiomas Soportados** | 2 (Español, Inglés) |
 
-## Project Structure - Layer by Layer
+## Estructura del Proyecto - Capa por Capa
 
 ### Visión General de la Estructura
 
@@ -1814,7 +1814,7 @@ func (r *UserRepository) Create(input UserCreate) (*User, error) {
 
 ---
 
-## Exhaustive Review by Folders
+## Revisión Exhaustiva por Carpetas
 
 ### `/src/domain/` - Capa de Dominio
 
@@ -2376,7 +2376,7 @@ Implementación para **Azure Functions**:
 
 ---
 
-## Technologies and Dependencies
+## Tecnologías y Dependencias
 
 ### Stack Tecnológico
 
@@ -2554,7 +2554,7 @@ require (
 
 ---
 
-## Configuration and Setup
+## Configuración y Setup
 
 ### Variables de Entorno
 
@@ -2645,7 +2645,7 @@ go run src/infrastructure/api/cmd/main.go
 
 ---
 
-## Business Modules
+## Módulos de Negocio
 
 ### 🔐 Módulo de Autenticación (`auth`)
 
@@ -2891,7 +2891,7 @@ go run src/infrastructure/api/cmd/main.go
 
 ---
 
-## API and Endpoints
+## API y Endpoints
 
 ### Autenticación
 
@@ -2956,7 +2956,7 @@ curl -X POST http://localhost:8080/api/user \
 
 ---
 
-## Database and Persistence
+## Base de Datos y Persistencia
 
 ### Diagrama Entidad-Relación (ERD)
 
@@ -3130,7 +3130,7 @@ graph TB
 
 ---
 
-## Authentication and Security
+## Autenticación y Seguridad
 
 ### Diagrama de Flujo de Autenticación
 
@@ -3348,7 +3348,7 @@ go test ./tests/integration/...
 
 ---
 
-## Docker and Deployment
+## Docker y Despliegue
 
 ### Arquitectura Docker
 
@@ -3461,7 +3461,7 @@ docker-compose -f docker/docker-compose.e2e.yml up -d
 
 ---
 
-## Development Guide
+## Guía de Desarrollo
 
 ### Agregar Nueva Funcionalidad
 
@@ -3550,7 +3550,7 @@ r.POST("/new-entity", wrapHandler(handlers.CreateNewEntity))
 
 ---
 
-## 🎯 Best Practices and Conventions
+## 🎯 Mejores Prácticas y Convenciones
 
 ### Convenciones de Código
 
@@ -3707,74 +3707,74 @@ func TestCreateUser(t *testing.T) {
 2. **Integration Tests**: Repositorios con BD real
 3. **E2E Tests**: Flujos completos con Postman
 
-## Conclusion
+## Conclusión
 
-**GoProjectSkeleton** provides a solid, scalable, and maintainable foundation for developing enterprise applications in Go. The Clean Architecture, along with advanced design patterns, provides an excellent foundation for system growth.
+**GoProjectSkeleton** proporciona una base sólida, escalable y mantenible para desarrollar aplicaciones empresariales en Go. La arquitectura Clean Architecture, junto con patrones de diseño avanzados, proporciona una base excelente para el crecimiento del sistema.
 
-### 🎯 Key Strengths
+### 🎯 Puntos Fuertes
 
-- ✅ **Solid architecture** and well-structured
-- ✅ **Scalability** horizontal and vertical
-- ✅ **Serverless ready** - Easy migration to serverless (AWS Lambda, Azure Functions)
-- ✅ **Complete testing** in multiple layers
-- ✅ **Exhaustive documentation** with Swagger
-- ✅ **Complete Docker** for development and production
-- ✅ **Multi-cloud** - Support for AWS and Azure
-- ✅ **Security** - JWT, OTP, secure password hashing
-- ✅ **Internationalization** - Multi-language support
-- ✅ **Optimization** - Cache, tree shaking, connection pooling
+- ✅ **Arquitectura sólida** y bien estructurada
+- ✅ **Escalabilidad** horizontal y vertical
+- ✅ **Serverless ready** - Fácil migración a serverless (AWS Lambda, Azure Functions)
+- ✅ **Testing completo** en múltiples capas
+- ✅ **Documentación** exhaustiva con Swagger
+- ✅ **Docker completo** para desarrollo y producción
+- ✅ **Multi-cloud** - Soporte para AWS y Azure
+- ✅ **Seguridad** - JWT, OTP, hash seguro de contraseñas
+- ✅ **Internacionalización** - Soporte multiidioma
+- ✅ **Optimización** - Cache, tree shaking, connection pooling
 
-### 🚀 Ideal Use Cases
+### 🚀 Casos de Uso Ideales
 
-- **Enterprise RESTful APIs**
-- **Scalable microservices**
-- **Serverless applications** (AWS Lambda, Azure Functions)
-- **Robust authentication systems**
-- **High-concurrency APIs**
-- **Projects requiring long-term maintainability**
+- **APIs RESTful** empresariales
+- **Microservicios** escalables
+- **Aplicaciones Serverless** (AWS Lambda, Azure Functions)
+- **Sistemas de autenticación** robustos
+- **APIs con alta concurrencia**
+- **Proyectos que requieren mantenibilidad** a largo plazo
 
-### 📚 Next Steps
+### 📚 Próximos Pasos
 
-1. **Explore the Documentation**
-   - Review Swagger at `http://localhost:8080/docs/`
-   - Read code examples in each module
+1. **Explorar la Documentación**
+   - Revisar Swagger en `http://localhost:8080/docs/`
+   - Leer ejemplos de código en cada módulo
 
-2. **Run Tests**
+2. **Ejecutar Tests**
    ```bash
    go test ./src/...
    go test ./tests/integration/...
    ```
 
-3. **Adapt to Your Needs**
-   - Customize domain models
-   - Add new business modules
-   - Configure providers according to your services
+3. **Adaptar a tus Necesidades**
+   - Personalizar modelos de dominio
+   - Agregar nuevos módulos de negocio
+   - Configurar providers según tus servicios
 
-4. **Deploy**
-   - Development: Docker Compose
-   - Production: Traditional monolith or Serverless
-   - Cloud: AWS Lambda or Azure Functions
+4. **Desplegar**
+   - Desarrollo: Docker Compose
+   - Producción: Monolito tradicional o Serverless
+   - Cloud: AWS Lambda o Azure Functions
 
-### 🤝 Contributions
+### 🤝 Contribuciones
 
-This project follows Go best practices and clean architecture. When contributing:
+Este proyecto sigue las mejores prácticas de Go y arquitectura limpia. Al contribuir:
 
-1. Maintain layer separation
-2. Follow code conventions
-3. Write tests for new features
-4. Document important changes
-5. Update Swagger for new endpoints
+1. Mantén la separación de capas
+2. Sigue las convenciones de código
+3. Escribe tests para nuevas funcionalidades
+4. Documenta cambios importantes
+5. Actualiza Swagger para nuevos endpoints
 
-### 📞 Support
+### 📞 Soporte
 
-For more information:
-- **Swagger Documentation**: `/docs/`
-- **Example Tests**: `tests/`
-- **Source Code**: Explore `src/` to see implementations
+Para más información:
+- **Documentación Swagger**: `/docs/`
+- **Tests de Ejemplo**: `tests/`
+- **Código Fuente**: Explora `src/` para ver implementaciones
 
 ---
 
 <div align="center">
-  <p>Made with ❤️ using Go and Clean Architecture</p>
-  <p>⭐ If this project is useful to you, consider giving it a star</p>
+  <p>Hecho con ❤️ usando Go y Clean Architecture</p>
+  <p>⭐ Si este proyecto te es útil, considera darle una estrella</p>
 </div>
