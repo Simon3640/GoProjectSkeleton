@@ -1,0 +1,165 @@
+name: Deploy to Cloud
+
+on:
+  workflow_dispatch:
+    inputs:
+      cloud:
+        description: 'Cloud provider (aws or azure)'
+        required: true
+        type: choice
+        options:
+          - aws
+          - azure
+      environment:
+        description: 'Environment (development, staging, production)'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+        default: 'development'
+      terraform_action:
+        description: 'Terraform action (plan, apply, destroy)'
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+        default: 'apply'
+      deploy_functions:
+        description: 'Deploy functions after Terraform (AWS only)'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.cloud }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.6.0'
+
+      - name: Configure AWS credentials
+        if: inputs.cloud == 'aws'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: Configure Azure credentials
+        if: inputs.cloud == 'azure'
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install AWS CLI (for Lambda deployment)
+        if: inputs.cloud == 'aws' && inputs.deploy_functions == true
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+
+      - name: Download dependencies
+        run: make deps
+
+      - name: Generate functions
+        if: inputs.cloud == 'aws' && inputs.deploy_functions == true
+        run: make build-aws-functions
+
+      - name: Generate Azure functions
+        if: inputs.cloud == 'azure'
+        run: make build-azure-functions
+
+      - name: Terraform Init - AWS
+        if: inputs.cloud == 'aws'
+        working-directory: src/infrastructure/clouds/aws/terraform
+        run: terraform init
+
+      - name: Terraform Init - Azure
+        if: inputs.cloud == 'azure'
+        working-directory: src/infrastructure/clouds/azure/terraform
+        run: terraform init
+
+      - name: Terraform Validate - AWS
+        if: inputs.cloud == 'aws'
+        working-directory: src/infrastructure/clouds/aws/terraform
+        run: terraform validate
+
+      - name: Terraform Validate - Azure
+        if: inputs.cloud == 'azure'
+        working-directory: src/infrastructure/clouds/azure/terraform
+        run: terraform validate
+
+      - name: Terraform Plan - AWS
+        if: inputs.cloud == 'aws' && inputs.terraform_action != 'destroy'
+        working-directory: src/infrastructure/clouds/aws/terraform
+        run: |
+          terraform plan \
+            -var="environment=${{ inputs.environment }}" \
+            -out=tfplan
+        continue-on-error: false
+
+      - name: Terraform Plan - Azure
+        if: inputs.cloud == 'azure' && inputs.terraform_action != 'destroy'
+        working-directory: src/infrastructure/clouds/azure/terraform
+        run: |
+          terraform plan \
+            -var="environment=${{ inputs.environment }}" \
+            -out=tfplan
+        continue-on-error: false
+
+      - name: Terraform Apply - AWS
+        if: inputs.cloud == 'aws' && inputs.terraform_action == 'apply'
+        working-directory: src/infrastructure/clouds/aws/terraform
+        run: terraform apply -auto-approve tfplan
+
+      - name: Terraform Apply - Azure
+        if: inputs.cloud == 'azure' && inputs.terraform_action == 'apply'
+        working-directory: src/infrastructure/clouds/azure/terraform
+        run: terraform apply -auto-approve tfplan
+
+      - name: Terraform Destroy - AWS
+        if: inputs.cloud == 'aws' && inputs.terraform_action == 'destroy'
+        working-directory: src/infrastructure/clouds/aws/terraform
+        run: terraform destroy -auto-approve
+        continue-on-error: true
+
+      - name: Terraform Destroy - Azure
+        if: inputs.cloud == 'azure' && inputs.terraform_action == 'destroy'
+        working-directory: src/infrastructure/clouds/azure/terraform
+        run: terraform destroy -auto-approve
+        continue-on-error: true
+
+      - name: Deploy AWS Lambda Functions
+        if: inputs.cloud == 'aws' && inputs.deploy_functions == true && inputs.terraform_action == 'apply'
+        env:
+          PROJECT_NAME: ${{ secrets.PROJECT_NAME || 'go-project-skeleton' }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
+        run: make deploy-aws
+
+      - name: Terraform Output - AWS
+        if: inputs.cloud == 'aws' && inputs.terraform_action == 'apply'
+        working-directory: src/infrastructure/clouds/aws/terraform
+        run: terraform output
+
+      - name: Terraform Output - Azure
+        if: inputs.cloud == 'azure' && inputs.terraform_action == 'apply'
+        working-directory: src/infrastructure/clouds/azure/terraform
+        run: terraform output
