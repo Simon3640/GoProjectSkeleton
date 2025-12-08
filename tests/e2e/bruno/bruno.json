@@ -1,0 +1,10 @@
+{
+  "version": "1",
+  "name": "GoProjectSkeletonE2E",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ],
+  "flow": "sequential"
+}
