@@ -2,9 +2,10 @@ package repositories
 
 import (
 	"errors"
-	application_errors "goprojectskeleton/src/application/shared/errors"
-	"goprojectskeleton/src/application/shared/locales/messages"
-	"goprojectskeleton/src/application/shared/status"
+
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"

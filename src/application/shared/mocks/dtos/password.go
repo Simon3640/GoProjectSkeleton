@@ -1,8 +1,8 @@
 package dtomocks
 
 import (
-	dtos "goprojectskeleton/src/application/shared/DTOs"
-	"goprojectskeleton/src/domain/models"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 var PasswordBase = models.PasswordBase{

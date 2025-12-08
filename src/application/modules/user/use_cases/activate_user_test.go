@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	dtos "goprojectskeleton/src/application/shared/DTOs"
-	"goprojectskeleton/src/application/shared/locales"
-	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
-	"goprojectskeleton/src/domain/models"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

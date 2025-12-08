@@ -2,7 +2,8 @@ package providersmocks
 
 import (
 	"fmt"
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
+
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 
 	"github.com/stretchr/testify/mock"
 )

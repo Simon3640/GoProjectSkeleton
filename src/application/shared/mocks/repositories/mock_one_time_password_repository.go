@@ -1,10 +1,10 @@
 package repositoriesmocks
 
 import (
-	contracts_repositories "goprojectskeleton/src/application/contracts/repositories"
-	dtos "goprojectskeleton/src/application/shared/DTOs"
-	application_errors "goprojectskeleton/src/application/shared/errors"
-	"goprojectskeleton/src/domain/models"
+	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type MockOneTimePasswordRepository struct {

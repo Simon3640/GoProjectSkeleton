@@ -1,8 +1,8 @@
 package api
 
 import (
-	"goprojectskeleton/src/application/shared/status"
-	usecase "goprojectskeleton/src/application/shared/use_case"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 
 	gin "github.com/gin-gonic/gin"
 )
@@ -22,7 +22,7 @@ func NewRequestResolver[D any]() *RequestResolver[D] {
 			status.Unauthorized:              401,
 			status.NotFound:                  404,
 			status.Conflict:                  409,
-			status.TooManyRequests:            429,
+			status.TooManyRequests:           429,
 			status.InternalError:             500,
 			status.NotImplemented:            501,
 			status.ProviderError:             502,

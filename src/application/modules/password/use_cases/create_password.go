@@ -3,15 +3,15 @@ package usecases_password
 import (
 	"context"
 
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "goprojectskeleton/src/application/contracts/repositories"
-	dtos "goprojectskeleton/src/application/shared/DTOs"
-	"goprojectskeleton/src/application/shared/guards"
-	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/locales/messages"
-	"goprojectskeleton/src/application/shared/services"
-	"goprojectskeleton/src/application/shared/status"
-	usecase "goprojectskeleton/src/application/shared/use_case"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 )
 
 type CreatePasswordUseCase struct {

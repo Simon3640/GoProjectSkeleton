@@ -6,7 +6,7 @@ import (
 	"log"
 	"reflect"
 
-	logger "goprojectskeleton/src/infrastructure/providers"
+	logger "github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
 // Loader defines the interface for loading configuration from various sources.
@@ -54,7 +54,7 @@ type Config struct {
 	OneTimePasswordLength      string `env:"ONE_TIME_PASSWORD_LENGTH" envDefault:"6"`
 	OneTimePasswordTTL         string `env:"ONE_TIME_PASSWORD_TTL" envDefault:"10"`
 	LoginMaxAttempts           string `env:"LOGIN_MAX_ATTEMPTS" envDefault:"5"`
-	LoginAttemptsWindowMinutes  string `env:"LOGIN_ATTEMPTS_WINDOW_MINUTES" envDefault:"15"`
+	LoginAttemptsWindowMinutes string `env:"LOGIN_ATTEMPTS_WINDOW_MINUTES" envDefault:"15"`
 
 	// Mail
 	MailHost         string `env:"MAIL_HOST" envDefault:"localhost"`

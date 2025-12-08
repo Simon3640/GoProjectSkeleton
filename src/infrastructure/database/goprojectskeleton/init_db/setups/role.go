@@ -1,9 +1,9 @@
 package setups
 
 import (
-	"goprojectskeleton/src/domain/models"
-	dbModels "goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
-	"goprojectskeleton/src/infrastructure/repositories"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 )
 
 type SetupRole struct {

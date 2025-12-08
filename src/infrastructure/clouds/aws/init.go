@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	email_service "goprojectskeleton/src/application/shared/services/emails"
-	email_models "goprojectskeleton/src/application/shared/services/emails/models"
-	settings "goprojectskeleton/src/application/shared/settings"
-	"goprojectskeleton/src/infrastructure/config"
-	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
-	"goprojectskeleton/src/infrastructure/providers"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	settings "github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/config"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
 var initialized bool

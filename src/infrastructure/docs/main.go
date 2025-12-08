@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"goprojectskeleton/swagger-server/config"
-	docs "goprojectskeleton/swagger-server/swagger"
+	"github.com/simon3640/goprojectskeleton/swagger-server/config"
+	docs "github.com/simon3640/goprojectskeleton/swagger-server/swagger"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 )

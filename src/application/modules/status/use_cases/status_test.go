@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/locales/messages"
-	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
-	"goprojectskeleton/src/domain/models"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
 )
