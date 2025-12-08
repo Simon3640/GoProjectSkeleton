@@ -56,7 +56,7 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: '1.6.0'
+          terraform_version: '1.14.1'
 
       - name: Configure AWS credentials
         if: inputs.cloud == 'aws'
@@ -81,11 +81,12 @@ jobs:
       - name: Generate functions
         if: inputs.cloud == 'aws' && inputs.deploy_functions == true
         run: make build-aws-functions
+
       - name: Create terraform.tfvars
         if: inputs.cloud == 'aws' || inputs.cloud == 'azure'
         working-directory: src/infrastructure/clouds/${{ inputs.cloud }}/terraform
         run: |
-          echo "${{ secrets.TFVARS }}" > terraform.tfvars
+          echo '${{ secrets.TFVARS }}' > terraform.tfvars
 
       - name: Generate Azure functions
         if: inputs.cloud == 'azure'
