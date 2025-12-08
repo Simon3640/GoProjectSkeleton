@@ -1,6 +1,6 @@
 module github.com/simon3640/goprojectskeleton/aws
 
-go 1.25
+go 1.25.5
 
 replace github.com/simon3640/goprojectskeleton => ../../../..
 
