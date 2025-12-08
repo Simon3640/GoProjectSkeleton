@@ -16,7 +16,29 @@ on:
       - 'releases/**'
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for relevant changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            relevant:
+              - 'docker/**'
+              - 'src/**'
+              - 'tests/**'
+
   tests:
+    needs: check-changes
+    if: needs.check-changes.outputs.relevant == 'true'
     runs-on: ubuntu-latest
 
     steps:
