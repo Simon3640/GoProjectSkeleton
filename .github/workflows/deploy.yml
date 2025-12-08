@@ -1,5 +1,9 @@
 name: Deploy to Cloud
 
+permissions:
+  contents: read
+  actions: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -115,6 +119,21 @@ jobs:
             -out=tfplan
         continue-on-error: false
 
+      - name: Generate Terraform Plan Summary - AWS
+        if: inputs.cloud == 'aws' && inputs.terraform_action == 'plan'
+        working-directory: src/infrastructure/clouds/aws/terraform
+        run: terraform show -no-color tfplan > tfplan.txt || true
+
+      - name: Upload Terraform Plan - AWS
+        if: inputs.cloud == 'aws' && inputs.terraform_action == 'plan'
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-aws-${{ inputs.environment }}-${{ github.run_number }}
+          path: |
+            src/infrastructure/clouds/aws/terraform/tfplan
+            src/infrastructure/clouds/aws/terraform/tfplan.txt
+          retention-days: 30
+
       - name: Terraform Plan - Azure
         if: inputs.cloud == 'azure' && inputs.terraform_action != 'destroy'
         working-directory: src/infrastructure/clouds/azure/terraform
@@ -123,6 +142,21 @@ jobs:
             -var="environment=${{ inputs.environment }}" \
             -out=tfplan
         continue-on-error: false
+
+      - name: Generate Terraform Plan Summary - Azure
+        if: inputs.cloud == 'azure' && inputs.terraform_action == 'plan'
+        working-directory: src/infrastructure/clouds/azure/terraform
+        run: terraform show -no-color tfplan > tfplan.txt || true
+
+      - name: Upload Terraform Plan - Azure
+        if: inputs.cloud == 'azure' && inputs.terraform_action == 'plan'
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-azure-${{ inputs.environment }}-${{ github.run_number }}
+          path: |
+            src/infrastructure/clouds/azure/terraform/tfplan
+            src/infrastructure/clouds/azure/terraform/tfplan.txt
+          retention-days: 30
 
       - name: Terraform Apply - AWS
         if: inputs.cloud == 'aws' && inputs.terraform_action == 'apply'
@@ -137,14 +171,14 @@ jobs:
       - name: Terraform Destroy - AWS
         if: inputs.cloud == 'aws' && inputs.terraform_action == 'destroy'
         working-directory: src/infrastructure/clouds/aws/terraform
-        run: terraform destroy -auto-approve
-        continue-on-error: true
+        run: terraform destroy -auto-approve -var="environment=${{ inputs.environment }}"
+        continue-on-error: ${{ inputs.environment != 'production' }}
 
       - name: Terraform Destroy - Azure
         if: inputs.cloud == 'azure' && inputs.terraform_action == 'destroy'
         working-directory: src/infrastructure/clouds/azure/terraform
-        run: terraform destroy -auto-approve
-        continue-on-error: true
+        run: terraform destroy -auto-approve -var="environment=${{ inputs.environment }}"
+        continue-on-error: ${{ inputs.environment != 'production' }}
 
       - name: Deploy AWS Lambda Functions
         if: inputs.cloud == 'aws' && inputs.deploy_functions == true && inputs.terraform_action == 'apply'
