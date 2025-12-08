@@ -1,0 +1,63 @@
+meta {
+  name: GetUserInfoID
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseURL}}/user/{{userId}}
+  body: none
+  auth: apikey
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{userToken}}
+  placement: header
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  const response = res.getBody();
+
+  if (!response) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  test("Response body contains user data", function () {
+      expect(response.data).to.have.property("name");
+      expect(response.data).to.have.property("email");
+      expect(response.data).to.have.property("phone");
+      expect(response.data).to.have.property("status");
+      expect(response.data).to.have.property("role_id");
+      expect(response.data).to.have.property("otpLogin");
+      expect(response.data).to.have.property("id");
+      expect(response.data).to.have.property("createdAt");
+      expect(response.data).to.have.property("updatedAt");
+      expect(response.data).to.have.property("deletedAt");
+  });
+
+  //Same ID
+
+  test("Same Id", function () {
+      expect(response.data.id).to.equal(parseInt(bru.getEnvVar("userId")));
+  })
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

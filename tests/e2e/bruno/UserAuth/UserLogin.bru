@@ -1,0 +1,49 @@
+meta {
+  name: UserLogin
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseURL}}/auth/login
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~:
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:bearer {
+  token:
+}
+
+body:json {
+  {
+    "email": "{{userEmail}}",
+    "password": "{{strongPassword}}"
+  }
+}
+
+script:post-response {
+  const response = res.getBody()
+
+  test("Access Token is present", function () {
+      expect(response.data.accessToken).to.not.be.null;
+  });
+
+  test("Refresh Token is present", function () {
+      expect(response.data.refreshToken).to.not.be.null;
+  });
+
+  bru.setEnvVar("userToken", response.data.accessToken);
+  bru.setEnvVar("refreshUserToken", response.data.refreshToken);
+}
+
+settings {
+  encodeUrl: true
+}

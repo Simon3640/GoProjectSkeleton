@@ -1,0 +1,57 @@
+meta {
+  name: UpdateUser
+  type: http
+  seq: 8
+}
+
+patch {
+  url: {{baseURL}}/user/{{userId}}
+  body: json
+  auth: apikey
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{userToken}}
+  placement: header
+}
+
+body:json {
+  {
+      "name": "Updated Name"
+  }
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("User should be updated successfully", function () {
+      expect(res.getStatus()).to.equal(200);
+  })
+
+  const response = res.getBody();
+
+  if (!response) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  // Test name has change
+
+  test("User name should be updated", function () {
+      expect(response.data.name).to.eql("Updated Name");
+  })
+
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
