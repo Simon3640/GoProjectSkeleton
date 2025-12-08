@@ -15,7 +15,7 @@ services:
     networks:
       - goprojectskeleton-e2e-tests
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/api/health-check"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/api/status"]
       interval: 10s
       retries: 5
     command: [./main]
