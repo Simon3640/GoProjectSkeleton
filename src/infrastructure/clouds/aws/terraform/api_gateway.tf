@@ -31,9 +31,9 @@ resource "aws_apigatewayv2_stage" "default" {
 resource "aws_apigatewayv2_integration" "lambda" {
   for_each = local.functions_map
 
-  api_id                = aws_apigatewayv2_api.http_api.id
-  integration_type      = "AWS_PROXY"
-  integration_method    = "POST"
+  api_id                 = aws_apigatewayv2_api.http_api.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
   payload_format_version = "2.0"
 
   # Use the Lambda function ARN from the module

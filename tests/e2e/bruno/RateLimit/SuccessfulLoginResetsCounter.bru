@@ -1,0 +1,47 @@
+meta {
+  name: SuccessfulLoginResetsCounter
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{baseURL}}/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+body:json {
+  {
+    "email": "{{rateLimitResetUserEmail}}",
+    "password": "{{strongPassword}}"
+  }
+}
+
+script:post-response {
+  test("Status code is 200 (Login successful)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response contains access token", function () {
+      const response = res.getBody();
+      expect(response.data).to.have.property('accessToken');
+      expect(response.data.accessToken).to.be.a('string').and.not.be.empty;
+  });
+
+  test("Response contains refresh token", function () {
+      const response = res.getBody();
+      expect(response.data).to.have.property('refreshToken');
+      expect(response.data.refreshToken).to.be.a('string').and.not.be.empty;
+  });
+
+  // Verificar que después de un login exitoso, el contador se resetea
+  // Haciendo otro intento fallido, debe empezar desde 1, no desde 3
+}
+
+settings {
+  encodeUrl: true
+}

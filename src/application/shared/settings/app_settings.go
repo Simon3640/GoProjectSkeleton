@@ -45,17 +45,20 @@ type AppSettings struct {
 	FrontendActivateAccountURL string
 	OneTimePasswordTTL         int64 // in minutes
 	OneTimePasswordLength      int   // length of the generated one-time password
+	LoginMaxAttempts           int   // maximum number of failed login attempts
+	LoginAttemptsWindowMinutes int64 // time window in minutes for counting failed attempts
 
 	// Mail
-	MailHost     string
-	MailPort     int
-	MailPassword string
-	MailFrom     string
+	MailHost         string
+	MailPort         int
+	MailPassword     string
+	MailFrom         string
+	MailAuthRequired bool
 }
 
 func NewAppSettings() *AppSettings {
 	return &AppSettings{
-		AppName:    "gormgoskeleton",
+		AppName:    "goprojectskeleton",
 		AppEnv:     "development",
 		AppPort:    "8080",
 		AppVersion: "0.0.1",
@@ -91,7 +94,7 @@ func setFieldValue(field reflect.Value, value string) error {
 	case reflect.String:
 		field.SetString(value)
 	case reflect.Bool:
-		field.SetBool(value == "true")
+		field.SetBool(value == "true" || value == "1" || value == "True" || value == "TRUE")
 	case reflect.Int:
 		intValue, err := strconv.Atoi(value)
 		if err != nil {

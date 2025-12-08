@@ -1,0 +1,27 @@
+meta {
+  name: HealthCheck
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseURL}}/status
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+assert {
+  res.status: eq 200
+  res.body: isDefined
+  res.body.data: isDefined
+  res.body.data.status: eq OK
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

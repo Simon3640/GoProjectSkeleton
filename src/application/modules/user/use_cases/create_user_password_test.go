@@ -1,14 +1,15 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
 	"testing"
 	"time"
 
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/mocks"
-	"gormgoskeleton/src/domain/models"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -18,15 +19,16 @@ func TestCreateUserAndPassword(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testHashProvider := new(mocks.MockHashProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testHashProvider := new(providersmocks.MockHashProvider)
 
+	status := models.UserStatusPending
 	userBase := models.UserBase{
 		Name:   "Test User",
 		Email:  "test@example.com",
 		Phone:  "1234567890",
-		Status: "pending",
+		Status: &status,
 		RoleID: 2,
 	}
 

@@ -1,8 +1,9 @@
 package dtos
 
 import (
-	"gormgoskeleton/src/domain/models"
 	"time"
+
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type PasswordCreate struct {
@@ -11,9 +12,9 @@ type PasswordCreate struct {
 
 type PasswordCreateNoHash struct {
 	UserID           uint       `json:"user_id"`
-	NoHashedPassword string     `json:"no_hashed_password"`
-	ExpiresAt        *time.Time `json:"expires_at,omitempty"`
-	IsActive         bool       `json:"is_active"`
+	NoHashedPassword string     `json:"noHashedPassword"`
+	ExpiresAt        *time.Time `json:"expiresAt,omitempty"`
+	IsActive         bool       `json:"isActive"`
 }
 
 func (p PasswordCreateNoHash) GetUserID() uint {
@@ -51,7 +52,7 @@ func NewPasswordCreate(userID uint, hash string, expiresAt *time.Time, isActive 
 
 type PasswordTokenCreate struct {
 	Token            string `json:"token"`
-	NoHashedPassword string `json:"no_hashed_password"`
+	NoHashedPassword string `json:"noHashedPassword"`
 }
 
 func (p PasswordTokenCreate) Validate() []string {
@@ -67,8 +68,8 @@ func (p PasswordTokenCreate) Validate() []string {
 
 type PasswordUpdateBase struct {
 	Hash      *string    `json:"hash"`
-	ExpiresAt *time.Time `json:"expires_at,omitempty"`
-	IsActive  *bool      `json:"is_active,omitempty"`
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+	IsActive  *bool      `json:"isActive,omitempty"`
 }
 
 type PasswordUpdate struct {

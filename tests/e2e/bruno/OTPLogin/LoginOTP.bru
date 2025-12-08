@@ -1,0 +1,73 @@
+meta {
+  name: LoginOTP
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseURL}}/auth/login-otp/{{loginOTP}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Response status code is 200", function () {
+      expect(res.getStatus()).to.eql(200);
+  });
+
+  const responseData = res.getBody();
+
+  if (!responseData) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  test("Response contains required fields", function () {
+      expect(responseData).to.be.an('object');
+      expect(responseData.data).to.exist.and.to.be.an('object');
+
+      expect(responseData.data).to.have.all.keys('accessToken', 'refreshToken', 'token_type', 'accessExpiresAt', 'refresExpiresAt');
+  });
+
+
+  test("Access token is a non-empty string", function () {
+      expect(responseData).to.be.an('object');
+      expect(responseData.data).to.exist.and.to.be.an('object');
+      expect(responseData.data.accessToken).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, "Access token should not be empty");
+  });
+
+
+  test("Token type must be a non-empty string", function () {
+      expect(responseData).to.be.an('object');
+      expect(responseData.data).to.exist.and.to.be.an('object');
+      expect(responseData.data.token_type).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, "Value should not be empty");
+  });
+
+
+  test("Access and refresh expiration times are in a valid date format", function () {
+      expect(responseData).to.be.an('object');
+      expect(responseData.data).to.exist.and.to.be.an('object');
+
+      const accessExpiresAt = responseData.data.accessExpiresAt;
+      const refreshExpiresAt = responseData.data.refresExpiresAt;
+
+      const isValidDate = (dateString) => {
+          const date = new Date(dateString);
+          return !isNaN(date.getTime());
+      };
+
+      expect(isValidDate(accessExpiresAt)).to.be.true;
+      expect(isValidDate(refreshExpiresAt)).to.be.true;
+  });
+
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

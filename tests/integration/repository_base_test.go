@@ -3,11 +3,11 @@ package integrationtest
 import (
 	"testing"
 
-	"gormgoskeleton/src/application/shared/status"
-	domain_utils "gormgoskeleton/src/domain/utils"
-	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	"gormgoskeleton/src/infrastructure/providers"
-	"gormgoskeleton/src/infrastructure/repositories"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -62,8 +62,8 @@ func NewDummyRepository(db *gorm.DB) *DummyRepository {
 
 // Test Suite
 func setupTestRepo() *DummyRepository {
-	dummy_repo := NewDummyRepository(database.DB)
-	return dummy_repo
+	dummyRepo := NewDummyRepository(database.GoProjectSkeletondb.DB)
+	return dummyRepo
 }
 
 func TestRepositoryBase_CRUD(t *testing.T) {

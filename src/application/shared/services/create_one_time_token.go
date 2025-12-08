@@ -1,11 +1,11 @@
 package services
 
 import (
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	application_errors "gormgoskeleton/src/application/shared/errors"
-	"gormgoskeleton/src/domain/models"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 func CreateOneTimeTokenService(

@@ -3,11 +3,11 @@ package dtos
 import "time"
 
 type Token struct {
-	AccessToken           string    `json:"access_token"`
-	RefreshToken          string    `json:"refresh_token"`
+	AccessToken           string    `json:"accessToken"`
+	RefreshToken          string    `json:"refreshToken"`
 	TokenType             string    `json:"token_type"`
-	AccessTokenExpiresAt  time.Time `json:"access_expires_at"`
-	RefreshTokenExpiresAt time.Time `json:"refresh_expires_at"`
+	AccessTokenExpiresAt  time.Time `json:"accessExpiresAt"`
+	RefreshTokenExpiresAt time.Time `json:"refresExpiresAt"`
 }
 
 type UserCredentials struct {
@@ -17,16 +17,16 @@ type UserCredentials struct {
 
 type AuthResponse struct {
 	Token         *Token `json:"token"`
-	RequiresOTP   bool   `json:"requires_otp"`
-	TransactionID string `json:"transaction_id"`
+	RequiresOTP   bool   `json:"requiresOtp"`
+	TransactionID string `json:"transactionId"`
 }
 
 type OTPVerifyInput struct {
-	TransactionID string `json:"transaction_id"`
+	TransactionID string `json:"transactionId"`
 	OTP           string `json:"otp"`
 }
 
 type OTPEnrollRequest struct {
 	Secret     string `json:"secret"`
-	OTPAuthURI string `json:"otp_auth_uri"`
+	OTPAuthURI string `json:"otpAuthUri"`
 }

@@ -1,19 +1,20 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
 	"strings"
 
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/locales/messages"
-	"gormgoskeleton/src/application/shared/status"
-	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// CreateUserAndPasswordUseCase is a use case that creates a user and a password
 type CreateUserAndPasswordUseCase struct {
 	appMessages  *locales.Locale
 	log          contractsProviders.ILoggerProvider
@@ -24,12 +25,14 @@ type CreateUserAndPasswordUseCase struct {
 
 var _ usecase.BaseUseCase[dtos.UserAndPasswordCreate, models.User] = (*CreateUserAndPasswordUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *CreateUserAndPasswordUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
 	}
 }
 
+// Execute executes the use case
 func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input dtos.UserAndPasswordCreate,
@@ -81,6 +84,7 @@ func (uc *CreateUserAndPasswordUseCase) validate(
 	}
 }
 
+// NewCreateUserAndPasswordUseCase creates a new create user and password use case
 func NewCreateUserAndPasswordUseCase(
 	log contractsProviders.ILoggerProvider,
 	repo contracts_repositories.IUserRepository,

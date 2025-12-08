@@ -39,7 +39,7 @@ variable "app_description" {
 variable "app_support_email" {
   description = "Support email"
   type        = string
-  default     = "support@gormgoskeleton.com"
+  default     = "support@goprojectskeleton.com"
 }
 
 variable "enable_log" {
@@ -76,7 +76,7 @@ variable "db_port" {
 variable "db_user" {
   description = "Database user"
   type        = string
-  default     = "gormgoskeleton"
+  default     = "goprojectskeleton"
 }
 
 variable "db_password" {
@@ -88,7 +88,7 @@ variable "db_password" {
 variable "db_name" {
   description = "Database name"
   type        = string
-  default     = "gormgoskeleton"
+  default     = "goprojectskeleton"
 }
 
 variable "db_ssl" {
@@ -139,7 +139,7 @@ variable "jwt_secret_key" {
 variable "jwt_issuer" {
   description = "JWT issuer"
   type        = string
-  default     = "gormgoskeleton"
+  default     = "goprojectskeleton"
 }
 
 variable "jwt_access_ttl" {
@@ -221,8 +221,14 @@ variable "mail_password" {
 variable "mail_from" {
   description = "Sender email"
   type        = string
-  default     = "noreply@gormgoskeleton.com"
+  default     = "noreply@goprojectskeleton.com"
 }
+
+variable "s3_templates_policy_arn" {
+  description = "ARN of S3 templates read policy"
+  type        = string
+}
+
 
 # VPC variables (AWS specific)
 variable "vpc_cidr" {

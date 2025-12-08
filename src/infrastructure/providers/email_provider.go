@@ -5,11 +5,11 @@ import (
 	"net/smtp"
 	"strconv"
 
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	application_errors "gormgoskeleton/src/application/shared/errors"
-	"gormgoskeleton/src/application/shared/locales/messages"
-	"gormgoskeleton/src/application/shared/settings"
-	"gormgoskeleton/src/application/shared/status"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 )
 
 type EmailProvider struct {
@@ -32,7 +32,7 @@ func (ep *EmailProvider) buildConnection() func(to string, message []byte) error
 	return func(to string, message []byte) error {
 		var auth smtp.Auth
 		// para testing con Mailpit: no hace falta autenticación
-		if settings.AppSettingsInstance.AppEnv == "development" || settings.AppSettingsInstance.AppEnv == "test" {
+		if !settings.AppSettingsInstance.MailAuthRequired {
 			auth = nil
 		} else {
 			auth = smtp.PlainAuth("", ep.from, ep.password, ep.smtpHost)

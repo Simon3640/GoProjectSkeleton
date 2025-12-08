@@ -1,11 +1,11 @@
 package azure
 
 import (
-	email_service "gormgoskeleton/src/application/shared/services/emails"
-	settings "gormgoskeleton/src/application/shared/settings"
-	"gormgoskeleton/src/infrastructure/config"
-	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	"gormgoskeleton/src/infrastructure/providers"
+	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	settings "github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/config"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
 var initialized bool
@@ -19,7 +19,7 @@ func InitializeInfrastructure() {
 		settings.AppSettingsInstance.EnableLog,
 		settings.AppSettingsInstance.DebugLog,
 	)
-	database.Gormgoskeletondb.SetUp(
+	database.GoProjectSkeletondb.SetUp(
 		settings.AppSettingsInstance.DBHost,
 		settings.AppSettingsInstance.DBPort,
 		settings.AppSettingsInstance.DBUser,

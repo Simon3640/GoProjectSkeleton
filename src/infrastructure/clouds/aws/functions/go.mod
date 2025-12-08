@@ -1,7 +1,7 @@
-module gormgoskeleton/aws/functions
+module github.com/simon3640/goprojectskeleton/aws/functions
 
 go 1.25
 
-replace gormgoskeleton => ../../../../../..
+replace github.com/simon3640/goprojectskeleton => ../../../../../..
 
-replace gormgoskeleton/aws => ../..
+replace github.com/simon3640/goprojectskeleton/aws => ../..

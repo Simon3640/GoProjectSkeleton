@@ -13,8 +13,8 @@ type Link struct {
 type MetaMultiResponse struct {
 	Count   int   `json:"count"`
 	Total   int64 `json:"total"`
-	HasNext bool  `json:"has_next"`
-	HasPrev bool  `json:"has_prev"`
+	HasNext bool  `json:"hasNext"`
+	HasPrev bool  `json:"hasPrev"`
 	Links   *Link `json:"links"`
 	Cached  bool  `json:"cached"`
 }

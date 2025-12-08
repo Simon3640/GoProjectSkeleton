@@ -1,7 +1,7 @@
 package azure
 
 import (
-	"gormgoskeleton/src/adapters"
+	"github.com/simon3640/goprojectskeleton/src/adapters"
 )
 
 func NewHTTPAdapter() adapters.Adapter {

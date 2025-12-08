@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"strconv"
 
-	user_pipes "gormgoskeleton/src/application/modules/user/pipes"
-	usecases_user "gormgoskeleton/src/application/modules/user/use_cases"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/domain/models"
-	domain_utils "gormgoskeleton/src/domain/utils"
-	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	"gormgoskeleton/src/infrastructure/providers"
-	"gormgoskeleton/src/infrastructure/repositories"
+	userpipes "github.com/simon3640/goprojectskeleton/src/application/modules/user/pipes"
+	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 )
 
 // CreateUser
@@ -36,8 +36,8 @@ func CreateUser(ctx HandlerContext) {
 		return
 	}
 
-	ucResult := usecases_user.NewCreateUserUseCase(providers.Logger,
-		repositories.NewUserRepository(database.DB, providers.Logger),
+	ucResult := userusecases.NewCreateUserUseCase(providers.Logger,
+		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 	).Execute(ctx.c, ctx.Locale, userCreate)
 
 	headers := map[HTTPHeaderTypeEnum]string{
@@ -66,8 +66,8 @@ func GetUser(ctx HandlerContext) {
 		return
 	}
 
-	ucResult := usecases_user.NewGetUserUseCase(providers.Logger,
-		repositories.NewUserRepository(database.DB, providers.Logger),
+	ucResult := userusecases.NewGetUserUseCase(providers.Logger,
+		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 	).Execute(ctx.c, ctx.Locale, uint(id))
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
@@ -83,7 +83,7 @@ func GetUser(ctx HandlerContext) {
 // @Produce json
 // @Param id path int true "ID del usuario"
 // @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
-// @Param request body dtos.UserUpdateBase true "Datos del usuario"
+// @Param request body models.UserUpdateBase true "Datos del usuario"
 // @Success 200 {object} models.User "Usuario actualizado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user/{id} [patch]
@@ -102,8 +102,8 @@ func UpdateUser(ctx HandlerContext) {
 	}
 
 	userUpdate.ID = uint(id)
-	ucResult := usecases_user.NewUpdateUserUseCase(providers.Logger,
-		repositories.NewUserRepository(database.DB, providers.Logger),
+	ucResult := userusecases.NewUpdateUserUseCase(providers.Logger,
+		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 	).Execute(ctx.c, ctx.Locale, userUpdate)
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
@@ -130,8 +130,8 @@ func DeleteUser(ctx HandlerContext) {
 		return
 	}
 
-	ucResult := usecases_user.NewDeleteUserUseCase(providers.Logger,
-		repositories.NewUserRepository(database.DB, providers.Logger),
+	ucResult := userusecases.NewDeleteUserUseCase(providers.Logger,
+		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 	).Execute(ctx.c, ctx.Locale, uint(id))
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
@@ -160,8 +160,8 @@ func DeleteUser(ctx HandlerContext) {
 // @Router /api/user [get]
 func GetAllUser(ctx HandlerContext) {
 	queryParams := domain_utils.NewQueryPayloadBuilder[models.User](ctx.Query.Sorts, ctx.Query.Filters, ctx.Query.Page, ctx.Query.PageSize)
-	ucResult := usecases_user.NewGetAllUserUseCase(providers.Logger,
-		repositories.NewUserRepository(database.DB, providers.Logger),
+	ucResult := userusecases.NewGetAllUserUseCase(providers.Logger,
+		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		providers.CacheProviderInstance,
 	).Execute(ctx.c, ctx.Locale, queryParams)
 	headers := map[HTTPHeaderTypeEnum]string{
@@ -189,20 +189,20 @@ func CreateUserAndPassword(ctx HandlerContext) {
 		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
-	uc_create_user_email := usecases_user.NewCreateUserSendEmailUseCase(
+	createUserSendEmailUC := userusecases.NewCreateUserSendEmailUseCase(
 		providers.Logger,
 		providers.HashProviderInstance,
-		repositories.NewOneTimeTokenRepository(database.DB, providers.Logger),
+		repositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 	)
 
-	uc_create_user_password := usecases_user.NewCreateUserAndPasswordUseCase(providers.Logger,
-		repositories.NewUserRepository(database.DB, providers.Logger),
+	createUserPasswordUC := userusecases.NewCreateUserAndPasswordUseCase(providers.Logger,
+		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		providers.HashProviderInstance,
 	)
-	ucResult := user_pipes.NewCreateUserPipe(ctx.c,
+	ucResult := userpipes.NewCreateUserPipe(ctx.c,
 		ctx.Locale,
-		uc_create_user_password,
-		uc_create_user_email,
+		createUserPasswordUC,
+		createUserSendEmailUC,
 	).Execute(userCreate)
 
 	headers := map[HTTPHeaderTypeEnum]string{
@@ -231,12 +231,44 @@ func ActivateUser(ctx HandlerContext) {
 		return
 	}
 
-	ucResult := usecases_user.NewActivateUserUseCase(
+	ucResult := userusecases.NewActivateUserUseCase(
 		providers.Logger,
-		repositories.NewUserRepository(database.DB, providers.Logger),
-		repositories.NewOneTimeTokenRepository(database.DB, providers.Logger),
+		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
+		repositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		providers.HashProviderInstance,
 	).Execute(ctx.c, ctx.Locale, userActivate)
+	headers := map[HTTPHeaderTypeEnum]string{
+		CONTENT_TYPE: string(APPLICATION_JSON),
+	}
+	NewRequestResolver[bool]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
+}
+
+// ResendWelcomeEmail Resend welcome email to user
+// @Summary Resend welcome email to user
+// @Description This endpoint resends the welcome email with a new activation token to the user
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param request body dtos.ResendWelcomeEmailRequest true "Email del usuario"
+// @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
+// @Success 200 {object} bool "Correo de bienvenida reenviado"
+// @Failure 400 {object} map[string]string "Error de validación"
+// @Failure 404 {object} map[string]string "Usuario no encontrado"
+// @Router /api/user/resend-welcome-email [post]
+func ResendWelcomeEmail(ctx HandlerContext) {
+	var resendRequest dtos.ResendWelcomeEmailRequest
+
+	if err := json.NewDecoder(*ctx.Body).Decode(&resendRequest); err != nil {
+		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	ucResult := userusecases.NewResendWelcomeEmailUseCase(
+		providers.Logger,
+		providers.HashProviderInstance,
+		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
+		repositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger),
+	).Execute(ctx.c, ctx.Locale, resendRequest)
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}

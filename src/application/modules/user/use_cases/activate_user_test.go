@@ -1,4 +1,4 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
@@ -6,10 +6,11 @@ import (
 	"testing"
 	"time"
 
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/mocks"
-	"gormgoskeleton/src/domain/models"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -19,10 +20,10 @@ func TestActivateUserUseCase(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
-	testOneTimeTokenRepository := new(mocks.MockOneTimeTokenRepository)
-	testHashProvider := new(mocks.MockHashProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
+	testHashProvider := new(providersmocks.MockHashProvider)
 
 	// Entity Mocks
 
@@ -40,6 +41,7 @@ func TestActivateUserUseCase(t *testing.T) {
 
 	testHashProvider.On("HashOneTimeToken", "valid_token").Return(tokenHash)
 	testOneTimeTokenRepository.On("GetByTokenHash", tokenHash).Return(&oneTimeToken, nil)
+	userStatusActive := models.UserStatusActive
 	testUserRepository.On(
 		"Update",
 		oneTimeToken.UserID,
@@ -48,7 +50,7 @@ func TestActivateUserUseCase(t *testing.T) {
 		UserBase: models.UserBase{
 			Name:   "Test User",
 			Email:  "test@mail.com",
-			Status: "active",
+			Status: &userStatusActive,
 			RoleID: 2,
 		},
 		DBBaseModel: models.DBBaseModel{

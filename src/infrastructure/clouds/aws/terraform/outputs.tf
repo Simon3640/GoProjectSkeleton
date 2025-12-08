@@ -59,10 +59,10 @@ output "lambda_functions" {
   description = "Map of all Lambda functions created from functions.json (equivalent to Azure Function Apps)"
   value = {
     for k, v in module.lambda_functions : k => {
-      name             = v.lambda_function_name
-      arn              = v.lambda_function_arn
-      invoke_url       = v.lambda_function_url
-      cloudwatch_logs  = v.cloudwatch_log_group_name
+      name            = v.lambda_function_name
+      arn             = v.lambda_function_arn
+      invoke_url      = v.lambda_function_url
+      cloudwatch_logs = v.cloudwatch_log_group_name
     }
   }
 }
@@ -90,4 +90,25 @@ output "http_api_routes" {
       route_key = v.route_key
     }
   }
+}
+
+# Outputs for S3 Templates Bucket
+output "s3_templates_bucket_name" {
+  description = "Name of the S3 bucket for templates"
+  value       = aws_s3_bucket.templates.id
+}
+
+output "s3_templates_bucket_arn" {
+  description = "ARN of the S3 bucket for templates"
+  value       = aws_s3_bucket.templates.arn
+}
+
+output "templates_path" {
+  description = "S3 path for templates (to be used as TEMPLATES_PATH environment variable)"
+  value       = "s3://${aws_s3_bucket.templates.bucket}/templates/"
+}
+
+output "s3_templates_policy_arn" {
+  description = "ARN of the IAM policy for reading templates from S3"
+  value       = aws_iam_policy.s3_templates_read.arn
 }

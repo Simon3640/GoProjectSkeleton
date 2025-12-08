@@ -1,14 +1,14 @@
 package routes
 
 import (
-	"gormgoskeleton/gin/middlewares"
-	"gormgoskeleton/src/infrastructure/handlers"
+	"github.com/simon3640/goprojectskeleton/gin/middlewares"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Router(r *gin.RouterGroup) {
-	r.GET("/health-check", wrapHandler(handlers.GetHealthCheck))
+	r.GET("/status", wrapHandler(handlers.GetHealthCheck))
 
 	private := r.Group("/")
 	private.Use(middlewares.AuthMiddleware())
@@ -20,6 +20,7 @@ func Router(r *gin.RouterGroup) {
 	private.GET("/user", middlewares.QueryMiddleware(), wrapHandler(handlers.GetAllUser))
 	r.POST("/user-password", wrapHandler(handlers.CreateUserAndPassword))
 	r.POST("/user/activate", wrapHandler(handlers.ActivateUser))
+	r.POST("/user/resend-welcome-email", wrapHandler(handlers.ResendWelcomeEmail))
 
 	// Password routes
 	private.POST("/password", wrapHandler(handlers.CreatePassword))

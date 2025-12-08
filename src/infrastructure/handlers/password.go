@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	usecases_password "gormgoskeleton/src/application/modules/password/use_cases"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	"gormgoskeleton/src/infrastructure/providers"
-	"gormgoskeleton/src/infrastructure/repositories"
+	usecases_password "github.com/simon3640/goprojectskeleton/src/application/modules/password/use_cases"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 )
 
 // CreatePassword
@@ -32,7 +32,7 @@ func CreatePassword(ctx HandlerContext) {
 		return
 	}
 
-	passwordRepository := repositories.NewPasswordRepository(database.DB, providers.Logger)
+	passwordRepository := repositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	ucResult := usecases_password.NewCreatePasswordUseCase(providers.Logger,
 		passwordRepository, providers.HashProviderInstance, false,
@@ -64,8 +64,8 @@ func CreatePasswordToken(ctx HandlerContext) {
 		return
 	}
 
-	passwordRepository := repositories.NewPasswordRepository(database.DB, providers.Logger)
-	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.DB, providers.Logger)
+	passwordRepository := repositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	ucResult := usecases_password.NewCreatePasswordTokenUseCase(providers.Logger,
 		passwordRepository,

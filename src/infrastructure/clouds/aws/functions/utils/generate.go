@@ -47,8 +47,8 @@ func GenerateFunctions(functionsJSONPath string) error {
 
 // GenerateFunction generates a single Lambda function
 func GenerateFunction(fn FunctionConfig) error {
-	// Calculate module path (e.g., "status/health_check" -> "gormgoskeleton/functions/aws/status/health_check")
-	modulePath := fmt.Sprintf("gormgoskeleton/functions/aws/%s", strings.ReplaceAll(fn.Path, "/", "/"))
+	// Calculate module path (e.g., "status/health_check" -> "github.com/simon3640/goprojectskeleton/functions/aws/status/health_check")
+	modulePath := fmt.Sprintf("github.com/simon3640/goprojectskeleton/functions/aws/%s", strings.ReplaceAll(fn.Path, "/", "/"))
 
 	// Create function directory
 	funcDir := filepath.Join("tmp", fn.Path)

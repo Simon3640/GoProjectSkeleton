@@ -1,16 +1,17 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
 	"testing"
 	"time"
 
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/mocks"
-	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
-	"gormgoskeleton/src/application/shared/status"
-	"gormgoskeleton/src/domain/models"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,15 +21,15 @@ func TestCreateUserUseCase(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
 	testUser := dtomocks.UserCreate
-
+	userStatus := models.UserStatusPending
 	testUserRepository.On("Create", testUser).Return(&models.User{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
-			Status: "active",
+			Status: &userStatus,
 			RoleID: 2,
 		},
 		DBBaseModel: models.DBBaseModel{
@@ -53,13 +54,14 @@ func TestCreateUserUseCase_InvalidInput(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	userStatus := models.UserStatusPending
 	testUserInvalidRoleID := dtos.UserCreate{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "invalid@gmail.com",
 			Phone:  "1234567890",
-			Status: "active",
+			Status: &userStatus,
 			RoleID: 1,
 		},
 	}

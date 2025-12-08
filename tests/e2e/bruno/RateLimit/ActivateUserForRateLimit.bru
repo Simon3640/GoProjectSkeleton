@@ -1,0 +1,27 @@
+meta {
+  name: ActivateUserForRateLimit
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseURL}}/user/activate
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "token": "{{rateLimitActivateToken}}"
+  }
+}
+
+script:post-response {
+  test("Response status code is 200", function () {
+      expect(res.getStatus()).to.eql(200);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

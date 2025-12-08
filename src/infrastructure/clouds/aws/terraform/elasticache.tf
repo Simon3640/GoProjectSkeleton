@@ -6,8 +6,8 @@
 resource "random_password" "redis_auth_token" {
   count            = var.use_redis_cache ? 1 : 0
   length           = 32
-  special          = false  # ElastiCache doesn't allow special characters in auth_token
-  override_special = ""     # No special characters allowed
+  special          = false # ElastiCache doesn't allow special characters in auth_token
+  override_special = ""    # No special characters allowed
 }
 
 # Create ServiceLinkedRole for ElastiCache (required by AWS)
@@ -68,8 +68,8 @@ resource "aws_security_group" "elasticache" {
 resource "aws_elasticache_replication_group" "redis" {
   count = var.use_redis_cache ? 1 : 0
 
-  replication_group_id       = "${local.name_prefix}-redis"
-  description                = "Redis cluster for ${var.project_name}"
+  replication_group_id = "${local.name_prefix}-redis"
+  description          = "Redis cluster for ${var.project_name}"
 
   # Engine configuration
   engine               = "redis"
@@ -95,7 +95,7 @@ resource "aws_elasticache_replication_group" "redis" {
 
   # Snapshot configuration
   snapshot_retention_limit = 7 # days
-  snapshot_window         = "03:00-05:00"
+  snapshot_window          = "03:00-05:00"
 
   # Maintenance window
   maintenance_window = "mon:05:00-mon:07:00"

@@ -57,6 +57,12 @@ resource "aws_iam_role_policy_attachment" "lambda_secrets" {
   policy_arn = var.secrets_manager_policy_arn
 }
 
+# Attach S3 templates read policy
+resource "aws_iam_role_policy_attachment" "lambda_s3_templates" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = var.s3_templates_policy_arn
+}
+
 # CloudWatch Log Group for Lambda
 # Equivalent to Azure Application Insights
 resource "aws_cloudwatch_log_group" "lambda" {

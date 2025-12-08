@@ -1,0 +1,23 @@
+meta {
+  name: GetActivationTokenForRateLimitReset
+  type: http
+  seq: 14
+}
+
+get {
+  url: http://{{mailhogHost}}:8025/api/v1/message/{{rateLimitResetLastMessageID}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  const response = res.getBody();
+  let match = response.Text.match(/token=([A-Za-z0-9\-_]+)/);
+  if (match && match[1]) {
+      bru.setEnvVar("rateLimitResetActivateToken", match[1]);
+  }
+}
+
+settings {
+  encodeUrl: true
+}

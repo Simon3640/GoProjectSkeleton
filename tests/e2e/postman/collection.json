@@ -1,0 +1,2296 @@
+{
+	"info": {
+		"_postman_id": "182455d3-f7ec-431d-86ec-4e3bddef37a9",
+		"name": "GoProjectSkeletonE2E",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26233879"
+	},
+	"item": [
+		{
+			"name": "Base",
+			"item": [
+				{
+					"name": "HealthCheck",
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/status",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "UserAuth",
+			"item": [
+				{
+					"name": "NewUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"// Check if the status code is 200",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"// Extract and set user ID to environment variable",
+									"pm.environment.set(\"userId\", response.data.id);",
+									"",
+									"// Validate the user ID exists and is of correct type",
+									"pm.test(\"User ID is present and is a number\", function () {",
+									"    pm.expect(response.data.id).to.exist;",
+									"    pm.expect(response.data.id).to.be.a('number');",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"name\": \"new user\",\n  \"otpLogin\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"12345678901\",\n  \"role_id\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user-password",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMailPitMessage",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get last message",
+									"",
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"status code\", function(){",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"",
+									"// Get token to activate user",
+									"pm.environment.set(\"lastMessageID\", response.messages[0].ID)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/messages?limit=1",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"messages"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMailPitActivationToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let match = response.Text.match(/token=([A-Za-z0-9\\-_]+)/);",
+									"console.log(match);",
+									"",
+									"if (match && match[1]) {",
+									"    pm.environment.set(\"activateUserToken\", match[1]);",
+									"} else {",
+									"    console.warn(\"Token not found in response Text.\");",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/message/{{lastMessageID}}",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"message",
+								"{{lastMessageID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ActivateUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has required fields: data and details\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.all.keys('data', 'details');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Data field is a boolean value\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.be.a('boolean');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response content type is application/json\", function () {",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include(\"application/json\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"{{activateUserToken}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/activate",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"activate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UserLogin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json()",
+									"",
+									"pm.test(\"Access Token is present\", function () {",
+									"    pm.expect(response.data.accessToken).to.not.be.null;",
+									"});",
+									"",
+									"pm.test(\"Refresh Token is present\", function () {",
+									"    pm.expect(response.data.refreshToken).to.not.be.null;",
+									"});",
+									"",
+									"pm.environment.set(\"userToken\", response.data.accessToken);",
+									"pm.environment.set(\"refreshUserToken\", response.data.refreshToken);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{strongPassword}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RefresToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response contains required fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.exist;",
+									"    pm.expect(responseData.data).to.have.all.keys('accessToken', 'refreshToken', 'token_type', 'accessExpiresAt', 'refresExpiresAt');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Access token is a non-empty string\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.exist.and.to.be.an('object');",
+									"    pm.expect(responseData.data.accessToken).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Access token should not be empty\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Refresh token is a non-empty string\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.be.an('object');",
+									"    pm.expect(responseData.data.refreshToken).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Refresh token should not be empty\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\"{{refreshUserToken}}\""
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/refresh",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"refresh"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetUserInfoID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains user data\", function () {",
+									"    pm.expect(response.data).to.have.property(\"name\");",
+									"    pm.expect(response.data).to.have.property(\"email\");",
+									"    pm.expect(response.data).to.have.property(\"phone\");",
+									"    pm.expect(response.data).to.have.property(\"status\");",
+									"    pm.expect(response.data).to.have.property(\"role_id\");",
+									"    pm.expect(response.data).to.have.property(\"otpLogin\");",
+									"    pm.expect(response.data).to.have.property(\"id\");",
+									"    pm.expect(response.data).to.have.property(\"createdAt\");",
+									"    pm.expect(response.data).to.have.property(\"updatedAt\");",
+									"    pm.expect(response.data).to.have.property(\"deletedAt\");",
+									"});",
+									"",
+									"//Same ID",
+									"",
+									"pm.test(\"Same Id\", function () {",
+									"    pm.expect(response.data.id).to.equal(parseInt(pm.environment.get(\"userId\")));",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{userToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/user/{{userId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"User should be updated successfully\", function () {",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"",
+									"// Test name has change",
+									"",
+									"pm.test(\"User name should be updated\", function () {",
+									"    pm.expect(response.data.name).to.eql(\"Updated Name\");",
+									"})",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey"
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{userToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/{{userId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "PasswordRestore",
+			"item": [
+				{
+					"name": "PasswordReset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has required fields: data and details\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.all.keys('data', 'details');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Data field should be of boolean type\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.be.a('boolean');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Details field should be a string and can be empty\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.have.property('details').that.is.a('string');",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/auth/password-reset/{{userEmail}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"password-reset",
+								"{{userEmail}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMailPitMessages",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get last message",
+									"",
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"status code\", function(){",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"",
+									"// Get token to activate user",
+									"pm.environment.set(\"lastMessageID\", response.messages[0].ID)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/messages?limit=1",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"messages"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMailPitResetToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let match = response.Text.match(/token=([A-Za-z0-9\\-_]+)/);",
+									"console.log(match);",
+									"",
+									"if (match && match[1]) {",
+									"    pm.environment.set(\"passwordUserToken\", match[1]);",
+									"} else {",
+									"    console.warn(\"Token not found in response Text.\");",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/message/{{lastMessageID}}",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"message",
+								"{{lastMessageID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PasswordResetToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has required fields: data and details\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.all.keys('data', 'details');",
+									"});",
+									"",
+									"",
+									"pm.test(\"The data field must be a boolean\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.be.a('boolean');",
+									"});",
+									"",
+									"",
+									"pm.test(\"The details field must be a string\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.details).to.be.a('string');",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"noHashedPassword\": \"{{strongPassword}}\",\n  \"token\": \"{{passwordUserToken}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/password/reset-token",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"password",
+								"reset-token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "OTPLogin",
+			"item": [
+				{
+					"name": "UpdateUserOTPLogin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey"
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{userToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"otpLogin\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/{{userId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UserLogin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code 204\", function () {",
+									"    pm.response.to.have.status(204)",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{strongPassword}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMailPitMessages",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get last message",
+									"",
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"status code\", function(){",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"",
+									"// Get token to activate user",
+									"pm.environment.set(\"lastMessageID\", response.messages[0].ID)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/messages?limit=1",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"messages"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMailPitLoginOTP",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let match = response.Text.match(/\\b\\d{6}\\b/);",
+									"console.log(match);",
+									"",
+									"if (match && match[0]) {",
+									"    pm.environment.set(\"loginOTP\", match[0]);",
+									"} else {",
+									"    console.warn(\"Token not found in response Text.\");",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/message/{{lastMessageID}}",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"message",
+								"{{lastMessageID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LoginOTP",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response contains required fields\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.exist.and.to.be.an('object');",
+									"    ",
+									"    pm.expect(responseData.data).to.have.all.keys('accessToken', 'refreshToken', 'token_type', 'accessExpiresAt', 'refresExpiresAt');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Access token is a non-empty string\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.exist.and.to.be.an('object');",
+									"    pm.expect(responseData.data.accessToken).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Access token should not be empty\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Token type must be a non-empty string\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.exist.and.to.be.an('object');",
+									"    pm.expect(responseData.data.token_type).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Value should not be empty\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Access and refresh expiration times are in a valid date format\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.exist.and.to.be.an('object');",
+									"    ",
+									"    const accessExpiresAt = responseData.data.accessExpiresAt;",
+									"    const refreshExpiresAt = responseData.data.refresExpiresAt;",
+									"",
+									"    const isValidDate = (dateString) => {",
+									"        const date = new Date(dateString);",
+									"        return !isNaN(date.getTime());",
+									"    };",
+									"",
+									"    pm.expect(isValidDate(accessExpiresAt)).to.be.true;",
+									"    pm.expect(isValidDate(refreshExpiresAt)).to.be.true;",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/auth/login-otp/{{loginOTP}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login-otp",
+								"{{loginOTP}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ResendEmail",
+			"item": [
+				{
+					"name": "NewUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"// Check if the status code is 200",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"// Extract and set user ID to environment variable",
+									"pm.environment.set(\"resendEmailUserId\", response.data.id);",
+									"",
+									"// Validate the user ID exists and is of correct type",
+									"pm.test(\"User ID is present and is a number\", function () {",
+									"    pm.expect(response.data.id).to.exist;",
+									"    pm.expect(response.data.id).to.be.a('number');",
+									"});",
+									"",
+									"// Store email for resend request",
+									"pm.environment.set(\"resendEmailUserEmail\", response.data.email);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"resendtest{{$randomInt}}@example.com\",\n  \"name\": \"Resend Email Test User\",\n  \"otpLogin\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"role_id\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user-password",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ResendWelcomeEmail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has required fields: data and details\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.all.keys('data', 'details');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Data field is a boolean value\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.be.a('boolean');",
+									"    pm.expect(responseData.data).to.equal(true);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response content type is application/json\", function () {",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include(\"application/json\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{resendEmailUserEmail}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/resend-welcome-email",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"resend-welcome-email"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMailPitMessage",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get last message",
+									"",
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"status code\", function(){",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"",
+									"// Get token to activate user",
+									"pm.environment.set(\"resendEmailLastMessageID\", response.messages[0].ID)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/messages?limit=1",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"messages"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMailPitActivationToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let match = response.Text.match(/token=([A-Za-z0-9\\-_]+)/);",
+									"console.log(match);",
+									"",
+									"if (match && match[1]) {",
+									"    pm.environment.set(\"resendEmailActivateUserToken\", match[1]);",
+									"} else {",
+									"    console.warn(\"Token not found in response Text.\");",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/message/{{resendEmailLastMessageID}}",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"message",
+								"{{resendEmailLastMessageID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ActivateUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response has required fields: data and details\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.all.keys('data', 'details');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Data field is a boolean value\", function () {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData.data).to.be.a('boolean');",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response time is less than 200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response content type is application/json\", function () {",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include(\"application/json\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"{{resendEmailActivateUserToken}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/activate",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"activate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "RateLimit",
+			"item": [
+				{
+					"name": "CreateUserForRateLimit",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"pm.environment.set(\"rateLimitUserEmail\", response.data.email);",
+									"pm.environment.set(\"rateLimitUserId\", response.data.id);",
+									"",
+									"pm.test(\"User ID is present\", function () {",
+									"    pm.expect(response.data.id).to.exist;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"ratelimit{{$randomInt}}@example.com\",\n  \"name\": \"Rate Limit Test User\",\n  \"otpLogin\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"role_id\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user-password",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMailPitMessageForRateLimit",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"status code\", function(){",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.environment.set(\"rateLimitLastMessageID\", response.messages[0].ID)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/messages?limit=1",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"messages"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetActivationTokenForRateLimit",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let match = response.Text.match(/token=([A-Za-z0-9\\-_]+)/);",
+									"",
+									"if (match && match[1]) {",
+									"    pm.environment.set(\"rateLimitActivateToken\", match[1]);",
+									"} else {",
+									"    console.warn(\"Token not found in response Text.\");",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/message/{{rateLimitLastMessageID}}",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"message",
+								"{{rateLimitLastMessageID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ActivateUserForRateLimit",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"{{rateLimitActivateToken}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/activate",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"activate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FailedLoginAttempt1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404 (Invalid credentials)\", function () {",
+									"    pm.expect(pm.response.code).to.equal(404);",
+									"});",
+									"",
+									"pm.test(\"Response contains error message\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('details');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{rateLimitUserEmail}}\",\n  \"password\": \"wrongPassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FailedLoginAttempt2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404 (Invalid credentials)\", function () {",
+									"    pm.expect(pm.response.code).to.equal(404);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{rateLimitUserEmail}}\",\n  \"password\": \"wrongPassword2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FailedLoginAttempt3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404 (Invalid credentials)\", function () {",
+									"    pm.expect(pm.response.code).to.equal(404);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{rateLimitUserEmail}}\",\n  \"password\": \"wrongPassword3\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FailedLoginAttempt4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404 (Invalid credentials)\", function () {",
+									"    pm.expect(pm.response.code).to.equal(404);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{rateLimitUserEmail}}\",\n  \"password\": \"wrongPassword4\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FailedLoginAttempt5",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404 (Invalid credentials)\", function () {",
+									"    pm.expect(pm.response.code).to.equal(404);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{rateLimitUserEmail}}\",\n  \"password\": \"wrongPassword5\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RateLimitExceeded",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 429 (Too Many Requests)\", function () {",
+									"    pm.expect(pm.response.code).to.equal(429);",
+									"});",
+									"",
+									"pm.test(\"Response contains rate limit error message\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('details');",
+									"    pm.expect(response.details).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"Response indicates max attempts exceeded\", function () {",
+									"    const response = pm.response.json();",
+									"    const details = response.details.toLowerCase();",
+									"    const hasRateLimitMessage = details.includes('intento') || details.includes('demasiado') || details.includes('más tarde');",
+									"    pm.expect(hasRateLimitMessage, 'Rate limit message should be present').to.be.true;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{rateLimitUserEmail}}\",\n  \"password\": \"wrongPassword6\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SuccessfulLoginAfterFailedAttempts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Primero hacer algunos intentos fallidos",
+									"// Luego intentar con la contraseña correcta",
+									"// Debe funcionar si no se excedió el límite"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{rateLimitUserEmail}}\",\n  \"password\": \"{{strongPassword}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateUserForRateLimitReset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"pm.environment.set(\"rateLimitResetUserEmail\", response.data.email);",
+									"pm.environment.set(\"rateLimitResetUserId\", response.data.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"ratelimitreset{{$randomInt}}@example.com\",\n  \"name\": \"Rate Limit Reset Test User\",\n  \"otpLogin\": false,\n  \"password\": \"{{strongPassword}}\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"role_id\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user-password",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMailPitMessageForRateLimitReset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"rateLimitResetLastMessageID\", response.messages[0].ID)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/messages?limit=1",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"messages"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetActivationTokenForRateLimitReset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"let match = response.Text.match(/token=([A-Za-z0-9\\-_]+)/);",
+									"if (match && match[1]) {",
+									"    pm.environment.set(\"rateLimitResetActivateToken\", match[1]);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{mailhogHost}}:8025/api/v1/message/{{rateLimitResetLastMessageID}}",
+							"protocol": "http",
+							"host": [
+								"{{mailhogHost}}"
+							],
+							"port": "8025",
+							"path": [
+								"api",
+								"v1",
+								"message",
+								"{{rateLimitResetLastMessageID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ActivateUserForRateLimitReset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"{{rateLimitResetActivateToken}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/activate",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"activate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FailedLoginAttempt1_Reset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.expect(pm.response.code).to.equal(404);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{rateLimitResetUserEmail}}\",\n  \"password\": \"wrongPassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FailedLoginAttempt2_Reset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.expect(pm.response.code).to.equal(404);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{rateLimitResetUserEmail}}\",\n  \"password\": \"wrongPassword2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SuccessfulLoginResetsCounter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 (Login successful)\", function () {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains access token\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.data).to.have.property('accessToken');",
+									"    pm.expect(response.data.accessToken).to.be.a('string').and.not.be.empty;",
+									"});",
+									"",
+									"pm.test(\"Response contains refresh token\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.data).to.have.property('refreshToken');",
+									"    pm.expect(response.data.refreshToken).to.be.a('string').and.not.be.empty;",
+									"});",
+									"",
+									"// Verificar que después de un login exitoso, el contador se resetea",
+									"// Haciendo otro intento fallido, debe empezar desde 1, no desde 3"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{rateLimitResetUserEmail}}\",\n  \"password\": \"{{strongPassword}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FailedLoginAfterSuccessfulLogin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404 (Counter was reset)\", function () {",
+									"    pm.expect(pm.response.code).to.equal(404);",
+									"});",
+									"",
+									"// Si el contador se reseteó correctamente, este intento fallido",
+									"// debe ser el primero después del login exitoso, no el tercero"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es-ES",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{rateLimitResetUserEmail}}\",\n  \"password\": \"wrongPassword3\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

@@ -2,9 +2,10 @@ package providers
 
 import (
 	"context"
-	application_errors "gormgoskeleton/src/application/shared/errors"
 	"testing"
 	"time"
+
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 
 	"github.com/stretchr/testify/assert"
 )

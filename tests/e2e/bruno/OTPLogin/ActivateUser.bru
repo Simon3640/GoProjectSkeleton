@@ -1,0 +1,50 @@
+meta {
+  name: ActivateUser
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseURL}}/user/activate
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "token": "{{activateUserTokenOTP}}"
+  }
+}
+
+script:post-response {
+  test("Response status code is 200", function () {
+      expect(res.getStatus()).to.eql(200);
+  });
+
+
+  test("Response has required fields: data and details", function () {
+      const responseData = res.getBody();
+
+      expect(responseData).to.be.an('object');
+      expect(responseData).to.have.all.keys('data', 'details');
+  });
+
+
+  test("Data field is a boolean value", function () {
+      const responseData = res.getBody();
+
+      expect(responseData).to.be.an('object');
+      expect(responseData.data).to.be.a('boolean');
+  });
+
+
+  test("Response time is less than 200ms", function () {
+      expect(res.getResponseTime()).to.be.below(200);
+  });
+
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

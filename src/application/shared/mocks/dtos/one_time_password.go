@@ -4,8 +4,8 @@ import (
 	"encoding/hex"
 	"time"
 
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/domain/models"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 var OneTimePasswordBase = models.OneTimePasswordBase{

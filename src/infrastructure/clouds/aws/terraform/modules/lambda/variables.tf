@@ -41,7 +41,7 @@ variable "app_description" {
 variable "app_support_email" {
   description = "Support email"
   type        = string
-  default     = "support@gormgoskeleton.com"
+  default     = "support@goprojectskeleton.com"
 }
 
 variable "enable_log" {
@@ -128,7 +128,7 @@ variable "jwt_secret_arn" {
 variable "jwt_issuer" {
   description = "JWT issuer"
   type        = string
-  default     = "gormgoskeleton"
+  default     = "goprojectskeleton"
 }
 
 variable "jwt_access_ttl" {
@@ -203,7 +203,7 @@ variable "mail_port" {
 variable "mail_from" {
   description = "Sender email"
   type        = string
-  default     = "noreply@gormgoskeleton.com"
+  default     = "noreply@goprojectskeleton.com"
 }
 
 variable "mail_password_secret_arn" {
@@ -232,6 +232,11 @@ variable "security_group_ids" {
 # IAM variables
 variable "secrets_manager_policy_arn" {
   description = "ARN of Secrets Manager access policy"
+  type        = string
+}
+
+variable "s3_templates_policy_arn" {
+  description = "ARN of S3 templates read policy"
   type        = string
 }
 

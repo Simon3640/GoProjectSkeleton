@@ -2,6 +2,7 @@ package messages
 
 type MessageKeysEnum string
 
+// MessageKeys are the keys for the messages in the application
 type MessageKeys struct {
 	AUTHORIZATION_REQUIRED        MessageKeysEnum
 	RESOURCE_NOT_FOUND            MessageKeysEnum
@@ -26,6 +27,8 @@ type MessageKeys struct {
 	USER_DELETE_SUCCESS            MessageKeysEnum
 	INVALID_USER_ID                MessageKeysEnum
 	INVALID_USER_ACTIVATION_TOKEN  MessageKeysEnum
+	WelcomeEmailResent             MessageKeysEnum
+	UserAlreadyVerified            MessageKeysEnum
 
 	PASSWORD_REQUIRED                      MessageKeysEnum
 	PASSWORD_IS_SHORT                      MessageKeysEnum
@@ -45,6 +48,7 @@ type MessageKeys struct {
 	JWT_TOKEN_VIOLATED           MessageKeysEnum
 	OTP_LOGIN_ENABLED            MessageKeysEnum
 	INVALID_OTP                  MessageKeysEnum
+	LoginMaxAttemptsExceeded     MessageKeysEnum
 
 	INVALID_EMAIL         MessageKeysEnum
 	INVALID_PASSWORD      MessageKeysEnum
@@ -76,6 +80,8 @@ var MessageKeysInstance = MessageKeys{
 	USER_DELETE_SUCCESS:            "USER_DELETE_SUCCESS",
 	INVALID_USER_ID:                "INVALID_USER_ID",
 	INVALID_USER_ACTIVATION_TOKEN:  "INVALID_USER_ACTIVATION_TOKEN",
+	WelcomeEmailResent:             "WELCOME_EMAIL_RESENT",
+	UserAlreadyVerified:            "USER_ALREADY_VERIFIED",
 
 	INVALID_EMAIL:    "INVALID_EMAIL",
 	INVALID_PASSWORD: "INVALID_PASSWORD",
@@ -101,6 +107,9 @@ var MessageKeysInstance = MessageKeys{
 	JWT_TOKEN_VIOLATED:           "JWT_TOKEN_VIOLATED",
 	OTP_LOGIN_ENABLED:            "OTP_LOGIN_ENABLED",
 	INVALID_OTP:                  "INVALID_OTP",
+	LoginMaxAttemptsExceeded:     "LOGIN_MAX_ATTEMPTS_EXCEEDED",
 
 	APPLICATION_STATUS_OK: "APPLICATION_STATUS_OK",
 }
+
+// TODO: change messages from mayuscules to lowercase

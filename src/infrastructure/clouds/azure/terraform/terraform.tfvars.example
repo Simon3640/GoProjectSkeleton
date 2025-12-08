@@ -33,9 +33,9 @@ templates_path = "src/application/shared/templates/"
 # -----------------------------------------------------------------------------
 db_host     = "localhost"  # Se sobrescribe automáticamente por Container App
 db_port     = "5432"
-db_user     = "gormgoskeleton"
+db_user     = "goprojectskeleton"
 db_password = "CAMBIAR-A-CONTRASEÑA-SEGURA"  # ⚠️ REQUERIDO: Cambiar por una contraseña segura
-db_name     = "gormgoskeleton"
+db_name     = "goprojectskeleton"
 db_ssl      = false
 
 # Para generar una contraseña segura:
@@ -56,7 +56,7 @@ redis_ttl      = 300
 # JWT (JSON Web Tokens)
 # -----------------------------------------------------------------------------
 jwt_secret_key  = "CAMBIAR-A-CLAVE-JWT-SEGURA"  # ⚠️ REQUERIDO: Cambiar por una clave segura (mínimo 32 caracteres)
-jwt_issuer      = "gormgoskeleton"
+jwt_issuer      = "goprojectskeleton"
 jwt_access_ttl  = 3600   # 1 hora
 jwt_refresh_ttl = 86400  # 24 horas
 jwt_clock_skew  = 60      # 1 minuto
