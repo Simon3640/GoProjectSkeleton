@@ -1,4 +1,4 @@
-FROM golang:1.25-alpine AS builder
+FROM golang:1.25.5-alpine AS builder
 
 # Alpine
 RUN apk add --no-cache git build-base
@@ -22,7 +22,7 @@ COPY ./src/application/shared/DTOs ./DTOs
 RUN go install github.com/air-verse/air@v1.61.7
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 
-FROM golang:1.25-alpine
+FROM golang:1.25.5-alpine
 
 WORKDIR /app
 
