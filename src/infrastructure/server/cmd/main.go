@@ -31,7 +31,7 @@ func main() {
 
 func loadGinApp(app *graceful.Graceful) {
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
+		AllowOrigins:     settings.AppSettingsInstance.AllowOrigins,
 		AllowMethods:     []string{"*"},
 		AllowHeaders:     []string{"*"},
 		ExposeHeaders:    []string{"content-disposition", " content-description"},
