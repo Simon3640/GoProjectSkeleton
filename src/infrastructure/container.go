@@ -1,11 +1,11 @@
 package infrastructure
 
 import (
-	email_service "goprojectskeleton/src/application/shared/services/emails"
-	settings "goprojectskeleton/src/application/shared/settings"
-	config "goprojectskeleton/src/infrastructure/config"
-	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
-	providers "goprojectskeleton/src/infrastructure/providers"
+	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	settings "github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	config "github.com/simon3640/goprojectskeleton/src/infrastructure/config"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	providers "github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
 func Initialize() {

@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"goprojectskeleton/aws/functions/utils"
+	"github.com/simon3640/goprojectskeleton/aws/functions/utils"
 )
 
 func main() {

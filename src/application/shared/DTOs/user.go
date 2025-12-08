@@ -1,6 +1,6 @@
 package dtos
 
-import "goprojectskeleton/src/domain/models"
+import "github.com/simon3640/goprojectskeleton/src/domain/models"
 
 type UserCreate struct {
 	models.UserBase

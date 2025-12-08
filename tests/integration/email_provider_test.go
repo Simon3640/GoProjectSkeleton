@@ -1,9 +1,10 @@
 package integrationtest
 
 import (
-	"goprojectskeleton/src/application/shared/settings"
-	"goprojectskeleton/src/infrastructure/providers"
 	"testing"
+
+	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -2,14 +2,15 @@ package middlewares
 
 import (
 	"context"
-	api "goprojectskeleton/gin"
-	authusecases "goprojectskeleton/src/application/modules/auth/use_cases"
-	app_context "goprojectskeleton/src/application/shared/context"
-	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/domain/models"
-	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
-	"goprojectskeleton/src/infrastructure/providers"
-	"goprojectskeleton/src/infrastructure/repositories"
+
+	api "github.com/simon3640/goprojectskeleton/gin"
+	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 
 	"github.com/gin-gonic/gin"
 )

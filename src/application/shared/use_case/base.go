@@ -4,11 +4,11 @@ import (
 	"context"
 	"strings"
 
-	app_context "goprojectskeleton/src/application/shared/context"
-	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/locales/messages"
-	"goprojectskeleton/src/application/shared/status"
-	"goprojectskeleton/src/domain/models"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type BaseUseCase[Input any, Output any] interface {

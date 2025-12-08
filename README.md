@@ -3994,7 +3994,7 @@ import (
 
     "github.com/gin-gonic/gin"
 
-    "goprojectskeleton/src/domain/models"
+    "github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 // 2. Types and Structs

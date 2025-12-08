@@ -1,6 +1,6 @@
 package defaults
 
-import "goprojectskeleton/src/domain/models"
+import "github.com/simon3640/goprojectskeleton/src/domain/models"
 
 // list of default roles
 

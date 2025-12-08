@@ -5,7 +5,7 @@ package adapters
 import (
 	"net/http"
 
-	"goprojectskeleton/src/infrastructure/handlers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
 )
 
 // Adapter defines the interface for converting requests to handler contexts.

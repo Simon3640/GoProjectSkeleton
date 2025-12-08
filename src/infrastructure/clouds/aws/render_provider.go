@@ -8,11 +8,11 @@ import (
 	"os"
 	"strings"
 
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	application_errors "goprojectskeleton/src/application/shared/errors"
-	"goprojectskeleton/src/application/shared/locales/messages"
-	email_models "goprojectskeleton/src/application/shared/services/emails/models"
-	"goprojectskeleton/src/application/shared/status"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
