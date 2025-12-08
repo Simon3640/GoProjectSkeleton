@@ -1,0 +1,70 @@
+meta {
+  name: RefresToken
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseURL}}/auth/refresh
+  body: text
+  auth: bearer
+}
+
+params:query {
+  ~:
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:bearer {
+  token:
+}
+
+body:text {
+  "{{refreshUserToken}}"
+}
+
+script:post-response {
+  test("Response status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+
+  test("Response time is less than 200ms", function () {
+      expect(res.getResponseTime()).to.be.below(200);
+  });
+
+
+  test("Response contains required fields", function () {
+      const responseData = res.getBody();
+
+      expect(responseData).to.be.an('object');
+      expect(responseData.data).to.exist;
+      expect(responseData.data).to.have.all.keys('accessToken', 'refreshToken', 'token_type', 'accessExpiresAt', 'refresExpiresAt');
+  });
+
+
+  test("Access token is a non-empty string", function () {
+      const responseData = res.getBody();
+
+      expect(responseData).to.be.an('object');
+      expect(responseData.data).to.exist.and.to.be.an('object');
+      expect(responseData.data.accessToken).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, "Access token should not be empty");
+  });
+
+
+  test("Refresh token is a non-empty string", function () {
+      const responseData = res.getBody();
+
+      expect(responseData).to.be.an('object');
+      expect(responseData.data).to.be.an('object');
+      expect(responseData.data.refreshToken).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, "Refresh token should not be empty");
+  });
+
+}
+
+settings {
+  encodeUrl: true
+}
