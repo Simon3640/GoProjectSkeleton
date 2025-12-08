@@ -120,7 +120,7 @@ The core philosophy of **GoProjectSkeleton** is that the **domain** and **applic
 - ✅ **Docker Registry Ready** - Swagger can be built and deployed independently
 - ✅ **Complete Testing** - Unit, integration, and E2E tests
 - ✅ **Complete Mocks** - Repository and provider mocks for testing
-- ✅ **Postman Collection** - Ready-to-use collection for E2E testing
+- ✅ **Bruno Collection** - Ready-to-use collection for E2E testing
 
 #### 🛠️ Development Environment
 - ✅ **Complete IDE Configuration** - Pre-configured VS Code/IDE settings for debugging
@@ -1917,7 +1917,7 @@ GoProjectSkeleton/
 │   └── db/                  # Database configuration
 ├── tests/                   # 🧪 Project Tests
 │   ├── integration/         # Integration tests
-│   └── e2e/                 # End-to-end tests (Postman)
+│   └── e2e/                 # End-to-end tests (Bruno)
 ├── src/infrastructure/docs/ # 📚 Independent Swagger Service
 │   ├── main.go              # Independent HTTP server for Swagger
 │   ├── config/              # Swagger server configuration
@@ -2632,7 +2632,7 @@ Implementation for **Azure Functions**:
 
 - **`docker-compose.dev.yml`**: Development services (includes independent Swagger service)
 - **`docker-compose.test.yml`**: Testing services
-- **`docker-compose.e2e.yml`**: E2E services
+- **`docker-compose.e2e.yml`**: E2E services (includes Bruno for automated E2E testing)
 - **`dockerfile.dev`**: Development Dockerfile
 - **`dockerfile.swagger`**: Production Dockerfile for independent Swagger service
 - **`dockerfile.swagger.debug`**: Development Dockerfile for Swagger with hot reload
@@ -2649,8 +2649,9 @@ Implementation for **Azure Functions**:
   - Provider tests
 
 - **`e2e/`**: End-to-end tests
-  - `collection.json`: Postman collection
-  - `environment.json`: Postman environment
+  - `bruno/`: Bruno collection with tests
+  - `collections/`: Bruno request collections
+  - `environments/`: Bruno environment configurations
 
 ### `/src/infrastructure/docs/` - Independent Swagger Service
 
@@ -3615,8 +3616,11 @@ graph TB
 ```
 tests/
 ├── e2e/                    # End-to-end tests
-│   ├── collection.json     # Postman collection
-│   └── environment.json    # Postman environment
+│   ├── bruno/              # Bruno collection
+│   │   ├── collections/    # Request collections
+│   │   ├── environments/  # Environment configurations
+│   │   └── bruno.json      # Bruno configuration
+│   └── postman/            # Legacy Postman collection (optional)
 └── integration/            # Integration tests
     ├── main_test.go        # Test setup
     ├── user_repository_test.go
@@ -3628,7 +3632,7 @@ tests/
 
 1. **Unit Tests**: Individual unit tests (in each module)
 2. **Integration Tests**: Integration tests with database
-3. **E2E Tests**: End-to-end tests with Postman
+3. **E2E Tests**: End-to-end tests with Bruno
 
 ### Run Tests
 
@@ -3640,7 +3644,8 @@ go test ./src/...
 go test ./tests/integration/...
 
 # E2E tests (requires running services)
-# Use Postman collection in tests/e2e/
+# Bruno tests run automatically in docker-compose.e2e.yml
+# Or run manually: bruno run --env=dev
 ```
 
 ---
@@ -3749,6 +3754,13 @@ The project includes Docker configuration for development:
 - **Mailpit**: Email server for development
 - **Redis Commander**: Web interface for Redis (port 18081)
 
+**E2E Testing Services** (docker-compose.e2e.yml):
+- **Application**: Go server for E2E testing
+- **PostgreSQL**: Test database
+- **Redis**: Test cache
+- **Mailpit**: Email testing
+- **Bruno**: Automated E2E test runner (executes tests automatically)
+
 ### Docker Commands
 
 ```bash
@@ -3758,8 +3770,9 @@ docker-compose -f docker/docker-compose.dev.yml up -d
 # Testing
 docker-compose -f docker/docker-compose.test.yml up -d
 
-# E2E Testing
+# E2E Testing (Bruno runs automatically)
 docker-compose -f docker/docker-compose.e2e.yml up -d
+# Bruno tests will execute automatically once the API is healthy
 ```
 
 ### Independent Swagger Deployment
@@ -4110,7 +4123,7 @@ func TestCreateUser(t *testing.T) {
 #### Test Types
 1. **Unit Tests**: Use cases with mocks
 2. **Integration Tests**: Repositories with real DB
-3. **E2E Tests**: Complete flows with Postman
+3. **E2E Tests**: Complete flows with Bruno
 
 ## Conclusion
 
