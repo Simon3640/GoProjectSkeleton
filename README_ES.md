@@ -120,7 +120,7 @@ La filosofía central de **GoProjectSkeleton** es que el **dominio** y la **lóg
 - ✅ **Listo para Docker Registry** - Swagger puede construirse y desplegarse independientemente
 - ✅ **Testing Completo** - Unitarios, integración y E2E
 - ✅ **Mocks Completos** - Mocks de repositorios y providers para testing
-- ✅ **Postman Collection** - Colección lista para pruebas E2E
+- ✅ **Bruno Collection** - Colección lista para pruebas E2E
 
 #### 🛠️ Ambiente de Desarrollo
 - ✅ **Configuración IDE Completa** - Configuración preestablecida de VS Code/IDE para debugging
@@ -1917,7 +1917,7 @@ GoProjectSkeleton/
 │   └── db/                  # Configuración de base de datos
 ├── tests/                   # 🧪 Tests del proyecto
 │   ├── integration/         # Tests de integración
-│   └── e2e/                 # Tests end-to-end (Postman)
+│   └── e2e/                 # Tests end-to-end (Bruno)
 ├── src/infrastructure/docs/ # 📚 Servicio Swagger Independiente
 │   ├── main.go              # Servidor HTTP independiente para Swagger
 │   ├── config/              # Configuración del servidor Swagger
@@ -2632,7 +2632,7 @@ Implementación para **Azure Functions**:
 
 - **`docker-compose.dev.yml`**: Servicios de desarrollo (incluye servicio Swagger independiente)
 - **`docker-compose.test.yml`**: Servicios de testing
-- **`docker-compose.e2e.yml`**: Servicios de E2E
+- **`docker-compose.e2e.yml`**: Servicios de E2E (incluye Bruno para tests E2E automatizados)
 - **`dockerfile.dev`**: Dockerfile de desarrollo
 - **`dockerfile.swagger`**: Dockerfile de producción para servicio Swagger independiente
 - **`dockerfile.swagger.debug`**: Dockerfile de desarrollo para servicio Swagger con hot reload
@@ -2649,8 +2649,9 @@ Implementación para **Azure Functions**:
   - Tests de providers
 
 - **`e2e/`**: Tests end-to-end
-  - `collection.json`: Postman collection
-  - `environment.json`: Postman environment
+  - `bruno/`: Colección Bruno con tests
+  - `collections/`: Colecciones de requests de Bruno
+  - `environments/`: Configuraciones de entornos de Bruno
 
 ### `/src/infrastructure/docs/` - Servicio Swagger Independiente
 
@@ -3615,8 +3616,11 @@ graph TB
 ```
 tests/
 ├── e2e/                    # Tests end-to-end
-│   ├── collection.json     # Postman collection
-│   └── environment.json    # Postman environment
+│   ├── bruno/              # Colección Bruno
+│   │   ├── collections/    # Colecciones de requests
+│   │   ├── environments/  # Configuraciones de entornos
+│   │   └── bruno.json      # Configuración de Bruno
+│   └── postman/            # Colección Postman legacy (opcional)
 └── integration/            # Tests de integración
     ├── main_test.go        # Setup de tests
     ├── user_repository_test.go
@@ -3628,7 +3632,7 @@ tests/
 
 1. **Unit Tests**: Tests de unidades individuales (en cada módulo)
 2. **Integration Tests**: Tests de integración con base de datos
-3. **E2E Tests**: Tests end-to-end con Postman
+3. **E2E Tests**: Tests end-to-end con Bruno
 
 ### Ejecutar Tests
 
@@ -3640,7 +3644,8 @@ go test ./src/...
 go test ./tests/integration/...
 
 # Tests E2E (requiere servicios corriendo)
-# Usar Postman collection en tests/e2e/
+# Los tests de Bruno se ejecutan automáticamente en docker-compose.e2e.yml
+# O ejecutar manualmente: bruno run --env=dev
 ```
 
 ---
@@ -3749,6 +3754,13 @@ El proyecto incluye configuración Docker para desarrollo:
 - **Mailpit**: Servidor de email para desarrollo
 - **Redis Commander**: Interfaz web para Redis (puerto 18081)
 
+**Servicios de Testing E2E** (docker-compose.e2e.yml):
+- **Aplicación**: Servidor Go para tests E2E
+- **PostgreSQL**: Base de datos de pruebas
+- **Redis**: Cache de pruebas
+- **Mailpit**: Testing de email
+- **Bruno**: Ejecutor automatizado de tests E2E (ejecuta tests automáticamente)
+
 ### Comandos Docker
 
 ```bash
@@ -3758,8 +3770,9 @@ docker-compose -f docker/docker-compose.dev.yml up -d
 # Testing
 docker-compose -f docker/docker-compose.test.yml up -d
 
-# E2E Testing
+# E2E Testing (Bruno se ejecuta automáticamente)
 docker-compose -f docker/docker-compose.e2e.yml up -d
+# Los tests de Bruno se ejecutarán automáticamente una vez que la API esté lista
 ```
 
 ### Despliegue Independiente de Swagger
@@ -4110,7 +4123,7 @@ func TestCreateUser(t *testing.T) {
 #### Tipos de Tests
 1. **Unit Tests**: Casos de uso con mocks
 2. **Integration Tests**: Repositorios con BD real
-3. **E2E Tests**: Flujos completos con Postman
+3. **E2E Tests**: Flujos completos con Bruno
 
 ## Conclusión
 

@@ -1,0 +1,46 @@
+meta {
+  name: UserLogin
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseURL}}/auth/login
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~:
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:bearer {
+  token:
+}
+
+body:json {
+  {
+    "email": "{{userEmailOTPLogin}}",
+    "password": "{{strongPassword}}"
+  }
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Status code 204", function () {
+      expect(res.getStatus()).to.equal(204)
+  })
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
