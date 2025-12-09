@@ -24,6 +24,8 @@ var EsMessages = map[MessageKeysEnum]string{
 	"USER_DELETE_SUCCESS":            "Usuario eliminado con éxito.",
 	"INVALID_USER_ID":                "El ID de usuario es inválido.",
 	"INVALID_USER_ACTIVATION_TOKEN":  "El token de activación de usuario es inválido.",
+	"WELCOME_EMAIL_RESENT":           "El correo de bienvenida ha sido reenviado con éxito.",
+	"USER_ALREADY_VERIFIED":          "El usuario ya está verificado.",
 
 	"PASSWORD_REQUIRED":                      "La contraseña es requerida.",
 	"PASSWORD_IS_SHORT":                      "La contraseña es demasiado corta.",
@@ -42,6 +44,7 @@ var EsMessages = map[MessageKeysEnum]string{
 	"INVALID_JWT_TOKEN":            "Token JWT inválido.",
 	"OTP_LOGIN_ENABLED":            "El inicio de sesión OTP está habilitado para este usuario. Por favor, un código OTP ha sido enviado a tu correo electrónico o teléfono.",
 	"INVALID_OTP":                  "El código OTP proporcionado es inválido. Está usado, expirado o es incorrecto.",
+	"LOGIN_MAX_ATTEMPTS_EXCEEDED":  "Demasiados intentos de inicio de sesión fallidos. Por favor, inténtalo de nuevo más tarde.",
 
 	"INVALID_EMAIL":    "El correo electrónico es inválido.",
 	"INVALID_PASSWORD": "La contraseña es inválida.",

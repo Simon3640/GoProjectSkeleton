@@ -1,6 +1,6 @@
 package templates
 
-import "gormgoskeleton/src/application/shared/locales"
+import "github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 
 type TemplateKeysEnum string
 

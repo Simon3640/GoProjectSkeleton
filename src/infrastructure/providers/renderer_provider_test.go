@@ -3,7 +3,7 @@ package providers
 import (
 	"testing"
 
-	"gormgoskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 
 	"github.com/stretchr/testify/assert"
 )

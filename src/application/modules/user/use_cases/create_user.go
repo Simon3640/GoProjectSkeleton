@@ -1,19 +1,20 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
 	"strings"
 
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/locales/messages"
-	"gormgoskeleton/src/application/shared/status"
-	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// CreateUserUseCase is a use case that creates a user
 type CreateUserUseCase struct {
 	appMessages *locales.Locale
 	log         contractsProviders.ILoggerProvider
@@ -23,12 +24,14 @@ type CreateUserUseCase struct {
 
 var _ usecase.BaseUseCase[dtos.UserCreate, models.User] = (*CreateUserUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *CreateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
 	}
 }
 
+// Execute executes the use case
 func (uc *CreateUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input dtos.UserCreate,
@@ -78,6 +81,7 @@ func (uc *CreateUserUseCase) validate(
 	}
 }
 
+// NewCreateUserUseCase creates a new create user use case
 func NewCreateUserUseCase(
 	log contractsProviders.ILoggerProvider,
 	repo contracts_repositories.IUserRepository,

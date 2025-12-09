@@ -1,21 +1,23 @@
-package user_pipes
+// Package userpipes provides pipes for user use cases
+package userpipes
 
 import (
 	"context"
 
-	usecases_user "gormgoskeleton/src/application/modules/user/use_cases"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/locales"
-	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
+	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// NewCreateUserPipe creates a new create user pipe
 func NewCreateUserPipe(
 	ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	create_user_password_uc *usecases_user.CreateUserAndPasswordUseCase,
-	create_user_send_email_uc *usecases_user.CreateUserSendEmailUseCase,
+	createUserPasswordUC *userusecases.CreateUserAndPasswordUseCase,
+	createUserSendEmailUseCase *userusecases.CreateUserSendEmailUseCase,
 ) *usecase.DAG[dtos.UserAndPasswordCreate, models.User] {
-	dag := usecase.NewDag(usecase.NewStep(create_user_password_uc), locale, ctx)
-	return usecase.Then(dag, usecase.NewStep(create_user_send_email_uc))
+	dag := usecase.NewDag(usecase.NewStep(createUserPasswordUC), locale, ctx)
+	return usecase.Then(dag, usecase.NewStep(createUserSendEmailUseCase))
 }

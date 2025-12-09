@@ -1,0 +1,43 @@
+FROM golang:1.25.5-alpine AS builder
+
+# Alpine
+RUN apk add --no-cache git build-base
+
+WORKDIR /app
+
+# Copy and download dependencies from docs module
+COPY ./src/infrastructure/docs/go.mod ./src/infrastructure/docs/go.sum ./
+RUN go mod download
+
+COPY ./src/infrastructure/docs/config ./config
+COPY ./src/infrastructure/docs/main.go ./main.go
+COPY ./src/infrastructure/handlers ./handlers
+COPY .air.swagger.toml ./.air.swagger.toml
+
+# Copy models and dto to docs module
+COPY ./src/domain/models ./models
+COPY ./src/application/shared/DTOs ./DTOs
+
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+
+RUN swag init -g main.go -o swagger
+
+RUN go build -gcflags 'all=-N -l' -o /app/tmp/swagger-server ./main.go
+
+FROM golang:1.25.5-alpine
+
+WORKDIR /app
+
+# Copy the built binary
+COPY --from=builder /app/tmp/swagger-server ./swagger-server
+
+# Copy generated swagger files
+COPY --from=builder /app/swagger ./swagger
+
+# Copy config directory
+COPY --from=builder /app/config ./config
+
+EXPOSE 8081
+
+# Run the Swagger server
+CMD ["./swagger-server"]

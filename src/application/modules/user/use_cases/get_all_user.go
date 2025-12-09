@@ -1,22 +1,23 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
 	"time"
 
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	"gormgoskeleton/src/application/shared/guards"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/locales/messages"
-	"gormgoskeleton/src/application/shared/settings"
-	"gormgoskeleton/src/application/shared/status"
-	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
-	domain_utils "gormgoskeleton/src/domain/utils"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
 )
 
+// GetAllUserUseCase is a use case that gets all users
 type GetAllUserUseCase struct {
 	usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], dtos.UserMultiResponse]
 	log   contractsProviders.ILoggerProvider
@@ -26,12 +27,14 @@ type GetAllUserUseCase struct {
 
 var _ usecase.BaseUseCase[domain_utils.QueryPayloadBuilder[models.User], dtos.UserMultiResponse] = (*GetAllUserUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.Locale = locale
 	}
 }
 
+// Execute executes the use case
 func (uc *GetAllUserUseCase) Execute(
 	ctx context.Context,
 	locale locales.LocaleTypeEnum,
@@ -119,6 +122,7 @@ func (uc *GetAllUserUseCase) buildMultiRespose(data []models.User, total int64, 
 	return response
 }
 
+// NewGetAllUserUseCase creates a new get all user use case
 func NewGetAllUserUseCase(
 	log contractsProviders.ILoggerProvider,
 	repo contracts_repositories.IUserRepository,

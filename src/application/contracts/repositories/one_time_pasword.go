@@ -1,9 +1,9 @@
 package contracts_repositories
 
 import (
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	application_errors "gormgoskeleton/src/application/shared/errors"
-	"gormgoskeleton/src/domain/models"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type IOneTimePasswordRepository interface {

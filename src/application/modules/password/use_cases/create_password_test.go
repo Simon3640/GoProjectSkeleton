@@ -5,12 +5,13 @@ import (
 	"testing"
 	"time"
 
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	app_context "gormgoskeleton/src/application/shared/context"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/mocks"
-	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
-	"gormgoskeleton/src/domain/models"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,9 +23,9 @@ func TestCreatePasswordUseCase(t *testing.T) {
 
 	actor := dtomocks.UserWithRole
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testPasswordRepository := new(mocks.MockPasswordRepository)
-	testHashProvider := new(mocks.MockHashProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testHashProvider := new(providersmocks.MockHashProvider)
 	testPassword := dtos.PasswordCreateNoHash{
 		UserID:           actor.ID,
 		NoHashedPassword: "TestPassword123!",

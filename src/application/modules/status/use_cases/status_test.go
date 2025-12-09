@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/locales/messages"
-	"gormgoskeleton/src/application/shared/mocks"
-	"gormgoskeleton/src/domain/models"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -18,8 +18,8 @@ func TestStatusUseCase(t *testing.T) {
 
 	ctx := context.Background()
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testStatusProvider := new(mocks.MockStatusProvider)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testStatusProvider := new(providersmocks.MockStatusProvider)
 	testTime := time.Now()
 	testStatusProvider.On(
 		"Get",

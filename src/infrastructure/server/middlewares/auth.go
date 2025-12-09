@@ -2,14 +2,15 @@ package middlewares
 
 import (
 	"context"
-	api "gormgoskeleton/gin"
-	"gormgoskeleton/src/application/modules/auth"
-	app_context "gormgoskeleton/src/application/shared/context"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/domain/models"
-	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	"gormgoskeleton/src/infrastructure/providers"
-	"gormgoskeleton/src/infrastructure/repositories"
+
+	api "github.com/simon3640/goprojectskeleton/gin"
+	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,9 +19,9 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
 
-		uc_result := auth.NewAuthUserUseCase(
+		uc_result := authusecases.NewAuthUserUseCase(
 			providers.Logger,
-			repositories.NewUserRepository(database.DB, providers.Logger),
+			repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
 		).Execute(c, locales.EN_US, token)
 

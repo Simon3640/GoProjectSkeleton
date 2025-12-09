@@ -1,16 +1,18 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
-	dtos "gormgoskeleton/src/application/shared/DTOs"
-	app_context "gormgoskeleton/src/application/shared/context"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/mocks"
-	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
-	"gormgoskeleton/src/application/shared/status"
-	"gormgoskeleton/src/domain/models"
 	"testing"
 	"time"
+
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -23,19 +25,19 @@ func TestUpdateUserUseCase(t *testing.T) {
 	actor := dtomocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
 	name := "Update"
 	testUser := dtos.UserUpdate{
-		UserUpdateBase: dtos.UserUpdateBase{Name: &name},
+		UserUpdateBase: models.UserUpdateBase{Name: &name},
 		ID:             actor.ID,
 	}
-
+	userStatus := models.UserStatusActive
 	testUserRepository.On("Update", testUser.ID, testUser).Return(&models.User{
 		UserBase: models.UserBase{Name: "Update",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
-			Status: "active"},
+			Status: &userStatus},
 		DBBaseModel: models.DBBaseModel{
 			ID:        actor.ID,
 			CreatedAt: time.Now(),
@@ -62,11 +64,11 @@ func TestUpdateUserUseCase_DifferentUser(t *testing.T) {
 	actor := dtomocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
 	name := "Update"
 	testUser := dtos.UserUpdate{
-		UserUpdateBase: dtos.UserUpdateBase{Name: &name},
+		UserUpdateBase: models.UserUpdateBase{Name: &name},
 		ID:             actor.ID + 1,
 	}
 

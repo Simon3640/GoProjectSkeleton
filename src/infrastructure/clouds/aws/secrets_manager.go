@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	appconfig "gormgoskeleton/src/infrastructure/config"
+	appconfig "github.com/simon3640/goprojectskeleton/src/infrastructure/config"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"

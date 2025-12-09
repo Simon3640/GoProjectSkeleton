@@ -1,9 +1,10 @@
 package dtos
 
 import (
-	"gormgoskeleton/src/application/shared/settings"
-	"gormgoskeleton/src/domain/models"
 	"time"
+
+	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type OneTimeTokenCreate struct {
@@ -35,7 +36,7 @@ func NewOneTimeTokenCreate(userID uint, purpose models.OneTimeTokenPurpose, hash
 }
 
 type OneTimeTokenUpdate struct {
-	IsUsed bool `json:"is_used,omitempty"`
+	IsUsed bool `json:"isUsed,omitempty"`
 	ID     uint `json:"id"`
 }
 

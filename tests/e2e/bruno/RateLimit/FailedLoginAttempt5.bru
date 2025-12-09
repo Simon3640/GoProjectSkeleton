@@ -1,0 +1,32 @@
+meta {
+  name: FailedLoginAttempt5
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseURL}}/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+body:json {
+  {
+    "email": "{{rateLimitUserEmail}}",
+    "password": "wrongPassword5"
+  }
+}
+
+script:post-response {
+  test("Status code is 404 (Invalid credentials)", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

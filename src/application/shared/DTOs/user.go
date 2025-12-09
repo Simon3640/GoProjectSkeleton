@@ -1,6 +1,6 @@
 package dtos
 
-import "gormgoskeleton/src/domain/models"
+import "github.com/simon3640/goprojectskeleton/src/domain/models"
 
 type UserCreate struct {
 	models.UserBase
@@ -8,13 +8,7 @@ type UserCreate struct {
 
 // cant create admin role
 func (u *UserCreate) Validate() []string {
-	// super Validate
-	u.Status = "pending" // default status
-	errs := u.UserBase.Validate()
-	if u.RoleID == 1 { // TODO: replace with constant
-		errs = append(errs, "admin role is not allowed")
-	}
-	return errs
+	return u.ValidateCreate()
 }
 
 type UserAndPasswordCreate struct {
@@ -30,29 +24,13 @@ func (u *UserAndPasswordCreate) Validate() []string {
 	return errs
 }
 
-type UserUpdateBase struct {
-	Name     *string `json:"name"`
-	Email    *string `json:"email"`
-	Phone    *string `json:"phone"`
-	Status   *string `json:"status"`
-	RoleID   *uint   `json:"role_id,omitempty"`
-	OTPLogin *bool   `json:"otp_login,omitempty"`
-}
-
 type UserUpdate struct {
-	UserUpdateBase
+	models.UserUpdateBase
 	ID uint `json:"id"`
 }
 
 func (u UserUpdate) Validate() []string {
-	var errs []string
-	if u.Email != nil && !models.IsValidEmail(*u.Email) {
-		errs = append(errs, "email is invalid")
-	}
-	if u.RoleID != nil && *u.RoleID == 1 { // TODO: replace with constant
-		errs = append(errs, "admin role is not allowed")
-	}
-	return errs
+	return u.UserUpdateBase.Validate()
 }
 
 func (u UserUpdate) GetUserID() uint {
@@ -61,6 +39,24 @@ func (u UserUpdate) GetUserID() uint {
 
 type UserActivate struct {
 	Token string `json:"token"`
+}
+
+// ResendWelcomeEmailRequest is the request for the resend welcome email use case
+type ResendWelcomeEmailRequest struct {
+	Email string `json:"email"`
+}
+
+// Validate validates the resend welcome email request
+// returns a list of errors if the request is invalid
+func (r *ResendWelcomeEmailRequest) Validate() []string {
+	var errs []string
+	if r.Email == "" {
+		errs = append(errs, "email is required")
+	}
+	if !models.IsValidEmail(r.Email) {
+		errs = append(errs, "email is invalid")
+	}
+	return errs
 }
 
 type UserMultiResponse = MultipleResponse[models.User]

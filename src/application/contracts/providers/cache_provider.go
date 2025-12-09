@@ -1,8 +1,9 @@
 package contractsproviders
 
 import (
-	application_errors "gormgoskeleton/src/application/shared/errors"
 	"time"
+
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 )
 
 type ICacheProvider interface {

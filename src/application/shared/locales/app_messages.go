@@ -1,7 +1,7 @@
 package locales
 
 import (
-	messages "gormgoskeleton/src/application/shared/locales/messages"
+	messages "github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 )
 
 type LocaleTypeEnum string

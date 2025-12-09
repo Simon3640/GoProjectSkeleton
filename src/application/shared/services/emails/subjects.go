@@ -1,6 +1,6 @@
 package email_service
 
-import "gormgoskeleton/src/application/shared/locales"
+import "github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 
 type SubjectKeysEnum string
 

@@ -6,7 +6,7 @@ terraform {
     bucket         = "goprojectskeleton-terraform-state"
     key            = "dev/terraform.tfstate"
     region         = "us-east-1"
-    dynamodb_table = "terraform-locks"  # For state locking (equivalent to Azure blob lease)
+    dynamodb_table = "terraform-locks" # For state locking (equivalent to Azure blob lease)
     encrypt        = true
   }
 }

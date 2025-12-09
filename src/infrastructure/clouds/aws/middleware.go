@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"strings"
 
-	"gormgoskeleton/src/application/modules/auth"
-	app_context "gormgoskeleton/src/application/shared/context"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/status"
-	database "gormgoskeleton/src/infrastructure/database/gormgoskeleton"
-	"gormgoskeleton/src/infrastructure/handlers"
-	"gormgoskeleton/src/infrastructure/providers"
-	"gormgoskeleton/src/infrastructure/repositories"
+	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 )
 
 // AuthMiddleware validates JWT tokens from the Authorization header and injects user context.
@@ -27,9 +27,9 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			locale = "en-US"
 		}
 
-		ucResult := auth.NewAuthUserUseCase(
+		ucResult := authusecases.NewAuthUserUseCase(
 			providers.Logger,
-			repositories.NewUserRepository(database.DB, providers.Logger),
+			repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
 		).Execute(r.Context(), locales.LocaleTypeEnum(locale), token)
 
@@ -154,6 +154,7 @@ func getStatusMapping() map[status.ApplicationStatusEnum]int {
 		status.Unauthorized:              401,
 		status.NotFound:                  404,
 		status.Conflict:                  409,
+		status.TooManyRequests:           429,
 		status.InternalError:             500,
 		status.NotImplemented:            501,
 		status.ProviderError:             502,
@@ -171,9 +172,9 @@ func LambdaAuthMiddleware(event interface{}) (context.Context, *LambdaResponse) 
 
 	ctx := context.Background()
 
-	ucResult := auth.NewAuthUserUseCase(
+	ucResult := authusecases.NewAuthUserUseCase(
 		providers.Logger,
-		repositories.NewUserRepository(database.DB, providers.Logger),
+		repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		providers.JWTProviderInstance,
 	).Execute(ctx, locales.LocaleTypeEnum(locale), token)
 
@@ -267,9 +268,9 @@ func HandleLambdaEventWithOptionalAuth(
 
 	// Only validate if token is present
 	if token != "" && strings.TrimSpace(token) != "" {
-		ucResult := auth.NewAuthUserUseCase(
+		ucResult := authusecases.NewAuthUserUseCase(
 			providers.Logger,
-			repositories.NewUserRepository(database.DB, providers.Logger),
+			repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
 		).Execute(ctx, locales.LocaleTypeEnum(locale), token)
 

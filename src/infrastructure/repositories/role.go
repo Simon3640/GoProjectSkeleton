@@ -1,10 +1,10 @@
 package repositories
 
 import (
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
-	"gormgoskeleton/src/domain/models"
-	dbModels "gormgoskeleton/src/infrastructure/database/gormgoskeleton/models"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
 
 	"gorm.io/gorm"
 )

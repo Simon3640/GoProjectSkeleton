@@ -1,22 +1,23 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
 
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	contracts_repositories "gormgoskeleton/src/application/contracts/repositories"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/locales/messages"
-	"gormgoskeleton/src/application/shared/services"
-	email_service "gormgoskeleton/src/application/shared/services/emails"
-	email_models "gormgoskeleton/src/application/shared/services/emails/models"
-	"gormgoskeleton/src/application/shared/settings"
-	"gormgoskeleton/src/application/shared/status"
-	"gormgoskeleton/src/application/shared/templates"
-	usecase "gormgoskeleton/src/application/shared/use_case"
-	"gormgoskeleton/src/domain/models"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
+	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// CreateUserSendEmailUseCase is a use case that sends an email to a user
 type CreateUserSendEmailUseCase struct {
 	appMessages *locales.Locale
 	log         contractsProviders.ILoggerProvider
@@ -29,12 +30,14 @@ type CreateUserSendEmailUseCase struct {
 
 var _ usecase.BaseUseCase[models.User, models.User] = (*CreateUserSendEmailUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *CreateUserSendEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
 	}
 }
 
+// Execute executes the use case
 func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input models.User,
@@ -97,6 +100,7 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 	return result
 }
 
+// NewCreateUserSendEmailUseCase creates a new create user send email use case
 func NewCreateUserSendEmailUseCase(
 	log contractsProviders.ILoggerProvider,
 	hashProvider contractsProviders.IHashProvider,

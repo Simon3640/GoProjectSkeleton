@@ -2,13 +2,14 @@ package providers
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"time"
 
-	contractsProviders "gormgoskeleton/src/application/contracts/providers"
-	application_errors "gormgoskeleton/src/application/shared/errors"
-	"gormgoskeleton/src/application/shared/locales/messages"
-	"gormgoskeleton/src/application/shared/status"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -19,6 +20,7 @@ type RedisCacheProvider struct {
 
 var _ contractsProviders.ICacheProvider = &RedisCacheProvider{}
 
+// NewRedisCacheProvider creates a new Redis cache provider
 func NewRedisCacheProvider(addr string, password string, db int) *RedisCacheProvider {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     addr,
@@ -27,6 +29,17 @@ func NewRedisCacheProvider(addr string, password string, db int) *RedisCacheProv
 	})
 
 	return &RedisCacheProvider{client: rdb}
+}
+
+// NewRedisCacheProviderTLS creates a new Redis cache provider with TLS enabled
+func NewRedisCacheProviderTLS(addr, password string, db int) *RedisCacheProvider {
+	rdb := NewRedisCacheProvider(addr, password, db)
+
+	rdb.client.Options().TLSConfig = &tls.Config{
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: true,
+	}
+	return rdb
 }
 
 func (r *RedisCacheProvider) Set(key string, value any, ttl time.Duration) *application_errors.ApplicationError {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/status"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 )
 
 type DagStep[I any, O any] struct {

@@ -1,16 +1,17 @@
-package usecases_user
+package userusecases
 
 import (
 	"context"
 	"testing"
 	"time"
 
-	app_context "gormgoskeleton/src/application/shared/context"
-	"gormgoskeleton/src/application/shared/locales"
-	"gormgoskeleton/src/application/shared/mocks"
-	dtomocks "gormgoskeleton/src/application/shared/mocks/dtos"
-	"gormgoskeleton/src/application/shared/status"
-	"gormgoskeleton/src/domain/models"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,15 +23,15 @@ func TestGetUserUseCase(t *testing.T) {
 	actor := dtomocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
 	var testId = actor.ID
-
+	userStatus := models.UserStatusActive
 	testUserRepository.On("GetByID", testId).Return(&models.User{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
-			Status: "active"},
+			Status: &userStatus},
 		DBBaseModel: models.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
@@ -56,15 +57,15 @@ func TestGetUserUseCase_DifferentUser(t *testing.T) {
 	actor := dtomocks.UserWithRole
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
-	testLogger := new(mocks.MockLoggerProvider)
-	testUserRepository := new(mocks.MockUserRepository)
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testUserRepository := new(repositoriesmocks.MockUserRepository)
 	var testId = actor.ID + 1 // Different user ID
-
+	userStatus := models.UserStatusActive
 	testUserRepository.On("GetByID", testId).Return(&models.User{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
-			Status: "active"},
+			Status: &userStatus},
 		DBBaseModel: models.DBBaseModel{
 			ID:        2,
 			CreatedAt: time.Now(),

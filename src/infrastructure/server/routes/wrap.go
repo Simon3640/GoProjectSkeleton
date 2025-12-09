@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"gormgoskeleton/src/infrastructure/handlers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
 
 	"github.com/gin-gonic/gin"
 )

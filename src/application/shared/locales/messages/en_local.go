@@ -24,6 +24,8 @@ var EnMessages = map[MessageKeysEnum]string{
 	"USER_DELETE_SUCCESS":            "User deleted successfully.",
 	"INVALID_USER_ID":                "Invalid user ID.",
 	"INVALID_USER_ACTIVATION_TOKEN":  "Invalid user activation token.",
+	"WELCOME_EMAIL_RESENT":           "Welcome email has been resent successfully.",
+	"USER_ALREADY_VERIFIED":          "User is already verified.",
 
 	"PASSWORD_REQUIRED":                      "Password is required.",
 	"PASSWORD_IS_SHORT":                      "Password is too short.",
@@ -42,6 +44,7 @@ var EnMessages = map[MessageKeysEnum]string{
 	"INVALID_JWT_TOKEN":            "Invalid JWT token.",
 	"OTP_LOGIN_ENABLED":            "OTP login is enabled for this user. An OTP code has been sent to your email or phone.",
 	"INVALID_OTP":                  "The provided OTP code is invalid. Is used, expired or incorrect.",
+	"LOGIN_MAX_ATTEMPTS_EXCEEDED":  "Too many failed login attempts. Please try again later.",
 
 	"INVALID_EMAIL":    "Invalid email.",
 	"INVALID_PASSWORD": "Invalid password.",
