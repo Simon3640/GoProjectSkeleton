@@ -1,5 +1,5 @@
 services:
-  goprojectskeleton-e2e-tests:
+  api:
     build:
       context: ..
       dockerfile: docker/dockerfile.e2e
@@ -60,18 +60,19 @@ services:
       interval: 1s
       retries: 5
 
-  newman:
-    image: postman/newman:alpine
-    env_file:
-      - ../test.env
-    depends_on:
-      goprojectskeleton-e2e-tests:
-        condition: service_healthy
+  bruno:
+    build:
+      context: ..
+      dockerfile: docker/dockerfile.bruno
     networks:
       - goprojectskeleton-e2e-tests
     volumes:
-      - ../tests/e2e:/etc/newman
-    command: ["run", "collection.json", "-e", "environment.json"]
+      - ../tests/e2e/bruno:/etc/bruno
+    depends_on:
+      api:
+        condition: service_healthy
+    working_dir: /etc/bruno
+    command: ["run", "--env=dev"]
 
 networks:
   goprojectskeleton-e2e-tests:
