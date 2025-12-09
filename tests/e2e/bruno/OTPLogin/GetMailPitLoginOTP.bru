@@ -1,0 +1,44 @@
+meta {
+  name: GetMailPitLoginOTP
+  type: http
+  seq: 7
+}
+
+get {
+  url: http://{{mailhogHost}}:8025/api/v1/message/{{lastMessageID}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Response status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  const response = res.getBody();
+
+  if (!response || !response.Text) {
+    console.warn("Response body or Text property is missing");
+    return;
+  }
+
+  let match = response.Text.match(/\b\d{6}\b/);
+  console.log(match);
+
+  if (match && match[0]) {
+      bru.setEnvVar("loginOTP", match[0]);
+  } else {
+      console.warn("Token not found in response Text.");
+  }
+
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

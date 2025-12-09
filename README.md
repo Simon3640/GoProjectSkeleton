@@ -120,7 +120,7 @@ The core philosophy of **GoProjectSkeleton** is that the **domain** and **applic
 - ✅ **Docker Registry Ready** - Swagger can be built and deployed independently
 - ✅ **Complete Testing** - Unit, integration, and E2E tests
 - ✅ **Complete Mocks** - Repository and provider mocks for testing
-- ✅ **Postman Collection** - Ready-to-use collection for E2E testing
+- ✅ **Bruno Collection** - Ready-to-use collection for E2E testing
 
 #### 🛠️ Development Environment
 - ✅ **Complete IDE Configuration** - Pre-configured VS Code/IDE settings for debugging
@@ -630,11 +630,11 @@ Adding new features is simple and doesn't affect existing code:
 4. Create repository in `infrastructure/repositories/`
 5. Add handler in `infrastructure/handlers/`
 
-### Patrones de Diseño Implementados
+### Implemented Design Patterns
 
 #### 1. Repository Pattern
 
-Abstrae el acceso a datos, permitiendo cambiar de base de datos sin afectar la lógica de negocio.
+Abstracts data access, allowing database changes without affecting business logic.
 
 ```go
 type IUserRepository interface {
@@ -647,7 +647,7 @@ type IUserRepository interface {
 
 #### 2. Use Case Pattern
 
-Encapsula la lógica de negocio en casos de uso reutilizables y testables.
+Encapsulates business logic in reusable and testable use cases.
 
 ```go
 type CreateUserUseCase struct {
@@ -656,21 +656,21 @@ type CreateUserUseCase struct {
 }
 
 func (uc *CreateUserUseCase) Execute(ctx context.Context, locale LocaleTypeEnum, input UserCreate) *UseCaseResult[User] {
-    // Lógica de negocio aquí
+    // Business logic here
 }
 ```
 
 #### 3. DAG (Directed Acyclic Graph) Pattern
 
-Orquesta múltiples casos de uso en secuencia o paralelo.
+Orchestrates multiple use cases sequentially or in parallel.
 
 ```go
-// Ejecución secuencial
+// Sequential execution
 dag := NewDag(NewStep(createUserUC), locale, ctx)
 dag = Then(dag, NewStep(sendEmailUC))
 result := dag.Execute(input)
 
-// Ejecución paralela
+// Parallel execution
 parallelDag := NewUseCaseParallelDag[Input, Output]()
 parallelDag.Usecases = []BaseUseCase{uc1, uc2, uc3}
 result := parallelDag.Execute(ctx, locale, input)
@@ -678,7 +678,7 @@ result := parallelDag.Execute(ctx, locale, input)
 
 #### 4. Factory Pattern
 
-Crea instancias de casos de uso con dependencias inyectadas.
+Creates use case instances with injected dependencies.
 
 ```go
 func NewCreateUserUseCase(
@@ -694,16 +694,16 @@ func NewCreateUserUseCase(
 
 #### 5. Strategy Pattern
 
-Permite intercambiar implementaciones mediante interfaces (providers).
+Allows swapping implementations through interfaces (providers).
 
 ```go
-// Interfaz
+// Interface
 type IHashProvider interface {
     Hash(password string) (string, error)
     Compare(hashed, plain string) bool
 }
 
-// Implementaciones intercambiables
+// Interchangeable implementations
 type BcryptHashProvider struct {}
 type Argon2HashProvider struct {}
 ```
@@ -712,149 +712,149 @@ type Argon2HashProvider struct {}
 
 ## Scalability and Serverless
 
-### Capacidades de Escalabilidad
+### Scalability Capabilities
 
-**GoProjectSkeleton** está diseñado para escalar tanto **horizontalmente** como **verticalmente**, y puede migrarse fácilmente a arquitecturas **serverless** o **monolito serverless**.
+**GoProjectSkeleton** is designed to scale both **horizontally** and **vertically**, and can easily migrate to **serverless** or **serverless monolith** architectures.
 
-### Escalabilidad Horizontal
+### Horizontal Scalability
 
-#### Características que Facilitan la Escalabilidad Horizontal
+#### Features that Facilitate Horizontal Scalability
 
 1. **Stateless Design**
-   - La aplicación no mantiene estado en memoria
-   - Cada request es independiente
-   - Perfecto para load balancers
+   - The application does not maintain state in memory
+   - Each request is independent
+   - Perfect for load balancers
 
-2. **Cache Distribuido (Redis)**
-   - Cache compartido entre instancias
-   - No hay dependencias de sesión local
+2. **Distributed Cache (Redis)**
+   - Cache shared between instances
+   - No local session dependencies
 
-3. **Base de Datos Externa**
-   - PostgreSQL independiente de la aplicación
-   - Múltiples instancias pueden conectarse
+3. **External Database**
+   - PostgreSQL independent of the application
+   - Multiple instances can connect
 
-4. **Sin Estado de Sesión**
-   - Autenticación basada en JWT (stateless)
-   - No requiere sticky sessions
+4. **No Session State**
+   - JWT-based authentication (stateless)
+   - No sticky sessions required
 
-#### Implementación para Escalabilidad Horizontal
+#### Implementation for Horizontal Scalability
 
 ```go
-// Cada handler es stateless
+// Each handler is stateless
 func CreateUser(ctx HandlerContext) {
-    // No hay estado compartido
-    // Cada request es independiente
-    // Puede ejecutarse en cualquier instancia
+    // No shared state
+    // Each request is independent
+    // Can run on any instance
 }
 ```
 
-### Escalabilidad Vertical
+### Vertical Scalability
 
-#### Optimizaciones Implementadas
+#### Implemented Optimizations
 
-1. **Goroutines Nativas**
-   - Concurrencia eficiente de Go
-   - Múltiples requests procesados simultáneamente
+1. **Native Goroutines**
+   - Efficient Go concurrency
+   - Multiple requests processed simultaneously
 
 2. **Connection Pooling**
-   - Reutilización de conexiones a BD
-   - Configuración optimizada de GORM
+   - Database connection reuse
+   - Optimized GORM configuration
 
-3. **Cache Inteligente**
-   - Reduce consultas a base de datos
-   - TTL configurable
+3. **Smart Cache**
+   - Reduces database queries
+   - Configurable TTL
 
 4. **Query Optimization**
-   - Filtros y ordenamiento eficientes
-   - Paginación para control de memoria
+   - Efficient filters and sorting
+   - Pagination for memory control
 
-### Migración a Monolito Serverless
+### Migration to Serverless Monolith
 
-**GoProjectSkeleton** puede migrarse fácilmente a una arquitectura **monolito serverless** (como AWS Lambda, Google Cloud Functions, Azure Functions) gracias a:
+**GoProjectSkeleton** can easily migrate to a **serverless monolith** architecture (like AWS Lambda, Google Cloud Functions, Azure Functions) thanks to:
 
-#### 1. Arquitectura Desacoplada
+#### 1. Decoupled Architecture
 
 ```go
-// La lógica de negocio no depende de Gin
+// Business logic does not depend on Gin
 type CreateUserUseCase struct {
-    // No hay referencias a HTTP
-    // Solo interfaces
+    // No HTTP references
+    // Only interfaces
 }
 ```
 
-#### 2. Inicialización Modular
+#### 2. Modular Initialization
 
 ```go
-// container.go - Inicialización separada
+// container.go - Separate initialization
 func Initialize() {
-    // Configuración
-    // Base de datos
+    // Configuration
+    // Database
     // Providers
-    // Servicios
+    // Services
 }
 ```
 
-#### 3. Handlers Independientes
+#### 3. Independent Handlers
 
-Los handlers pueden adaptarse fácilmente a diferentes frameworks o entornos serverless:
+Handlers can easily adapt to different frameworks or serverless environments:
 
 ```go
-// Handler actual (Gin)
+// Current handler (Gin)
 func CreateUser(ctx HandlerContext) { ... }
 
-// Adaptación para Lambda
+// Lambda adaptation
 func CreateUserLambda(ctx context.Context, event APIGatewayEvent) (Response, error) {
-    // Misma lógica, diferente wrapper
+    // Same logic, different wrapper
 }
 ```
 
-#### 4. Sin Estado Global
+#### 4. No Global State
 
-- No hay variables globales de estado
-- Todo se pasa por contexto o inyección de dependencias
+- No global state variables
+- Everything is passed through context or dependency injection
 
-#### Pasos para Migración Serverless
+#### Steps for Serverless Migration
 
-1. **Extraer Lógica de Negocio**
+1. **Extract Business Logic**
    ```go
-   // Ya está hecho - los Use Cases son independientes
+   // Already done - Use Cases are independent
    ```
 
-2. **Crear Adapter para Serverless**
+2. **Create Serverless Adapter**
    ```go
    // lambda/handlers/user.go
    func CreateUserHandler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-       // Inicializar infraestructura
+       // Initialize infrastructure
        infrastructure.Initialize()
 
-       // Adaptar evento a DTO
+       // Adapt event to DTO
        var userCreate dtos.UserCreate
        json.Unmarshal([]byte(event.Body), &userCreate)
 
-       // Ejecutar caso de uso (mismo código)
+       // Execute use case (same code)
        ucResult := usecases_user.NewCreateUserUseCase(...).Execute(...)
 
-       // Adaptar respuesta
+       // Adapt response
        return adaptResponse(ucResult), nil
    }
    ```
 
-3. **Configurar Variables de Entorno**
-   - Usar el mismo sistema de configuración
-   - Adaptar a variables de entorno del proveedor cloud
+3. **Configure Environment Variables**
+   - Use the same configuration system
+   - Adapt to cloud provider environment variables
 
-4. **Mantener Misma Lógica**
-   - Los Use Cases no cambian
-   - Los Repositories no cambian
-   - Solo cambia la capa de infraestructura HTTP
+4. **Maintain Same Logic**
+   - Use Cases don't change
+   - Repositories don't change
+   - Only the HTTP infrastructure layer changes
 
-### Escalabilidad en Producción
+### Production Scalability
 
-#### Diagrama de Escalabilidad Horizontal
+#### Horizontal Scalability Diagram
 
 ```mermaid
 graph TB
-    subgraph Clients["Clientes"]
+    subgraph Clients["Clients"]
         Web[Web App]
         Mobile[Mobile App]
         API_Client[API Clients]
@@ -864,14 +864,14 @@ graph TB
         Nginx[Nginx/HAProxy<br/>Health Checks]
     end
 
-    subgraph AppInstances["Instancias de Aplicación"]
+    subgraph AppInstances["Application Instances"]
         App1[App Instance 1<br/>Stateless]
         App2[App Instance 2<br/>Stateless]
         App3[App Instance N<br/>Stateless]
     end
 
-    subgraph DataLayer["Capa de Datos"]
-        RedisCluster[(Redis Cluster<br/>Cache Distribuido)]
+    subgraph DataLayer["Data Layer"]
+        RedisCluster[(Redis Cluster<br/>Distributed Cache)]
         PGPrimary[(PostgreSQL<br/>Primary)]
         PGReplica1[(PostgreSQL<br/>Read Replica 1)]
         PGReplica2[(PostgreSQL<br/>Read Replica 2)]
@@ -909,51 +909,51 @@ graph TB
     style PGReplica2 fill:#fff9c4
 ```
 
-#### Configuración Recomendada
+#### Recommended Configuration
 
 1. **Load Balancer**
-   - Distribuir tráfico entre múltiples instancias
-   - Health checks en `/api/health-check`
+   - Distribute traffic among multiple instances
+   - Health checks at `/api/health-check`
 
-2. **Base de Datos**
-   - Read replicas para consultas
-   - Connection pooling optimizado
-   - Índices en columnas frecuentes
+2. **Database**
+   - Read replicas for queries
+   - Optimized connection pooling
+   - Indexes on frequent columns
 
 3. **Cache**
-   - Redis cluster para alta disponibilidad
-   - Estrategias de cache (cache-aside, write-through)
+   - Redis cluster for high availability
+   - Cache strategies (cache-aside, write-through)
 
 4. **Monitoring**
-   - Métricas de rendimiento
-   - Logging estructurado
-   - Alertas de errores
+   - Performance metrics
+   - Structured logging
+   - Error alerts
 
 ---
 
 ## AWS Serverless Deployment and Initialization
 
-### Arquitectura de Módulos Go para Serverless
+### Go Modules Architecture for Serverless
 
-**GoProjectSkeleton** utiliza una arquitectura de **múltiples módulos Go** para optimizar el despliegue en AWS Lambda. Cada función serverless tiene su propio módulo independiente que solo incluye las dependencias necesarias para ejecutarse.
+**GoProjectSkeleton** uses a **multiple Go modules** architecture to optimize deployment on AWS Lambda. Each serverless function has its own independent module that only includes the necessary dependencies to run.
 
-#### Estructura de Módulos
+#### Module Structure
 
 ```mermaid
 graph TB
-    subgraph RootModule["Módulo Raíz: goprojectskeleton"]
+    subgraph RootModule["Root Module: goprojectskeleton"]
         Domain[Domain Models]
         Application[Application Layer]
         Infrastructure[Infrastructure Core]
     end
 
-    subgraph AWSModule["Módulo AWS: goprojectskeleton/aws"]
+    subgraph AWSModule["AWS Module: goprojectskeleton/aws"]
         AWSInit[AWS Init]
         LambdaAdapter[Lambda Adapter]
         SecretsManager[Secrets Manager]
     end
 
-    subgraph FunctionModules["Módulos de Funciones"]
+    subgraph FunctionModules["Function Modules"]
         HealthCheck[health-check<br/>goprojectskeleton/functions/aws/status/health_check]
         AuthLogin[auth-login<br/>goprojectskeleton/functions/aws/auth/login]
         UserGet[user-get<br/>goprojectskeleton/functions/aws/user/get]
@@ -968,9 +968,9 @@ graph TB
     style FunctionModules fill:#fff9c4
 ```
 
-#### Resolución de Dependencias
+#### Dependency Resolution
 
-Cada función Lambda tiene su propio `go.mod` que utiliza **replace directives** para apuntar a los módulos locales:
+Each Lambda function has its own `go.mod` that uses **replace directives** to point to local modules:
 
 ```go
 // go.mod de una función Lambda
@@ -988,18 +988,18 @@ replace goprojectskeleton => ../../../../../../../..
 replace goprojectskeleton/aws => ../../../..
 ```
 
-**Ventajas de esta arquitectura:**
+**Advantages of this architecture:**
 
-1. **Optimización de Binarios**: Go solo compila el código que realmente se usa
-2. **Dependencias Mínimas**: Cada función solo incluye lo necesario
-3. **Tree Shaking Automático**: Go elimina código no utilizado en tiempo de compilación
-4. **Módulos Independientes**: Cada función puede evolucionar independientemente
+1. **Binary Optimization**: Go only compiles code that is actually used
+2. **Minimal Dependencies**: Each function only includes what's necessary
+3. **Automatic Tree Shaking**: Go removes unused code at compile time
+4. **Independent Modules**: Each function can evolve independently
 
-### Proceso de Generación y Compilación
+### Generation and Compilation Process
 
-#### 1. Generación de Funciones
+#### 1. Function Generation
 
-Las funciones Lambda se generan automáticamente desde `functions.json`:
+Lambda functions are automatically generated from `functions.json`:
 
 ```json
 {
@@ -1012,83 +1012,83 @@ Las funciones Lambda se generan automáticamente desde `functions.json`:
 }
 ```
 
-**Proceso de generación:**
+**Generation process:**
 
 ```mermaid
 sequenceDiagram
-    participant Dev as Desarrollador
+    participant Dev as Developer
     participant Gen as Generator
     participant Template as Templates
-    participant Func as Función Lambda
+    participant Func as Lambda Function
 
     Dev->>Gen: GenerateFunctions(functions.json)
-    Gen->>Gen: Lee functions.json
-    loop Para cada función
-        Gen->>Template: Carga main.go.tmpl
-        Gen->>Template: Carga go.mod.tmpl
-        Gen->>Func: Genera main.go
-        Gen->>Func: Genera go.mod
-        Gen->>Func: Crea estructura de directorios
+    Gen->>Gen: Reads functions.json
+    loop For each function
+        Gen->>Template: Loads main.go.tmpl
+        Gen->>Template: Loads go.mod.tmpl
+        Gen->>Func: Generates main.go
+        Gen->>Func: Generates go.mod
+        Gen->>Func: Creates directory structure
     end
-    Gen-->>Dev: ✅ Funciones generadas
+    Gen-->>Dev: ✅ Functions generated
 ```
 
-**Estructura generada:**
+**Generated structure:**
 
 ```
 tmp/
 └── status/
     └── health_check/
-        ├── main.go          # Handler Lambda generado
-        ├── go.mod           # Módulo independiente
-        └── bin/             # Directorio de compilación
-            ├── bootstrap    # Binario compilado
-            └── src/         # Templates copiados
+        ├── main.go          # Generated Lambda handler
+        ├── go.mod           # Independent module
+        └── bin/             # Compilation directory
+            ├── bootstrap    # Compiled binary
+            └── src/         # Copied templates
 ```
 
-#### 2. Compilación Optimizada
+#### 2. Optimized Compilation
 
-Cada función se compila con optimizaciones específicas para Lambda:
+Each function is compiled with Lambda-specific optimizations:
 
 ```bash
-# Compilación desde el directorio de la función
+# Compilation from function directory
 cd tmp/status/health_check
 go build -o bin/bootstrap \
     -tags lambda.norpc \
     -ldflags="-s -w" \
     main.go
 
-# Variables de entorno de compilación
+# Compilation environment variables
 GOOS=linux
 GOARCH=amd64
 CGO_ENABLED=0
 ```
 
-**Optimizaciones aplicadas:**
+**Applied optimizations:**
 
-- **`-tags lambda.norpc`**: Desactiva RPC de Lambda (reduce tamaño)
-- **`-ldflags="-s -w"`**: Elimina símbolos de debug (reduce tamaño)
-- **`CGO_ENABLED=0`**: Compilación estática (sin dependencias C)
-- **`GOOS=linux`**: Binario para Linux (entorno Lambda)
-- **`GOARCH=amd64`**: Arquitectura x86_64
+- **`-tags lambda.norpc`**: Disables Lambda RPC (reduces size)
+- **`-ldflags="-s -w"`**: Removes debug symbols (reduces size)
+- **`CGO_ENABLED=0`**: Static compilation (no C dependencies)
+- **`GOOS=linux`**: Linux binary (Lambda environment)
+- **`GOARCH=amd64`**: x86_64 architecture
 
-#### 3. Tree Shaking y Eliminación de Código Muerto
+#### 3. Tree Shaking and Dead Code Elimination
 
-Go realiza **tree shaking automático** durante la compilación:
+Go performs **automatic tree shaking** during compilation:
 
 ```mermaid
 graph LR
-    subgraph SourceCode["Código Fuente"]
-        Used[✅ Código Usado<br/>handlers.GetHealthCheck<br/>aws.InitializeInfrastructure]
-        Unused[❌ Código No Usado<br/>handlers.CreateUser<br/>handlers.UpdateUser<br/>handlers.DeleteUser]
+    subgraph SourceCode["Source Code"]
+        Used[✅ Used Code<br/>handlers.GetHealthCheck<br/>aws.InitializeInfrastructure]
+        Unused[❌ Unused Code<br/>handlers.CreateUser<br/>handlers.UpdateUser<br/>handlers.DeleteUser]
     end
 
-    subgraph Compilation["Compilación Go"]
-        Analyzer[Go Compiler<br/>Análisis Estático]
+    subgraph Compilation["Go Compilation"]
+        Analyzer[Go Compiler<br/>Static Analysis]
     end
 
-    subgraph Binary["Binario Final"]
-        Included[✅ Solo Código Usado<br/>~5-10 MB]
+    subgraph Binary["Final Binary"]
+        Included[✅ Only Used Code<br/>~5-10 MB]
     end
 
     SourceCode --> Analyzer
@@ -1099,24 +1099,24 @@ graph LR
     style Included fill:#c8e6c9
 ```
 
-**Ejemplo real:**
+**Real example:**
 
-Para la función `health-check`, el binario final solo incluye:
+For the `health-check` function, the final binary only includes:
 
-- ✅ `handlers.GetHealthCheck` (handler específico)
-- ✅ `aws.InitializeInfrastructure` (inicialización)
-- ✅ `aws.HandleLambdaEvent` (adaptador Lambda)
-- ✅ Dependencias transitivas necesarias (GORM, Redis, JWT, etc.)
-- ❌ **NO incluye**: Otros handlers (`CreateUser`, `UpdateUser`, etc.)
-- ❌ **NO incluye**: Código de módulos no utilizados
+- ✅ `handlers.GetHealthCheck` (specific handler)
+- ✅ `aws.InitializeInfrastructure` (initialization)
+- ✅ `aws.HandleLambdaEvent` (Lambda adapter)
+- ✅ Necessary transitive dependencies (GORM, Redis, JWT, etc.)
+- ❌ **Does NOT include**: Other handlers (`CreateUser`, `UpdateUser`, etc.)
+- ❌ **Does NOT include**: Code from unused modules
 
-**Resultado:** Binarios de 5-15 MB en lugar de 50+ MB si se incluyera todo.
+**Result:** Binaries of 5-15 MB instead of 50+ MB if everything were included.
 
-### Inicialización de Infraestructura
+### Infrastructure Initialization
 
-#### Proceso de Inicialización
+#### Initialization Process
 
-Cada función Lambda inicializa su infraestructura en el `init()`:
+Each Lambda function initializes its infrastructure in `init()`:
 
 ```go
 // main.go de una función Lambda
@@ -1130,7 +1130,7 @@ func init() {
 }
 ```
 
-#### Flujo de Inicialización
+#### Initialization Flow
 
 ```mermaid
 sequenceDiagram
@@ -1153,15 +1153,15 @@ sequenceDiagram
     Init-->>Lambda: ✅ Ready
 ```
 
-#### Componentes Inicializados
+#### Initialized Components
 
-1. **Configuración (Settings)**
+1. **Configuration (Settings)**
    ```go
-   // Carga desde AWS Secrets Manager o variables de entorno
+   // Loads from AWS Secrets Manager or environment variables
    settings.AppSettingsInstance.Initialize(config.ToMap())
    ```
 
-2. **Base de Datos (GORM)**
+2. **Database (GORM)**
    ```go
    database.GoProjectSkeletondb.SetUp(
        host, port, user, password, dbname, ssl, logger
@@ -1169,56 +1169,56 @@ sequenceDiagram
    ```
 
 3. **Providers**
-   - **JWT Provider**: Generación y validación de tokens
-   - **Email Provider**: Envío de emails (SMTP)
-   - **Cache Provider**: Redis para cache
-   - **Logger Provider**: Sistema de logging
+   - **JWT Provider**: Token generation and validation
+   - **Email Provider**: Email sending (SMTP)
+   - **Cache Provider**: Redis for cache
+   - **Logger Provider**: Logging system
 
-4. **Servicios**
-   - **Email Services**: Servicios de email (registro, reset, OTP)
+4. **Services**
+   - **Email Services**: Email services (registration, reset, OTP)
 
-#### Carga de Configuración desde AWS Secrets Manager
+#### Configuration Loading from AWS Secrets Manager
 
-El sistema puede cargar configuración desde **AWS Secrets Manager**:
+The system can load configuration from **AWS Secrets Manager**:
 
 ```go
-// Si una variable de entorno es un ARN de Secrets Manager
+// If an environment variable is a Secrets Manager ARN
 DB_PASSWORD=arn:aws:secretsmanager:us-east-1:123456789:secret:db-password
 
-// El sistema automáticamente:
-// 1. Detecta que es un ARN
-// 2. Obtiene el secreto de Secrets Manager
-// 3. Usa el valor en la configuración
+// The system automatically:
+// 1. Detects it's an ARN
+// 2. Gets the secret from Secrets Manager
+// 3. Uses the value in configuration
 ```
 
-**Ventajas:**
+**Advantages:**
 
-- ✅ **Seguridad**: Secretos no en código o variables de entorno
-- ✅ **Rotación**: Secrets Manager puede rotar secretos automáticamente
-- ✅ **Auditoría**: Todas las accesos a secretos son auditados
-- ✅ **Fallback**: Si falla, usa valores por defecto
+- ✅ **Security**: Secrets not in code or environment variables
+- ✅ **Rotation**: Secrets Manager can rotate secrets automatically
+- ✅ **Audit**: All secret accesses are audited
+- ✅ **Fallback**: If it fails, uses default values
 
-### Proceso de Despliegue
+### Deployment Process
 
-#### Flujo Completo de Despliegue
+#### Complete Deployment Flow
 
 ```mermaid
 graph TB
-    subgraph Local["🖥️ Desarrollo Local"]
-        Dev[Desarrollador]
+    subgraph Local["🖥️ Local Development"]
+        Dev[Developer]
         FunctionsJSON[functions.json]
     end
 
-    subgraph Generation["📦 Generación"]
+    subgraph Generation["📦 Generation"]
         Generator[Generator Tool]
         Templates[Templates]
-        FunctionCode[Código de Funciones]
+        FunctionCode[Function Code]
     end
 
-    subgraph Build["🔨 Compilación"]
+    subgraph Build["🔨 Build"]
         GoBuild[go build]
-        Binary[Binario bootstrap]
-        TemplatesCopy[Templates copiados]
+        Binary[bootstrap Binary]
+        TemplatesCopy[Copied Templates]
         Zip[ZIP Package]
     end
 
@@ -1229,141 +1229,141 @@ graph TB
 
     Dev-->FunctionsJSON
     FunctionsJSON-->|GenerateFunctions| Generator
-    Generator-->|Carga templates| Templates
-    Templates-->|Genera código| FunctionCode
+    Generator-->|Loads templates| Templates
+    Templates-->|Generates code| FunctionCode
     FunctionCode-->|go build| GoBuild
-    GoBuild-->|Binario optimizado| Binary
-    Binary-->|Copia templates| TemplatesCopy
-    TemplatesCopy-->|Crea ZIP| Zip
+    GoBuild-->|Optimized binary| Binary
+    Binary-->|Copy templates| TemplatesCopy
+    TemplatesCopy-->|Create ZIP| Zip
     Zip-->|Deploy function| Lambda
-    Lambda-->|Conecta endpoint| APIGateway
+    Lambda-->|Connect endpoint| APIGateway
 
     style Dev fill:#e3f2fd
     style Lambda fill:#ff9800
     style APIGateway fill:#ff9800
 ```
 
-#### Comandos de Despliegue
+#### Deployment Commands
 
-**1. Generar funciones:**
+**1. Generate functions:**
 ```bash
 cd src/infrastructure/clouds/aws/functions
 go run main.go generate
 ```
 
-**2. Compilar y desplegar:**
+**2. Build and deploy:**
 ```bash
-# Desplegar todas las funciones
+# Deploy all functions
 go run main.go deploy
 
-# Desplegar una función específica
+# Deploy a specific function
 go run main.go deploy --function health-check
 ```
 
-**3. Proceso interno de despliegue:**
+**3. Internal deployment process:**
 
 ```bash
-# Para cada función:
-# 1. go mod tidy (resuelve dependencias)
+# For each function:
+# 1. go mod tidy (resolves dependencies)
 cd tmp/status/health_check
 go mod tidy
 
-# 2. Compilar binario
+# 2. Compile binary
 go build -o bin/bootstrap -tags lambda.norpc main.go
 
-# 3. Copiar templates necesarios
+# 3. Copy necessary templates
 cp -r ../../../../../../application/shared/templates bin/src/application/shared/templates
 
-# 4. Crear ZIP
+# 4. Create ZIP
 cd bin
 zip -r health-check.zip bootstrap src/
 
-# 5. Desplegar a Lambda
+# 5. Deploy to Lambda
 aws lambda update-function-code \
     --function-name goprojectskeleton-dev-healthcheck \
     --zip-file fileb://health-check.zip
 ```
 
-### Optimizaciones de Tamaño
+### Size Optimizations
 
-#### Comparación de Tamaños
+#### Size Comparison
 
-| Función | Tamaño con Todo | Tamaño Optimizado | Reducción |
+| Function | Size with Everything | Optimized Size | Reduction |
 |---------|----------------|-------------------|----------|
 | health-check | ~50 MB | ~8 MB | 84% |
 | auth-login | ~55 MB | ~12 MB | 78% |
 | user-get | ~60 MB | ~15 MB | 75% |
 
-#### Estrategias de Optimización
+#### Optimization Strategies
 
-1. **Tree Shaking de Go**
-   - Elimina código no utilizado automáticamente
-   - Solo incluye funciones y tipos referenciados
+1. **Go Tree Shaking**
+   - Automatically removes unused code
+   - Only includes referenced functions and types
 
-2. **Módulos Independientes**
-   - Cada función tiene su propio `go.mod`
-   - Dependencias resueltas por función
+2. **Independent Modules**
+   - Each function has its own `go.mod`
+   - Dependencies resolved per function
 
-3. **Compilación Estática**
-   - `CGO_ENABLED=0`: Sin dependencias C
-   - Binario autocontenido
+3. **Static Compilation**
+   - `CGO_ENABLED=0`: No C dependencies
+   - Self-contained binary
 
-4. **Eliminación de Debug**
-   - `-ldflags="-s -w"`: Elimina símbolos
-   - Reduce tamaño significativamente
+4. **Debug Removal**
+   - `-ldflags="-s -w"`: Removes symbols
+   - Significantly reduces size
 
-5. **Templates Selectivos**
-   - Solo se copian templates necesarios
-   - No se incluyen todos los templates
+5. **Selective Templates**
+   - Only necessary templates are copied
+   - Not all templates are included
 
-### Estructura del Paquete Lambda
+### Lambda Package Structure
 
 ```
 health-check.zip
-├── bootstrap                    # Binario Go compilado (~8 MB)
+├── bootstrap                    # Compiled Go binary (~8 MB)
 └── src/
     └── application/
         └── shared/
             └── templates/
-                └── emails/      # Solo templates necesarios
+                └── emails/      # Only necessary templates
                     ├── otp_en.gohtml
                     └── otp_es.gohtml
 ```
 
-**Tamaño total:** ~8-10 MB (vs ~50 MB sin optimización)
+**Total size:** ~8-10 MB (vs ~50 MB without optimization)
 
-### Ventajas de la Arquitectura
+### Architecture Advantages
 
-#### 1. **Despliegues Rápidos**
-- Binarios pequeños = uploads rápidos
-- Cold start más rápido
-- Menor costo de almacenamiento
+#### 1. **Fast Deployments**
+- Small binaries = fast uploads
+- Faster cold start
+- Lower storage cost
 
-#### 2. **Seguridad Mejorada**
-- Cada función es independiente
-- Menor superficie de ataque
-- Secretos en Secrets Manager
+#### 2. **Improved Security**
+- Each function is independent
+- Smaller attack surface
+- Secrets in Secrets Manager
 
-#### 3. **Escalabilidad**
-- Cada función escala independientemente
-- Configuración por función
-- Optimización individual
+#### 3. **Scalability**
+- Each function scales independently
+- Per-function configuration
+- Individual optimization
 
-#### 4. **Mantenibilidad**
-- Código compartido en módulos
-- Cambios localizados
-- Testing independiente
+#### 4. **Maintainability**
+- Shared code in modules
+- Localized changes
+- Independent testing
 
-#### 5. **Costo Optimizado**
-- Menor tamaño = menor costo de almacenamiento
-- Cold start más rápido = menor latencia
-- Menor uso de memoria
+#### 5. **Optimized Cost**
+- Smaller size = lower storage cost
+- Faster cold start = lower latency
+- Lower memory usage
 
-### Diagrama de Arquitectura Completa
+### Complete Architecture Diagram
 
 ```mermaid
 graph TB
-    subgraph Client["🌐 Cliente"]
+    subgraph Client["🌐 Client"]
         HTTP[HTTP Request]
     end
 
@@ -1379,8 +1379,8 @@ graph TB
         end
 
         subgraph Services["AWS Services"]
-            Secrets[Secrets Manager<br/>Configuración]
-            RDS[(RDS PostgreSQL<br/>Base de Datos)]
+            Secrets[Secrets Manager<br/>Configuration]
+            RDS[(RDS PostgreSQL<br/>Database)]
             ElastiCache[(ElastiCache Redis<br/>Cache)]
         end
     end
@@ -1405,14 +1405,14 @@ graph TB
 
 ## Complete Request Flow
 
-### Diagrama de Flujo de Request
+### Request Flow Diagram
 
 ```mermaid
 sequenceDiagram
-    participant Client as Cliente HTTP
+    participant Client as HTTP Client
     participant Gin as Gin Router
     participant MW as Middleware<br/>(CORS/Recovery)
-    participant AuthMW as Auth Middleware<br/>(si protegido)
+    participant AuthMW as Auth Middleware<br/>(if protected)
     participant Router as Router/Wrapper
     participant Handler as HTTP Handler
     participant UseCase as Use Case
@@ -1421,52 +1421,52 @@ sequenceDiagram
     participant Resolver as Request Resolver
 
     Client->>Gin: HTTP Request
-    Gin->>MW: Aplica middlewares
-    MW->>AuthMW: Si ruta protegida
-    AuthMW->>AuthMW: Valida JWT Token
-    AuthMW->>AuthMW: Obtiene Usuario
-    AuthMW->>Router: Request con contexto
-    Router->>Router: Extrae params, query, locale
-    Router->>Router: Crea HandlerContext
+    Gin->>MW: Applies middlewares
+    MW->>AuthMW: If protected route
+    AuthMW->>AuthMW: Validates JWT Token
+    AuthMW->>AuthMW: Gets User
+    AuthMW->>Router: Request with context
+    Router->>Router: Extracts params, query, locale
+    Router->>Router: Creates HandlerContext
     Router->>Handler: HandlerContext
-    Handler->>Handler: Decodifica JSON → DTO
-    Handler->>UseCase: Ejecuta Use Case
-    UseCase->>UseCase: Valida input (DTO.Validate())
-    UseCase->>UseCase: Ejecuta Guards (si aplica)
-    UseCase->>Repo: Llama Repository
-    Repo->>Repo: Convierte DTO → Modelo BD
-    Repo->>DB: Ejecuta Query (GORM)
-    DB-->>Repo: Retorna datos
-    Repo->>Repo: Convierte Modelo BD → Dominio
-    Repo->>Repo: Mapea errores
-    Repo-->>UseCase: Modelo de Dominio / Error
-    UseCase->>UseCase: Maneja errores
+    Handler->>Handler: Decodes JSON → DTO
+    Handler->>UseCase: Executes Use Case
+    UseCase->>UseCase: Validates input (DTO.Validate())
+    UseCase->>UseCase: Executes Guards (if applicable)
+    UseCase->>Repo: Calls Repository
+    Repo->>Repo: Converts DTO → DB Model
+    Repo->>DB: Executes Query (GORM)
+    DB-->>Repo: Returns data
+    Repo->>Repo: Converts DB Model → Domain
+    Repo->>Repo: Maps errors
+    Repo-->>UseCase: Domain Model / Error
+    UseCase->>UseCase: Handles errors
     UseCase-->>Handler: UseCaseResult
-    Handler->>Resolver: Resuelve respuesta
-    Resolver->>Resolver: Mapea status code
-    Resolver->>Resolver: Formatea JSON
+    Handler->>Resolver: Resolves response
+    Resolver->>Resolver: Maps status code
+    Resolver->>Resolver: Formats JSON
     Resolver-->>Handler: HTTP Response
     Handler-->>Client: JSON Response
 ```
 
-### Diagrama de Flujo Simplificado
+### Simplified Flow Diagram
 
 ```mermaid
 flowchart TD
-    Start([Cliente HTTP]) --> Gin[Gin Router]
+    Start([HTTP Client]) --> Gin[Gin Router]
     Gin --> MW[Middlewares<br/>CORS/Recovery]
-    MW --> Auth{¿Ruta<br/>Protegida?}
-    Auth -->|Sí| AuthMW[Auth Middleware<br/>Valida JWT]
+    MW --> Auth{Protected<br/>Route?}
+    Auth -->|Yes| AuthMW[Auth Middleware<br/>Validates JWT]
     Auth -->|No| Router
-    AuthMW --> Router[Router/Wrapper<br/>Extrae params/query/locale]
-    Router --> Handler[HTTP Handler<br/>Decodifica JSON → DTO]
-    Handler --> UseCase[Use Case<br/>Valida y ejecuta lógica]
-    UseCase --> Repo[Repository<br/>Convierte DTO ↔ Modelo]
+    AuthMW --> Router[Router/Wrapper<br/>Extracts params/query/locale]
+    Router --> Handler[HTTP Handler<br/>Decodes JSON → DTO]
+    Handler --> UseCase[Use Case<br/>Validates and executes logic]
+    UseCase --> Repo[Repository<br/>Converts DTO ↔ Model]
     Repo --> DB[(PostgreSQL<br/>GORM)]
     DB --> Repo
     Repo --> UseCase
-    UseCase --> Resolver[Request Resolver<br/>Formatea respuesta]
-    Resolver --> End([Respuesta JSON])
+    UseCase --> Resolver[Request Resolver<br/>Formats response]
+    Resolver --> End([JSON Response])
 
     style Start fill:#e3f2fd
     style End fill:#c8e6c9
@@ -1474,27 +1474,27 @@ flowchart TD
     style UseCase fill:#f3e5f5
 ```
 
-### Flujo Detallado con Código
+### Detailed Flow with Code
 
-#### 1. Entrada HTTP (main.go)
+#### 1. HTTP Entry (main.go)
 
 ```go
 // main.go
 func main() {
-    infrastructure.Initialize()  // Inicializa BD, providers, etc.
-    app := buildGinApp()         // Crea aplicación Gin
-    loadGinApp(app)               // Configura middlewares y rutas
-    app.Run("0.0.0.0:8080")      // Inicia servidor
+    infrastructure.Initialize()  // Initializes DB, providers, etc.
+    app := buildGinApp()         // Creates Gin application
+    loadGinApp(app)               // Configures middlewares and routes
+    app.Run("0.0.0.0:8080")      // Starts server
 }
 ```
 
-#### 2. Ruteo (routes/router.go)
+#### 2. Routing (routes/router.go)
 
 ```go
 // routes/router.go
 func Router(r *gin.RouterGroup) {
     r.POST("/user", wrapHandler(handlers.CreateUser))
-    // wrapHandler adapta Gin a HandlerContext
+    // wrapHandler adapts Gin to HandlerContext
 }
 ```
 
@@ -1526,20 +1526,20 @@ func wrapHandler(h func(handlers.HandlerContext)) gin.HandlerFunc {
 ```go
 // handlers/user.go
 func CreateUser(ctx HandlerContext) {
-    // 1. Decodificar JSON
+    // 1. Decode JSON
     var userCreate dtos.UserCreate
     json.NewDecoder(*ctx.Body).Decode(&userCreate)
 
-    // 2. Crear repositorio
+    // 2. Create repository
     repo := repositories.NewUserRepository(database.DB, providers.Logger)
 
-    // 3. Crear y ejecutar caso de uso
+    // 3. Create and execute use case
     ucResult := usecases_user.NewCreateUserUseCase(
         providers.Logger,
         repo,
     ).Execute(ctx.c, ctx.Locale, userCreate)
 
-    // 4. Resolver respuesta
+    // 4. Resolve response
     headers := map[HTTPHeaderTypeEnum]string{
         CONTENT_TYPE: string(APPLICATION_JSON),
     }
@@ -1551,7 +1551,7 @@ func CreateUser(ctx HandlerContext) {
 }
 ```
 
-#### 5. Caso de Uso (application/modules/user/use_cases/create_user.go)
+#### 5. Use Case (application/modules/user/use_cases/create_user.go)
 
 ```go
 // application/modules/user/use_cases/create_user.go
@@ -1562,45 +1562,45 @@ func (uc *CreateUserUseCase) Execute(
 ) *usecase.UseCaseResult[models.User] {
     result := usecase.NewUseCaseResult[models.User]()
 
-    // 1. Validar input
+    // 1. Validate input
     uc.validate(input, result)
     if result.HasError() {
         return result
     }
 
-    // 2. Llamar a repositorio
+    // 2. Call repository
     res, err := uc.repo.Create(input)
     if err != nil {
         result.SetError(err.Code, err.Context)
         return result
     }
 
-    // 3. Retornar éxito
+    // 3. Return success
     result.SetData(status.Created, *res, "User created")
     return result
 }
 ```
 
-#### 6. Repositorio (infrastructure/repositories/user.go)
+#### 6. Repository (infrastructure/repositories/user.go)
 
 ```go
 // infrastructure/repositories/user.go
 func (ur *UserRepository) Create(input dtos.UserCreate) (*models.User, *application_errors.ApplicationError) {
-    // 1. Convertir DTO a modelo GORM
+    // 1. Convert DTO to GORM model
     userCreate := ur.modelConverter.ToGormCreate(input)
 
-    // 2. Ejecutar query
+    // 2. Execute query
     if err := ur.DB.Create(userCreate).Error; err != nil {
-        return nil, MapOrmError(err)  // Mapea errores de BD
+        return nil, MapOrmError(err)  // Maps DB errors
     }
 
-    // 3. Convertir modelo GORM a modelo de dominio
+    // 3. Convert GORM model to domain model
     userModel := ur.modelConverter.ToDomain(userCreate)
     return userModel, nil
 }
 ```
 
-#### 7. Resolución de Respuesta (handlers/request_resolver.go)
+#### 7. Response Resolution (handlers/request_resolver.go)
 
 ```go
 // handlers/request_resolver.go
@@ -1609,10 +1609,10 @@ func (rr *RequestResolver[D]) ResolveDTO(
     result *usecase.UseCaseResult[D],
     headersToAdd map[HTTPHeaderTypeEnum]string,
 ) {
-    // 1. Agregar headers
+    // 1. Add headers
     rr.setHeaders(w, headersToAdd)
 
-    // 2. Manejar errores
+    // 2. Handle errors
     if result.HasError() {
         w.WriteHeader(rr.statusMapping[result.StatusCode])
         json.NewEncoder(w).Encode(map[string]any{
@@ -1621,7 +1621,7 @@ func (rr *RequestResolver[D]) ResolveDTO(
         return
     }
 
-    // 3. Respuesta exitosa
+    // 3. Success response
     w.WriteHeader(rr.statusMapping[result.StatusCode])
     json.NewEncoder(w).Encode(map[string]any{
         "data":    result.Data,
@@ -1630,9 +1630,9 @@ func (rr *RequestResolver[D]) ResolveDTO(
 }
 ```
 
-### Flujo con Pipes (DAG)
+### Flow with Pipes (DAG)
 
-Para casos más complejos que requieren múltiples pasos:
+For more complex cases that require multiple steps:
 
 ```mermaid
 sequenceDiagram
@@ -1649,24 +1649,24 @@ sequenceDiagram
     DAG->>UC1: Execute(userCreate)
     UC1->>Repo: CreateWithPassword()
     Repo->>DB: INSERT User + Password
-    DB-->>Repo: User creado
+    DB-->>Repo: User created
     Repo-->>UC1: User
     UC1-->>DAG: UseCaseResult[User]
 
-    alt Si no hay error
+    alt If no error
         DAG->>UC2: Execute(User)
         UC2->>EmailSvc: SendWelcomeEmail()
-        EmailSvc->>SMTP: Enviar email
-        SMTP-->>EmailSvc: Email enviado
+        EmailSvc->>SMTP: Send email
+        SMTP-->>EmailSvc: Email sent
         EmailSvc-->>UC2: Success
         UC2-->>DAG: UseCaseResult[User]
         DAG-->>Handler: UseCaseResult[User]
-    else Si hay error
+    else If error
         DAG-->>Handler: UseCaseResult[Error]
     end
 ```
 
-#### Diagrama de DAG (Directed Acyclic Graph)
+#### DAG Diagram (Directed Acyclic Graph)
 
 ```mermaid
 graph LR
@@ -1683,7 +1683,7 @@ graph LR
     style Error fill:#ffcdd2
 ```
 
-#### Ejecución Paralela con DAG
+#### Parallel Execution with DAG
 
 ```mermaid
 graph TB
@@ -1693,7 +1693,7 @@ graph TB
     Parallel --> UC2[Use Case 2]
     Parallel --> UC3[Use Case 3]
 
-    UC1 --> Wait[WaitGroup<br/>Espera todos]
+    UC1 --> Wait[WaitGroup<br/>Waits for all]
     UC2 --> Wait
     UC3 --> Wait
 
@@ -1705,16 +1705,16 @@ graph TB
     style Merge fill:#e8f5e9
 ```
 
-**Código de ejemplo:**
+**Example code:**
 
 ```go
-// Ejemplo: Crear usuario y enviar email
+// Example: Create user and send email
 func CreateUserAndPassword(ctx HandlerContext) {
-    // 1. Crear casos de uso
+    // 1. Create use cases
     uc_create_user_password := usecases_user.NewCreateUserAndPasswordUseCase(...)
     uc_create_user_email := usecases_user.NewCreateUserSendEmailUseCase(...)
 
-    // 2. Crear pipe (DAG)
+    // 2. Create pipe (DAG)
     pipe := user_pipes.NewCreateUserPipe(
         ctx.c,
         ctx.Locale,
@@ -1722,240 +1722,240 @@ func CreateUserAndPassword(ctx HandlerContext) {
         uc_create_user_email,
     )
 
-    // 3. Ejecutar pipe (ejecuta secuencialmente)
+    // 3. Execute pipe (executes sequentially)
     ucResult := pipe.Execute(userCreate)
 
-    // 4. Resolver respuesta
+    // 4. Resolve response
     NewRequestResolver[models.User]().ResolveDTO(...)
 }
 ```
 
-El DAG ejecuta:
-1. `CreateUserAndPasswordUseCase` → retorna `User`
-2. `CreateUserSendEmailUseCase` → recibe `User`, envía email, retorna `User`
+The DAG executes:
+1. `CreateUserAndPasswordUseCase` → returns `User`
+2. `CreateUserSendEmailUseCase` → receives `User`, sends email, returns `User`
 
 ---
 
 ## Virtues and Benefits
 
-### 1. Arquitectura Sólida y Escalable
+### 1. Solid and Scalable Architecture
 
 #### ✅ Clean Architecture
-- **Separación clara de responsabilidades**: Cada capa tiene un propósito específico
-- **Independencia de frameworks**: Puedes cambiar Gin por otro framework sin afectar el negocio
-- **Testabilidad**: Fácil de testear cada capa independientemente
+- **Clear separation of responsibilities**: Each layer has a specific purpose
+- **Framework independence**: You can change Gin for another framework without affecting business logic
+- **Testability**: Easy to test each layer independently
 
-#### ✅ Arquitectura Hexagonal
-- **Desacoplamiento total**: La lógica de negocio no conoce detalles de implementación
-- **Ports & Adapters**: Interfaces claras entre capas
-- **Flexibilidad**: Cambiar base de datos, proveedores, etc. sin reescribir código
+#### ✅ Hexagonal Architecture
+- **Total decoupling**: Business logic doesn't know implementation details
+- **Ports & Adapters**: Clear interfaces between layers
+- **Flexibility**: Change database, providers, etc. without rewriting code
 
-### 2. Productividad del Desarrollador
+### 2. Developer Productivity
 
-#### ✅ Estructura Clara
-- **Organización lógica**: Fácil encontrar código
-- **Convenciones consistentes**: Mismo patrón en todo el proyecto
-- **Onboarding rápido**: Nuevos desarrolladores entienden rápido
+#### ✅ Clear Structure
+- **Logical organization**: Easy to find code
+- **Consistent conventions**: Same pattern throughout the project
+- **Fast onboarding**: New developers understand quickly
 
-#### ✅ Reutilización
-- **Componentes compartidos**: DTOs, errores, validaciones reutilizables
-- **Base de repositorios**: `RepositoryBase` reduce código duplicado
-- **Providers intercambiables**: Cambiar implementaciones fácilmente
+#### ✅ Reusability
+- **Shared components**: Reusable DTOs, errors, validations
+- **Repository base**: `RepositoryBase` reduces code duplication
+- **Interchangeable providers**: Easily change implementations
 
-### 3. Mantenibilidad
+### 3. Maintainability
 
-#### ✅ Código Limpio
-- **Principios SOLID**: Aplicados consistentemente
-- **DRY (Don't Repeat Yourself)**: Mínima duplicación
-- **Nombres descriptivos**: Código auto-documentado
+#### ✅ Clean Code
+- **SOLID principles**: Applied consistently
+- **DRY (Don't Repeat Yourself)**: Minimal duplication
+- **Descriptive names**: Self-documenting code
 
-#### ✅ Extensibilidad
-- **Agregar funcionalidades**: Sin modificar código existente
-- **Módulos independientes**: Cada módulo es autocontenido
-- **Interfaces bien definidas**: Contratos claros
+#### ✅ Extensibility
+- **Add functionality**: Without modifying existing code
+- **Independent modules**: Each module is self-contained
+- **Well-defined interfaces**: Clear contracts
 
-### 4. Testabilidad
+### 4. Testability
 
-#### ✅ Testing en Capas
-- **Unit tests**: Casos de uso testables con mocks
-- **Integration tests**: Tests con base de datos real
-- **E2E tests**: Tests completos del flujo
+#### ✅ Layered Testing
+- **Unit tests**: Use cases testable with mocks
+- **Integration tests**: Tests with real database
+- **E2E tests**: Complete flow tests
 
-#### ✅ Mocks Completos
-- **Mocks de repositorios**: Fácil simular datos
-- **Mocks de providers**: Simular servicios externos
-- **Testing aislado**: Sin dependencias externas
+#### ✅ Complete Mocks
+- **Repository mocks**: Easy to simulate data
+- **Provider mocks**: Simulate external services
+- **Isolated testing**: No external dependencies
 
-### 5. Seguridad
+### 5. Security
 
-#### ✅ Autenticación Robusta
-- **JWT completo**: Access y refresh tokens
-- **OTP (2FA)**: Autenticación de dos factores
-- **Hash seguro**: Bcrypt para contraseñas
+#### ✅ Robust Authentication
+- **Complete JWT**: Access and refresh tokens
+- **OTP (2FA)**: Two-factor authentication
+- **Secure hash**: Bcrypt for passwords
 
-#### ✅ Validación
-- **Validación en múltiples capas**: DTOs, casos de uso, repositorios
-- **Sanitización**: Prevención de inyecciones
-- **Guards**: Control de acceso basado en roles
+#### ✅ Validation
+- **Multi-layer validation**: DTOs, use cases, repositories
+- **Sanitization**: Injection prevention
+- **Guards**: Role-based access control
 
-### 6. Rendimiento
+### 6. Performance
 
-#### ✅ Optimizaciones
-- **Cache con Redis**: Reduce consultas a BD
-- **Connection pooling**: Reutilización de conexiones
-- **Goroutines**: Concurrencia nativa de Go
-- **Query optimization**: Filtros y paginación eficientes
+#### ✅ Optimizations
+- **Redis cache**: Reduces database queries
+- **Connection pooling**: Connection reuse
+- **Goroutines**: Native Go concurrency
+- **Query optimization**: Efficient filters and pagination
 
-### 7. Internacionalización
+### 7. Internationalization
 
-#### ✅ Multiidioma
-- **Soporte i18n**: Mensajes en múltiples idiomas
-- **Locale por request**: Cada request puede tener su idioma
-- **Mensajes centralizados**: Fácil agregar nuevos idiomas
+#### ✅ Multi-language
+- **i18n support**: Messages in multiple languages
+- **Locale per request**: Each request can have its language
+- **Centralized messages**: Easy to add new languages
 
-### 8. Documentación
+### 8. Documentation
 
-#### ✅ Swagger Automático
-- **API documentada**: Endpoints documentados automáticamente
-- **Ejemplos**: Ejemplos de requests y responses
-- **Tipos claros**: Esquemas bien definidos
+#### ✅ Automatic Swagger
+- **Documented API**: Endpoints automatically documented
+- **Examples**: Request and response examples
+- **Clear types**: Well-defined schemas
 
-### 9. DevOps y Despliegue
+### 9. DevOps and Deployment
 
-#### ✅ Docker Completo
-- **Multi-servicio**: Aplicación, BD, Redis, etc.
-- **Entornos separados**: Dev, test, E2E
-- **Hot reload**: Desarrollo eficiente
+#### ✅ Complete Docker
+- **Multi-service**: Application, DB, Redis, etc.
+- **Separate environments**: Dev, test, E2E
+- **Hot reload**: Efficient development
 
-#### ✅ Configuración Flexible
-- **Variables de entorno**: Configuración por ambiente
-- **Settings centralizados**: Un solo lugar para configuración
-- **Validación**: Validación de configuración al inicio
+#### ✅ Flexible Configuration
+- **Environment variables**: Configuration per environment
+- **Centralized settings**: Single place for configuration
+- **Validation**: Configuration validation at startup
 
-### 10. Escalabilidad
+### 10. Scalability
 
 #### ✅ Horizontal
-- **Stateless**: Listo para load balancers
-- **Cache distribuido**: Redis compartido
-- **Sin sesiones**: JWT stateless
+- **Stateless**: Ready for load balancers
+- **Distributed cache**: Shared Redis
+- **No sessions**: Stateless JWT
 
 #### ✅ Vertical
-- **Goroutines**: Concurrencia eficiente
-- **Optimizaciones**: Cache, pooling, etc.
-- **Serverless ready**: Fácil migración a serverless
+- **Goroutines**: Efficient concurrency
+- **Optimizations**: Cache, pooling, etc.
+- **Serverless ready**: Easy migration to serverless
 
-### Beneficios para Iniciar un Proyecto
+### Benefits for Starting a Project
 
-1. **Ahorro de Tiempo**
-   - Estructura lista para usar
-   - Patrones implementados
-   - No empezar desde cero
+1. **Time Savings**
+   - Ready-to-use structure
+   - Implemented patterns
+   - Don't start from scratch
 
-2. **Mejores Prácticas**
-   - Arquitectura probada
-   - Patrones de diseño aplicados
-   - Código de calidad
+2. **Best Practices**
+   - Proven architecture
+   - Applied design patterns
+   - Quality code
 
-3. **Escalabilidad Garantizada**
-   - Diseñado para crecer
-   - Fácil agregar funcionalidades
-   - Listo para producción
+3. **Guaranteed Scalability**
+   - Designed to grow
+   - Easy to add functionality
+   - Production ready
 
-4. **Mantenibilidad a Largo Plazo**
-   - Código organizado
-   - Fácil de entender
-   - Fácil de modificar
+4. **Long-term Maintainability**
+   - Organized code
+   - Easy to understand
+   - Easy to modify
 
-5. **Equipo Productivo**
-   - Onboarding rápido
-   - Convenciones claras
-   - Menos bugs
+5. **Productive Team**
+   - Fast onboarding
+   - Clear conventions
+   - Fewer bugs
 
 ---
 
 ## 📊 Project Statistics
 
-| Métrica | Valor |
+| Metric | Value |
 |---------|-------|
-| **Archivos Go** | ~180+ archivos |
-| **Líneas de Código** | ~15,000+ líneas |
-| **Casos de Uso** | 20+ casos de uso |
-| **Módulos de Negocio** | 4 módulos (auth, user, password, status) |
+| **Go Files** | ~180+ files |
+| **Lines of Code** | ~15,000+ lines |
+| **Use Cases** | 20+ use cases |
+| **Business Modules** | 4 modules (auth, user, password, status) |
 | **Providers** | 7 providers (JWT, Hash, Email, Cache, Logger, Renderer, Status) |
-| **Repositorios** | 6 repositorios |
-| **Handlers HTTP** | 15+ endpoints |
-| **Tests** | 20+ archivos de test |
-| **Templates** | 6+ templates HTML |
-| **Idiomas Soportados** | 2 (Español, Inglés) |
+| **Repositories** | 6 repositories |
+| **HTTP Handlers** | 15+ endpoints |
+| **Tests** | 20+ test files |
+| **Templates** | 6+ HTML templates |
+| **Supported Languages** | 2 (Spanish, English) |
 
 ## Project Structure - Layer by Layer
 
-### Visión General de la Estructura
+### Structure Overview
 
 ```
 GoProjectSkeleton/
 ├── src/
-│   ├── domain/              # 🎯 Capa de Dominio (Núcleo)
-│   │   ├── models/          # Entidades de negocio puras
-│   │   └── utils/           # Utilidades de dominio
-│   ├── application/         # 💼 Capa de Aplicación (Lógica de Negocio)
+│   ├── domain/              # 🎯 Domain Layer (Core)
+│   │   ├── models/          # Pure business entities
+│   │   └── utils/           # Domain utilities
+│   ├── application/         # 💼 Application Layer (Business Logic)
 │   │   ├── contracts/      # Interfaces (Ports)
-│   │   ├── modules/         # Módulos de negocio
-│   │   └── shared/         # Componentes compartidos
-│   └── infrastructure/     # 🔧 Capa de Infraestructura (Detalles Técnicos)
-│       ├── server/          # Servidor HTTP (Gin)
-│       ├── database/        # Base de datos (GORM)
-│       ├── providers/       # Implementaciones de providers
-│       ├── repositories/    # Implementaciones de repositorios
-│       ├── handlers/        # Handlers HTTP
-│       ├── config/          # Configuración
-│       └── clouds/          # Adaptadores Cloud (AWS, Azure)
-├── docker/                  # 🐳 Configuración Docker
+│   │   ├── modules/         # Business modules
+│   │   └── shared/         # Shared components
+│   └── infrastructure/     # 🔧 Infrastructure Layer (Technical Details)
+│       ├── server/          # HTTP Server (Gin)
+│       ├── database/        # Database (GORM)
+│       ├── providers/       # Provider implementations
+│       ├── repositories/    # Repository implementations
+│       ├── handlers/        # HTTP Handlers
+│       ├── config/          # Configuration
+│       └── clouds/          # Cloud Adapters (AWS, Azure)
+├── docker/                  # 🐳 Docker Configuration
 │   ├── docker-compose.dev.yml
 │   ├── docker-compose.test.yml
 │   ├── docker-compose.e2e.yml
-│   └── db/                  # Configuración de base de datos
-├── tests/                   # 🧪 Tests del proyecto
-│   ├── integration/         # Tests de integración
-│   └── e2e/                 # Tests end-to-end (Postman)
-├── src/infrastructure/docs/ # 📚 Servicio Swagger Independiente
-│   ├── main.go              # Servidor HTTP independiente para Swagger
-│   ├── config/              # Configuración del servidor Swagger
-│   ├── swagger/             # Archivos generados de Swagger
+│   └── db/                  # Database configuration
+├── tests/                   # 🧪 Project Tests
+│   ├── integration/         # Integration tests
+│   └── e2e/                 # End-to-end tests (Bruno)
+├── src/infrastructure/docs/ # 📚 Independent Swagger Service
+│   ├── main.go              # Independent HTTP server for Swagger
+│   ├── config/              # Swagger server configuration
+│   ├── swagger/             # Generated Swagger files
 │   │   ├── swagger.json
 │   │   ├── swagger.yaml
 │   │   └── docs.go
-│   └── go.mod               # Módulo independiente para Swagger
-└── IDE/                     # ⚙️ Configuración del IDE
+│   └── go.mod               # Independent module for Swagger
+└── IDE/                     # ⚙️ IDE Configuration
     ├── launch.json
     └── tasks.json
 ```
 
-### Capa 1: Domain (Dominio)
+### Layer 1: Domain
 
-**Responsabilidad**: Contiene las entidades de negocio puras, sin dependencias externas.
+**Responsibility**: Contains pure business entities, without external dependencies.
 
 ```
 domain/
-├── models/                  # Modelos de dominio
-│   ├── user.go             # Entidad User
-│   ├── role.go             # Entidad Role
-│   ├── password.go         # Entidad Password
+├── models/                  # Domain models
+│   ├── user.go             # User entity
+│   ├── role.go             # Role entity
+│   ├── password.go         # Password entity
 │   ├── one_time_password.go
 │   ├── one_time_token.go
 │   └── status.go
-└── utils/                   # Utilidades de dominio
-    └── query_payload.go    # Utilidades para queries
+└── utils/                   # Domain utilities
+    └── query_payload.go    # Query utilities
 ```
 
-#### Características
+#### Characteristics
 
-- **Sin dependencias externas**: No importa frameworks, BD, etc.
-- **Entidades puras**: Solo lógica de negocio
-- **Validaciones de dominio**: Reglas de negocio en los modelos
-- **Inmutabilidad preferida**: Modelos inmutables cuando es posible
+- **No external dependencies**: Doesn't import frameworks, DB, etc.
+- **Pure entities**: Only business logic
+- **Domain validations**: Business rules in models
+- **Immutability preferred**: Immutable models when possible
 
-#### Ejemplo: Modelo User
+#### Example: User Model
 
 ```go
 // domain/models/user.go
@@ -1978,48 +1978,48 @@ func (u UserBase) Validate() []string {
 }
 ```
 
-### Capa 2: Application (Aplicación)
+### Layer 2: Application
 
-**Responsabilidad**: Contiene la lógica de negocio y casos de uso.
+**Responsibility**: Contains business logic and use cases.
 
 ```
 application/
-├── contracts/               # Contratos (Interfaces)
-│   ├── providers/          # Interfaces de proveedores
+├── contracts/               # Contracts (Interfaces)
+│   ├── providers/          # Provider interfaces
 │   │   ├── cache_provider.go
 │   │   ├── email_provider.go
 │   │   ├── hash_provider.go
 │   │   ├── jwt_provider.go
 │   │   └── logger_provider.go
-│   └── repositories/       # Interfaces de repositorios
+│   └── repositories/       # Repository interfaces
 │       ├── user.go
 │       ├── password.go
 │       └── role.go
-├── modules/                # Módulos de negocio
-│   ├── auth/              # Módulo de autenticación
-│   ├── user/              # Módulo de usuarios
-│   ├── password/          # Módulo de contraseñas
-│   └── status/            # Módulo de estado
-└── shared/                # Componentes compartidos
+├── modules/                # Business modules
+│   ├── auth/              # Authentication module
+│   ├── user/              # User module
+│   ├── password/          # Password module
+│   └── status/            # Status module
+└── shared/                # Shared components
     ├── DTOs/              # Data Transfer Objects
-    ├── errors/            # Manejo de errores
-    ├── services/          # Servicios compartidos
-    ├── templates/         # Plantillas (emails)
-    ├── use_case/          # Base de casos de uso
-    ├── context/           # Contexto de aplicación
-    ├── locales/           # Internacionalización
-    ├── settings/          # Configuración de aplicación
-    └── guards/            # Guards de autorización
+    ├── errors/            # Error handling
+    ├── services/          # Shared services
+    ├── templates/         # Templates (emails)
+    ├── use_case/          # Use case base
+    ├── context/           # Application context
+    ├── locales/           # Internationalization
+    ├── settings/          # Application configuration
+    └── guards/            # Authorization guards
 ```
 
-#### Características
+#### Characteristics
 
-- **Casos de uso**: Cada funcionalidad es un caso de uso
-- **Interfaces**: Define contratos que la infraestructura implementa
-- **DTOs**: Objetos de transferencia de datos
-- **Servicios**: Lógica compartida entre módulos
+- **Use cases**: Each functionality is a use case
+- **Interfaces**: Defines contracts that infrastructure implements
+- **DTOs**: Data transfer objects
+- **Services**: Logic shared between modules
 
-#### Ejemplo: Caso de Uso
+#### Example: Use Case
 
 ```go
 // application/modules/user/use_cases/create_user.go
@@ -2033,55 +2033,55 @@ func (uc *CreateUserUseCase) Execute(
     locale LocaleTypeEnum,
     input UserCreate,
 ) *UseCaseResult[User] {
-    // 1. Validar
-    // 2. Ejecutar lógica de negocio
-    // 3. Llamar a repositorio
-    // 4. Retornar resultado
+    // 1. Validate
+    // 2. Execute business logic
+    // 3. Call repository
+    // 4. Return result
 }
 ```
 
-### Capa 3: Infrastructure (Infraestructura)
+### Layer 3: Infrastructure
 
-**Responsabilidad**: Implementaciones técnicas (HTTP, BD, etc.).
+**Responsibility**: Technical implementations (HTTP, DB, etc.).
 
 ```
 infrastructure/
-├── api/                    # Capa de API HTTP
+├── api/                    # HTTP API Layer
 │   ├── cmd/
-│   │   └── main.go        # Punto de entrada
-│   ├── routes/            # Definición de rutas
-│   ├── middlewares/       # Middlewares HTTP
+│   │   └── main.go        # Entry point
+│   ├── routes/            # Route definitions
+│   ├── middlewares/       # HTTP Middlewares
 │   └── types.go
-├── config/                # Configuración
-│   ├── config.go         # Carga de configuración
-│   └── env.go            # Variables de entorno
-├── database/              # Base de datos
-│   └── goprojectskeleton/   # Implementación GORM
-│       ├── models/       # Modelos de BD
-│       └── init_db/      # Inicialización
-├── handlers/              # Handlers HTTP
+├── config/                # Configuration
+│   ├── config.go         # Configuration loading
+│   └── env.go            # Environment variables
+├── database/              # Database
+│   └── goprojectskeleton/   # GORM implementation
+│       ├── models/       # DB models
+│       └── init_db/      # Initialization
+├── handlers/              # HTTP Handlers
 │   ├── user.go
 │   ├── auth.go
 │   ├── password.go
 │   └── status.go
-├── providers/            # Implementaciones de proveedores
+├── providers/            # Provider implementations
 │   ├── jwt_provider.go
 │   ├── hash_provider.go
 │   ├── email_provider.go
 │   └── cache_provider.go
-└── repositories/          # Implementaciones de repositorios
+└── repositories/          # Repository implementations
     ├── user.go
     ├── password.go
     └── role.go
 ```
 
-#### Características
+#### Characteristics
 
-- **Implementaciones concretas**: GORM, Gin, Redis, etc.
-- **Adaptadores**: Adaptan frameworks a interfaces
-- **Configuración**: Carga de configuración desde variables de entorno
+- **Concrete implementations**: GORM, Gin, Redis, etc.
+- **Adapters**: Adapt frameworks to interfaces
+- **Configuration**: Configuration loading from environment variables
 
-#### Ejemplo: Repositorio
+#### Example: Repository
 
 ```go
 // infrastructure/repositories/user.go
@@ -2091,7 +2091,7 @@ type UserRepository struct {
 }
 
 func (r *UserRepository) Create(input UserCreate) (*User, error) {
-    // Implementación con GORM
+    // Implementation with GORM
 }
 ```
 
@@ -2099,455 +2099,455 @@ func (r *UserRepository) Create(input UserCreate) (*User, error) {
 
 ## Exhaustive Review by Folders
 
-### `/src/domain/` - Capa de Dominio
+### `/src/domain/` - Domain Layer
 
 #### `/src/domain/models/`
 
-Contiene todas las entidades de dominio puras.
+Contains all pure domain entities.
 
-**Archivos principales:**
+**Main files:**
 
-- **`user.go`**: Entidad User con validaciones de dominio
-  - `UserBase`: Estructura base del usuario
-  - `User`: Usuario con metadatos de BD
-  - `UserWithRole`: Usuario con información de rol
-  - `Validate()`: Validaciones de negocio
+- **`user.go`**: User entity with domain validations
+  - `UserBase`: Base user structure
+  - `User`: User with DB metadata
+  - `UserWithRole`: User with role information
+  - `Validate()`: Business validations
 
-- **`role.go`**: Entidad Role
-  - Define roles del sistema
-  - Prioridades y permisos
+- **`role.go`**: Role entity
+  - Defines system roles
+  - Priorities and permissions
 
-- **`password.go`**: Entidad Password
-  - Hash de contraseñas
-  - Expiración
-  - Validación de fortaleza
+- **`password.go`**: Password entity
+  - Password hashing
+  - Expiration
+  - Strength validation
 
-- **`one_time_password.go`**: OTP para autenticación
-  - Generación de códigos
-  - TTL y expiración
+- **`one_time_password.go`**: OTP for authentication
+  - Code generation
+  - TTL and expiration
 
-- **`one_time_token.go`**: Tokens de un solo uso
-  - Para reset de contraseña
-  - Para activación de cuenta
+- **`one_time_token.go`**: Single-use tokens
+  - For password reset
+  - For account activation
 
-- **`status.go`**: Estados del sistema
-  - Estados de usuarios
-  - Estados de aplicación
+- **`status.go`**: System states
+  - User states
+  - Application states
 
-- **`db_models_base.go`**: Base para modelos con metadatos de BD
+- **`db_models_base.go`**: Base for models with DB metadata
   - ID, CreatedAt, UpdatedAt, DeletedAt
 
-- **`models_utils.go`**: Utilidades para modelos
-  - Validación de email
-  - Validación de contraseña
+- **`models_utils.go`**: Model utilities
+  - Email validation
+  - Password validation
 
 #### `/src/domain/utils/`
 
-Utilidades de dominio.
+Domain utilities.
 
-- **`query_payload.go`**: Construcción de queries
-  - Filtros
-  - Ordenamiento
-  - Paginación
+- **`query_payload.go`**: Query construction
+  - Filters
+  - Sorting
+  - Pagination
 
-### `/src/application/` - Capa de Aplicación
+### `/src/application/` - Application Layer
 
 #### `/src/application/contracts/`
 
-Define todas las interfaces (contratos) que la infraestructura debe implementar.
+Defines all interfaces (contracts) that infrastructure must implement.
 
 ##### `/src/application/contracts/providers/`
 
-Interfaces de proveedores externos:
+External provider interfaces:
 
-- **`cache_provider.go`**: Interfaz para cache (Redis)
+- **`cache_provider.go`**: Cache interface (Redis)
   - `Get()`, `Set()`, `Delete()`, `Exists()`
 
-- **`email_provider.go`**: Interfaz para envío de emails
+- **`email_provider.go`**: Email sending interface
   - `SendEmail()`
 
-- **`hash_provider.go`**: Interfaz para hashing
+- **`hash_provider.go`**: Hashing interface
   - `Hash()`, `Compare()`
 
-- **`jwt_provider.go`**: Interfaz para JWT
+- **`jwt_provider.go`**: JWT interface
   - `GenerateAccessToken()`, `GenerateRefreshToken()`, `ParseTokenAndValidate()`
 
-- **`logger_provider.go`**: Interfaz para logging
+- **`logger_provider.go`**: Logging interface
   - `Info()`, `Error()`, `Debug()`, `Panic()`
 
-- **`renderer_provider.go`**: Interfaz para renderizado de templates
+- **`renderer_provider.go`**: Template rendering interface
   - `Render()`
 
-- **`status_provider.go`**: Interfaz para estado del sistema
+- **`status_provider.go`**: System status interface
 
 ##### `/src/application/contracts/repositories/`
 
-Interfaces de repositorios:
+Repository interfaces:
 
-- **`base.go`**: Interfaz base para repositorios
+- **`base.go`**: Base interface for repositories
   - `Create()`, `GetByID()`, `Update()`, `Delete()`, `GetAll()`
 
-- **`user.go`**: Interfaz específica de usuarios
+- **`user.go`**: User-specific interface
   - `CreateWithPassword()`, `GetUserWithRole()`, `GetByEmailOrPhone()`
 
-- **`password.go`**: Interfaz de contraseñas
+- **`password.go`**: Password interface
   - `GetActivePassword()`, `Create()`
 
-- **`role.go`**: Interfaz de roles
+- **`role.go`**: Role interface
   - `GetByKey()`, `GetAll()`
 
-- **`one_time_password.go`**: Interfaz de OTP
+- **`one_time_password.go`**: OTP interface
   - `Create()`, `GetByCode()`, `Invalidate()`
 
-- **`one_time_token.go`**: Interfaz de tokens
+- **`one_time_token.go`**: Token interface
   - `Create()`, `GetByToken()`, `Invalidate()`
 
 #### `/src/application/modules/`
 
-Módulos de negocio organizados por dominio.
+Business modules organized by domain.
 
 ##### `/src/application/modules/auth/`
 
-Módulo de autenticación:
+Authentication module:
 
-- **`jwt_auth.go`**: Autenticación con JWT
-  - Login con email/contraseña
-  - Generación de tokens
+- **`jwt_auth.go`**: JWT authentication
+  - Login with email/password
+  - Token generation
 
-- **`jwt_auth_refresh.go`**: Refresh de tokens
-  - Renovación de access token
+- **`jwt_auth_refresh.go`**: Token refresh
+  - Access token renewal
 
-- **`jwt_auth_otp.go`**: Autenticación con OTP
-  - Login con código OTP
+- **`jwt_auth_otp.go`**: OTP authentication
+  - Login with OTP code
 
-- **`jwt_auth_user.go`**: Autenticación de usuario desde token
-  - Validación de token
-  - Obtención de usuario
+- **`jwt_auth_user.go`**: User authentication from token
+  - Token validation
+  - User retrieval
 
-- **`get_reset_password_token.go`**: Generación de token de reset
-  - Creación de token
-  - Envío de email
+- **`get_reset_password_token.go`**: Reset token generation
+  - Token creation
+  - Email sending
 
-- **`get_reset_password_token_email.go`**: Envío de email de reset
+- **`get_reset_password_token_email.go`**: Reset email sending
 
-- **`pipe/get_reset_password.go`**: Pipe para reset de contraseña
-  - Orquesta generación de token y envío de email
+- **`pipe/get_reset_password.go`**: Password reset pipe
+  - Orchestrates token generation and email sending
 
 ##### `/src/application/modules/user/`
 
-Módulo de usuarios:
+User module:
 
-- **`use_cases/create_user.go`**: Crear usuario
-- **`use_cases/create_user_password.go`**: Crear usuario con contraseña
-- **`use_cases/create_user_email.go`**: Enviar email de bienvenida
-- **`use_cases/get_user.go`**: Obtener usuario
-- **`use_cases/get_all_user.go`**: Listar usuarios (con cache)
-- **`use_cases/update_user.go`**: Actualizar usuario
-- **`use_cases/delete_user.go`**: Eliminar usuario
-- **`use_cases/activate_user.go`**: Activar usuario
-- **`pipes/create_user.go`**: Pipe para crear usuario y enviar email
+- **`use_cases/create_user.go`**: Create user
+- **`use_cases/create_user_password.go`**: Create user with password
+- **`use_cases/create_user_email.go`**: Send welcome email
+- **`use_cases/get_user.go`**: Get user
+- **`use_cases/get_all_user.go`**: List users (with cache)
+- **`use_cases/update_user.go`**: Update user
+- **`use_cases/delete_user.go`**: Delete user
+- **`use_cases/activate_user.go`**: Activate user
+- **`pipes/create_user.go`**: Pipe to create user and send email
 
 ##### `/src/application/modules/password/`
 
-Módulo de contraseñas:
+Password module:
 
-- **`use_cases/create_password.go`**: Crear contraseña
-- **`use_cases/create_password_token.go`**: Crear token de reset
-- **`pipes/create_password_token.go`**: Pipe para reset
+- **`use_cases/create_password.go`**: Create password
+- **`use_cases/create_password_token.go`**: Create reset token
+- **`pipes/create_password_token.go`**: Reset pipe
 
 ##### `/src/application/modules/status/`
 
-Módulo de estado:
+Status module:
 
-- **`use_cases/status.go`**: Health check del sistema
+- **`use_cases/status.go`**: System health check
 
 #### `/src/application/shared/`
 
-Componentes compartidos entre módulos.
+Components shared between modules.
 
 ##### `/src/application/shared/DTOs/`
 
 Data Transfer Objects:
 
-- **`base.go`**: DTOs base
+- **`base.go`**: Base DTOs
   - `SingleResponse[T]`, `MultipleResponse[T]`
 
-- **`user.go`**: DTOs de usuarios
+- **`user.go`**: User DTOs
   - `UserCreate`, `UserUpdate`, `UserAndPasswordCreate`
 
-- **`password.go`**: DTOs de contraseñas
+- **`password.go`**: Password DTOs
   - `PasswordCreate`, `PasswordReset`
 
-- **`token.go`**: DTOs de tokens
+- **`token.go`**: Token DTOs
   - `Token` (access + refresh)
 
-- **`one_time_password.go`**: DTOs de OTP
-- **`one_time_token.go`**: DTOs de tokens
+- **`one_time_password.go`**: OTP DTOs
+- **`one_time_token.go`**: Token DTOs
 
 ##### `/src/application/shared/errors/`
 
-Manejo de errores:
+Error handling:
 
-- **`application_error.go`**: Error de aplicación
-  - `Code`: Código de estado
-  - `Context`: Contexto del error
-  - `ErrMsg`: Mensaje de error
+- **`application_error.go`**: Application error
+  - `Code`: Status code
+  - `Context`: Error context
+  - `ErrMsg`: Error message
 
 ##### `/src/application/shared/use_case/`
 
-Base para casos de uso:
+Use case base:
 
-- **`base.go`**: Interfaz base y validación
+- **`base.go`**: Base interface and validation
   - `BaseUseCase[Input, Output]`
   - `BaseUseCaseValidation`
 
-- **`use_case_result.go`**: Resultado de caso de uso
+- **`use_case_result.go`**: Use case result
   - `UseCaseResult[T]`
   - `SetData()`, `SetError()`, `HasError()`
 
 - **`dag.go`**: Directed Acyclic Graph
-  - `DAG`: Ejecución secuencial
-  - `UseCaseParallelDag`: Ejecución paralela
+  - `DAG`: Sequential execution
+  - `UseCaseParallelDag`: Parallel execution
 
-- **`uc_guards.go`**: Guards de autorización
-  - Validación de permisos
+- **`uc_guards.go`**: Authorization guards
+  - Permission validation
 
 ##### `/src/application/shared/services/`
 
-Servicios compartidos:
+Shared services:
 
-- **`create_one_time_password.go`**: Crear OTP
-- **`create_one_time_token.go`**: Crear token
-- **`create_password.go`**: Crear contraseña
-- **`emails/`**: Servicios de email
+- **`create_one_time_password.go`**: Create OTP
+- **`create_one_time_token.go`**: Create token
+- **`create_password.go`**: Create password
+- **`emails/`**: Email services
   - `register_user_email.go`
   - `reset_password_email.go`
   - `otp_email.go`
 
 ##### `/src/application/shared/templates/`
 
-Plantillas de email:
+Email templates:
 
-- **`emails/`**: Templates HTML
+- **`emails/`**: HTML templates
   - `register_user.gohtml`
   - `reset_password.gohtml`
   - `otp.gohtml`
 
 ##### `/src/application/shared/locales/`
 
-Internacionalización:
+Internationalization:
 
-- **`app_messages.go`**: Mensajes de la aplicación
-- **`messages/`**: Mensajes por idioma
+- **`app_messages.go`**: Application messages
+- **`messages/`**: Messages by language
   - `en_us.go`, `es_es.go`
 
 ##### `/src/application/shared/context/`
 
-Contexto de aplicación:
+Application context:
 
-- **`context.go`**: Utilidades de contexto
-- **`keys.go`**: Claves de contexto (UserKey, etc.)
+- **`context.go`**: Context utilities
+- **`keys.go`**: Context keys (UserKey, etc.)
 
 ##### `/src/application/shared/settings/`
 
-Configuración:
+Configuration:
 
-- **`app_settings.go`**: Configuración de la aplicación
-  - Carga desde variables de entorno
-  - Validación de tipos
+- **`app_settings.go`**: Application configuration
+  - Loads from environment variables
+  - Type validation
 
 ##### `/src/application/shared/guards/`
 
-Guards de autorización:
+Authorization guards:
 
-- **`user.go`**: Guards de usuario
-  - Validación de permisos
+- **`user.go`**: User guards
+  - Permission validation
 
 ##### `/src/application/shared/defaults/`
 
-Valores por defecto:
+Default values:
 
-- **`user.go`**: Valores por defecto de usuarios
-- **`roles.go`**: Roles por defecto
-- **`password.go`**: Configuración de contraseñas
+- **`user.go`**: User defaults
+- **`roles.go`**: Default roles
+- **`password.go`**: Password configuration
 
 ##### `/src/application/shared/mocks/`
 
-Mocks para testing:
+Mocks for testing:
 
-- **`dtos/`**: Mocks de DTOs
-- **`mock_*.go`**: Mocks de providers y repositorios
+- **`dtos/`**: DTO mocks
+- **`mock_*.go`**: Provider and repository mocks
 
-### `/src/infrastructure/` - Capa de Infraestructura
+### `/src/infrastructure/` - Infrastructure Layer
 
 #### `/src/infrastructure/server/`
 
-Capa de servidor HTTP con Gin.
+HTTP server layer with Gin.
 
 ##### `/src/infrastructure/server/cmd/`
 
-- **`main.go`**: Punto de entrada de la aplicación
-  - Inicialización de infraestructura (`infrastructure.Initialize()`)
-  - Configuración de Gin con graceful shutdown
-  - Carga de middlewares (CORS, Recovery)
-  - Carga de rutas (`routes.Router()`)
-  - Inicio del servidor en puerto configurable
+- **`main.go`**: Application entry point
+  - Infrastructure initialization (`infrastructure.Initialize()`)
+  - Gin configuration with graceful shutdown
+  - Middleware loading (CORS, Recovery)
+  - Route loading (`routes.Router()`)
+  - Server startup on configurable port
   - **Note**: Swagger documentation runs as an independent service (see `/src/infrastructure/docs/`)
 
-**Flujo de inicialización:**
+**Initialization flow:**
 ```go
 1. infrastructure.Initialize()
-   ├── Carga configuración (Settings)
-   ├── Inicializa Logger
-   ├── Conecta a PostgreSQL (GORM)
-   ├── Configura JWT Provider
-   ├── Configura Email Provider
-   ├── Configura Cache Provider (Redis)
-   └── Configura Email Services
+   ├── Loads configuration (Settings)
+   ├── Initializes Logger
+   ├── Connects to PostgreSQL (GORM)
+   ├── Configures JWT Provider
+   ├── Configures Email Provider
+   ├── Configures Cache Provider (Redis)
+   └── Configures Email Services
 
 2. buildGinApp()
-   └── Crea aplicación Gin con graceful shutdown
+   └── Creates Gin application with graceful shutdown
 
 3. loadGinApp()
-   ├── Configura CORS
-   ├── Configura Recovery middleware
-   └── Carga rutas
+   ├── Configures CORS
+   ├── Configures Recovery middleware
+   └── Loads routes
 
 4. app.Run()
-   └── Inicia servidor HTTP
+   └── Starts HTTP server
 
 **Note**: Swagger documentation runs as an independent service in `/src/infrastructure/docs/`
 ```
 
 ##### `/src/infrastructure/api/routes/`
 
-- **`router.go`**: Definición de todas las rutas
-  - Rutas públicas
-  - Rutas privadas (con autenticación)
-  - Agrupación por módulo
+- **`router.go`**: Definition of all routes
+  - Public routes
+  - Private routes (with authentication)
+  - Grouping by module
 
-- **`wrap.go`**: Wrapper de handlers
-  - Adapta Gin a `HandlerContext`
-  - Extrae parámetros, query, locale
+- **`wrap.go`**: Handler wrapper
+  - Adapts Gin to `HandlerContext`
+  - Extracts parameters, query, locale
 
 ##### `/src/infrastructure/api/middlewares/`
 
-- **`auth.go`**: Middleware de autenticación
-  - Extrae token JWT
-  - Valida token
-  - Inyecta usuario en contexto
+- **`auth.go`**: Authentication middleware
+  - Extracts JWT token
+  - Validates token
+  - Injects user into context
 
-- **`query.go`**: Middleware de query params
-  - Parsea filtros, ordenamiento, paginación
+- **`query.go`**: Query params middleware
+  - Parses filters, sorting, pagination
 
 #### `/src/infrastructure/config/`
 
-- **`config.go`**: Carga de configuración
-  - Lee variables de entorno
-  - Valida configuración
+- **`config.go`**: Configuration loading
+  - Reads environment variables
+  - Validates configuration
 
-- **`env.go`**: Utilidades de variables de entorno
+- **`env.go`**: Environment variable utilities
 
 #### `/src/infrastructure/database/`
 
 ##### `/src/infrastructure/database/goprojectskeleton/`
 
-- **`goprojectskeleton.go`**: Configuración de GORM
-  - Conexión a PostgreSQL
-  - Configuración de SSL
+- **`goprojectskeleton.go`**: GORM configuration
+  - PostgreSQL connection
+  - SSL configuration
 
-- **`models/`**: Modelos de base de datos (GORM)
+- **`models/`**: Database models (GORM)
   - `user.go`, `role.go`, `password.go`, etc.
 
-- **`init_db/`**: Inicialización de BD
-  - Migraciones automáticas
-  - Seeds (si aplica)
+- **`init_db/`**: Database initialization
+  - Automatic migrations
+  - Seeds (if applicable)
 
 #### `/src/infrastructure/handlers/`
 
-Handlers HTTP (adaptadores de casos de uso a HTTP).
+HTTP handlers (use case to HTTP adapters).
 
-- **`user.go`**: Handlers de usuarios
+- **`user.go`**: User handlers
   - `CreateUser()`, `GetUser()`, `UpdateUser()`, etc.
 
-- **`auth.go`**: Handlers de autenticación
+- **`auth.go`**: Authentication handlers
   - `Login()`, `RefreshAccessToken()`, `LoginOTP()`, etc.
 
-- **`password.go`**: Handlers de contraseñas
+- **`password.go`**: Password handlers
   - `CreatePassword()`, `CreatePasswordToken()`
 
-- **`status.go`**: Handler de estado
+- **`status.go`**: Status handler
   - `GetHealthCheck()`
 
-- **`request_resolver.go`**: Resolución de respuestas HTTP
-  - Mapea `UseCaseResult` a respuesta HTTP
-  - Maneja códigos de estado
+- **`request_resolver.go`**: HTTP response resolution
+  - Maps `UseCaseResult` to HTTP response
+  - Handles status codes
 
-- **`types.go`**: Tipos de handlers
+- **`types.go`**: Handler types
   - `HandlerContext`
   - `Query`
 
 #### `/src/infrastructure/providers/`
 
-Implementaciones de proveedores.
+Provider implementations.
 
-- **`jwt_provider.go`**: Implementación de JWT
-  - Generación y validación de tokens
+- **`jwt_provider.go`**: JWT implementation
+  - Token generation and validation
 
-- **`hash_provider.go`**: Implementación de hashing
-  - Bcrypt para contraseñas
+- **`hash_provider.go`**: Hashing implementation
+  - Bcrypt for passwords
 
-- **`email_provider.go`**: Implementación de email
+- **`email_provider.go`**: Email implementation
   - SMTP
 
-- **`cache_provider.go`**: Implementación de cache
+- **`cache_provider.go`**: Cache implementation
   - Redis
 
-- **`logger_provider.go`**: Implementación de logging
-  - Logging estructurado
+- **`logger_provider.go`**: Logging implementation
+  - Structured logging
 
-- **`renderer_provider.go`**: Implementación de renderizado
-  - Renderizado de templates HTML
+- **`renderer_provider.go`**: Rendering implementation
+  - HTML template rendering
 
-- **`status_provider.go`**: Implementación de estado
+- **`status_provider.go`**: Status implementation
 
 #### `/src/infrastructure/repositories/`
 
-Implementaciones de repositorios.
+Repository implementations.
 
-- **`base.go`**: Repositorio base
-  - `RepositoryBase`: Implementación genérica de CRUD
-  - `ModelConverter`: Conversión entre DTOs y modelos
+- **`base.go`**: Base repository
+  - `RepositoryBase`: Generic CRUD implementation
+  - `ModelConverter`: Conversion between DTOs and models
 
-- **`user.go`**: Repositorio de usuarios
-  - Implementa `IUserRepository`
-  - Métodos específicos: `CreateWithPassword()`, `GetUserWithRole()`
+- **`user.go`**: User repository
+  - Implements `IUserRepository`
+  - Specific methods: `CreateWithPassword()`, `GetUserWithRole()`
 
-- **`password.go`**: Repositorio de contraseñas
-- **`role.go`**: Repositorio de roles
-- **`one_time_password.go`**: Repositorio de OTP
-- **`one_time_token.go`**: Repositorio de tokens
+- **`password.go`**: Password repository
+- **`role.go`**: Role repository
+- **`one_time_password.go`**: OTP repository
+- **`one_time_token.go`**: Token repository
 
-- **`model_converter.go`**: Convertidores de modelos
-- **`orm_error_map.go`**: Mapeo de errores de ORM
+- **`model_converter.go`**: Model converters
+- **`orm_error_map.go`**: ORM error mapping
 
 #### `/src/infrastructure/container.go`
 
-Inicialización centralizada de infraestructura:
+Centralized infrastructure initialization:
 
-- **Configuración**: Carga desde variables de entorno
-- **Base de datos**: Conexión a PostgreSQL con GORM
+- **Configuration**: Loads from environment variables
+- **Database**: PostgreSQL connection with GORM
 - **Providers**: JWT, Email, Cache, Logger
-- **Servicios**: Email services (registro, reset, OTP)
+- **Services**: Email services (registration, reset, OTP)
 
-**Orden de inicialización:**
-1. Settings (configuración de aplicación)
-2. Logger (sistema de logging)
-3. Database (conexión PostgreSQL)
-4. JWT Provider (autenticación)
+**Initialization order:**
+1. Settings (application configuration)
+2. Logger (logging system)
+3. Database (PostgreSQL connection)
+4. JWT Provider (authentication)
 5. Email Provider (SMTP)
 6. Cache Provider (Redis)
-7. Email Services (servicios de email)
+7. Email Services (email services)
 
 #### `/src/infrastructure/clouds/`
 
@@ -2555,205 +2555,206 @@ Adaptadores para plataformas cloud y serverless.
 
 ##### `/src/infrastructure/clouds/aws/`
 
-Implementación para **AWS Lambda**:
+Implementation for **AWS Lambda**:
 
-- **`init.go`**: Inicialización de infraestructura AWS
-  - Carga configuración desde AWS Secrets Manager
-  - Inicializa base de datos, providers y servicios
-  - Optimizado para cold starts de Lambda
+- **`init.go`**: AWS infrastructure initialization
+  - Loads configuration from AWS Secrets Manager
+  - Initializes database, providers and services
+  - Optimized for Lambda cold starts
 
-- **`lambda_adapter.go`**: Adaptador para eventos Lambda
-  - Convierte eventos API Gateway a `HandlerContext`
-  - Maneja respuestas HTTP
-  - Gestiona errores y códigos de estado
+- **`lambda_adapter.go`**: Lambda event adapter
+  - Converts API Gateway events to `HandlerContext`
+  - Handles HTTP responses
+  - Manages errors and status codes
 
-- **`secrets_manager.go`**: Integración con AWS Secrets Manager
-  - Carga automática de secretos desde ARNs
-  - Fallback a variables de entorno
-  - Cache de secretos para optimización
+- **`secrets_manager.go`**: AWS Secrets Manager integration
+  - Automatic secret loading from ARNs
+  - Fallback to environment variables
+  - Secret caching for optimization
 
-- **`middleware.go`**: Middlewares específicos para Lambda
-  - Autenticación JWT
-  - Logging estructurado
-  - Manejo de errores
+- **`middleware.go`**: Lambda-specific middlewares
+  - JWT authentication
+  - Structured logging
+  - Error handling
 
-- **`render_provider.go`**: Provider de renderizado para AWS
-  - Renderizado de templates HTML
-  - Optimizado para entorno serverless
+- **`render_provider.go`**: Rendering provider for AWS
+  - HTML template rendering
+  - Optimized for serverless environment
 
-- **`functions/`**: Generador de funciones Lambda
-  - **`main.go`**: Herramienta CLI para generar y desplegar
-  - **`functions.json`**: Definición de funciones Lambda
-  - **`utils/generate.go`**: Generación de código desde templates
-  - **`utils/deploy.go`**: Despliegue a AWS Lambda
+- **`functions/`**: Lambda function generator
+  - **`main.go`**: CLI tool for generation and deployment
+  - **`functions.json`**: Lambda function definitions
+  - **`utils/generate.go`**: Code generation from templates
+  - **`utils/deploy.go`**: Deployment to AWS Lambda
 
-- **`terraform/`**: Infraestructura como código
-  - Definición de funciones Lambda
+- **`terraform/`**: Infrastructure as code
+  - Lambda function definitions
   - API Gateway
-  - IAM roles y políticas
-  - Variables y outputs
+  - IAM roles and policies
+  - Variables and outputs
 
 ##### `/src/infrastructure/clouds/azure/`
 
-Implementación para **Azure Functions**:
+Implementation for **Azure Functions**:
 
-- **`init.go`**: Inicialización de infraestructura Azure
-  - Carga configuración desde Azure Key Vault
-  - Inicializa base de datos, providers y servicios
-  - Optimizado para Azure Functions
+- **`init.go`**: Azure infrastructure initialization
+  - Loads configuration from Azure Key Vault
+  - Initializes database, providers and services
+  - Optimized for Azure Functions
 
-- **`http_adapter.go`**: Adaptador para HTTP triggers
-  - Convierte requests HTTP a `HandlerContext`
-  - Maneja respuestas HTTP
-  - Gestiona errores y códigos de estado
+- **`http_adapter.go`**: HTTP trigger adapter
+  - Converts HTTP requests to `HandlerContext`
+  - Handles HTTP responses
+  - Manages errors and status codes
 
-- **`vault.go`**: Integración con Azure Key Vault
-  - Carga automática de secretos
-  - Autenticación con Managed Identity
-  - Cache de secretos
+- **`vault.go`**: Azure Key Vault integration
+  - Automatic secret loading
+  - Managed Identity authentication
+  - Secret caching
 
-- **`middleware.go`**: Middlewares específicos para Azure
-  - Autenticación JWT
-  - Logging estructurado
-  - Manejo de errores
+- **`middleware.go`**: Azure-specific middlewares
+  - JWT authentication
+  - Structured logging
+  - Error handling
 
-- **`functions/`**: Generador de funciones Azure
-  - **`functions.json`**: Definición de funciones
-  - **`generate.go`**: Generación de código
-  - Templates para Azure Functions
+- **`functions/`**: Azure function generator
+  - **`functions.json`**: Function definitions
+  - **`generate.go`**: Code generation
+  - Templates for Azure Functions
 
-- **`terraform/`**: Infraestructura como código
-  - Definición de Function Apps
+- **`terraform/`**: Infrastructure as code
+  - Function App definitions
   - App Service Plans
   - Key Vault integration
-  - Variables y outputs
+  - Variables and outputs
 
-### `/docker/` - Configuración Docker
+### `/docker/` - Docker Configuration
 
-- **`docker-compose.dev.yml`**: Servicios de desarrollo (incluye servicio Swagger independiente)
-- **`docker-compose.test.yml`**: Servicios de testing
-- **`docker-compose.e2e.yml`**: Servicios de E2E
-- **`dockerfile.dev`**: Dockerfile de desarrollo
-- **`dockerfile.swagger`**: Dockerfile de producción para servicio Swagger independiente
-- **`dockerfile.swagger.debug`**: Dockerfile de desarrollo para servicio Swagger con hot reload
-- **`dockerfile.e2e`**: Dockerfile de E2E
-- **`dockerfile.integration`**: Dockerfile de integración
-- **`db/`**: Configuración de base de datos
+- **`docker-compose.dev.yml`**: Development services (includes independent Swagger service)
+- **`docker-compose.test.yml`**: Testing services
+- **`docker-compose.e2e.yml`**: E2E services (includes Bruno for automated E2E testing)
+- **`dockerfile.dev`**: Development Dockerfile
+- **`dockerfile.swagger`**: Production Dockerfile for independent Swagger service
+- **`dockerfile.swagger.debug`**: Development Dockerfile for Swagger with hot reload
+- **`dockerfile.e2e`**: E2E Dockerfile
+- **`dockerfile.integration`**: Integration Dockerfile
+- **`db/`**: Database configuration
   - `Dockerfile`, `create.sql`
 
 ### `/tests/` - Tests
 
-- **`integration/`**: Tests de integración
-  - `main_test.go`: Setup de tests
-  - Tests de repositorios
-  - Tests de providers
+- **`integration/`**: Integration tests
+  - `main_test.go`: Test setup
+  - Repository tests
+  - Provider tests
 
-- **`e2e/`**: Tests end-to-end
-  - `collection.json`: Postman collection
-  - `environment.json`: Postman environment
+- **`e2e/`**: End-to-end tests
+  - `bruno/`: Bruno collection with tests
+  - `collections/`: Bruno request collections
+  - `environments/`: Bruno environment configurations
 
-### `/src/infrastructure/docs/` - Servicio Swagger Independiente
+### `/src/infrastructure/docs/` - Independent Swagger Service
 
-Servicio HTTP independiente para documentación Swagger.
+Independent HTTP service for Swagger documentation.
 
-- **`main.go`**: Servidor HTTP independiente para Swagger UI
-  - Configuración desde variables de entorno
-  - Servidor en puerto configurable (default: 8081)
-  - Redirección automática a `/docs/`
-- **`config/`**: Configuración del servidor Swagger
-  - `config.go`: Carga de variables de entorno
-- **`swagger/`**: Archivos generados de Swagger
-  - `swagger.json`: Especificación Swagger (JSON)
-  - `swagger.yaml`: Especificación Swagger (YAML)
-  - `docs.go`: Código generado de Swagger
-- **`go.mod`**: Módulo independiente para el servicio Swagger
+- **`main.go`**: Independent HTTP server for Swagger UI
+  - Configuration from environment variables
+  - Server on configurable port (default: 8081)
+  - Automatic redirect to `/docs/`
+- **`config/`**: Swagger server configuration
+  - `config.go`: Environment variable loading
+- **`swagger/`**: Generated Swagger files
+  - `swagger.json`: Swagger specification (JSON)
+  - `swagger.yaml`: Swagger specification (YAML)
+  - `docs.go`: Generated Swagger code
+- **`go.mod`**: Independent module for Swagger service
 
 ---
 
 ## Technologies and Dependencies
 
-### Stack Tecnológico
+### Technology Stack
 
-#### 🚀 Lenguaje y Runtime
-- **Go 1.25**: Lenguaje de programación
-  - Concurrencia nativa con goroutines
-  - Compilación estática
-  - Tree shaking automático
-  - Excelente rendimiento
+#### 🚀 Language and Runtime
+- **Go 1.25**: Programming language
+  - Native concurrency with goroutines
+  - Static compilation
+  - Automatic tree shaking
+  - Excellent performance
 
-#### 🌐 Framework Web
-- **Gin v1.10.0**: Framework HTTP minimalista y rápido
-  - Router de alto rendimiento
+#### 🌐 Web Framework
+- **Gin v1.10.0**: Minimalist and fast HTTP framework
+  - High-performance router
   - Middleware chain
-  - JSON binding automático
-  - Validación de requests
+  - Automatic JSON binding
+  - Request validation
 
-- **gin-contrib/cors**: Middleware CORS
-  - Configuración flexible de orígenes
-  - Soporte para credenciales
-  - Headers personalizables
+- **gin-contrib/cors**: CORS middleware
+  - Flexible origin configuration
+  - Credential support
+  - Customizable headers
 
-- **gin-contrib/graceful**: Shutdown graceful
-  - Cierre ordenado del servidor
-  - Finalización de requests en curso
-  - Timeout configurable
+- **gin-contrib/graceful**: Graceful shutdown
+  - Orderly server shutdown
+  - Completion of in-flight requests
+  - Configurable timeout
 
-#### 💾 Base de Datos y Persistencia
-- **GORM v1.25.12**: ORM para Go
-  - Migraciones automáticas
-  - Hooks y callbacks
-  - Relaciones y asociaciones
-  - Query builder fluido
+#### 💾 Database and Persistence
+- **GORM v1.25.12**: ORM for Go
+  - Automatic migrations
+  - Hooks and callbacks
+  - Relationships and associations
+  - Fluent query builder
 
-- **PostgreSQL (pgx/v5)**: Driver de PostgreSQL
-  - Connection pooling nativo
-  - Transacciones
+- **PostgreSQL (pgx/v5)**: PostgreSQL driver
+  - Native connection pooling
+  - Transactions
   - Prepared statements
-  - Soporte para tipos avanzados
+  - Advanced type support
 
-- **Redis (go-redis/v9)**: Cliente Redis para cache
-  - Operaciones atómicas
+- **Redis (go-redis/v9)**: Redis client for cache
+  - Atomic operations
   - Pub/Sub
   - Pipeline support
   - Cluster support
 
-#### 🔐 Autenticación y Seguridad
-- **golang-jwt/jwt/v5**: Implementación de JWT
-  - Generación y validación de tokens
-  - Múltiples algoritmos (HS256, RS256, etc.)
-  - Claims personalizados
-  - Expiración y validación de tiempo
+#### 🔐 Authentication and Security
+- **golang-jwt/jwt/v5**: JWT implementation
+  - Token generation and validation
+  - Multiple algorithms (HS256, RS256, etc.)
+  - Custom claims
+  - Expiration and time validation
 
-- **golang.org/x/crypto**: Utilidades criptográficas
-  - Bcrypt para hash de contraseñas
-  - Salt automático
-  - Cost configurable
+- **golang.org/x/crypto**: Cryptographic utilities
+  - Bcrypt for password hashing
+  - Automatic salt
+  - Configurable cost
 
-#### 📚 Documentación y Testing
-- **swaggo/swag**: Generación de documentación Swagger
-  - Anotaciones en código Go
-  - Generación automática de OpenAPI
-  - Validación de esquemas
+#### 📚 Documentation and Testing
+- **swaggo/swag**: Swagger documentation generation
+  - Annotations in Go code
+  - Automatic OpenAPI generation
+  - Schema validation
 
-- **swaggo/http-swagger**: Servidor HTTP independiente para Swagger UI
-  - Servicio completamente independiente
-  - UI interactiva
-  - Pruebas desde navegador
-  - Autenticación en Swagger UI
-  - Despliegue independiente en Docker registry
+- **swaggo/http-swagger**: Independent HTTP server for Swagger UI
+  - Completely independent service
+  - Interactive UI
+  - Browser testing
+  - Authentication in Swagger UI
+  - Independent deployment in Docker registry
 
-- **stretchr/testify**: Framework de testing
-  - Assertions mejoradas
-  - Mocks y suites
+- **stretchr/testify**: Testing framework
+  - Enhanced assertions
+  - Mocks and suites
   - Test helpers
 
-#### 🛠️ Utilidades
-- **joho/godotenv**: Carga de variables de entorno
-  - Soporte para `.env` files
-  - Override de variables
-  - Validación de variables requeridas
+#### 🛠️ Utilities
+- **joho/godotenv**: Environment variable loading
+  - Support for `.env` files
+  - Variable override
+  - Required variable validation
 
-### Dependencias Principales
+### Main Dependencies
 
 ```go
 require (
@@ -2788,32 +2789,32 @@ require (
 )
 ```
 
-### Arquitectura de Dependencias
+### Dependency Architecture
 
 ```mermaid
 graph TB
-    subgraph Core["Núcleo"]
+    subgraph Core["Core"]
         Go[Go 1.25]
     end
 
-    subgraph Web["Capa Web"]
+    subgraph Web["Web Layer"]
         Gin[Gin Framework]
         CORS[CORS Middleware]
         Graceful[Graceful Shutdown]
     end
 
-    subgraph Data["Capa de Datos"]
+    subgraph Data["Data Layer"]
         GORM[GORM ORM]
         PostgreSQL[PostgreSQL Driver]
         Redis[Redis Client]
     end
 
-    subgraph Auth["Autenticación"]
+    subgraph Auth["Authentication"]
         JWT[JWT Library]
         Crypto[Crypto Utils]
     end
 
-    subgraph Docs["Documentación"]
+    subgraph Docs["Documentation"]
         Swag[Swag Generator]
         SwaggerUI[Swagger UI]
     end
@@ -2852,12 +2853,12 @@ require (
 
 ## Configuration and Setup
 
-### Variables de Entorno
+### Environment Variables
 
-El proyecto utiliza variables de entorno para toda la configuración:
+The project uses environment variables for all configuration:
 
 ```bash
-# Aplicación
+# Application
 APP_NAME=goprojectskeleton
 APP_ENV=development
 APP_PORT=8080
@@ -2866,7 +2867,7 @@ APP_DESCRIPTION=Go Project Skeleton
 ENABLE_LOG=true
 DEBUG_LOG=true
 
-# Base de Datos
+# Database
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
@@ -2894,7 +2895,7 @@ MAIL_PORT=1025
 MAIL_FROM=noreply@example.com
 MAIL_PASSWORD=password
 
-# Tokens y OTP
+# Tokens and OTP
 ONE_TIME_TOKEN_TTL=15
 ONE_TIME_TOKEN_EMAIL_VERIFY_TTL=60
 ONE_TIME_PASSWORD_LENGTH=6
@@ -2903,38 +2904,38 @@ FRONTEND_RESET_PASSWORD_URL=http://localhost:3000/reset-password
 FRONTEND_ACTIVATE_ACCOUNT_URL=http://localhost:3000/activate-account
 ```
 
-### Instalación
+### Installation
 
-1. **Clonar repositorio**
+1. **Clone repository**
 ```bash
 git clone <repository-url>
 cd GoProjectSkeleton
 ```
 
-2. **Configurar variables de entorno**
+2. **Configure environment variables**
 ```bash
 cp dev.env.example dev.env
-# Editar dev.env con tus configuraciones
+# Edit dev.env with your configurations
 ```
 
-3. **Instalar dependencias**
+3. **Install dependencies**
 ```bash
 go mod download
 ```
 
-4. **Ejecutar con Docker**
+4. **Run with Docker**
 ```bash
-# Crear red
+# Create network
 docker network create goprojectskeleton
 
-# Crear volumen
+# Create volume
 docker volume create goprojectskeleton-db-data
 
-# Ejecutar servicios
+# Run services
 docker-compose -f docker/docker-compose.dev.yml up -d
 ```
 
-5. **Ejecutar aplicación**
+5. **Run application**
 ```bash
 go run src/infrastructure/api/cmd/main.go
 ```
@@ -2943,242 +2944,242 @@ go run src/infrastructure/api/cmd/main.go
 
 ## Business Modules
 
-### 🔐 Módulo de Autenticación (`auth`)
+### 🔐 Authentication Module (`auth`)
 
-**Responsabilidad**: Gestión completa de autenticación y autorización.
+**Responsibility**: Complete authentication and authorization management.
 
-#### Funcionalidades
+#### Features
 
-- ✅ **Login con Email/Contraseña** - Autenticación tradicional
-- ✅ **Login con OTP** - Autenticación de dos factores
-- ✅ **Refresh de Tokens** - Renovación de access tokens
-- ✅ **Reset de Contraseña** - Recuperación mediante tokens
-- ✅ **Validación de Usuario** - Verificación desde JWT token
+- ✅ **Login with Email/Password** - Traditional authentication
+- ✅ **Login with OTP** - Two-factor authentication
+- ✅ **Token Refresh** - Access token renewal
+- ✅ **Password Reset** - Recovery via tokens
+- ✅ **User Validation** - Verification from JWT token
 
-#### Casos de Uso Detallados
+#### Detailed Use Cases
 
-**`JwtAuthUseCase`** - Autenticación principal
+**`JwtAuthUseCase`** - Main authentication
 ```go
-// Flujo:
-// 1. Valida credenciales (email/phone + password)
-// 2. Verifica contraseña con hash
-// 3. Si OTP activado → genera y envía OTP
-// 4. Si OTP desactivado → genera tokens JWT
-// 5. Retorna tokens o indica que se envió OTP
+// Flow:
+// 1. Validates credentials (email/phone + password)
+// 2. Verifies password with hash
+// 3. If OTP enabled → generates and sends OTP
+// 4. If OTP disabled → generates JWT tokens
+// 5. Returns tokens or indicates OTP was sent
 ```
 
-**`JwtAuthRefreshUseCase`** - Renovación de tokens
+**`JwtAuthRefreshUseCase`** - Token renewal
 ```go
-// Flujo:
-// 1. Valida refresh token
-// 2. Verifica expiración y firma
-// 3. Genera nuevo access token
-// 4. Retorna nuevo token
+// Flow:
+// 1. Validates refresh token
+// 2. Verifies expiration and signature
+// 3. Generates new access token
+// 4. Returns new token
 ```
 
-**`JwtAuthOtpUseCase`** - Autenticación con OTP
+**`JwtAuthOtpUseCase`** - OTP authentication
 ```go
-// Flujo:
-// 1. Valida código OTP
-// 2. Verifica expiración y uso
-// 3. Invalida OTP usado
-// 4. Genera tokens JWT
-// 5. Retorna tokens
+// Flow:
+// 1. Validates OTP code
+// 2. Verifies expiration and usage
+// 3. Invalidates used OTP
+// 4. Generates JWT tokens
+// 5. Returns tokens
 ```
 
-**`GetResetPasswordTokenUseCase`** - Generación de token de reset
+**`GetResetPasswordTokenUseCase`** - Reset token generation
 ```go
-// Flujo:
-// 1. Busca usuario por email/phone
-// 2. Genera token único
-// 3. Crea registro en BD con expiración
-// 4. Envía email con link de reset
+// Flow:
+// 1. Finds user by email/phone
+// 2. Generates unique token
+// 3. Creates DB record with expiration
+// 4. Sends email with reset link
 ```
 
-**`JwtAuthUserUseCase`** - Validación de usuario desde token
+**`JwtAuthUserUseCase`** - User validation from token
 ```go
-// Flujo:
-// 1. Extrae token del contexto
-// 2. Valida y parsea token
-// 3. Busca usuario en BD
-// 4. Retorna usuario con rol
-```
-
-#### Pipes
-
-**`GetResetPasswordPipe`** - Pipe para reset de contraseña
-- Orquesta generación de token y envío de email
-- Ejecución secuencial con manejo de errores
-
-### 👥 Módulo de Usuarios (`user`)
-
-**Responsabilidad**: Gestión completa del ciclo de vida de usuarios.
-
-#### Funcionalidades
-
-- ✅ **CRUD Completo** - Crear, leer, actualizar, eliminar
-- ✅ **Activación de Cuentas** - Activación mediante tokens
-- ✅ **Gestión de Roles** - Asignación y validación de roles
-- ✅ **Paginación y Filtrado** - Consultas eficientes
-- ✅ **Cache Inteligente** - Cache de listados con Redis
-- ✅ **Emails Transaccionales** - Bienvenida y reactivación
-
-#### Casos de Uso Detallados
-
-**`CreateUserUseCase`** - Crear usuario básico
-```go
-// Flujo:
-// 1. Valida datos de entrada
-// 2. Verifica que email/phone no existan
-// 3. Crea usuario con estado "pending"
-// 4. Retorna usuario creado
-```
-
-**`CreateUserAndPasswordUseCase`** - Crear usuario con contraseña
-```go
-// Flujo:
-// 1. Valida datos de usuario y contraseña
-// 2. Hash de contraseña con Bcrypt
-// 3. Crea usuario y contraseña en transacción
-// 4. Retorna usuario creado
-```
-
-**`CreateUserSendEmailUseCase`** - Enviar email de bienvenida
-```go
-// Flujo:
-// 1. Renderiza template de email
-// 2. Envía email con datos del usuario
-// 3. Maneja errores de envío
-```
-
-**`GetUserUseCase`** - Obtener usuario por ID
-```go
-// Flujo:
-// 1. Valida ID
-// 2. Busca usuario en BD
-// 3. Incluye información de rol
-// 4. Retorna usuario con rol
-```
-
-**`GetAllUserUseCase`** - Listar usuarios con filtros
-```go
-// Flujo:
-// 1. Verifica cache (Redis)
-// 2. Si cache hit → retorna desde cache
-// 3. Si cache miss → consulta BD con filtros
-// 4. Aplica paginación y ordenamiento
-// 5. Guarda en cache con TTL
-// 6. Retorna lista paginada
-```
-
-**`UpdateUserUseCase`** - Actualizar usuario
-```go
-// Flujo:
-// 1. Valida datos de actualización
-// 2. Busca usuario existente
-// 3. Aplica cambios parciales (PATCH)
-// 4. Valida reglas de negocio
-// 5. Actualiza en BD
-// 6. Retorna usuario actualizado
-```
-
-**`DeleteUserUseCase`** - Eliminar usuario (soft delete)
-```go
-// Flujo:
-// 1. Busca usuario
-// 2. Verifica permisos (no eliminar admin)
-// 3. Soft delete (marca como deleted)
-// 4. Invalida cache relacionado
-```
-
-**`ActivateUserUseCase`** - Activar cuenta de usuario
-```go
-// Flujo:
-// 1. Valida token de activación
-// 2. Verifica expiración
-// 3. Cambia estado a "active"
-// 4. Invalida token usado
-```
-
-**`ResendWelcomeEmailUseCase`** - Reenviar email de bienvenida
-```go
-// Flujo:
-// 1. Busca usuario
-// 2. Renderiza template
-// 3. Envía email
+// Flow:
+// 1. Extracts token from context
+// 2. Validates and parses token
+// 3. Finds user in DB
+// 4. Returns user with role
 ```
 
 #### Pipes
 
-**`CreateUserPipe`** - Pipe para crear usuario completo
-- Ejecuta secuencialmente:
-  1. `CreateUserAndPasswordUseCase` → Crea usuario con contraseña
-  2. `CreateUserSendEmailUseCase` → Envía email de bienvenida
-- Manejo de errores: Si falla cualquier paso, se detiene la ejecución
+**`GetResetPasswordPipe`** - Password reset pipe
+- Orchestrates token generation and email sending
+- Sequential execution with error handling
 
-### 🔑 Módulo de Contraseñas (`password`)
+### 👥 User Module (`user`)
 
-**Responsabilidad**: Gestión segura de contraseñas.
+**Responsibility**: Complete user lifecycle management.
 
-#### Funcionalidades
+#### Features
 
-- ✅ **Creación de Contraseñas** - Hash seguro con Bcrypt
-- ✅ **Generación de Tokens de Reset** - Tokens únicos con expiración
-- ✅ **Validación de Fortaleza** - Reglas de contraseña segura
-- ✅ **Expiración de Contraseñas** - Contraseñas temporales
+- ✅ **Complete CRUD** - Create, read, update, delete
+- ✅ **Account Activation** - Activation via tokens
+- ✅ **Role Management** - Role assignment and validation
+- ✅ **Pagination and Filtering** - Efficient queries
+- ✅ **Smart Cache** - List caching with Redis
+- ✅ **Transactional Emails** - Welcome and reactivation
 
-#### Casos de Uso Detallados
+#### Detailed Use Cases
 
-**`CreatePasswordUseCase`** - Crear nueva contraseña
+**`CreateUserUseCase`** - Create basic user
 ```go
-// Flujo:
-// 1. Valida fortaleza de contraseña
-// 2. Hash con Bcrypt
-// 3. Desactiva contraseñas anteriores
-// 4. Crea nueva contraseña activa
-// 5. Configura expiración si aplica
+// Flow:
+// 1. Validates input data
+// 2. Verifies email/phone don't exist
+// 3. Creates user with "pending" status
+// 4. Returns created user
 ```
 
-**`CreatePasswordTokenUseCase`** - Crear token de reset
+**`CreateUserAndPasswordUseCase`** - Create user with password
 ```go
-// Flujo:
-// 1. Busca usuario por email/phone
-// 2. Genera token único
-// 3. Crea registro con expiración
-// 4. Envía email con link de reset
+// Flow:
+// 1. Validates user and password data
+// 2. Password hash with Bcrypt
+// 3. Creates user and password in transaction
+// 4. Returns created user
+```
+
+**`CreateUserSendEmailUseCase`** - Send welcome email
+```go
+// Flow:
+// 1. Renders email template
+// 2. Sends email with user data
+// 3. Handles sending errors
+```
+
+**`GetUserUseCase`** - Get user by ID
+```go
+// Flow:
+// 1. Validates ID
+// 2. Finds user in DB
+// 3. Includes role information
+// 4. Returns user with role
+```
+
+**`GetAllUserUseCase`** - List users with filters
+```go
+// Flow:
+// 1. Checks cache (Redis)
+// 2. If cache hit → returns from cache
+// 3. If cache miss → queries DB with filters
+// 4. Applies pagination and sorting
+// 5. Saves to cache with TTL
+// 6. Returns paginated list
+```
+
+**`UpdateUserUseCase`** - Update user
+```go
+// Flow:
+// 1. Validates update data
+// 2. Finds existing user
+// 3. Applies partial changes (PATCH)
+// 4. Validates business rules
+// 5. Updates in DB
+// 6. Returns updated user
+```
+
+**`DeleteUserUseCase`** - Delete user (soft delete)
+```go
+// Flow:
+// 1. Finds user
+// 2. Verifies permissions (don't delete admin)
+// 3. Soft delete (marks as deleted)
+// 4. Invalidates related cache
+```
+
+**`ActivateUserUseCase`** - Activate user account
+```go
+// Flow:
+// 1. Validates activation token
+// 2. Verifies expiration
+// 3. Changes status to "active"
+// 4. Invalidates used token
+```
+
+**`ResendWelcomeEmailUseCase`** - Resend welcome email
+```go
+// Flow:
+// 1. Finds user
+// 2. Renders template
+// 3. Sends email
 ```
 
 #### Pipes
 
-**`CreatePasswordTokenPipe`** - Pipe para reset de contraseña
-- Orquesta creación de token y envío de email
+**`CreateUserPipe`** - Pipe to create complete user
+- Executes sequentially:
+  1. `CreateUserAndPasswordUseCase` → Creates user with password
+  2. `CreateUserSendEmailUseCase` → Sends welcome email
+- Error handling: If any step fails, execution stops
 
-### 📊 Módulo de Estado (`status`)
+### 🔑 Password Module (`password`)
 
-**Responsabilidad**: Monitoreo y salud del sistema.
+**Responsibility**: Secure password management.
 
-#### Funcionalidades
+#### Features
 
-- ✅ **Health Check** - Estado general del sistema
-- ✅ **Verificación de Servicios** - BD, Redis, etc.
-- ✅ **Información de Versión** - Versión de la aplicación
+- ✅ **Password Creation** - Secure hash with Bcrypt
+- ✅ **Reset Token Generation** - Unique tokens with expiration
+- ✅ **Strength Validation** - Secure password rules
+- ✅ **Password Expiration** - Temporary passwords
 
-#### Casos de Uso Detallados
+#### Detailed Use Cases
 
-**`GetStatusUseCase`** - Obtener estado del sistema
+**`CreatePasswordUseCase`** - Create new password
 ```go
-// Flujo:
-// 1. Verifica conexión a PostgreSQL
-// 2. Verifica conexión a Redis
-// 3. Verifica providers (JWT, Email)
-// 4. Retorna estado consolidado
-// 5. Incluye información de versión
+// Flow:
+// 1. Validates password strength
+// 2. Hash with Bcrypt
+// 3. Deactivates previous passwords
+// 4. Creates new active password
+// 5. Configures expiration if applicable
 ```
 
-### 📈 Estadísticas por Módulo
+**`CreatePasswordTokenUseCase`** - Create reset token
+```go
+// Flow:
+// 1. Finds user by email/phone
+// 2. Generates unique token
+// 3. Creates record with expiration
+// 4. Sends email with reset link
+```
 
-| Módulo | Casos de Uso | Pipes | Tests | Endpoints |
-|--------|--------------|-------|-------|-----------|
+#### Pipes
+
+**`CreatePasswordTokenPipe`** - Password reset pipe
+- Orchestrates token creation and email sending
+
+### 📊 Status Module (`status`)
+
+**Responsibility**: System monitoring and health.
+
+#### Features
+
+- ✅ **Health Check** - Overall system status
+- ✅ **Service Verification** - DB, Redis, etc.
+- ✅ **Version Information** - Application version
+
+#### Detailed Use Cases
+
+**`GetStatusUseCase`** - Get system status
+```go
+// Flow:
+// 1. Verifies PostgreSQL connection
+// 2. Verifies Redis connection
+// 3. Verifies providers (JWT, Email)
+// 4. Returns consolidated status
+// 5. Includes version information
+```
+
+### 📈 Statistics by Module
+
+| Module | Use Cases | Pipes | Tests | Endpoints |
+|--------|-----------|-------|-------|-----------|
 | **auth** | 5 | 1 | 5+ | 4 |
 | **user** | 9 | 1 | 9+ | 7 |
 | **password** | 2 | 1 | 2+ | 2 |
@@ -3189,43 +3190,43 @@ go run src/infrastructure/api/cmd/main.go
 
 ## API and Endpoints
 
-### Autenticación
+### Authentication
 
-| Método | Endpoint | Descripción | Autenticación |
+| Method | Endpoint | Description | Authentication |
 |--------|----------|-------------|---------------|
-| POST | `/api/auth/login` | Login con credenciales | No |
-| POST | `/api/auth/refresh` | Renovar token de acceso | No |
-| GET | `/api/auth/login-otp/{otp}` | Login con OTP | No |
-| GET | `/api/auth/password-reset/{identifier}` | Solicitar reset de contraseña | No |
+| POST | `/api/auth/login` | Login with credentials | No |
+| POST | `/api/auth/refresh` | Renew access token | No |
+| GET | `/api/auth/login-otp/{otp}` | Login with OTP | No |
+| GET | `/api/auth/password-reset/{identifier}` | Request password reset | No |
 
-### Usuarios
+### Users
 
-| Método | Endpoint | Descripción | Autenticación |
+| Method | Endpoint | Description | Authentication |
 |--------|----------|-------------|---------------|
-| POST | `/api/user` | Crear usuario | No |
-| GET | `/api/user/{id}` | Obtener usuario | Sí |
-| PATCH | `/api/user/{id}` | Actualizar usuario | Sí |
-| DELETE | `/api/user/{id}` | Eliminar usuario | Sí |
-| GET | `/api/user` | Listar usuarios (con filtros) | Sí |
-| POST | `/api/user-password` | Crear usuario con contraseña | No |
-| POST | `/api/user/activate` | Activar usuario | No |
+| POST | `/api/user` | Create user | No |
+| GET | `/api/user/{id}` | Get user | Yes |
+| PATCH | `/api/user/{id}` | Update user | Yes |
+| DELETE | `/api/user/{id}` | Delete user | Yes |
+| GET | `/api/user` | List users (with filters) | Yes |
+| POST | `/api/user-password` | Create user with password | No |
+| POST | `/api/user/activate` | Activate user | No |
 
-### Contraseñas
+### Passwords
 
-| Método | Endpoint | Descripción | Autenticación |
+| Method | Endpoint | Description | Authentication |
 |--------|----------|-------------|---------------|
-| POST | `/api/password` | Crear contraseña | Sí |
-| POST | `/api/password/reset-token` | Crear token de reset | No |
+| POST | `/api/password` | Create password | Yes |
+| POST | `/api/password/reset-token` | Create reset token | No |
 
-### Sistema
+### System
 
-| Método | Endpoint | Descripción | Autenticación |
+| Method | Endpoint | Description | Authentication |
 |--------|----------|-------------|---------------|
 | GET | `/api/health-check` | Health check | No |
 
 **Note**: Swagger documentation is available as an independent service on port 8081 at `http://localhost:8081/docs/`
 
-### Ejemplos de Uso
+### Usage Examples
 
 #### Login
 ```bash
@@ -3237,13 +3238,13 @@ curl -X POST http://localhost:8080/api/auth/login \
   }'
 ```
 
-#### Crear Usuario
+#### Create User
 ```bash
 curl -X POST http://localhost:8080/api/user \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Juan Pérez",
-    "email": "juan@example.com",
+    "name": "John Doe",
+    "email": "john@example.com",
     "phone": "+1234567890",
     "role_id": 2,
     "status": "pending",
@@ -3255,7 +3256,7 @@ curl -X POST http://localhost:8080/api/user \
 
 ## Database and Persistence
 
-### Diagrama Entidad-Relación (ERD)
+### Entity-Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
@@ -3318,9 +3319,9 @@ erDiagram
     }
 ```
 
-### Modelos Principales
+### Main Models
 
-#### User (Usuario)
+#### User
 ```go
 type User struct {
     ID        uint      `gorm:"primaryKey"`
@@ -3336,7 +3337,7 @@ type User struct {
 }
 ```
 
-#### Password (Contraseña)
+#### Password
 ```go
 type Password struct {
     ID        uint       `gorm:"primaryKey"`
@@ -3349,7 +3350,7 @@ type Password struct {
 }
 ```
 
-#### Role (Rol)
+#### Role
 ```go
 type Role struct {
     ID          uint      `gorm:"primaryKey"`
@@ -3363,15 +3364,15 @@ type Role struct {
 }
 ```
 
-### Diagrama de Relaciones
+### Relationship Diagram
 
 ```mermaid
 graph LR
-    subgraph UserDomain["👤 Usuario"]
+    subgraph UserDomain["👤 User"]
         User[User<br/>ID, Name, Email, Phone<br/>Status, RoleID, OTPLogin]
     end
 
-    subgraph AuthDomain["🔐 Autenticación"]
+    subgraph AuthDomain["🔐 Authentication"]
         Password[Password<br/>UserID, Hash<br/>IsActive, ExpiresAt]
         OTP[OneTimePassword<br/>UserID, Code<br/>IsUsed, ExpiresAt]
         Token[OneTimeToken<br/>UserID, Token, Type<br/>IsUsed, ExpiresAt]
@@ -3393,25 +3394,25 @@ graph LR
     style Role fill:#e8f5e9
 ```
 
-### Migraciones
+### Migrations
 
-Las migraciones se ejecutan automáticamente al iniciar la aplicación usando GORM AutoMigrate.
+Migrations run automatically when the application starts using GORM AutoMigrate.
 
 ### Cache
 
-El sistema utiliza Redis para cachear consultas frecuentes, especialmente en listados de usuarios.
+The system uses Redis to cache frequent queries, especially in user listings.
 
 ```mermaid
 graph TB
-    subgraph App["Aplicación"]
+    subgraph App["Application"]
         Handler[Handler]
         UseCase[Use Case]
         Cache[Cache Provider]
     end
 
-    subgraph Storage["Almacenamiento"]
+    subgraph Storage["Storage"]
         Redis[(Redis<br/>Cache)]
-        DB[(PostgreSQL<br/>Base de Datos)]
+        DB[(PostgreSQL<br/>Database)]
     end
 
     Handler --> UseCase
@@ -3429,11 +3430,11 @@ graph TB
 
 ## Authentication and Security
 
-### Diagrama de Flujo de Autenticación
+### Authentication Flow Diagram
 
 ```mermaid
 sequenceDiagram
-    participant Client as Cliente
+    participant Client as Client
     participant API as API
     participant AuthUC as Auth Use Case
     participant UserRepo as User Repository
@@ -3466,11 +3467,11 @@ sequenceDiagram
     API-->>Client: {accessToken, refreshToken}
 ```
 
-### Flujo de Autenticación con OTP
+### OTP Authentication Flow
 
 ```mermaid
 sequenceDiagram
-    participant Client as Cliente
+    participant Client as Client
     participant API as API
     participant AuthUC as Auth Use Case
     participant OTPUC as OTP Use Case
@@ -3481,29 +3482,29 @@ sequenceDiagram
 
     Client->>API: POST /api/auth/login<br/>{email, password}
     API->>AuthUC: Execute(credentials)
-    AuthUC->>AuthUC: Valida credenciales
-    AuthUC->>AuthUC: ¿OTP Login activado?
+    AuthUC->>AuthUC: Validates credentials
+    AuthUC->>AuthUC: Is OTP Login enabled?
 
-    alt OTP Login activado
+    alt OTP Login enabled
         AuthUC->>OTPUC: GenerateOTP()
         OTPUC->>OTPRepo: Create()
         OTPRepo->>DB: INSERT OTP
         OTPUC->>EmailSvc: SendOTPEmail()
-        EmailSvc->>SMTP: Enviar email
+        EmailSvc->>SMTP: Send email
         AuthUC-->>API: 204 No Content
-        API-->>Client: OTP enviado por email
-    else OTP Login desactivado
+        API-->>Client: OTP sent by email
+    else OTP Login disabled
         AuthUC->>JWT: GenerateTokens()
         AuthUC-->>API: Tokens
         API-->>Client: {accessToken, refreshToken}
     end
 
-    Note over Client,SMTP: Usuario ingresa OTP
+    Note over Client,SMTP: User enters OTP
     Client->>API: GET /api/auth/login-otp/{otp}
     API->>OTPUC: ValidateOTP(otp)
     OTPUC->>OTPRepo: GetByCode()
     OTPRepo->>DB: SELECT OTP
-    OTPUC->>OTPUC: Valida expiración
+    OTPUC->>OTPUC: Validates expiration
     OTPUC->>JWT: GenerateTokens()
     OTPUC-->>API: Tokens
     API-->>Client: {accessToken, refreshToken}
@@ -3511,21 +3512,21 @@ sequenceDiagram
 
 ### JWT (JSON Web Tokens)
 
-El sistema utiliza JWT para autenticación con dos tipos de tokens:
+The system uses JWT for authentication with two types of tokens:
 
 ```mermaid
 graph TB
-    subgraph TokenFlow["Flujo de Tokens"]
-        Login[Login] --> AccessToken[Access Token<br/>TTL: 1 hora]
-        Login --> RefreshToken[Refresh Token<br/>TTL: 24 horas]
+    subgraph TokenFlow["Token Flow"]
+        Login[Login] --> AccessToken[Access Token<br/>TTL: 1 hour]
+        Login --> RefreshToken[Refresh Token<br/>TTL: 24 hours]
 
-        AccessToken -->|Expira| Refresh[Refresh Endpoint]
+        AccessToken -->|Expires| Refresh[Refresh Endpoint]
         Refresh --> NewAccess[New Access Token]
 
-        AccessToken -->|Válido| Protected[Protected Resources]
+        AccessToken -->|Valid| Protected[Protected Resources]
     end
 
-    subgraph TokenStructure["Estructura JWT"]
+    subgraph TokenStructure["JWT Structure"]
         Header[Header<br/>alg: HS256<br/>typ: JWT]
         Payload[Payload<br/>iss, aud, sub<br/>iat, exp, typ]
         Signature[Signature<br/>HMAC SHA256]
@@ -3540,41 +3541,41 @@ graph TB
     style Protected fill:#e3f2fd
 ```
 
-1. **Access Token**: Token de acceso (TTL: 1 hora por defecto)
-2. **Refresh Token**: Token de renovación (TTL: 24 horas por defecto)
+1. **Access Token**: Access token (TTL: 1 hour by default)
+2. **Refresh Token**: Renewal token (TTL: 24 hours by default)
 
 ### OTP (One-Time Password)
 
-Sistema de autenticación de dos factores:
+Two-factor authentication system:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Login: Credenciales
-    Login --> CheckOTP: Validar
-    CheckOTP --> GenerateOTP: OTP activado
-    CheckOTP --> GenerateJWT: OTP desactivado
+    [*] --> Login: Credentials
+    Login --> CheckOTP: Validate
+    CheckOTP --> GenerateOTP: OTP enabled
+    CheckOTP --> GenerateJWT: OTP disabled
 
-    GenerateOTP --> SendEmail: Código generado
-    SendEmail --> WaitOTP: Email enviado
-    WaitOTP --> ValidateOTP: Usuario ingresa código
-    ValidateOTP --> GenerateJWT: Código válido
-    ValidateOTP --> Expired: Código expirado
-    ValidateOTP --> Invalid: Código inválido
+    GenerateOTP --> SendEmail: Code generated
+    SendEmail --> WaitOTP: Email sent
+    WaitOTP --> ValidateOTP: User enters code
+    ValidateOTP --> GenerateJWT: Valid code
+    ValidateOTP --> Expired: Expired code
+    ValidateOTP --> Invalid: Invalid code
 
-    GenerateJWT --> [*]: Tokens generados
+    GenerateJWT --> [*]: Tokens generated
     Expired --> [*]
     Invalid --> [*]
 ```
 
-- Generación automática de códigos OTP
-- Envío por email
-- TTL configurable (por defecto: 10 minutos)
+- Automatic OTP code generation
+- Email delivery
+- Configurable TTL (default: 10 minutes)
 
-### Seguridad
+### Security
 
 ```mermaid
 graph TB
-    subgraph SecurityLayers["Capas de Seguridad"]
+    subgraph SecurityLayers["Security Layers"]
         Input[Input Validation<br/>DTOs]
         Auth[Authentication<br/>JWT Middleware]
         Authz[Authorization<br/>Guards/Roles]
@@ -3600,72 +3601,76 @@ graph TB
     style Hash fill:#c8e6c9
 ```
 
-- **Hash de contraseñas**: Bcrypt con salt automático
-- **Validación de entrada**: En todos los endpoints
-- **Middleware de autenticación**: Para rutas protegidas
-- **CORS**: Configurado para seguridad web
-- **Sanitización**: Prevención de inyecciones
+- **Password hashing**: Bcrypt with automatic salt
+- **Input validation**: On all endpoints
+- **Authentication middleware**: For protected routes
+- **CORS**: Configured for web security
+- **Sanitization**: Injection prevention
 
 ---
 
 ## Testing
 
-### Estructura de Tests
+### Test Structure
 
 ```
 tests/
-├── e2e/                    # Tests end-to-end
-│   ├── collection.json     # Postman collection
-│   └── environment.json    # Postman environment
-└── integration/            # Tests de integración
-    ├── main_test.go        # Setup de tests
+├── e2e/                    # End-to-end tests
+│   ├── bruno/              # Bruno collection
+│   │   ├── collections/    # Request collections
+│   │   ├── environments/  # Environment configurations
+│   │   └── bruno.json      # Bruno configuration
+│   └── postman/            # Legacy Postman collection (optional)
+└── integration/            # Integration tests
+    ├── main_test.go        # Test setup
     ├── user_repository_test.go
     ├── password_repository_test.go
     └── email_provider_test.go
 ```
 
-### Tipos de Testing
+### Testing Types
 
-1. **Unit Tests**: Tests de unidades individuales (en cada módulo)
-2. **Integration Tests**: Tests de integración con base de datos
-3. **E2E Tests**: Tests end-to-end con Postman
+1. **Unit Tests**: Individual unit tests (in each module)
+2. **Integration Tests**: Integration tests with database
+3. **E2E Tests**: End-to-end tests with Bruno
 
-### Ejecutar Tests
+### Run Tests
 
 ```bash
-# Tests unitarios
+# Unit tests
 go test ./src/...
 
-# Tests de integración
+# Integration tests
 go test ./tests/integration/...
 
-# Tests E2E (requiere servicios corriendo)
-# Usar Postman collection en tests/e2e/
+# E2E tests (requires running services)
+# Bruno tests run automatically in docker-compose.e2e.yml
+# Or run manually: bruno run --env=dev
 ```
 
 ---
 
 ## Docker and Deployment
 
-### Arquitectura Docker
+### Docker Architecture
 
 ```mermaid
 graph TB
     subgraph DockerNetwork["Docker Network: goprojectskeleton"]
-        subgraph AppContainer["Aplicación Go"]
+        subgraph AppContainer["Go Application"]
             App[Go Application<br/>Port: 8080<br/>Hot Reload]
         end
 
-        subgraph DBServices["Servicios de Datos"]
+        subgraph DBServices["Data Services"]
             PostgreSQL[(PostgreSQL<br/>Port: 5432<br/>Volume: db-data)]
             Redis[(Redis<br/>Port: 6379<br/>Cache)]
         end
 
-        subgraph SwaggerService["Servicio Swagger Independiente"]
+        subgraph SwaggerService["Independent Swagger Service"]
             Swagger[Swagger Server<br/>Port: 8081<br/>Independent]
         end
 
-        subgraph DevTools["Herramientas de Desarrollo"]
+        subgraph DevTools["Development Tools"]
             Mailpit[Mailpit<br/>Port: 8025<br/>Email Testing]
             RedisCommander[Redis Commander<br/>Port: 18081<br/>Redis UI]
         end
@@ -3685,11 +3690,11 @@ graph TB
     style RedisCommander fill:#f3e5f5
 ```
 
-### Diagrama de Despliegue
+### Deployment Diagram
 
 ```mermaid
 graph TB
-    subgraph Dev["🛠️ Desarrollo"]
+    subgraph Dev["🛠️ Development"]
         DevApp[Go App<br/>Hot Reload]
         DevDB[(PostgreSQL<br/>Dev)]
         DevRedis[(Redis<br/>Dev)]
@@ -3702,7 +3707,7 @@ graph TB
         TestRedis[(Redis<br/>Test)]
     end
 
-    subgraph Prod["🚀 Producción"]
+    subgraph Prod["🚀 Production"]
         LB[Load Balancer]
         App1[App Instance 1]
         App2[App Instance 2]
@@ -3738,61 +3743,69 @@ graph TB
     style Prod fill:#e8f5e9
 ```
 
-### Servicios Docker
+### Docker Services
 
-El proyecto incluye configuración Docker para desarrollo:
+The project includes Docker configuration for development:
 
-- **Aplicación**: Servidor Go con hot reload (puerto 8080)
-- **Swagger**: Servicio independiente de documentación (puerto 8081)
-- **PostgreSQL**: Base de datos principal
-- **Redis**: Cache y sesiones
-- **Mailpit**: Servidor de email para desarrollo
-- **Redis Commander**: Interfaz web para Redis (puerto 18081)
+- **Application**: Go server with hot reload (port 8080)
+- **Swagger**: Independent documentation service (port 8081)
+- **PostgreSQL**: Main database
+- **Redis**: Cache and sessions
+- **Mailpit**: Email server for development
+- **Redis Commander**: Web interface for Redis (port 18081)
 
-### Comandos Docker
+**E2E Testing Services** (docker-compose.e2e.yml):
+- **Application**: Go server for E2E testing
+- **PostgreSQL**: Test database
+- **Redis**: Test cache
+- **Mailpit**: Email testing
+- **Bruno**: Automated E2E test runner (executes tests automatically)
+
+### Docker Commands
 
 ```bash
-# Desarrollo
+# Development
 docker-compose -f docker/docker-compose.dev.yml up -d
 
 # Testing
 docker-compose -f docker/docker-compose.test.yml up -d
 
-# E2E Testing
+# E2E Testing (Bruno runs automatically)
 docker-compose -f docker/docker-compose.e2e.yml up -d
+# Bruno tests will execute automatically once the API is healthy
 ```
 
-### Despliegue Independiente de Swagger
+### Independent Swagger Deployment
 
-El servicio Swagger puede desplegarse completamente independiente de la aplicación principal:
+The Swagger service can be deployed completely independently from the main application:
 
-#### Construcción de la Imagen
+#### Image Build
 
 ```bash
-# Construir imagen de Swagger
+# Build Swagger image
 docker build -f docker/dockerfile.swagger -t your-registry/swagger:latest .
 
-# Etiquetar para versión específica
+# Tag for specific version
 docker tag your-registry/swagger:latest your-registry/swagger:v1.0.0
 ```
 
-#### Push a Docker Registry
+#### Push to Docker Registry
 
 ```bash
-# Push a Docker Hub
+# Push to Docker Hub
 docker push your-registry/swagger:latest
 
-# Push a otros registries (ej: AWS ECR, Google GCR, Azure ACR)
+# Push to other registries (e.g., AWS ECR, Google GCR, Azure ACR)
 # AWS ECR
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
 docker tag your-registry/swagger:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/swagger:latest
 docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/swagger:latest
 ```
 
-#### Ejecución del Contenedor
+#### Container Execution
 
 ```bash
-# Ejecutar con variables de entorno
+# Run with environment variables
 docker run -d \
   -p 8081:8081 \
   -e SWAGGER_PORT=8081 \
@@ -3804,7 +3817,7 @@ docker run -d \
   --name swagger-docs \
   your-registry/swagger:latest
 
-# O usando un archivo .env
+# Or using a .env file
 docker run -d \
   -p 8081:8081 \
   --env-file swagger.env \
@@ -3812,7 +3825,7 @@ docker run -d \
   your-registry/swagger:latest
 ```
 
-#### Despliegue en Kubernetes
+#### Kubernetes Deployment
 
 ```yaml
 apiVersion: apps/v1
@@ -3856,32 +3869,32 @@ spec:
   type: LoadBalancer
 ```
 
-#### Ventajas del Despliegue Independiente
+#### Advantages of Independent Deployment
 
-- ✅ **Escalabilidad independiente**: Escalar Swagger sin afectar la aplicación principal
-- ✅ **Actualizaciones sin downtime**: Actualizar documentación sin reiniciar la API
-- ✅ **Separación de responsabilidades**: Documentación separada de la lógica de negocio
-- ✅ **Diferentes entornos**: Diferentes versiones de documentación para dev/staging/prod
-- ✅ **CDN y caching**: Servir documentación desde CDN para mejor rendimiento
+- ✅ **Independent scalability**: Scale Swagger without affecting the main application
+- ✅ **Updates without downtime**: Update documentation without restarting the API
+- ✅ **Separation of concerns**: Documentation separated from business logic
+- ✅ **Different environments**: Different documentation versions for dev/staging/prod
+- ✅ **CDN and caching**: Serve documentation from CDN for better performance
 
 ---
 
 ## Development Guide
 
-### Agregar Nueva Funcionalidad
+### Adding New Functionality
 
-#### Diagrama de Flujo para Agregar Funcionalidad
+#### Flow Diagram for Adding Functionality
 
 ```mermaid
 flowchart TD
-    Start([Nueva Funcionalidad]) --> Domain[1. Domain Layer<br/>Crear Modelo]
-    Domain --> Contracts[2. Application Contracts<br/>Definir Interfaces]
-    Contracts --> UseCase[3. Application Use Case<br/>Implementar Lógica]
-    UseCase --> Repo[4. Infrastructure Repository<br/>Implementar con GORM]
-    Repo --> Handler[5. Infrastructure Handler<br/>Adaptar HTTP]
-    Handler --> Route[6. Routes<br/>Definir Endpoint]
-    Route --> Tests[7. Tests<br/>Escribir Tests]
-    Tests --> End([✅ Completado])
+    Start([New Functionality]) --> Domain[1. Domain Layer<br/>Create Model]
+    Domain --> Contracts[2. Application Contracts<br/>Define Interfaces]
+    Contracts --> UseCase[3. Application Use Case<br/>Implement Logic]
+    UseCase --> Repo[4. Infrastructure Repository<br/>Implement with GORM]
+    Repo --> Handler[5. Infrastructure Handler<br/>Adapt HTTP]
+    Handler --> Route[6. Routes<br/>Define Endpoint]
+    Route --> Tests[7. Tests<br/>Write Tests]
+    Tests --> End([✅ Completed])
 
     style Domain fill:#e8f5e9
     style Contracts fill:#fff9c4
@@ -3892,87 +3905,87 @@ flowchart TD
     style Tests fill:#fff4e1
 ```
 
-#### Pasos Detallados
+#### Detailed Steps
 
-1. **Crear modelo en `domain/models/`**
+1. **Create model in `domain/models/`**
 ```go
 type NewEntity struct {
-    // Campos
+    // Fields
 }
 ```
 
-2. **Definir interfaz en `application/contracts/repositories/`**
+2. **Define interface in `application/contracts/repositories/`**
 ```go
 type INewEntityRepository interface {
     Create(input NewEntityCreate) (*NewEntity, error)
-    // Más métodos
+    // More methods
 }
 ```
 
-3. **Implementar caso de uso en `application/modules/newmodule/use_cases/`**
+3. **Implement use case in `application/modules/newmodule/use_cases/`**
 ```go
 type CreateNewEntityUseCase struct {
     repo INewEntityRepository
 }
 
 func (uc *CreateNewEntityUseCase) Execute(...) *UseCaseResult[NewEntity] {
-    // Lógica de negocio
+    // Business logic
 }
 ```
 
-4. **Crear repositorio en `infrastructure/repositories/`**
+4. **Create repository in `infrastructure/repositories/`**
 ```go
 type NewEntityRepository struct {
     RepositoryBase[...]
 }
 
 func (r *NewEntityRepository) Create(...) (*NewEntity, error) {
-    // Implementación con GORM
+    // Implementation with GORM
 }
 ```
 
-5. **Agregar handler en `infrastructure/handlers/`**
+5. **Add handler in `infrastructure/handlers/`**
 ```go
 func CreateNewEntity(ctx HandlerContext) {
-    // Adaptar HTTP a caso de uso
+    // Adapt HTTP to use case
 }
 ```
 
-6. **Definir ruta en `infrastructure/api/routes/router.go`**
+6. **Define route in `infrastructure/api/routes/router.go`**
 ```go
 r.POST("/new-entity", wrapHandler(handlers.CreateNewEntity))
 ```
 
-7. **Escribir tests**
+7. **Write tests**
 
-### Convenciones de Código
+### Code Conventions
 
-- **Nombres**: camelCase para variables, PascalCase para tipos
-- **Comentarios**: Documentar funciones públicas
-- **Errores**: Usar el sistema de errores centralizado
-- **Logging**: Usar el logger centralizado
-- **Validación**: Validar entrada en todos los endpoints
+- **Names**: camelCase for variables, PascalCase for types
+- **Comments**: Document public functions
+- **Errors**: Use centralized error system
+- **Logging**: Use centralized logger
+- **Validation**: Validate input on all endpoints
 
 ---
 
 ## 🎯 Best Practices and Conventions
 
-### Convenciones de Código
+### Code Conventions
 
-#### Nomenclatura
-- **Variables**: `camelCase` (ej: `userName`, `isActive`)
-- **Tipos y Structs**: `PascalCase` (ej: `User`, `UserRepository`)
-- **Interfaces**: `I` + `PascalCase` (ej: `IUserRepository`, `IHashProvider`)
-- **Constantes**: `UPPER_SNAKE_CASE` (ej: `USER_STATUS_ACTIVE`)
-- **Paquetes**: `lowercase` (ej: `user`, `auth`)
+#### Naming
+- **Variables**: `camelCase` (e.g., `userName`, `isActive`)
+- **Types and Structs**: `PascalCase` (e.g., `User`, `UserRepository`)
+- **Interfaces**: `I` + `PascalCase` (e.g., `IUserRepository`, `IHashProvider`)
+- **Constants**: `UPPER_SNAKE_CASE` (e.g., `USER_STATUS_ACTIVE`)
+- **Packages**: `lowercase` (e.g., `user`, `auth`)
 
-#### Estructura de Archivos
-- **Use Cases**: `{action}_{entity}.go` (ej: `create_user.go`, `get_user.go`)
-- **Repositories**: `{entity}.go` (ej: `user.go`, `password.go`)
-- **Handlers**: `{entity}.go` o `{module}.go` (ej: `user.go`, `auth.go`)
-- **Tests**: `{file}_test.go` (ej: `create_user_test.go`)
+#### File Structure
+- **Use Cases**: `{action}_{entity}.go` (e.g., `create_user.go`, `get_user.go`)
+- **Repositories**: `{entity}.go` (e.g., `user.go`, `password.go`)
+- **Handlers**: `{entity}.go` or `{module}.go` (e.g., `user.go`, `auth.go`)
+- **Tests**: `{file}_test.go` (e.g., `create_user_test.go`)
 
-#### Organización de Código
+#### Code Organization
 ```go
 // 1. Imports (std, third-party, local)
 import (
@@ -3984,7 +3997,7 @@ import (
     "goprojectskeleton/src/domain/models"
 )
 
-// 2. Types y Structs
+// 2. Types and Structs
 type UserRepository struct {
     // ...
 }
@@ -3994,55 +4007,55 @@ func NewUserRepository(...) *UserRepository {
     // ...
 }
 
-// 4. Métodos públicos
+// 4. Public methods
 func (r *UserRepository) Create(...) {
     // ...
 }
 
-// 5. Métodos privados
+// 5. Private methods
 func (r *UserRepository) validate(...) {
     // ...
 }
 ```
 
-### Principios de Diseño Aplicados
+### Applied Design Principles
 
 #### 1. Single Responsibility Principle (SRP)
-Cada componente tiene una única responsabilidad:
-- **Use Cases**: Lógica de negocio específica
-- **Repositories**: Acceso a datos
-- **Handlers**: Adaptación HTTP
-- **Providers**: Servicios externos
+Each component has a single responsibility:
+- **Use Cases**: Specific business logic
+- **Repositories**: Data access
+- **Handlers**: HTTP adaptation
+- **Providers**: External services
 
 #### 2. Dependency Inversion Principle (DIP)
-Las capas internas definen interfaces que las externas implementan:
+Inner layers define interfaces that outer layers implement:
 ```go
-// Application define la interfaz
+// Application defines the interface
 type IUserRepository interface {
     Create(input UserCreate) (*User, error)
 }
 
-// Infrastructure implementa la interfaz
+// Infrastructure implements the interface
 type UserRepository struct {
     DB *gorm.DB
 }
 ```
 
 #### 3. Open/Closed Principle (OCP)
-Abierto para extensión, cerrado para modificación:
-- Nuevos providers sin modificar código existente
-- Nuevos casos de uso sin afectar otros
-- Nuevos repositorios siguiendo interfaces
+Open for extension, closed for modification:
+- New providers without modifying existing code
+- New use cases without affecting others
+- New repositories following interfaces
 
 #### 4. Interface Segregation Principle (ISP)
-Interfaces específicas y pequeñas:
+Specific and small interfaces:
 ```go
-// En lugar de una interfaz grande
+// Instead of a large interface
 type IProvider interface {
-    // 50 métodos...
+    // 50 methods...
 }
 
-// Interfaces específicas
+// Specific interfaces
 type IHashProvider interface {
     Hash(password string) (string, error)
     Compare(hashed, plain string) bool
@@ -4050,14 +4063,14 @@ type IHashProvider interface {
 ```
 
 #### 5. Don't Repeat Yourself (DRY)
-Reutilización mediante:
-- `RepositoryBase` para operaciones CRUD comunes
-- `BaseUseCaseValidation` para validación común
-- Servicios compartidos en `application/shared/services`
+Reuse through:
+- `RepositoryBase` for common CRUD operations
+- `BaseUseCaseValidation` for common validation
+- Shared services in `application/shared/services`
 
-### Manejo de Errores
+### Error Handling
 
-#### Estructura de Errores
+#### Error Structure
 ```go
 type ApplicationError struct {
     Code    status.ApplicationStatusCode
@@ -4066,20 +4079,20 @@ type ApplicationError struct {
 }
 ```
 
-#### Estrategia de Errores
-1. **Domain Layer**: Errores de negocio (validaciones)
-2. **Application Layer**: Errores de aplicación (`ApplicationError`)
-3. **Infrastructure Layer**: Errores técnicos (mapeados a `ApplicationError`)
+#### Error Strategy
+1. **Domain Layer**: Business errors (validations)
+2. **Application Layer**: Application errors (`ApplicationError`)
+3. **Infrastructure Layer**: Technical errors (mapped to `ApplicationError`)
 
 ### Logging
 
-#### Niveles de Logging
-- **Info**: Información general del flujo
-- **Error**: Errores que requieren atención
-- **Debug**: Información detallada para debugging
-- **Panic**: Errores críticos que detienen la aplicación
+#### Logging Levels
+- **Info**: General flow information
+- **Error**: Errors requiring attention
+- **Debug**: Detailed information for debugging
+- **Panic**: Critical errors that stop the application
 
-#### Ejemplo de Uso
+#### Usage Example
 ```go
 providers.Logger.Info("User created successfully", map[string]interface{}{
     "user_id": user.ID,
@@ -4091,7 +4104,7 @@ providers.Logger.Error("Failed to create user", err)
 
 ### Testing
 
-#### Estructura de Tests
+#### Test Structure
 ```go
 func TestCreateUser(t *testing.T) {
     // Arrange
@@ -4107,10 +4120,10 @@ func TestCreateUser(t *testing.T) {
 }
 ```
 
-#### Tipos de Tests
-1. **Unit Tests**: Casos de uso con mocks
-2. **Integration Tests**: Repositorios con BD real
-3. **E2E Tests**: Flujos completos con Postman
+#### Test Types
+1. **Unit Tests**: Use cases with mocks
+2. **Integration Tests**: Repositories with real DB
+3. **E2E Tests**: Complete flows with Bruno
 
 ## Conclusion
 

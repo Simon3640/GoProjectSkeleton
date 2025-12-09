@@ -24,12 +24,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseURL}}/health-check",
+							"raw": "{{baseURL}}/status",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
-								"health-check"
+								"status"
 							]
 						}
 					},

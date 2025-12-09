@@ -1,0 +1,32 @@
+meta {
+  name: SuccessfulLoginAfterFailedAttempts
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseURL}}/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+body:json {
+  {
+    "email": "{{rateLimitUserEmail}}",
+    "password": "{{strongPassword}}"
+  }
+}
+
+script:post-response {
+  // Primero hacer algunos intentos fallidos
+  // Luego intentar con la contraseña correcta
+  // Debe funcionar si no se excedió el límite
+}
+
+settings {
+  encodeUrl: true
+}
