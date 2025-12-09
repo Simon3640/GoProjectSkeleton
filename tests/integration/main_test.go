@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	infrastructure "goprojectskeleton/src/infrastructure"
-	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
-	"goprojectskeleton/src/infrastructure/providers"
+	infrastructure "github.com/simon3640/goprojectskeleton/src/infrastructure"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
 func TestMain(m *testing.M) {

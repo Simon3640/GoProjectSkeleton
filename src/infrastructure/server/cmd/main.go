@@ -1,10 +1,10 @@
 package main
 
 import (
-	routes "goprojectskeleton/gin/routes"
-	"goprojectskeleton/src/application/shared/settings"
-	"goprojectskeleton/src/infrastructure"
-	providers "goprojectskeleton/src/infrastructure/providers"
+	routes "github.com/simon3640/goprojectskeleton/gin/routes"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure"
+	providers "github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/graceful"

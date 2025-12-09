@@ -1,7 +1,7 @@
 package email_service
 
 import (
-	email_models "goprojectskeleton/src/application/shared/services/emails/models"
+	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 )
 
 type ResetPasswordEmailService struct {

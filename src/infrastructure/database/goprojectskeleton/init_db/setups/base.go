@@ -3,9 +3,9 @@ package setups
 import (
 	"fmt"
 
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	dbModels "goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
-	"goprojectskeleton/src/infrastructure/repositories"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 
 	"gorm.io/gorm"
 )

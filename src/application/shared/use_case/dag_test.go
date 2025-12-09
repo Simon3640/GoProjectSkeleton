@@ -2,11 +2,12 @@ package usecase
 
 import (
 	"context"
-	"goprojectskeleton/src/application/shared/status"
 	"strconv"
 	"testing"
 
-	"goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 
 	"github.com/stretchr/testify/assert"
 )

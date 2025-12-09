@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	usecases_password "goprojectskeleton/src/application/modules/password/use_cases"
-	dtos "goprojectskeleton/src/application/shared/DTOs"
-	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
-	"goprojectskeleton/src/infrastructure/providers"
-	"goprojectskeleton/src/infrastructure/repositories"
+	usecases_password "github.com/simon3640/goprojectskeleton/src/application/modules/password/use_cases"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 )
 
 // CreatePassword

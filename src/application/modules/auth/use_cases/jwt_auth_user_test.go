@@ -4,14 +4,15 @@ import (
 	"context"
 	// "errors"
 
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	"goprojectskeleton/src/application/shared/locales"
-	dtomocks "goprojectskeleton/src/application/shared/mocks/dtos"
-	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
-	"goprojectskeleton/src/application/shared/status"
 	"testing"
 	"time"
+
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
 	"github.com/stretchr/testify/assert"
 )

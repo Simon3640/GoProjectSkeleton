@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"strconv"
 
-	userpipes "goprojectskeleton/src/application/modules/user/pipes"
-	userusecases "goprojectskeleton/src/application/modules/user/use_cases"
-	dtos "goprojectskeleton/src/application/shared/DTOs"
-	"goprojectskeleton/src/domain/models"
-	domain_utils "goprojectskeleton/src/domain/utils"
-	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
-	"goprojectskeleton/src/infrastructure/providers"
-	"goprojectskeleton/src/infrastructure/repositories"
+	userpipes "github.com/simon3640/goprojectskeleton/src/application/modules/user/pipes"
+	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 )
 
 // CreateUser

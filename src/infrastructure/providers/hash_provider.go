@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"strings"
 
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	application_errors "goprojectskeleton/src/application/shared/errors"
-	"goprojectskeleton/src/application/shared/locales/messages"
-	"goprojectskeleton/src/application/shared/settings"
-	"goprojectskeleton/src/application/shared/status"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
 	"golang.org/x/crypto/argon2"
 )

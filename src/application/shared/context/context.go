@@ -3,7 +3,7 @@ package app_context
 import (
 	"context"
 
-	"goprojectskeleton/src/domain/models"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type AppContext struct {

@@ -1,4 +1,4 @@
-module goprojectskeleton
+module github.com/simon3640/goprojectskeleton
 
 go 1.25
 

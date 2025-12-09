@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
-	app_context "goprojectskeleton/src/application/shared/context"
-	"goprojectskeleton/src/application/shared/locales"
-	dtomocks "goprojectskeleton/src/application/shared/mocks/dtos"
-	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "goprojectskeleton/src/application/shared/mocks/repositories"
-	"goprojectskeleton/src/application/shared/status"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
+	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
 	"github.com/stretchr/testify/assert"
 )

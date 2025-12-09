@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"fmt"
-	"goprojectskeleton/src/application/shared/status"
 	"strconv"
+
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 )
 
 type UseCaseResult[T any] struct {

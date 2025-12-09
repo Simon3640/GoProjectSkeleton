@@ -4,11 +4,11 @@ package userpipes
 import (
 	"context"
 
-	userusecases "goprojectskeleton/src/application/modules/user/use_cases"
-	dtos "goprojectskeleton/src/application/shared/DTOs"
-	"goprojectskeleton/src/application/shared/locales"
-	usecase "goprojectskeleton/src/application/shared/use_case"
-	"goprojectskeleton/src/domain/models"
+	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 // NewCreateUserPipe creates a new create user pipe

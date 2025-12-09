@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	"goprojectskeleton/src/application/shared/locales"
-	providersmocks "goprojectskeleton/src/application/shared/mocks/providers"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

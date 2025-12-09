@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"goprojectskeleton/src/infrastructure/handlers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
 )
 
 // HTTPAdapter converts HTTP requests to handler contexts.

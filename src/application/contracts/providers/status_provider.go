@@ -1,8 +1,9 @@
 package contractsproviders
 
 import (
-	"goprojectskeleton/src/domain/models"
 	"time"
+
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type IApiStatusProvider interface {

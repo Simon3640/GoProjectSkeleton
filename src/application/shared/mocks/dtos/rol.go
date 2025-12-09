@@ -1,6 +1,6 @@
 package dtomocks
 
-import "goprojectskeleton/src/domain/models"
+import "github.com/simon3640/goprojectskeleton/src/domain/models"
 
 // TODO: Evaluate if Role can be created with DTOs
 

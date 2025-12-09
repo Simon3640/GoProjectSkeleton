@@ -4,11 +4,11 @@ import (
 	"bytes"
 	html_template "html/template"
 
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	application_errors "goprojectskeleton/src/application/shared/errors"
-	"goprojectskeleton/src/application/shared/locales/messages"
-	email_models "goprojectskeleton/src/application/shared/services/emails/models"
-	"goprojectskeleton/src/application/shared/status"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 )
 
 type RendererBase[T any] struct {

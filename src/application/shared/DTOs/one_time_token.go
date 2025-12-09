@@ -1,9 +1,10 @@
 package dtos
 
 import (
-	"goprojectskeleton/src/application/shared/settings"
-	"goprojectskeleton/src/domain/models"
 	"time"
+
+	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type OneTimeTokenCreate struct {

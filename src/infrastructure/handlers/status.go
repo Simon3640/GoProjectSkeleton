@@ -3,9 +3,9 @@ package handlers
 import (
 	"time"
 
-	usecases "goprojectskeleton/src/application/modules/status/use_cases"
-	"goprojectskeleton/src/domain/models"
-	"goprojectskeleton/src/infrastructure/providers"
+	usecases "github.com/simon3640/goprojectskeleton/src/application/modules/status/use_cases"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
 // GetHealthCheck get the status of the API

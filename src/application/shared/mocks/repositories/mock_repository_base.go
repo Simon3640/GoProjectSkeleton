@@ -1,9 +1,9 @@
 package repositoriesmocks
 
 import (
-	contracts_repositories "goprojectskeleton/src/application/contracts/repositories"
-	application_errors "goprojectskeleton/src/application/shared/errors"
-	domain_utils "goprojectskeleton/src/domain/utils"
+	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
 
 	"github.com/stretchr/testify/mock"
 )
