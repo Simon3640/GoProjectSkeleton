@@ -1,6 +1,6 @@
 module github.com/simon3640/goprojectskeleton/azure
 
-go 1.25
+go 1.25.5
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1
