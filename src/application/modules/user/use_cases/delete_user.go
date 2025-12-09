@@ -4,13 +4,13 @@ import (
 	"context"
 	"go/types"
 
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "goprojectskeleton/src/application/contracts/repositories"
-	"goprojectskeleton/src/application/shared/guards"
-	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/locales/messages"
-	"goprojectskeleton/src/application/shared/status"
-	usecase "goprojectskeleton/src/application/shared/use_case"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 )
 
 // DeleteUserUseCase is a use case that deletes a user

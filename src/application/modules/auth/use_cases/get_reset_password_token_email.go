@@ -3,16 +3,16 @@ package authusecases
 import (
 	"context"
 
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	dtos "goprojectskeleton/src/application/shared/DTOs"
-	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/locales/messages"
-	email_service "goprojectskeleton/src/application/shared/services/emails"
-	email_models "goprojectskeleton/src/application/shared/services/emails/models"
-	"goprojectskeleton/src/application/shared/settings"
-	"goprojectskeleton/src/application/shared/status"
-	"goprojectskeleton/src/application/shared/templates"
-	usecase "goprojectskeleton/src/application/shared/use_case"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 )
 
 type GetResetPasswordSendEmailUseCase struct {

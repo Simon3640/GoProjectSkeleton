@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"context"
-	"goprojectskeleton/src/application/shared/locales"
 	"io"
 	"net/http"
+
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 )
 
 type HTTPHeaderTypeEnum string

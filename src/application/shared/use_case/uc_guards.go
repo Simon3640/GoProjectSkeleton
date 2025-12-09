@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"goprojectskeleton/src/application/shared/locales/messages"
-	"goprojectskeleton/src/domain/models"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type Guard func(user models.UserWithRole, input any) *messages.MessageKeysEnum

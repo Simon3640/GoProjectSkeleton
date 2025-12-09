@@ -2,8 +2,8 @@
 package database
 
 import (
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	initdb "goprojectskeleton/src/infrastructure/database/goprojectskeleton/init_db"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	initdb "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/init_db"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

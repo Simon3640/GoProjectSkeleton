@@ -4,10 +4,10 @@ package authpipes
 import (
 	"context"
 
-	authusecases "goprojectskeleton/src/application/modules/auth/use_cases"
+	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
 
-	"goprojectskeleton/src/application/shared/locales"
-	usecase "goprojectskeleton/src/application/shared/use_case"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 )
 
 // NewGetResetPasswordPipe creates a new get reset password pipe.

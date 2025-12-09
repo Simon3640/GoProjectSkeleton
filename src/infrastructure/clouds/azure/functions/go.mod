@@ -1,7 +1,7 @@
-module goprojectskeleton/functions/azure
+module github.com/simon3640/goprojectskeleton/functions/azure
 
 go 1.25
 
-replace goprojectskeleton => ../../../../../../
+replace github.com/simon3640/goprojectskeleton => ../../../../../../
 
-replace goprojectskeleton/azure => ../../../..
+replace github.com/simon3640/goprojectskeleton/azure => ../../../..

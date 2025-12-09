@@ -3,11 +3,11 @@ package integrationtest
 import (
 	"testing"
 
-	"goprojectskeleton/src/application/shared/status"
-	domain_utils "goprojectskeleton/src/domain/utils"
-	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
-	"goprojectskeleton/src/infrastructure/providers"
-	"goprojectskeleton/src/infrastructure/repositories"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"

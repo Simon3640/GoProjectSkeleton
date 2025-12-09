@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"strings"
 
-	authusecases "goprojectskeleton/src/application/modules/auth/use_cases"
-	app_context "goprojectskeleton/src/application/shared/context"
-	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/status"
-	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
-	"goprojectskeleton/src/infrastructure/handlers"
-	"goprojectskeleton/src/infrastructure/providers"
-	"goprojectskeleton/src/infrastructure/repositories"
+	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 )
 
 // AuthMiddleware validates JWT tokens from the Authorization header and injects user context.

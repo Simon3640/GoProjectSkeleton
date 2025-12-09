@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"goprojectskeleton/src/application/shared/locales/messages"
-	"goprojectskeleton/src/application/shared/status"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 )
 
 type ApplicationError struct {

@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	authpipes "goprojectskeleton/src/application/modules/auth/pipes"
-	authusecases "goprojectskeleton/src/application/modules/auth/use_cases"
-	dtos "goprojectskeleton/src/application/shared/DTOs"
-	database "goprojectskeleton/src/infrastructure/database/goprojectskeleton"
-	"goprojectskeleton/src/infrastructure/providers"
-	"goprojectskeleton/src/infrastructure/repositories"
+	authpipes "github.com/simon3640/goprojectskeleton/src/application/modules/auth/pipes"
+	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 )
 
 // access-token

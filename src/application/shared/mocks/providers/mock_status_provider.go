@@ -4,8 +4,8 @@ package providersmocks
 import (
 	"time"
 
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	"goprojectskeleton/src/domain/models"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/mock"
 )

@@ -1,15 +1,15 @@
-module goprojectskeleton/aws
+module github.com/simon3640/goprojectskeleton/aws
 
 go 1.25
 
-replace goprojectskeleton => ../../../..
+replace github.com/simon3640/goprojectskeleton => ../../../..
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.40.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.54.0
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.40.2
-	goprojectskeleton v0.0.0
+	github.com/simon3640/goprojectskeleton v0.0.0
 )
 
 require (

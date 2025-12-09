@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
-	dtos "goprojectskeleton/src/application/shared/DTOs"
-	"goprojectskeleton/src/application/shared/locales"
-	"goprojectskeleton/src/application/shared/locales/messages"
-	"goprojectskeleton/src/application/shared/status"
-	usecase "goprojectskeleton/src/application/shared/use_case"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 )
 
 type AuthenticationRefreshUseCase struct {

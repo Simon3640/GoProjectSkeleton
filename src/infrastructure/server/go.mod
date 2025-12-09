@@ -1,4 +1,4 @@
-module goprojectskeleton/gin
+module github.com/simon3640/goprojectskeleton/gin
 
 go 1.25
 
@@ -6,7 +6,7 @@ require (
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-contrib/graceful v1.1.1
 	github.com/gin-gonic/gin v1.10.0
-	goprojectskeleton v0.0.0
+	github.com/simon3640/goprojectskeleton v0.0.0
 )
 
 require (
@@ -53,4 +53,4 @@ require (
 	gorm.io/gorm v1.25.12 // indirect
 )
 
-replace goprojectskeleton => ../../..
+replace github.com/simon3640/goprojectskeleton => ../../..

@@ -1,8 +1,9 @@
 package middlewares
 
 import (
-	"goprojectskeleton/src/infrastructure/handlers"
 	"strconv"
+
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
 
 	"github.com/gin-gonic/gin"
 )

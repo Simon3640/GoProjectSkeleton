@@ -1,7 +1,7 @@
 package setups
 
 import (
-	contractsProviders "goprojectskeleton/src/application/contracts/providers"
+	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 
 	"gorm.io/gorm"
 )
