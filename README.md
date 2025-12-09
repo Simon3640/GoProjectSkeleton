@@ -65,7 +65,8 @@ go run src/infrastructure/server/cmd/main.go
 14. [Authentication and Security](#authentication-and-security)
 15. [Testing](#testing)
 16. [Docker and Deployment](#docker-and-deployment)
-17. [Development Guide](#development-guide)
+17. [GitHub Actions Deployment](#github-actions-deployment)
+18. [Development Guide](#development-guide)
 
 ---
 
@@ -3876,6 +3877,358 @@ spec:
 - ✅ **Separation of concerns**: Documentation separated from business logic
 - ✅ **Different environments**: Different documentation versions for dev/staging/prod
 - ✅ **CDN and caching**: Serve documentation from CDN for better performance
+
+---
+
+## GitHub Actions Deployment
+
+**GoProjectSkeleton** includes a comprehensive GitHub Actions workflow for automated deployment to AWS and Azure cloud platforms. The workflow supports infrastructure provisioning with Terraform and automated function deployment.
+
+### Overview
+
+The deployment workflow (`deploy.yml`) provides:
+
+- ✅ **Multi-cloud support**: Deploy to AWS or Azure
+- ✅ **Environment management**: Separate deployments for development, staging, and production
+- ✅ **Terraform integration**: Infrastructure as Code with plan, apply, and destroy actions
+- ✅ **Automated function deployment**: Deploy Lambda/Functions after infrastructure (AWS only)
+- ✅ **Plan artifacts**: Upload Terraform plans for review
+- ✅ **Safety checks**: Prevent accidental production destruction
+
+### Deployment Flow
+
+```mermaid
+graph TB
+    subgraph Trigger["🚀 Workflow Trigger"]
+        Manual[Manual Dispatch<br/>GitHub Actions UI]
+    end
+
+    subgraph Inputs["📋 Workflow Inputs"]
+        Cloud[Cloud Provider<br/>AWS or Azure]
+        Env[Environment<br/>dev/staging/prod]
+        Action[Terraform Action<br/>plan/apply/destroy]
+        DeployFunc[Deploy Functions<br/>AWS only]
+    end
+
+    subgraph Setup["⚙️ Setup Phase"]
+        Checkout[Checkout Code]
+        GoSetup[Setup Go 1.25.5]
+        TfSetup[Install Terraform 1.14.1]
+        Creds[Configure Cloud Credentials]
+    end
+
+    subgraph Build["🔨 Build Phase"]
+        Deps[Download Dependencies]
+        GenAWS[Generate AWS Functions<br/>if AWS]
+        GenAzure[Generate Azure Functions<br/>if Azure]
+        Tfvars[Create terraform.tfvars]
+    end
+
+    subgraph Terraform["🏗️ Terraform Phase"]
+        Init[Terraform Init]
+        Validate[Terraform Validate]
+        Plan[Terraform Plan<br/>if not destroy]
+        UploadPlan[Upload Plan Artifact<br/>if plan action]
+        Apply[Terraform Apply<br/>if apply action]
+        Destroy[Terraform Destroy<br/>if destroy action]
+    end
+
+    subgraph Deploy["📦 Deploy Phase"]
+        DeployLambda[Deploy Lambda Functions<br/>AWS only]
+        Output[Terraform Output]
+    end
+
+    Manual --> Cloud
+    Manual --> Env
+    Manual --> Action
+    Manual --> DeployFunc
+
+    Cloud --> Checkout
+    Env --> Checkout
+    Action --> Checkout
+
+    Checkout --> GoSetup
+    GoSetup --> TfSetup
+    TfSetup --> Creds
+    Creds --> Deps
+
+    Deps --> GenAWS
+    Deps --> GenAzure
+    GenAWS --> Tfvars
+    GenAzure --> Tfvars
+
+    Tfvars --> Init
+    Init --> Validate
+    Validate --> Plan
+    Plan --> UploadPlan
+    Plan --> Apply
+    Apply --> DeployLambda
+    DeployLambda --> Output
+
+    Validate --> Destroy
+    Destroy --> Output
+
+    style Manual fill:#e3f2fd
+    style Cloud fill:#fff9c4
+    style Env fill:#fff9c4
+    style Action fill:#fff9c4
+    style Apply fill:#c8e6c9
+    style Destroy fill:#ffcdd2
+    style DeployLambda fill:#ff9800
+```
+
+### Workflow Inputs
+
+When triggering the workflow manually, you'll be prompted for:
+
+| Input | Description | Options | Default |
+|-------|-------------|---------|---------|
+| `cloud` | Cloud provider | `aws`, `azure` | Required |
+| `environment` | Target environment | `development`, `staging`, `production` | `development` |
+| `terraform_action` | Terraform operation | `plan`, `apply`, `destroy` | `apply` |
+| `deploy_functions` | Deploy functions after Terraform (AWS only) | `true`, `false` | `true` |
+
+### GitHub Secrets Configuration
+
+Before using the deployment workflow, you need to configure GitHub Secrets. Secrets are environment-specific and can be set at the repository or environment level.
+
+#### Setting Up GitHub Secrets
+
+1. **Navigate to Repository Settings**
+   - Go to your GitHub repository
+   - Click on **Settings** → **Secrets and variables** → **Actions**
+
+2. **Create Environment Secrets (Recommended)**
+   - Click on **Environments** in the left sidebar
+   - Create environments: `development`, `staging`, `production`
+   - Add secrets to each environment as needed
+
+3. **Create Repository Secrets (Alternative)**
+   - Add secrets at the repository level (available to all environments)
+
+#### Required Secrets
+
+##### AWS Secrets
+
+| Secret Name | Description | Example | Required For |
+|-------------|-------------|---------|--------------|
+| `AWS_ACCESS_KEY_ID` | AWS access key ID | `AKIAIOSFODNN7EXAMPLE` | AWS deployments |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret access key | `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` | AWS deployments |
+| `AWS_REGION` | AWS region | `us-east-1` | AWS deployments (optional, defaults to `us-east-1`) |
+| `PROJECT_NAME` | Project name for resource naming | `go-project-skeleton` | AWS deployments (optional, defaults to `go-project-skeleton`) |
+| `TFVARS` | Terraform variables file content | See below | All AWS deployments |
+
+##### Azure Secrets
+
+| Secret Name | Description | Example | Required For |
+|-------------|-------------|---------|--------------|
+| `AZURE_CREDENTIALS` | Azure service principal JSON | See below | Azure deployments |
+| `TFVARS` | Terraform variables file content | See below | All Azure deployments |
+
+#### Creating Secrets
+
+##### AWS Access Keys
+
+1. **Create IAM User** (if not exists):
+   ```bash
+   aws iam create-user --user-name github-actions-deploy
+   ```
+
+2. **Attach Policies**:
+   ```bash
+   aws iam attach-user-policy \
+     --user-name github-actions-deploy \
+     --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+   ```
+   > **Note**: For production, use least-privilege policies. Create custom policies with only required permissions.
+
+3. **Create Access Key**:
+   ```bash
+   aws iam create-access-key --user-name github-actions-deploy
+   ```
+
+4. **Add to GitHub Secrets**:
+   - Copy `AccessKeyId` → `AWS_ACCESS_KEY_ID`
+   - Copy `SecretAccessKey` → `AWS_SECRET_ACCESS_KEY`
+
+##### Azure Service Principal
+
+1. **Create Service Principal**:
+   ```bash
+   az ad sp create-for-rbac --name github-actions-deploy \
+     --role contributor \
+     --scopes /subscriptions/{subscription-id} \
+     --sdk-auth
+   ```
+
+2. **Copy the JSON output** and add it to GitHub Secret `AZURE_CREDENTIALS`:
+   ```json
+   {
+     "clientId": "xxx",
+     "clientSecret": "xxx",
+     "subscriptionId": "xxx",
+     "tenantId": "xxx",
+     "activeDirectoryEndpointUrl": "https://login.microsoftonline.com",
+     "resourceManagerEndpointUrl": "https://management.azure.com/",
+     "activeDirectoryGraphResourceId": "https://graph.windows.net/",
+     "sqlManagementEndpointUrl": "https://management.core.windows.net:8443/",
+     "galleryEndpointUrl": "https://gallery.azure.com/",
+     "managementEndpointUrl": "https://management.core.windows.net/"
+   }
+   ```
+
+##### Terraform Variables (TFVARS)
+
+The `TFVARS` secret contains the content of your `terraform.tfvars` file. This should include all required Terraform variables for your infrastructure.
+
+**Example for AWS:**
+```hcl
+# terraform.tfvars content
+project_name = "go-project-skeleton"
+environment = "development"
+region = "us-east-1"
+db_instance_class = "db.t3.micro"
+lambda_memory_size = 512
+# ... other variables
+```
+
+**Example for Azure:**
+```hcl
+# terraform.tfvars content
+project_name = "go-project-skeleton"
+environment = "development"
+location = "eastus"
+app_service_plan_sku = "B1"
+# ... other variables
+```
+
+**To create the secret:**
+1. Create your `terraform.tfvars` file locally
+2. Copy the entire content
+3. Add to GitHub Secret `TFVARS` (paste the entire content)
+
+### Workflow Steps
+
+#### 1. Setup Phase
+- **Checkout code**: Clones the repository
+- **Setup Go**: Installs Go 1.25.5
+- **Install Terraform**: Installs Terraform 1.14.1
+- **Configure credentials**: Sets up AWS or Azure credentials based on selected cloud
+
+#### 2. Build Phase
+- **Download dependencies**: Runs `make deps`
+- **Generate functions**:
+  - AWS: Runs `make build-aws-functions` (if `deploy_functions` is true)
+  - Azure: Runs `make build-azure-functions`
+- **Create terraform.tfvars**: Creates the file from `TFVARS` secret
+
+#### 3. Terraform Phase
+- **Terraform Init**: Initializes Terraform backend
+- **Terraform Validate**: Validates Terraform configuration
+- **Terraform Plan**: Creates execution plan (if action is not `destroy`)
+  - Uploads plan artifact for review (if action is `plan`)
+- **Terraform Apply**: Applies infrastructure changes (if action is `apply`)
+- **Terraform Destroy**: Destroys infrastructure (if action is `destroy`)
+  - **Safety**: Destroy fails in production unless explicitly allowed
+
+#### 4. Deploy Phase (AWS only)
+- **Deploy Lambda Functions**: Runs `make deploy-aws` to deploy all Lambda functions
+- **Terraform Output**: Displays infrastructure outputs
+
+### Usage Examples
+
+#### Plan Infrastructure Changes
+
+1. Go to **Actions** tab in GitHub
+2. Select **Deploy to Cloud** workflow
+3. Click **Run workflow**
+4. Fill inputs:
+   - Cloud: `aws`
+   - Environment: `staging`
+   - Terraform action: `plan`
+   - Deploy functions: `false`
+5. Click **Run workflow**
+
+**Result**: Creates a Terraform plan and uploads it as an artifact. Review the plan before applying.
+
+#### Deploy to Staging
+
+1. Go to **Actions** tab
+2. Select **Deploy to Cloud** workflow
+3. Click **Run workflow**
+4. Fill inputs:
+   - Cloud: `aws`
+   - Environment: `staging`
+   - Terraform action: `apply`
+   - Deploy functions: `true`
+5. Click **Run workflow**
+
+**Result**:
+- Provisions infrastructure with Terraform
+- Deploys all Lambda functions
+- Displays infrastructure outputs
+
+#### Destroy Development Environment
+
+1. Go to **Actions** tab
+2. Select **Deploy to Cloud** workflow
+3. Click **Run workflow**
+4. Fill inputs:
+   - Cloud: `aws`
+   - Environment: `development`
+   - Terraform action: `destroy`
+5. Click **Run workflow`
+
+**Result**: Destroys all infrastructure in the development environment.
+
+> **⚠️ Warning**: Destroy operations in production will fail by default. The workflow uses `continue-on-error: ${{ inputs.environment != 'production' }}` to prevent accidental production destruction.
+
+### Environment Protection
+
+GitHub Environments can be configured with protection rules:
+
+1. **Required Reviewers**: Require approval before deployment
+2. **Wait Timer**: Add a delay before deployment
+3. **Deployment Branches**: Restrict which branches can deploy
+
+**To configure:**
+1. Go to **Settings** → **Environments**
+2. Click on an environment (e.g., `production`)
+3. Add protection rules as needed
+
+### Best Practices
+
+1. **Use Environment Secrets**: Store secrets per environment for better security
+2. **Review Plans**: Always run `plan` before `apply` in production
+3. **Use Protection Rules**: Enable required reviewers for production
+4. **Monitor Deployments**: Check workflow runs regularly
+5. **Rotate Credentials**: Regularly rotate access keys and secrets
+6. **Least Privilege**: Use IAM roles/policies with minimum required permissions
+7. **Version Control**: Keep Terraform code in version control
+8. **Backup State**: Ensure Terraform state is backed up (S3, Azure Storage)
+
+### Troubleshooting
+
+#### Common Issues
+
+**Issue**: "AWS credentials not found"
+- **Solution**: Ensure `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are set in GitHub Secrets
+
+**Issue**: "Terraform plan fails"
+- **Solution**: Check `TFVARS` secret content matches expected format
+
+**Issue**: "Lambda deployment fails"
+- **Solution**: Ensure `PROJECT_NAME` and `AWS_REGION` are set correctly
+
+**Issue**: "Destroy fails in production"
+- **Solution**: This is by design. Modify workflow if production destruction is needed.
+
+### Workflow File Location
+
+The deployment workflow is located at:
+```
+.github/workflows/deploy.yml
+```
 
 ---
 
