@@ -86,7 +86,7 @@ jobs:
         if: inputs.cloud == 'aws' || inputs.cloud == 'azure'
         working-directory: src/infrastructure/clouds/${{ inputs.cloud }}/terraform
         run: |
-          echo "${{ secrets.TFVARS }}" > terraform.tfvars
+          echo '${{ secrets.TFVARS }}' > terraform.tfvars
 
       - name: Generate Azure functions
         if: inputs.cloud == 'azure'
