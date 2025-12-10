@@ -9,7 +9,7 @@ import (
 	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
 )
 
-// InitMigrate initializes the database and returns an application error if it fails
+// InitMigrate initializes the database and returns an error if it fails
 func InitMigrate(db *gorm.DB, logger contractsProviders.ILoggerProvider) error {
 	logger.Info("Auto migrating models")
 
