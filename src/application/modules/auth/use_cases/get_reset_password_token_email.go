@@ -29,6 +29,7 @@ func (uc *GetResetPasswordSendEmailUseCase) SetLocale(locale locales.LocaleTypeE
 	}
 }
 
+// Execute sends a reset password email to the user
 func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input dtos.OneTimeTokenUser,
@@ -36,17 +37,36 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
 
-	newUserEmailData := email_models.ResetPasswordEmailData{
+	emailData := uc.buildEmailData(input)
+
+	uc.sendResetPasswordEmail(result, emailData, input.User.Email, locale)
+	if result.HasError() {
+		return result
+	}
+
+	uc.setSuccessResult(result)
+	return result
+}
+
+func (uc *GetResetPasswordSendEmailUseCase) buildEmailData(input dtos.OneTimeTokenUser) email_models.ResetPasswordEmailData {
+	return email_models.ResetPasswordEmailData{
 		Name:              input.User.Name,
 		ResetLink:         input.BuildURL(settings.AppSettingsInstance.FrontendResetPasswordURL),
 		ExpirationMinutes: settings.AppSettingsInstance.OneTimeTokenPasswordTTL,
 		AppName:           settings.AppSettingsInstance.AppName,
 		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
+}
 
+func (uc *GetResetPasswordSendEmailUseCase) sendResetPasswordEmail(
+	result *usecase.UseCaseResult[bool],
+	emailData email_models.ResetPasswordEmailData,
+	userEmail string,
+	locale locales.LocaleTypeEnum,
+) {
 	if err := email_service.ResetPasswordEmailServiceInstance.SendWithTemplate(
-		newUserEmailData,
-		input.User.Email,
+		emailData,
+		userEmail,
 		locale,
 		templates.TemplateKeysInstance.PasswordResetEmail,
 		email_service.SubjectKeysInstance.PasswordResetEmail,
@@ -59,8 +79,10 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
 	}
+}
+
+func (uc *GetResetPasswordSendEmailUseCase) setSuccessResult(result *usecase.UseCaseResult[bool]) {
 	result.SetData(
 		status.Success,
 		true,
@@ -69,7 +91,6 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 			messages.MessageKeysInstance.RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY,
 		),
 	)
-	return result
 }
 
 func NewGetResetPasswordSendEmailUseCase(

@@ -40,7 +40,28 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 	if result.HasError() {
 		return result
 	}
-	user, err := uc.userRepo.GetByEmailOrPhone(input)
+
+	user := uc.getUser(result, input)
+	if result.HasError() {
+		return result
+	}
+
+	token, hash := uc.generateToken(result)
+	if result.HasError() {
+		return result
+	}
+
+	uc.createToken(result, user.ID, hash)
+	if result.HasError() {
+		return result
+	}
+
+	uc.setSuccessResult(result, user, token)
+	return result
+}
+
+func (uc *GetResetPasswordTokenUseCase) getUser(result *usecase.UseCaseResult[dtos.OneTimeTokenUser], emailOrPhone string) *models.User {
+	user, err := uc.userRepo.GetByEmailOrPhone(emailOrPhone)
 	if err != nil {
 		uc.log.Error("Error getting user by email or phone", err.ToError())
 		result.SetError(
@@ -50,9 +71,12 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return nil
 	}
+	return user
+}
 
+func (uc *GetResetPasswordTokenUseCase) generateToken(result *usecase.UseCaseResult[dtos.OneTimeTokenUser]) (string, []byte) {
 	token, hash, err := uc.hashProvider.OneTimeToken()
 	if err != nil {
 		uc.log.Error("Error generating one time token", err.ToError())
@@ -63,11 +87,14 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return "", nil
 	}
+	return token, hash
+}
 
-	tokenCreate := dtos.NewOneTimeTokenCreate(user.ID, models.OneTimeTokenPurposePasswordReset, hash)
-	_, err = uc.tokenRepo.Create(*tokenCreate)
+func (uc *GetResetPasswordTokenUseCase) createToken(result *usecase.UseCaseResult[dtos.OneTimeTokenUser], userID uint, hash []byte) {
+	tokenCreate := dtos.NewOneTimeTokenCreate(userID, models.OneTimeTokenPurposePasswordReset, hash)
+	_, err := uc.tokenRepo.Create(*tokenCreate)
 	if err != nil {
 		uc.log.Error("Error creating one time token", err.ToError())
 		result.SetError(
@@ -77,9 +104,11 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return
 	}
+}
 
+func (uc *GetResetPasswordTokenUseCase) setSuccessResult(result *usecase.UseCaseResult[dtos.OneTimeTokenUser], user *models.User, token string) {
 	result.SetData(
 		status.Success,
 		dtos.OneTimeTokenUser{
@@ -91,8 +120,6 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 			messages.MessageKeysInstance.PASSWORD_TOKEN_CREATED,
 		),
 	)
-
-	return result
 }
 
 func (uc *GetResetPasswordTokenUseCase) Validate(

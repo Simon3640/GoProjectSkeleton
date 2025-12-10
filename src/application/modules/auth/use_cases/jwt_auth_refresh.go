@@ -36,20 +36,45 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 ) *usecase.UseCaseResult[dtos.Token] {
 	result := usecase.NewUseCaseResult[dtos.Token]()
 	uc.SetLocale(locale)
-	validation, msg := uc.validate(input)
 
+	uc.validateInput(result, input)
+	if result.HasError() {
+		return result
+	}
+
+	claims := uc.parseAndValidateToken(result, input)
+	if result.HasError() {
+		return result
+	}
+
+	subject := uc.validateClaims(result, claims)
+	if result.HasError() {
+		return result
+	}
+
+	token := uc.generateTokens(ctx, result, subject)
+	if result.HasError() {
+		return result
+	}
+
+	uc.setSuccessResult(result, token)
+	return result
+}
+
+func (uc *AuthenticationRefreshUseCase) validateInput(result *usecase.UseCaseResult[dtos.Token], input string) {
+	validation, msg := uc.validate(input)
 	if !validation {
 		uc.log.Error("Invalid input", nil)
 		result.SetError(
 			status.InvalidInput,
 			strings.Join(msg, "\n"),
 		)
-		return result
+		return
 	}
+}
 
-	// Validate the access token
-	claims, err := uc.jwtProvider.ParseTokenAndValidate(input)
-
+func (uc *AuthenticationRefreshUseCase) parseAndValidateToken(result *usecase.UseCaseResult[dtos.Token], token string) contractsProviders.JWTCLaims {
+	claims, err := uc.jwtProvider.ParseTokenAndValidate(token)
 	if err != nil {
 		uc.log.Error("Error parsing or validating token", err.ToError())
 		result.SetError(
@@ -59,10 +84,12 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return nil
 	}
+	return claims
+}
 
-	// Generate new access and refresh tokens
+func (uc *AuthenticationRefreshUseCase) validateClaims(result *usecase.UseCaseResult[dtos.Token], claims contractsProviders.JWTCLaims) string {
 	sub, ok := claims["sub"].(string)
 	if !ok {
 		uc.log.Error("Invalid subject in claims", nil)
@@ -73,10 +100,9 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
 			),
 		)
-		return result
+		return ""
 	}
 
-	// Validate expiration Refresh token
 	if claims["typ"] != "refresh" {
 		uc.log.Error("Invalid token type", nil)
 		result.SetError(
@@ -86,11 +112,8 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
 			),
 		)
-		return result
+		return ""
 	}
-
-	// Validate expiration date
-	// define if exp is int or float
 
 	if exp, ok := claims["exp"].(float64); !ok || exp < float64(time.Now().Unix()) {
 		uc.log.Error("Token has expired", nil)
@@ -101,12 +124,15 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.AUTHORIZATION_TOKEN_EXPIRED,
 			),
 		)
-		return result
+		return ""
 	}
 
-	var claimsMap map[string]interface{}
-	access, exp, err := uc.jwtProvider.GenerateAccessToken(ctx, sub, claimsMap)
+	return sub
+}
 
+func (uc *AuthenticationRefreshUseCase) generateTokens(ctx context.Context, result *usecase.UseCaseResult[dtos.Token], subject string) dtos.Token {
+	var claimsMap map[string]interface{}
+	access, exp, err := uc.jwtProvider.GenerateAccessToken(ctx, subject, claimsMap)
 	if err != nil {
 		uc.log.Error("Error generating access token", err.ToError())
 		result.SetError(
@@ -116,10 +142,10 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.AUTHORIZATION_GENERATED,
 			),
 		)
-		return result
+		return dtos.Token{}
 	}
 
-	refresh, expRefresh, err := uc.jwtProvider.GenerateRefreshToken(ctx, sub)
+	refresh, expRefresh, err := uc.jwtProvider.GenerateRefreshToken(ctx, subject)
 	if err != nil {
 		uc.log.Error("Error generating refresh token", err.ToError())
 		result.SetError(
@@ -129,19 +155,19 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.AUTHORIZATION_GENERATED,
 			),
 		)
-		return result
+		return dtos.Token{}
 	}
 
-	// Response
-
-	token := dtos.Token{
+	return dtos.Token{
 		AccessToken:           access,
 		RefreshToken:          refresh,
 		TokenType:             "Bearer",
 		AccessTokenExpiresAt:  exp,
 		RefreshTokenExpiresAt: expRefresh,
 	}
+}
 
+func (uc *AuthenticationRefreshUseCase) setSuccessResult(result *usecase.UseCaseResult[dtos.Token], token dtos.Token) {
 	result.SetData(
 		status.Success,
 		token,
@@ -150,7 +176,6 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 			messages.MessageKeysInstance.AUTHORIZATION_GENERATED,
 		),
 	)
-	return result
 }
 
 func (uc *AuthenticationRefreshUseCase) validate(input string) (bool, []string) {
