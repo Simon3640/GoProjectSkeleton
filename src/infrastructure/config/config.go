@@ -2,11 +2,12 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 
-	logger "github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 )
 
 // Loader defines the interface for loading configuration from various sources.
@@ -82,18 +83,19 @@ func (c *Config) ToMap() map[string]string {
 }
 
 // NewConfig creates a new configuration instance using the specified loader.
-func NewConfig(loader Loader) *Config {
+func NewConfig(loader Loader) (*Config, *application_errors.ApplicationError) {
 	if loader == nil {
 		loader = NewEnvConfigLoader()
 	}
 	config, err := loader.Load()
 	if err != nil {
-		fmt.Println("Error loading configuration")
-		logger.Logger.Panic("Error loading configuration", err)
-		// Si el logger no está habilitado, hacer panic explícitamente
-		panic(fmt.Sprintf("Error loading configuration: %v", err))
+		return nil, application_errors.NewApplicationError(
+			status.ConfigurationInitializationError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			err.Error(),
+		)
 	}
-	return config
+	return config, nil
 }
 
 var ConfigInstance *Config

@@ -6,9 +6,11 @@ import (
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	settings "github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/config"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
@@ -17,9 +19,12 @@ import (
 var initialized bool
 
 func InitializeInfrastructure() *application_errors.ApplicationError {
-	if err := settings.AppSettingsInstance.Initialize(config.NewConfig(NewSecretsManagerConfigLoader()).ToMap()); err != nil {
-		providers.Logger.Error("Failed to initialize app settings", err)
-		panic("Failed to initialize app settings: " + err.Error())
+	config, err := config.NewConfig(NewSecretsManagerConfigLoader())
+	if err != nil {
+		return err
+	}
+	if err := settings.AppSettingsInstance.Initialize(config.ToMap()); err != nil {
+		return err
 	}
 	providers.Logger.Setup(
 		settings.AppSettingsInstance.EnableLog,
@@ -74,15 +79,21 @@ func InitializeInfrastructure() *application_errors.ApplicationError {
 		path := strings.TrimPrefix(templatesPath, "s3://")
 		parts := strings.SplitN(path, "/", 2)
 		if len(parts) < 1 {
-			providers.Logger.Error("Invalid S3 templates path", fmt.Errorf("path must be in format s3://bucket/path/"))
-			panic("Invalid S3 templates path")
+			return application_errors.NewApplicationError(
+				status.ProviderInitializationError,
+				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				fmt.Sprintf("Invalid S3 templates path: %s", templatesPath),
+			)
 		}
 		bucket := parts[0]
 
 		s3RenderNewUser, s3RenderResetPassword, s3RenderOTP, err := NewS3RenderProviders(bucket)
 		if err != nil {
-			providers.Logger.Error("Failed to initialize S3 render providers", err)
-			panic("Failed to initialize S3 render providers: " + err.Error())
+			return application_errors.NewApplicationError(
+				status.ProviderInitializationError,
+				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				fmt.Sprintf("Failed to initialize S3 render providers: %v", err),
+			)
 		}
 
 		renderNewUser = s3RenderNewUser
@@ -91,8 +102,11 @@ func InitializeInfrastructure() *application_errors.ApplicationError {
 
 		providers.Logger.Info(fmt.Sprintf("Using S3 render providers with bucket: %s", bucket))
 	} else {
-		providers.Logger.Panic("Not s3 ", fmt.Errorf("templates path is not an S3 path: %s", templatesPath))
-		panic("Not s3 templates path: " + templatesPath)
+		return application_errors.NewApplicationError(
+			status.ProviderInitializationError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			"Not s3 templates path: "+templatesPath,
+		)
 	}
 
 	// Services
