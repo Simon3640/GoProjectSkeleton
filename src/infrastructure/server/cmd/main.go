@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	routes "github.com/simon3640/goprojectskeleton/gin/routes"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure"
@@ -13,7 +15,10 @@ import (
 
 func main() {
 	providers.Logger.Info("Initializing infraestructure...")
-	infrastructure.Initialize()
+	if err := infrastructure.Initialize(); err != nil {
+		providers.Logger.Error("Error initializing infrastructure", err.ToError())
+		os.Exit(1)
+	}
 	providers.Logger.Info("Infraestructure initialized")
 	providers.Logger.Info("Starting server...")
 	providers.Logger.Info("App Name: " + settings.AppSettingsInstance.AppName)

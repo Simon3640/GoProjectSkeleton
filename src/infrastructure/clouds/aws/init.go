@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	settings "github.com/simon3640/goprojectskeleton/src/application/shared/settings"
@@ -15,7 +16,7 @@ import (
 
 var initialized bool
 
-func InitializeInfrastructure() {
+func InitializeInfrastructure() *application_errors.ApplicationError {
 	if err := settings.AppSettingsInstance.Initialize(config.NewConfig(NewSecretsManagerConfigLoader()).ToMap()); err != nil {
 		providers.Logger.Error("Failed to initialize app settings", err)
 		panic("Failed to initialize app settings: " + err.Error())
@@ -24,7 +25,7 @@ func InitializeInfrastructure() {
 		settings.AppSettingsInstance.EnableLog,
 		settings.AppSettingsInstance.DebugLog,
 	)
-	database.GoProjectSkeletondb.SetUp(
+	if err := database.GoProjectSkeletondb.SetUp(
 		settings.AppSettingsInstance.DBHost,
 		settings.AppSettingsInstance.DBPort,
 		settings.AppSettingsInstance.DBUser,
@@ -32,7 +33,9 @@ func InitializeInfrastructure() {
 		settings.AppSettingsInstance.DBName,
 		&settings.AppSettingsInstance.DBSSL,
 		providers.Logger,
-	)
+	); err != nil {
+		return err
+	}
 
 	// Initialize JWT Provider
 	providers.JWTProviderInstance.Setup(
@@ -107,4 +110,5 @@ func InitializeInfrastructure() {
 		renderOTP,
 		providers.EmailProviderInstance,
 	)
+	return nil
 }
