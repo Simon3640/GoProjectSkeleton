@@ -263,22 +263,13 @@ func (uc *AuthenticateUseCase) checkRateLimit(email string) (bool, *application_
 	}
 
 	key := uc.getRateLimitKey(email)
-	var attempts int
-
-	exists, err := uc.cacheProvider.Get(key, &attempts)
+	attempts, err := uc.cacheProvider.GetInt64(key)
 	if err != nil {
-		uc.log.Error("Error checking rate limit", err.ToError())
+		uc.log.Error("Error getting failed attempts", err.ToError())
 		return false, err
 	}
 
-	if !exists {
-		return false, nil
-	}
-
-	// Log for debugging
-	uc.log.Info(fmt.Sprintf("Rate limit check: email=%s, attempts=%d, maxAttempts=%d", email, attempts, maxAttempts))
-
-	return attempts >= maxAttempts, nil
+	return attempts >= int64(maxAttempts), nil
 }
 
 // incrementFailedAttempts increment the failed attempts counter for an email
@@ -288,31 +279,10 @@ func (uc *AuthenticateUseCase) incrementFailedAttempts(email string) {
 	}
 
 	key := uc.getRateLimitKey(email)
-	var attempts int
-
-	exists, err := uc.cacheProvider.Get(key, &attempts)
+	_, err := uc.cacheProvider.Increment(key, time.Duration(settings.AppSettingsInstance.LoginAttemptsWindowMinutes)*time.Minute)
 	if err != nil {
-		uc.log.Error("Error getting failed attempts", err.ToError())
+		uc.log.Error("Error incrementing failed attempts", err.ToError())
 		return
-	}
-
-	if !exists {
-		attempts = 0
-	}
-
-	attempts++
-
-	windowMinutes := settings.AppSettingsInstance.LoginAttemptsWindowMinutes
-	if windowMinutes <= 0 {
-		windowMinutes = 15 // Default to 15 minutes
-	}
-
-	ttl := time.Duration(windowMinutes) * time.Minute
-	if err := uc.cacheProvider.Set(key, attempts, ttl); err != nil {
-		uc.log.Error("Error setting failed attempts", err.ToError())
-	} else {
-		// Log for debugging
-		uc.log.Info(fmt.Sprintf("Incremented failed attempts: email=%s, attempts=%d, maxAttempts=%d", email, attempts, settings.AppSettingsInstance.LoginMaxAttempts))
 	}
 }
 
