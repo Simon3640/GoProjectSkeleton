@@ -45,6 +45,30 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
 
+	token := uc.createOneTimeToken(input, result)
+	if result.HasError() {
+		return result
+	}
+
+	uc.sendWelcomeEmail(input, *token, result)
+	if result.HasError() {
+		return result
+	}
+
+	result.SetData(
+		status.Success,
+		input,
+		uc.appMessages.Get(
+			uc.locale,
+			messages.MessageKeysInstance.USER_WAS_CREATED,
+		),
+	)
+	return result
+}
+
+// createOneTimeToken creates a one time token for the user
+// returns the token if created successfully, otherwise returns nil
+func (uc *CreateUserSendEmailUseCase) createOneTimeToken(input models.User, result *usecase.UseCaseResult[models.User]) *string {
 	token, err := services.CreateOneTimeTokenService(
 		input.ID,
 		models.OneTimeTokenPurposeEmailVerify,
@@ -60,9 +84,14 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return nil
 	}
+	return &token
+}
 
+// sendWelcomeEmail sends a welcome email to the user
+// returns the token if created successfully, otherwise returns nil
+func (uc *CreateUserSendEmailUseCase) sendWelcomeEmail(input models.User, token string, result *usecase.UseCaseResult[models.User]) {
 	newUserEmailData := email_models.NewUserEmailData{
 		Name:              input.Name,
 		ActivationLink:    settings.AppSettingsInstance.FrontendActivateAccountURL + "?token=" + token,
@@ -70,11 +99,10 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 		AppName:           settings.AppSettingsInstance.AppName,
 		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
-
 	if err := email_service.RegisterUserEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
 		input.Email,
-		locale,
+		uc.locale,
 		templates.TemplateKeysInstance.WelcomeEmail,
 		email_service.SubjectKeysInstance.WelcomeEmail,
 	); err != nil {
@@ -86,18 +114,7 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
 	}
-
-	result.SetData(
-		status.Success,
-		input,
-		uc.appMessages.Get(
-			uc.locale,
-			messages.MessageKeysInstance.USER_WAS_CREATED,
-		),
-	)
-	return result
 }
 
 // NewCreateUserSendEmailUseCase creates a new create user send email use case
