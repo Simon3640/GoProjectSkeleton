@@ -25,6 +25,7 @@ type Config struct {
 	EnableLog       string `env:"ENABLE_LOG" envDefault:"true"`
 	DebugLog        string `env:"DEBUG_LOG" envDefault:"true"`
 	TemplatesPath   string `env:"TEMPLATES_PATH" envDefault:"src/application/shared/templates/"`
+	AllowOrigins    string `env:"ALLOW_ORIGINS" envDefault:"*"`
 
 	// Database
 	DBHost     string `env:"DB_HOST" envDefault:"goprojectskeleton"`
