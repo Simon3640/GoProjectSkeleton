@@ -81,9 +81,9 @@ func (uc *ResendWelcomeEmailUseCase) Execute(_ context.Context,
 	return result
 }
 
-// get by email or phone gets the user by email or phone
-// it gets the user by email or phone and sets the user in the result
-// returns the user if found, otherwise returns nil
+// Attempts to get the user by email or phone.
+// Sets errors in the result if the user is not found or is already verified.
+// Returns the user if found, or nil if an error occurs.
 func (uc *ResendWelcomeEmailUseCase) getByEmailOrPhone(
 	input dtos.ResendWelcomeEmailRequest,
 	result *usecase.UseCaseResult[bool],

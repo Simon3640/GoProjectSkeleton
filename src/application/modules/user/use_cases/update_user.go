@@ -46,8 +46,8 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context,
 	return result
 }
 
-// updateUser updates the user
-// it updates the user and sets the user in the result
+// updateUser attempts to update the user.
+// It sets errors in the result if the update fails; success data is set in the Execute method.
 func (uc *UpdateUserUseCase) updateUser(input dtos.UserUpdate, result *usecase.UseCaseResult[models.User]) {
 	res, err := uc.repo.Update(input.ID, input)
 	if err != nil {
