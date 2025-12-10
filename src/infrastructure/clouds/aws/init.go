@@ -78,11 +78,11 @@ func InitializeInfrastructure() *application_errors.ApplicationError {
 		// Extract bucket from S3 path: s3://bucket/path/
 		path := strings.TrimPrefix(templatesPath, "s3://")
 		parts := strings.SplitN(path, "/", 2)
-		if len(parts) < 1 {
+		if parts[0] == "" {
 			return application_errors.NewApplicationError(
 				status.ProviderInitializationError,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
-				fmt.Sprintf("Invalid S3 templates path: %s", templatesPath),
+				fmt.Sprintf("Invalid S3 templates path, expected format: (s3://bucket/path/), got: %s", templatesPath),
 			)
 		}
 		bucket := parts[0]
@@ -105,7 +105,7 @@ func InitializeInfrastructure() *application_errors.ApplicationError {
 		return application_errors.NewApplicationError(
 			status.ProviderInitializationError,
 			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
-			"Not s3 templates path: "+templatesPath,
+			fmt.Sprintf("Not s3 templates path, expected format: (s3://bucket/path/), got: %s", templatesPath),
 		)
 	}
 
