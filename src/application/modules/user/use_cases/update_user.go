@@ -42,24 +42,22 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context,
 		return result
 	}
 
-	res, err := uc.repo.Update(input.ID, input)
+	uc.updateUser(input, result)
+	return result
+}
 
+// updateUser updates the user
+// it updates the user and sets the user in the result
+func (uc *UpdateUserUseCase) updateUser(input dtos.UserUpdate, result *usecase.UseCaseResult[models.User]) {
+	res, err := uc.repo.Update(input.ID, input)
 	if err != nil {
 		uc.log.Error("Error updating user", err.ToError())
-		result.SetError(
-			err.Code,
-			uc.AppMessages.Get(
-				uc.Locale,
-				err.Context,
-			),
-		)
-		return result
+		result.SetError(err.Code, uc.AppMessages.Get(uc.Locale, err.Context))
 	}
 	result.SetData(
 		status.Success,
 		*res,
 		uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.USER_WAS_CREATED))
-	return result
 }
 
 // NewUpdateUserUseCase creates a new update user use case
