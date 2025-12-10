@@ -34,6 +34,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 
 	assert.NotNil(result)
 	assert.Equal(result.StatusCode, status.Success)
+	assert.Equal(*result.Data, true)
 }
 
 func TestDeleteUserUseCase_DifferentUser(t *testing.T) {
@@ -48,7 +49,7 @@ func TestDeleteUserUseCase_DifferentUser(t *testing.T) {
 	testUserRepository := new(repositoriesmocks.MockUserRepository)
 	var testIDToDelete = actor.ID + 1
 
-	testUserRepository.On("Delete", testIDToDelete).Return(nil)
+	testUserRepository.On("SoftDelete", testIDToDelete).Return(nil)
 
 	uc := NewDeleteUserUseCase(testLogger, testUserRepository)
 
