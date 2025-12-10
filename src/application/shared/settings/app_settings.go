@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 type AppSettings struct {
@@ -17,6 +18,7 @@ type AppSettings struct {
 	EnableLog       bool
 	DebugLog        bool
 	TemplatesPath   string
+	AllowOrigins    []string
 
 	// Database
 	DBHost     string
@@ -113,6 +115,13 @@ func setFieldValue(field reflect.Value, value string) error {
 			return errors.New("invalid int64 value: " + value)
 		}
 		field.SetInt(int64Value)
+	case reflect.Slice:
+		values := strings.Split(value, ",")
+		slice := reflect.MakeSlice(field.Type(), len(values), len(values))
+		for i, v := range values {
+			slice.Index(i).SetString(v)
+		}
+		field.Set(slice)
 	default:
 		return errors.New("unsupported field type")
 	}
