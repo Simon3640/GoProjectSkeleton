@@ -48,3 +48,5 @@ override.tf.json
 terraform.rc
 
 bin/
+
+aws.bru
