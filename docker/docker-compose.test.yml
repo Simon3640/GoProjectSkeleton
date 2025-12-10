@@ -52,7 +52,7 @@ services:
     networks:
       - goprojectskeleton-tests
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "--pass", "secretPassword", "ping"]
       interval: 1s
       retries: 5
 

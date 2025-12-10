@@ -77,7 +77,7 @@ func (m *MockCacheProvider) Flush() *application_errors.ApplicationError {
 	return nil
 }
 
-// Increment mock increment the value for a given key in the cache
+// Increment mock increments the value for a given key in the cache
 // returns the incremented value and an error if any
 func (m *MockCacheProvider) Increment(key string, ttl time.Duration) (int64, *application_errors.ApplicationError) {
 	args := m.Called(key, ttl)
@@ -88,7 +88,7 @@ func (m *MockCacheProvider) Increment(key string, ttl time.Duration) (int64, *ap
 	return args.Get(0).(int64), nil
 }
 
-// IncrementBy increment the value for a given key in the cache by a given amount
+// IncrementBy mock increments the value for a given key in the cache by a given amount
 // returns the incremented value and an error if any
 func (m *MockCacheProvider) IncrementBy(key string, increment int64, ttl time.Duration) (int64, *application_errors.ApplicationError) {
 	args := m.Called(key, increment, ttl)
@@ -99,7 +99,7 @@ func (m *MockCacheProvider) IncrementBy(key string, increment int64, ttl time.Du
 	return args.Get(0).(int64), nil
 }
 
-// GetInt64 mock get the value for a given key in the cache as an int64
+// GetInt64 mock getting the value for a given key in the cache as an int64
 // returns the value and an error if any
 func (m *MockCacheProvider) GetInt64(key string) (int64, *application_errors.ApplicationError) {
 	args := m.Called(key)
