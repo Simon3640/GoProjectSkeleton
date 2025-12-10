@@ -40,6 +40,16 @@ func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 		return result
 	}
 
+	uc.createPassword(input, result)
+	if result.HasError() {
+		return result
+	}
+
+	uc.setSuccessResult(result)
+	return result
+}
+
+func (uc *CreatePasswordUseCase) createPassword(input dtos.PasswordCreateNoHash, result *usecase.UseCaseResult[bool]) {
 	_, err := services.CreatePasswordService(input, uc.hashProvider, uc.repo)
 
 	if err != nil {
@@ -51,9 +61,10 @@ func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
 	}
+}
 
+func (uc *CreatePasswordUseCase) setSuccessResult(result *usecase.UseCaseResult[bool]) {
 	result.SetData(
 		status.Success,
 		true,
@@ -62,7 +73,6 @@ func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 			messages.MessageKeysInstance.PASSWORD_CREATED,
 		),
 	)
-	return result
 }
 
 func NewCreatePasswordUseCase(
