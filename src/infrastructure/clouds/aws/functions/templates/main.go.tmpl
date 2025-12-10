@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/simon3640/goprojectskeleton/aws"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
@@ -15,7 +16,10 @@ var initialized bool
 func init() {
 	if !initialized {
 		log.Println("Initializing AWS Infrastructure")
-		aws.InitializeInfrastructure()
+		if err := aws.InitializeInfrastructure(); err != nil {
+			log.Println("Error initializing AWS Infrastructure", err.ToError())
+			os.Exit(1)
+		}
 		initialized = true
 		log.Println("AWS Infrastructure initialized successfully")
 	}
