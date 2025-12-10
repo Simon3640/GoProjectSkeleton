@@ -11,6 +11,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type AuthenticateOTPUseCase struct {
@@ -44,8 +45,32 @@ func (uc *AuthenticateOTPUseCase) Execute(ctx context.Context,
 		return result
 	}
 
-	// Get hash from input
-	hash := uc.hashProvider.HashOneTimeToken(input)
+	oneTimePassword := uc.validateAndGetOTP(result, input)
+	if result.HasError() {
+		return result
+	}
+
+	user := uc.getUser(result, oneTimePassword.UserID)
+	if result.HasError() {
+		return result
+	}
+
+	token := uc.generateTokens(ctx, result, user)
+	if result.HasError() {
+		return result
+	}
+
+	uc.markOTPAsUsed(result, oneTimePassword.ID)
+	if result.HasError() {
+		return result
+	}
+
+	uc.setSuccessResult(result, token)
+	return result
+}
+
+func (uc *AuthenticateOTPUseCase) validateAndGetOTP(result *usecase.UseCaseResult[dtos.Token], otp string) *models.OneTimePassword {
+	hash := uc.hashProvider.HashOneTimeToken(otp)
 	oneTimePassword, err := uc.otpRepo.GetByPasswordHash(hash)
 
 	if err != nil {
@@ -56,8 +81,9 @@ func (uc *AuthenticateOTPUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return nil
 	}
+
 	if oneTimePassword == nil || oneTimePassword.IsUsed || oneTimePassword.Expires.Before(time.Now()) {
 		result.SetError(
 			status.Unauthorized,
@@ -66,12 +92,14 @@ func (uc *AuthenticateOTPUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.INVALID_OTP,
 			),
 		)
-		return result
+		return nil
 	}
 
-	// Get user with role from repository
-	user, err := uc.userRepo.GetUserWithRole(oneTimePassword.UserID)
+	return oneTimePassword
+}
 
+func (uc *AuthenticateOTPUseCase) getUser(result *usecase.UseCaseResult[dtos.Token], userID uint) *models.UserWithRole {
+	user, err := uc.userRepo.GetUserWithRole(userID)
 	if err != nil {
 		result.SetError(
 			status.NotFound,
@@ -80,16 +108,17 @@ func (uc *AuthenticateOTPUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
 			),
 		)
-		return result
+		return nil
 	}
+	return user
+}
 
+func (uc *AuthenticateOTPUseCase) generateTokens(ctx context.Context, result *usecase.UseCaseResult[dtos.Token], user *models.UserWithRole) dtos.Token {
 	claims := contractsProviders.JWTCLaims{
 		"role": user.GetRoleKey(),
 	}
 
-	// Generate JWT tokens
 	access, exp, err := uc.jwtProvider.GenerateAccessToken(ctx, user.GetUserIDString(), claims)
-
 	if err != nil {
 		result.SetError(
 			status.Conflict,
@@ -98,7 +127,9 @@ func (uc *AuthenticateOTPUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
+		return dtos.Token{}
 	}
+
 	refresh, expRefresh, err := uc.jwtProvider.GenerateRefreshToken(ctx, user.GetUserIDString())
 	if err != nil {
 		result.SetError(
@@ -108,21 +139,21 @@ func (uc *AuthenticateOTPUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
+		return dtos.Token{}
 	}
 
-	// Response
-
-	token := dtos.Token{
+	return dtos.Token{
 		AccessToken:           access,
 		RefreshToken:          refresh,
 		TokenType:             "Bearer",
 		AccessTokenExpiresAt:  exp,
 		RefreshTokenExpiresAt: expRefresh,
 	}
+}
 
-	// Mark OTP as used
-	_, err = uc.otpRepo.Update(oneTimePassword.ID,
-		dtos.OneTimePasswordUpdate{IsUsed: true, ID: oneTimePassword.ID})
+func (uc *AuthenticateOTPUseCase) markOTPAsUsed(result *usecase.UseCaseResult[dtos.Token], otpID uint) {
+	_, err := uc.otpRepo.Update(otpID,
+		dtos.OneTimePasswordUpdate{IsUsed: true, ID: otpID})
 	if err != nil {
 		uc.log.Error("Error updating one time password as used", err.ToError())
 		result.SetError(
@@ -132,9 +163,11 @@ func (uc *AuthenticateOTPUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return
 	}
+}
 
+func (uc *AuthenticateOTPUseCase) setSuccessResult(result *usecase.UseCaseResult[dtos.Token], token dtos.Token) {
 	result.SetData(
 		status.Success,
 		token,
@@ -143,8 +176,6 @@ func (uc *AuthenticateOTPUseCase) Execute(ctx context.Context,
 			messages.MessageKeysInstance.AUTHORIZATION_GENERATED,
 		),
 	)
-
-	return result
 }
 
 func (uc *AuthenticateOTPUseCase) Validate(input string, result *usecase.UseCaseResult[dtos.Token]) {
