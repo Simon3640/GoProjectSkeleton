@@ -45,6 +45,30 @@ func (uc *ActivateUserUseCase) Execute(ctx context.Context,
 		return result
 	}
 
+	userID := uc.validateOneTimeToken(input, result)
+	if result.HasError() {
+		return result
+	}
+
+	uc.updateUser(*userID, result)
+	if result.HasError() {
+		return result
+	}
+
+	result.SetData(
+		status.Success,
+		true,
+		uc.AppMessages.Get(
+			uc.Locale,
+			messages.MessageKeysInstance.USER_WAS_CREATED,
+		),
+	)
+	return result
+}
+
+// validateOneTimeToken validates the one time token
+// returns the user id if the token is valid
+func (uc *ActivateUserUseCase) validateOneTimeToken(input dtos.UserActivate, result *usecase.UseCaseResult[bool]) *uint {
 	hash := uc.hashProvider.HashOneTimeToken(input.Token)
 	oneTimeToken, err := uc.oneTimetokenRepo.GetByTokenHash(hash)
 	if err != nil {
@@ -56,7 +80,7 @@ func (uc *ActivateUserUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return nil
 	}
 
 	if oneTimeToken == nil || oneTimeToken.IsUsed || oneTimeToken.Expires.Before(time.Now()) {
@@ -68,15 +92,19 @@ func (uc *ActivateUserUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.INVALID_USER_ACTIVATION_TOKEN,
 			),
 		)
-		return result
+		return nil
 	}
+	return &oneTimeToken.UserID
+}
 
+// updateUser updates the user status to active
+func (uc *ActivateUserUseCase) updateUser(userID uint, result *usecase.UseCaseResult[bool]) {
 	updateUser := dtos.UserUpdate{}
-	updateUser.ID = oneTimeToken.UserID
+	updateUser.ID = userID
 	userStatus := models.UserStatusActive
 	updateUser.Status = &userStatus
 
-	_, err = uc.userRepo.Update(oneTimeToken.UserID, updateUser)
+	_, err := uc.userRepo.Update(userID, updateUser)
 
 	if err != nil {
 		uc.log.Error("Error updating user", err.ToError())
@@ -87,17 +115,7 @@ func (uc *ActivateUserUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
 	}
-	result.SetData(
-		status.Success,
-		true,
-		uc.AppMessages.Get(
-			uc.Locale,
-			messages.MessageKeysInstance.USER_WAS_CREATED,
-		),
-	)
-	return result
 }
 
 // NewActivateUserUseCase creates a new activate user use case
