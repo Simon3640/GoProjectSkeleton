@@ -171,7 +171,7 @@ func TestCreatePasswordTokenUseCase_Execute_TokenIsNil(t *testing.T) {
 		NoHashedPassword: "NewPassword123!",
 	}
 
-	// Configurar mocks
+	// Configure mocks
 	testHashProvider.On("HashOneTimeToken", token).Return(tokenHash)
 	testOneTimeTokenRepository.On("GetByTokenHash", tokenHash).Return(nil, nil)
 
@@ -343,7 +343,7 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorCreatingPassword(t *testing.T) 
 		"Error creating password",
 	)
 
-	// Configurar mocks
+	// Configure mocks
 	testHashProvider.On("HashOneTimeToken", token).Return(tokenHash)
 	testOneTimeTokenRepository.On("GetByTokenHash", tokenHash).Return(validToken, nil)
 	testHashProvider.On("HashPassword", noHashedPassword).Return("", appError)
@@ -445,4 +445,61 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorMarkingTokenAsUsed(t *testing.T
 	testHashProvider.AssertExpectations(t)
 	testOneTimeTokenRepository.AssertExpectations(t)
 	testPasswordRepository.AssertExpectations(t)
+}
+
+func TestCreatePasswordTokenUseCase_Execute_TokenPurposeIsNotPasswordReset(t *testing.T) {
+	assert := assert.New(t)
+
+	ctx := context.Background()
+	testLogger := new(providersmocks.MockLoggerProvider)
+	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testHashProvider := new(providersmocks.MockHashProvider)
+	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
+
+	token := "test-token-123"
+	tokenHash := []byte(hex.EncodeToString([]byte("hashed_token")))
+	userID := uint(1)
+	noHashedPassword := "NewPassword123!"
+
+	// Create a valid token
+	validToken := &models.OneTimeToken{
+		OneTimeTokenBase: models.OneTimeTokenBase{
+			UserID:  userID,
+			Purpose: models.OneTimeTokenPurposeEmailVerify,
+			Hash:    tokenHash,
+			IsUsed:  false,
+			Expires: time.Now().Add(1 * time.Hour),
+		},
+		DBBaseModel: models.DBBaseModel{
+			ID:        1,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+	}
+
+	input := dtos.PasswordTokenCreate{
+		Token:            token,
+		NoHashedPassword: noHashedPassword,
+	}
+
+	// Configure mocks
+	testHashProvider.On("HashOneTimeToken", token).Return(tokenHash)
+	testOneTimeTokenRepository.On("GetByTokenHash", tokenHash).Return(validToken, nil)
+	testLogger.On("Error", mock.Anything, mock.Anything).Return()
+
+	uc := NewCreatePasswordTokenUseCase(
+		testLogger,
+		testPasswordRepository,
+		testHashProvider,
+		testOneTimeTokenRepository,
+	)
+
+	result := uc.Execute(ctx, locales.EN_US, input)
+
+	assert.NotNil(result)
+	assert.True(result.HasError())
+	assert.Equal(status.Conflict, result.StatusCode)
+
+	testHashProvider.AssertExpectations(t)
+	testOneTimeTokenRepository.AssertExpectations(t)
 }
