@@ -11,9 +11,12 @@ import (
 
 // Initialize initializes the infrastructure and returns an application error if it fails
 func Initialize() *application_errors.ApplicationError {
-	if err := settings.AppSettingsInstance.Initialize(config.NewConfig(nil).ToMap()); err != nil {
-		providers.Logger.Error("Failed to initialize app settings", err)
-		panic("Failed to initialize app settings: " + err.Error())
+	config, err := config.NewConfig(nil)
+	if err != nil {
+		return err
+	}
+	if err := settings.AppSettingsInstance.Initialize(config.ToMap()); err != nil {
+		return err
 	}
 	providers.Logger.Setup(
 		settings.AppSettingsInstance.EnableLog,

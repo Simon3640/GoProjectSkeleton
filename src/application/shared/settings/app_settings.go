@@ -1,12 +1,17 @@
 package settings
 
 import (
-	"errors"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
+
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 )
 
+// AppSettings represents the application settings and is used to store the application settings
 type AppSettings struct {
 	// Application
 	AppName         string
@@ -58,6 +63,7 @@ type AppSettings struct {
 	MailAuthRequired bool
 }
 
+// NewAppSettings creates a new AppSettings instance with default values
 func NewAppSettings() *AppSettings {
 	return &AppSettings{
 		AppName:    "goprojectskeleton",
@@ -69,7 +75,8 @@ func NewAppSettings() *AppSettings {
 	}
 }
 
-func (as *AppSettings) Initialize(values map[string]string) error {
+// Initialize initializes the AppSettings instance with the given values
+func (as *AppSettings) Initialize(values map[string]string) *application_errors.ApplicationError {
 	asValue := reflect.ValueOf(as).Elem()
 	asType := asValue.Type()
 
@@ -80,15 +87,19 @@ func (as *AppSettings) Initialize(values map[string]string) error {
 			continue
 		}
 		if value, exists := values[field.Name]; exists {
-			if err := setFieldValue(fieldValue, value); err != nil {
-				return err
+			if err := setFieldValue(fieldValue, value, field.Name); err != nil {
+				return application_errors.NewApplicationError(
+					status.ApplicationInitializationError,
+					messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+					err.Error(),
+				)
 			}
 		}
 	}
 	return nil
 }
 
-func setFieldValue(field reflect.Value, value string) error {
+func setFieldValue(field reflect.Value, value string, fieldName string) error {
 	if value == "" {
 		return nil
 	}
@@ -100,19 +111,19 @@ func setFieldValue(field reflect.Value, value string) error {
 	case reflect.Int:
 		intValue, err := strconv.Atoi(value)
 		if err != nil {
-			return errors.New("invalid integer value: " + value)
+			return fmt.Errorf("invalid integer value: %s for field %s", value, fieldName)
 		}
 		field.SetInt(int64(intValue))
 	case reflect.Float64:
 		floatValue, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return errors.New("invalid float value: " + value)
+			return fmt.Errorf("invalid float value: %s for field %s", value, fieldName)
 		}
 		field.SetFloat(floatValue)
 	case reflect.Int64:
 		int64Value, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
-			return errors.New("invalid int64 value: " + value)
+			return fmt.Errorf("invalid int64 value: %s for field %s", value, fieldName)
 		}
 		field.SetInt(int64Value)
 	case reflect.Slice:
@@ -123,7 +134,7 @@ func setFieldValue(field reflect.Value, value string) error {
 		}
 		field.Set(slice)
 	default:
-		return errors.New("unsupported field type")
+		return fmt.Errorf("unsupported field type: %s for field %s", field.Kind(), fieldName)
 	}
 	return nil
 }
