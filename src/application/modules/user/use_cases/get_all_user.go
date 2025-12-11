@@ -64,7 +64,7 @@ func (uc *GetAllUserUseCase) Execute(
 	// Build MultiResponse
 	result.SetData(
 		status.Success,
-		uc.buildMultiRespose(data, total, input, false),
+		uc.buildMultiResponse(data, total, input, false),
 		uc.AppMessages.Get(
 			uc.Locale,
 			messages.MessageKeysInstance.USER_LIST_SUCCESS,
@@ -73,9 +73,9 @@ func (uc *GetAllUserUseCase) Execute(
 	return result
 }
 
-// buildMultiRespose builds the multi response for the users
+// buildMultiResponse builds the multi response for the users
 // it builds the response with the data, total, meta and links
-func (uc *GetAllUserUseCase) buildMultiRespose(
+func (uc *GetAllUserUseCase) buildMultiResponse(
 	data []models.User, total int64,
 	input domain_utils.QueryPayloadBuilder[models.User],
 	cached bool,
@@ -93,7 +93,7 @@ func (uc *GetAllUserUseCase) buildMultiRespose(
 }
 
 // getUsersFromCache gets the users from the cache
-// it checks if the cache is hit and if it is, it sets the data and total in the result
+// it checks if the cache is hit and if it is, it sets the result with a complete UserMultiResponse object (including records and meta information such as total)
 func (uc *GetAllUserUseCase) getUsersFromCache(
 	input domain_utils.QueryPayloadBuilder[models.User],
 	result *usecase.UseCaseResult[dtos.UserMultiResponse],
@@ -117,7 +117,7 @@ func (uc *GetAllUserUseCase) getUsersFromCache(
 		if found {
 			result.SetData(
 				status.Success,
-				uc.buildMultiRespose(data, total, input, true),
+				uc.buildMultiResponse(data, total, input, true),
 				uc.AppMessages.Get(
 					uc.Locale,
 					messages.MessageKeysInstance.USER_LIST_SUCCESS,
@@ -134,7 +134,7 @@ func (uc *GetAllUserUseCase) cacheKey(input domain_utils.QueryPayloadBuilder[mod
 }
 
 // getUsersFromRepository gets the users from the repository
-// it gets the users from the repository and sets the data and total in the result
+// it returns the users and total, or sets an error in the result if the repository call fails
 func (uc *GetAllUserUseCase) getUsersFromRepository(
 	input domain_utils.QueryPayloadBuilder[models.User],
 	result *usecase.UseCaseResult[dtos.UserMultiResponse],

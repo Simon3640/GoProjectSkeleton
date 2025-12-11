@@ -89,8 +89,8 @@ func (uc *CreateUserSendEmailUseCase) createOneTimeToken(input models.User, resu
 	return &token
 }
 
-// sendWelcomeEmail sends a welcome email to the user
-// returns the token if created successfully, otherwise returns nil
+// sendWelcomeEmail sends a welcome email to the user.
+// If sending fails, sets an error in the result.
 func (uc *CreateUserSendEmailUseCase) sendWelcomeEmail(input models.User, token string, result *usecase.UseCaseResult[models.User]) {
 	newUserEmailData := email_models.NewUserEmailData{
 		Name:              input.Name,
