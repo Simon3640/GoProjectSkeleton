@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
-	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
+	appcontext "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
@@ -23,12 +23,12 @@ func TestUpdateUserUseCase(t *testing.T) {
 	ctx := context.Background()
 
 	actor := dtomocks.UserWithRole
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, actor)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	name := "Update"
-	testUser := dtos.UserUpdate{
+	testUser := userdtos.UserUpdate{
 		UserUpdateBase: models.UserUpdateBase{Name: &name},
 		ID:             actor.ID,
 	}
@@ -62,12 +62,12 @@ func TestUpdateUserUseCase_DifferentUser(t *testing.T) {
 	ctx := context.Background()
 
 	actor := dtomocks.UserWithRole
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, actor)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	name := "Update"
-	testUser := dtos.UserUpdate{
+	testUser := userdtos.UserUpdate{
 		UserUpdateBase: models.UserUpdateBase{Name: &name},
 		ID:             actor.ID + 1,
 	}
