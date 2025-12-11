@@ -22,6 +22,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ../test.env:/app/.env:ro
       - ../src:/app/src
@@ -36,6 +38,23 @@ services:
     restart: always
     networks:
       - goprojectskeleton-tests
+
+  redis:
+    image: redis:alpine  # o redis:7-alpine
+    command:
+      - redis-server
+      - --requirepass
+      - secretPassword
+      - --maxmemory
+      - 64mb
+      - --maxmemory-policy
+      - allkeys-lru
+    networks:
+      - goprojectskeleton-tests
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      retries: 5
 
 networks:
   goprojectskeleton-tests:
