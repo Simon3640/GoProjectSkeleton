@@ -55,40 +55,87 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 ) *usecase.UseCaseResult[dtos.Token] {
 	result := usecase.NewUseCaseResult[dtos.Token]()
 	uc.SetLocale(locale)
-	validation, msg := uc.validate(input)
 
+	uc.validateInput(result, input)
+	if result.HasError() {
+		return result
+	}
+
+	uc.checkRateLimitAndSetError(result, input.Email)
+	if result.HasError() {
+		return result
+	}
+
+	password := uc.getPassword(result, input.Email)
+	if result.HasError() {
+		return result
+	}
+
+	user := uc.getUser(result, password.UserID, input.Email)
+	if result.HasError() {
+		return result
+	}
+
+	uc.validatePassword(result, password.Hash, input.Password, input.Email)
+	if result.HasError() {
+		return result
+	}
+
+	uc.clearFailedAttempts(input.Email)
+
+	if user.OTPLogin {
+		uc.handleOTPLogin(result, user)
+		return result
+	}
+
+	token := uc.generateTokens(ctx, result, password.UserIDString(), user)
+	if result.HasError() {
+		return result
+	}
+
+	uc.setSuccessResult(result, token)
+	return result
+}
+
+func (uc *AuthenticateUseCase) validateInput(result *usecase.UseCaseResult[dtos.Token], input dtos.UserCredentials) {
+	validation, msg := uc.validate(input)
 	if !validation {
 		result.SetError(
 			status.InvalidInput,
 			strings.Join(msg, "\n"),
 		)
-		return result
+		return
+	}
+}
+
+func (uc *AuthenticateUseCase) checkRateLimitAndSetError(result *usecase.UseCaseResult[dtos.Token], email string) {
+	if uc.cacheProvider == nil {
+		return
 	}
 
-	// Check rate limiting before attempting authentication
-	if uc.cacheProvider != nil {
-		exceeded, err := uc.checkRateLimit(input.Email)
-		if err != nil {
-			uc.log.Error("Error checking rate limit, continuing with authentication", err.ToError())
-		} else if exceeded {
-			result.SetError(
-				status.TooManyRequests,
-				uc.appMessages.Get(
-					uc.locale,
-					messages.MessageKeysInstance.LoginMaxAttemptsExceeded,
-				),
-			)
-			return result
-		}
-	}
-
-	// Get password from repository
-	password, err := uc.pass.GetActivePassword(input.Email)
-
+	exceeded, err := uc.checkRateLimit(email)
 	if err != nil {
-		// Increment failed attempts counter
+		uc.log.Error("Error checking rate limit, continuing with authentication", err.ToError())
+		return
+	}
+
+	if exceeded {
+		result.SetError(
+			status.TooManyRequests,
+			uc.appMessages.Get(
+				uc.locale,
+				messages.MessageKeysInstance.LoginMaxAttemptsExceeded,
+			),
+		)
+		return
+	}
+}
+
+func (uc *AuthenticateUseCase) getPassword(result *usecase.UseCaseResult[dtos.Token], email string) *models.Password {
+	password, err := uc.pass.GetActivePassword(email)
+	if err != nil {
 		if uc.cacheProvider != nil {
-			uc.incrementFailedAttempts(input.Email)
+			uc.incrementFailedAttempts(email)
 		}
 		result.SetError(
 			status.NotFound,
@@ -97,16 +144,16 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
 			),
 		)
-		return result
+		return nil
 	}
+	return password
+}
 
-	// Get user with role from repository
-	user, err := uc.userRepo.GetUserWithRole(password.UserID)
-
+func (uc *AuthenticateUseCase) getUser(result *usecase.UseCaseResult[dtos.Token], userID uint, email string) *models.UserWithRole {
+	user, err := uc.userRepo.GetUserWithRole(userID)
 	if err != nil {
-		// Increment failed attempts counter
 		if uc.cacheProvider != nil {
-			uc.incrementFailedAttempts(input.Email)
+			uc.incrementFailedAttempts(email)
 		}
 		result.SetError(
 			status.NotFound,
@@ -115,15 +162,16 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
 			),
 		)
-		return result
+		return nil
 	}
+	return user
+}
 
-	// Validate password
-	valid, verifyErr := uc.hashProvider.VerifyPassword(password.Hash, input.Password)
+func (uc *AuthenticateUseCase) validatePassword(result *usecase.UseCaseResult[dtos.Token], passwordHash string, inputPassword string, email string) {
+	valid, verifyErr := uc.hashProvider.VerifyPassword(passwordHash, inputPassword)
 	if !valid || verifyErr != nil {
-		// Increment failed attempts counter
 		if uc.cacheProvider != nil {
-			uc.incrementFailedAttempts(input.Email)
+			uc.incrementFailedAttempts(email)
 		}
 		result.SetError(
 			status.NotFound,
@@ -132,70 +180,63 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
 			),
 		)
-		return result
+		return
+	}
+}
+
+func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos.Token], user *models.UserWithRole) {
+	otp, err := services.CreateOneTimePasswordService(user.ID, models.OneTimePasswordLogin, uc.hashProvider, uc.otpRepo)
+	if err != nil {
+		uc.log.Error("Error creating OTP", err.ToError())
+		result.SetError(
+			status.Conflict,
+			uc.appMessages.Get(
+				uc.locale,
+				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			),
+		)
+		return
 	}
 
-	// Clear failed attempts counter on successful authentication
-	if uc.cacheProvider != nil {
-		uc.clearFailedAttempts(input.Email)
+	otpEmailData := email_models.OneTimePasswordEmailData{
+		Name:              user.Name,
+		OTPCode:           otp,
+		ExpirationMinutes: int(settings.AppSettingsInstance.OneTimeTokenPasswordTTL),
+		AppName:           settings.AppSettingsInstance.AppName,
+		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
 
-	// OTP Login
-	if user.OTPLogin {
-		otp, err := services.CreateOneTimePasswordService(user.ID, models.OneTimePasswordLogin, uc.hashProvider, uc.otpRepo)
-		otpEmailData := email_models.OneTimePasswordEmailData{
-			Name:              user.Name,
-			OTPCode:           otp,
-			ExpirationMinutes: int(settings.AppSettingsInstance.OneTimeTokenPasswordTTL),
-			AppName:           settings.AppSettingsInstance.AppName,
-			SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
-		}
-
-		if err := email_service.OneTimePasswordEmailServiceInstance.SendWithTemplate(
-			otpEmailData,
-			user.Email,
-			uc.locale,
-			templates.TemplateKeysInstance.OTPEmail,
-			email_service.SubjectKeysInstance.OTPEmail,
-		); err != nil {
-			uc.log.Error("Error sending email", err.ToError())
-			result.SetError(
-				err.Code,
-				uc.appMessages.Get(
-					uc.locale,
-					err.Context,
-				),
-			)
-			return result
-		}
-
-		if err != nil {
-			uc.log.Error("Error creating OTP", err.ToError())
-			result.SetError(
-				status.Conflict,
-				uc.appMessages.Get(
-					uc.locale,
-					messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
-				),
-			)
-			return result
-		}
-
-		result.SetSuccess(true)
-		result.SetDetails(uc.appMessages.Get(
-			uc.locale,
-			messages.MessageKeysInstance.OTP_LOGIN_ENABLED,
-		))
-		return result
+	if err := email_service.OneTimePasswordEmailServiceInstance.SendWithTemplate(
+		otpEmailData,
+		user.Email,
+		uc.locale,
+		templates.TemplateKeysInstance.OTPEmail,
+		email_service.SubjectKeysInstance.OTPEmail,
+	); err != nil {
+		uc.log.Error("Error sending email", err.ToError())
+		result.SetError(
+			err.Code,
+			uc.appMessages.Get(
+				uc.locale,
+				err.Context,
+			),
+		)
+		return
 	}
 
+	result.SetSuccess(true)
+	result.SetDetails(uc.appMessages.Get(
+		uc.locale,
+		messages.MessageKeysInstance.OTP_LOGIN_ENABLED,
+	))
+}
+
+func (uc *AuthenticateUseCase) generateTokens(ctx context.Context, result *usecase.UseCaseResult[dtos.Token], userIDString string, user *models.UserWithRole) dtos.Token {
 	claims := contractsProviders.JWTCLaims{
 		"role": user.GetRoleKey(),
 	}
 
-	// Generate JWT tokens
-	access, exp, err := uc.jwtProvider.GenerateAccessToken(ctx, password.UserIDString(), claims)
-
+	access, exp, err := uc.jwtProvider.GenerateAccessToken(ctx, userIDString, claims)
 	if err != nil {
 		result.SetError(
 			status.Conflict,
@@ -204,8 +245,10 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
+		return dtos.Token{}
 	}
-	refresh, expRefresh, err := uc.jwtProvider.GenerateRefreshToken(ctx, password.UserIDString())
+
+	refresh, expRefresh, err := uc.jwtProvider.GenerateRefreshToken(ctx, userIDString)
 	if err != nil {
 		result.SetError(
 			status.Conflict,
@@ -214,18 +257,19 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
+		return dtos.Token{}
 	}
 
-	// Response
-
-	token := dtos.Token{
+	return dtos.Token{
 		AccessToken:           access,
 		RefreshToken:          refresh,
 		TokenType:             "Bearer",
 		AccessTokenExpiresAt:  exp,
 		RefreshTokenExpiresAt: expRefresh,
 	}
+}
 
+func (uc *AuthenticateUseCase) setSuccessResult(result *usecase.UseCaseResult[dtos.Token], token dtos.Token) {
 	result.SetData(
 		status.Success,
 		token,
@@ -234,7 +278,6 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 			messages.MessageKeysInstance.AUTHORIZATION_GENERATED,
 		),
 	)
-	return result
 }
 
 func (uc *AuthenticateUseCase) validate(input dtos.UserCredentials) (bool, []string) {
