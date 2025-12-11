@@ -1,4 +1,4 @@
-package dtos
+package authdtos
 
 import (
 	"time"
@@ -7,10 +7,12 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// OneTimePasswordCreate is the DTO for creating a one time password
 type OneTimePasswordCreate struct {
 	models.OneTimePasswordBase
 }
 
+// PurposePasswordToDuration converts the purpose to the duration
 func PurposePasswordToDuration(purpose models.OneTimePasswordPurpose) time.Duration {
 	switch purpose {
 	case models.OneTimePasswordLogin:
@@ -20,6 +22,7 @@ func PurposePasswordToDuration(purpose models.OneTimePasswordPurpose) time.Durat
 	}
 }
 
+// NewOneTimePasswordCreate creates a new one time password create DTO
 func NewOneTimePasswordCreate(userID uint, purpose models.OneTimePasswordPurpose, hash []byte) *OneTimePasswordCreate {
 	// TODO: move expiration to another place
 	return &OneTimePasswordCreate{
@@ -33,6 +36,7 @@ func NewOneTimePasswordCreate(userID uint, purpose models.OneTimePasswordPurpose
 	}
 }
 
+// OneTimePasswordUpdate is the DTO for updating a one time password
 type OneTimePasswordUpdate struct {
 	IsUsed bool `json:"isUsed,omitempty"`
 	ID     uint `json:"id"`
