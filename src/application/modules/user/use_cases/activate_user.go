@@ -5,8 +5,9 @@ import (
 	"time"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	contractrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -16,15 +17,15 @@ import (
 
 // ActivateUserUseCase is a use case that activates a user
 type ActivateUserUseCase struct {
-	usecase.BaseUseCaseValidation[dtos.UserActivate, bool]
+	usecase.BaseUseCaseValidation[userdtos.UserActivate, bool]
 	log              contractsProviders.ILoggerProvider
-	userRepo         contracts_repositories.IUserRepository
-	oneTimetokenRepo contracts_repositories.IOneTimeTokenRepository
+	userRepo         usercontracts.IUserRepository
+	oneTimetokenRepo contractrepositories.IOneTimeTokenRepository
 
 	hashProvider contractsProviders.IHashProvider
 }
 
-var _ usecase.BaseUseCase[dtos.UserActivate, bool] = (*ActivateUserUseCase)(nil)
+var _ usecase.BaseUseCase[userdtos.UserActivate, bool] = (*ActivateUserUseCase)(nil)
 
 // SetLocale sets the locale for the use case
 func (uc *ActivateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
@@ -36,7 +37,7 @@ func (uc *ActivateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 // Execute executes the use case
 func (uc *ActivateUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input dtos.UserActivate,
+	input userdtos.UserActivate,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
@@ -68,7 +69,7 @@ func (uc *ActivateUserUseCase) Execute(ctx context.Context,
 
 // validateOneTimeToken validates the one time token
 // returns the user id if the token is valid
-func (uc *ActivateUserUseCase) validateOneTimeToken(input dtos.UserActivate, result *usecase.UseCaseResult[bool]) *uint {
+func (uc *ActivateUserUseCase) validateOneTimeToken(input userdtos.UserActivate, result *usecase.UseCaseResult[bool]) *uint {
 	hash := uc.hashProvider.HashOneTimeToken(input.Token)
 	oneTimeToken, err := uc.oneTimetokenRepo.GetByTokenHash(hash)
 	if err != nil {
@@ -99,7 +100,7 @@ func (uc *ActivateUserUseCase) validateOneTimeToken(input dtos.UserActivate, res
 
 // updateUser updates the user status to active
 func (uc *ActivateUserUseCase) updateUser(userID uint, result *usecase.UseCaseResult[bool]) {
-	updateUser := dtos.UserUpdate{}
+	updateUser := userdtos.UserUpdate{}
 	updateUser.ID = userID
 	userStatus := models.UserStatusActive
 	updateUser.Status = &userStatus
@@ -121,12 +122,12 @@ func (uc *ActivateUserUseCase) updateUser(userID uint, result *usecase.UseCaseRe
 // NewActivateUserUseCase creates a new activate user use case
 func NewActivateUserUseCase(
 	log contractsProviders.ILoggerProvider,
-	userRepo contracts_repositories.IUserRepository,
-	oneTimeTokenRepository contracts_repositories.IOneTimeTokenRepository,
+	userRepo usercontracts.IUserRepository,
+	oneTimeTokenRepository contractrepositories.IOneTimeTokenRepository,
 	hashProvider contractsProviders.IHashProvider,
 ) *ActivateUserUseCase {
 	return &ActivateUserUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[dtos.UserActivate, bool]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[userdtos.UserActivate, bool]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},

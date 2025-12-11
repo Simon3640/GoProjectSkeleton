@@ -3,13 +3,13 @@ package userusecases
 import (
 	"context"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
-	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
-	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
@@ -20,12 +20,12 @@ import (
 // CreateUserSendEmailUseCase is a use case that sends an email to a user
 type CreateUserSendEmailUseCase struct {
 	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
+	log         contractsproviders.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
-	hashProvider contractsProviders.IHashProvider
+	hashProvider contractsproviders.IHashProvider
 
-	tokenRepo contracts_repositories.IOneTimeTokenRepository
+	tokenRepo contractsrepositories.IOneTimeTokenRepository
 }
 
 var _ usecase.BaseUseCase[models.User, models.User] = (*CreateUserSendEmailUseCase)(nil)
@@ -92,19 +92,19 @@ func (uc *CreateUserSendEmailUseCase) createOneTimeToken(input models.User, resu
 // sendWelcomeEmail sends a welcome email to the user.
 // If sending fails, sets an error in the result.
 func (uc *CreateUserSendEmailUseCase) sendWelcomeEmail(input models.User, token string, result *usecase.UseCaseResult[models.User]) {
-	newUserEmailData := email_models.NewUserEmailData{
+	newUserEmailData := emailmodels.NewUserEmailData{
 		Name:              input.Name,
 		ActivationLink:    settings.AppSettingsInstance.FrontendActivateAccountURL + "?token=" + token,
 		ExpirationMinutes: int(settings.AppSettingsInstance.OneTimeTokenEmailVerifyTTL),
 		AppName:           settings.AppSettingsInstance.AppName,
 		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
-	if err := email_service.RegisterUserEmailServiceInstance.SendWithTemplate(
+	if err := emailservice.RegisterUserEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
 		input.Email,
 		uc.locale,
 		templates.TemplateKeysInstance.WelcomeEmail,
-		email_service.SubjectKeysInstance.WelcomeEmail,
+		emailservice.SubjectKeysInstance.WelcomeEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
@@ -119,9 +119,9 @@ func (uc *CreateUserSendEmailUseCase) sendWelcomeEmail(input models.User, token 
 
 // NewCreateUserSendEmailUseCase creates a new create user send email use case
 func NewCreateUserSendEmailUseCase(
-	log contractsProviders.ILoggerProvider,
-	hashProvider contractsProviders.IHashProvider,
-	tokenRepo contracts_repositories.IOneTimeTokenRepository,
+	log contractsproviders.ILoggerProvider,
+	hashProvider contractsproviders.IHashProvider,
+	tokenRepo contractsrepositories.IOneTimeTokenRepository,
 ) *CreateUserSendEmailUseCase {
 	return &CreateUserSendEmailUseCase{
 		appMessages:  locales.NewLocale(locales.EN_US),

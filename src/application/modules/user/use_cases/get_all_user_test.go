@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
+	appcontext "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	appstatus "github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
@@ -36,10 +36,10 @@ func TestGetAllUserUseCase_Execute_SuccessFromCache(t *testing.T) {
 		ID: 1,
 	}
 	adminUser.SetRole(dtomocks.AdminRole)
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, adminUser)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, adminUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
 	// Create query payload
@@ -109,10 +109,10 @@ func TestGetAllUserUseCase_Execute_SuccessFromRepository(t *testing.T) {
 		ID: 1,
 	}
 	adminUser.SetRole(dtomocks.AdminRole)
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, adminUser)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, adminUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
 	// Create query payload
@@ -181,10 +181,10 @@ func TestGetAllUserUseCase_Execute_RepositoryError(t *testing.T) {
 		ID: 1,
 	}
 	adminUser.SetRole(dtomocks.AdminRole)
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, adminUser)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, adminUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
 	// Create query payload
@@ -198,7 +198,7 @@ func TestGetAllUserUseCase_Execute_RepositoryError(t *testing.T) {
 	testCacheProvider.On("Get", cacheKey+":total", mock.AnythingOfType("*int64")).Return(false, nil)
 
 	// Mock repository error
-	appErr := application_errors.NewApplicationError(
+	appErr := applicationerrors.NewApplicationError(
 		appstatus.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Database error",
@@ -236,10 +236,10 @@ func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 		ID: 1,
 	}
 	adminUser.SetRole(dtomocks.AdminRole)
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, adminUser)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, adminUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
 	// Create query payload
@@ -249,7 +249,7 @@ func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 
 	// Mock cache - error getting cache (should not fail, just log)
 	cacheKey := "users:" + queryPayload.GetQueryKey()
-	appErr := application_errors.NewApplicationError(
+	appErr := applicationerrors.NewApplicationError(
 		appstatus.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Cache error",
@@ -311,10 +311,10 @@ func TestGetAllUserUseCase_Execute_CacheSetError(t *testing.T) {
 		ID: 1,
 	}
 	adminUser.SetRole(dtomocks.AdminRole)
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, adminUser)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, adminUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
 	// Create query payload
@@ -347,7 +347,7 @@ func TestGetAllUserUseCase_Execute_CacheSetError(t *testing.T) {
 	testUserRepository.On("GetAll", mock.Anything, 0, 10).Return(testUsers, total, nil)
 
 	// Mock cache set error (should not fail, just log)
-	appErr := application_errors.NewApplicationError(
+	appErr := applicationerrors.NewApplicationError(
 		appstatus.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Cache set error",
@@ -387,10 +387,10 @@ func TestGetAllUserUseCase_Execute_Unauthorized(t *testing.T) {
 		ID: 1,
 	}
 	regularUser.SetRole(dtomocks.UserRole)
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, regularUser)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, regularUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
 	// Create query payload
@@ -428,10 +428,10 @@ func TestGetAllUserUseCase_Execute_InvalidInput(t *testing.T) {
 		ID: 1,
 	}
 	adminUser.SetRole(dtomocks.AdminRole)
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, adminUser)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, adminUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
 	// Create invalid query payload (page = 0, which will be validated)
@@ -460,7 +460,7 @@ func TestGetAllUserUseCase_SetLocale(t *testing.T) {
 	assert := assert.New(t)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
 	uc := NewGetAllUserUseCase(

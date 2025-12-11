@@ -6,7 +6,8 @@ import (
 	"testing"
 	"time"
 
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
@@ -21,7 +22,7 @@ func TestActivateUserUseCase(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
@@ -69,7 +70,7 @@ func TestActivateUserUseCase(t *testing.T) {
 		testHashProvider,
 	)
 
-	userActivate := dtos.UserActivate{
+	userActivate := userdtos.UserActivate{
 		Token: "valid_token",
 	}
 

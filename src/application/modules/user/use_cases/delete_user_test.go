@@ -4,11 +4,11 @@ import (
 	"context"
 	"testing"
 
+	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
 	"github.com/stretchr/testify/assert"
@@ -23,7 +23,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	var testIDToDelete = actor.ID
 
 	testUserRepository.On("SoftDelete", testIDToDelete).Return(nil)
@@ -46,7 +46,7 @@ func TestDeleteUserUseCase_DifferentUser(t *testing.T) {
 	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	var testIDToDelete = actor.ID + 1
 
 	testUserRepository.On("SoftDelete", testIDToDelete).Return(nil)

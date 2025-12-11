@@ -5,8 +5,9 @@ import (
 	"time"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
@@ -20,13 +21,13 @@ import (
 
 // GetAllUserUseCase is a use case that gets all users
 type GetAllUserUseCase struct {
-	usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], dtos.UserMultiResponse]
+	usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], userdtos.UserMultiResponse]
 	log   contractsProviders.ILoggerProvider
-	repo  contracts_repositories.IUserRepository
+	repo  usercontracts.IUserRepository
 	cache contractsProviders.ICacheProvider
 }
 
-var _ usecase.BaseUseCase[domain_utils.QueryPayloadBuilder[models.User], dtos.UserMultiResponse] = (*GetAllUserUseCase)(nil)
+var _ usecase.BaseUseCase[domain_utils.QueryPayloadBuilder[models.User], userdtos.UserMultiResponse] = (*GetAllUserUseCase)(nil)
 
 // SetLocale sets the locale for the use case
 func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
@@ -40,8 +41,8 @@ func (uc *GetAllUserUseCase) Execute(
 	ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input domain_utils.QueryPayloadBuilder[models.User],
-) *usecase.UseCaseResult[dtos.UserMultiResponse] {
-	result := usecase.NewUseCaseResult[dtos.UserMultiResponse]()
+) *usecase.UseCaseResult[userdtos.UserMultiResponse] {
+	result := usecase.NewUseCaseResult[userdtos.UserMultiResponse]()
 	uc.SetLocale(locale)
 	uc.Validate(ctx, input, result)
 	if result.HasError() {
@@ -79,11 +80,11 @@ func (uc *GetAllUserUseCase) buildMultiResponse(
 	data []models.User, total int64,
 	input domain_utils.QueryPayloadBuilder[models.User],
 	cached bool,
-) dtos.UserMultiResponse {
-	var response dtos.UserMultiResponse
+) userdtos.UserMultiResponse {
+	var response userdtos.UserMultiResponse
 	response.Records = data
 	hasNext, hasPrev := input.HasNextPrev(total)
-	response.Meta = dtos.NewMetaMultiResponse(len(data), total, hasNext, hasPrev, cached)
+	response.Meta = shareddtos.NewMetaMultiResponse(len(data), total, hasNext, hasPrev, cached)
 	response.Meta.BuildLinks(
 		"/user",
 		input.Pagination.Page,
@@ -96,7 +97,7 @@ func (uc *GetAllUserUseCase) buildMultiResponse(
 // it checks if the cache is hit and if it is, it sets the result with a complete UserMultiResponse object (including records and meta information such as total)
 func (uc *GetAllUserUseCase) getUsersFromCache(
 	input domain_utils.QueryPayloadBuilder[models.User],
-	result *usecase.UseCaseResult[dtos.UserMultiResponse],
+	result *usecase.UseCaseResult[userdtos.UserMultiResponse],
 ) {
 	// Check Cache
 	cacheKey := uc.cacheKey(input)
@@ -137,7 +138,7 @@ func (uc *GetAllUserUseCase) cacheKey(input domain_utils.QueryPayloadBuilder[mod
 // it returns the users and total, or sets an error in the result if the repository call fails
 func (uc *GetAllUserUseCase) getUsersFromRepository(
 	input domain_utils.QueryPayloadBuilder[models.User],
-	result *usecase.UseCaseResult[dtos.UserMultiResponse],
+	result *usecase.UseCaseResult[userdtos.UserMultiResponse],
 ) ([]models.User, int64, *application_errors.ApplicationError) {
 	data, total, err := uc.repo.GetAll(&input, input.Pagination.GetOffset(), input.Pagination.GetLimit())
 	if err != nil {
@@ -165,11 +166,11 @@ func (uc *GetAllUserUseCase) setCache(input domain_utils.QueryPayloadBuilder[mod
 // NewGetAllUserUseCase creates a new get all user use case
 func NewGetAllUserUseCase(
 	log contractsProviders.ILoggerProvider,
-	repo contracts_repositories.IUserRepository,
+	repo usercontracts.IUserRepository,
 	cache contractsProviders.ICacheProvider,
 ) *GetAllUserUseCase {
 	return &GetAllUserUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], dtos.UserMultiResponse]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], userdtos.UserMultiResponse]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(guards.RoleGuard("admin")),
 		},

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -16,12 +16,12 @@ import (
 
 // UpdateUserUseCase is a use case that updates a user
 type UpdateUserUseCase struct {
-	usecase.BaseUseCaseValidation[dtos.UserUpdate, models.User]
+	usecase.BaseUseCaseValidation[userdtos.UserUpdate, models.User]
 	log  contractsProviders.ILoggerProvider
-	repo contracts_repositories.IUserRepository
+	repo usercontracts.IUserRepository
 }
 
-var _ usecase.BaseUseCase[dtos.UserUpdate, models.User] = (*UpdateUserUseCase)(nil)
+var _ usecase.BaseUseCase[userdtos.UserUpdate, models.User] = (*UpdateUserUseCase)(nil)
 
 // SetLocale sets the locale for the use case
 func (uc *UpdateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
@@ -33,7 +33,7 @@ func (uc *UpdateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 // Execute executes the use case
 func (uc *UpdateUserUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input dtos.UserUpdate,
+	input userdtos.UserUpdate,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
@@ -48,7 +48,7 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context,
 
 // updateUser attempts to update the user.
 // It sets errors in the result if the update fails; success data is set in the Execute method.
-func (uc *UpdateUserUseCase) updateUser(input dtos.UserUpdate, result *usecase.UseCaseResult[models.User]) {
+func (uc *UpdateUserUseCase) updateUser(input userdtos.UserUpdate, result *usecase.UseCaseResult[models.User]) {
 	res, err := uc.repo.Update(input.ID, input)
 	if err != nil {
 		uc.log.Error("Error updating user", err.ToError())
@@ -63,12 +63,12 @@ func (uc *UpdateUserUseCase) updateUser(input dtos.UserUpdate, result *usecase.U
 // NewUpdateUserUseCase creates a new update user use case
 func NewUpdateUserUseCase(
 	log contractsProviders.ILoggerProvider,
-	repo contracts_repositories.IUserRepository,
+	repo usercontracts.IUserRepository,
 ) *UpdateUserUseCase {
 	return &UpdateUserUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[dtos.UserUpdate, models.User]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[userdtos.UserUpdate, models.User]{
 			AppMessages: locales.NewLocale(locales.EN_US),
-			Guards:      usecase.NewGuards(guards.RoleGuard("admin", "user"), guards.UserResourceGuard[dtos.UserUpdate]()),
+			Guards:      usecase.NewGuards(guards.RoleGuard("admin", "user"), guards.UserResourceGuard[userdtos.UserUpdate]()),
 		},
 		log:  log,
 		repo: repo,
