@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"go/types"
 	"net/http"
 	"strconv"
 
@@ -136,7 +135,7 @@ func DeleteUser(ctx HandlerContext) {
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	NewRequestResolver[types.Nil]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
+	NewRequestResolver[bool]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }
 
 // GetAllUser
