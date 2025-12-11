@@ -12,11 +12,11 @@ import (
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	authservices "github.com/simon3640/goprojectskeleton/src/application/modules/auth/services"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
-	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	emailservices "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
@@ -198,7 +198,7 @@ func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos
 		return
 	}
 
-	otpEmailData := email_models.OneTimePasswordEmailData{
+	otpEmailData := emailmodels.OneTimePasswordEmailData{
 		Name:              user.Name,
 		OTPCode:           otp,
 		ExpirationMinutes: int(settings.AppSettingsInstance.OneTimeTokenPasswordTTL),
@@ -206,12 +206,12 @@ func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos
 		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
 
-	if err := email_service.OneTimePasswordEmailServiceInstance.SendWithTemplate(
+	if err := emailservices.OneTimePasswordEmailServiceInstance.SendWithTemplate(
 		otpEmailData,
 		user.Email,
 		uc.locale,
 		templates.TemplateKeysInstance.OTPEmail,
-		email_service.SubjectKeysInstance.OTPEmail,
+		emailservices.SubjectKeysInstance.OTPEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
@@ -295,7 +295,7 @@ func (uc *AuthenticateUseCase) validate(input dtos.UserCredentials) (bool, []str
 }
 
 // checkRateLimit verify if the user has exceeded the login failed attempts limit
-func (uc *AuthenticateUseCase) checkRateLimit(email string) (bool, *application_errors.ApplicationError) {
+func (uc *AuthenticateUseCase) checkRateLimit(email string) (bool, *applicationerrors.ApplicationError) {
 	if uc.cacheProvider == nil {
 		return false, nil
 	}
