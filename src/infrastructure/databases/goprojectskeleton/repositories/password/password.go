@@ -1,4 +1,4 @@
-package repositories
+package passwordrepositories
 
 import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
@@ -7,13 +7,14 @@ import (
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
+	reposhared "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/shared"
 
 	"gorm.io/gorm"
 )
 
 // PasswordRepository is the repository for the password model
 type PasswordRepository struct {
-	RepositoryBase[dtos.PasswordCreate, dtos.PasswordUpdate, models.Password, dbModels.Password]
+	reposhared.RepositoryBase[dtos.PasswordCreate, dtos.PasswordUpdate, models.Password, dbModels.Password]
 }
 
 var _ passwordcontracts.IPasswordRepository = (*PasswordRepository)(nil)
@@ -21,7 +22,7 @@ var _ passwordcontracts.IPasswordRepository = (*PasswordRepository)(nil)
 // PasswordConverter is the converter for the password model
 type PasswordConverter struct{}
 
-var _ ModelConverter[dtos.PasswordCreate, dtos.PasswordUpdate, models.Password, dbModels.Password] = (*PasswordConverter)(nil)
+var _ reposhared.ModelConverter[dtos.PasswordCreate, dtos.PasswordUpdate, models.Password, dbModels.Password] = (*PasswordConverter)(nil)
 
 // Create creates a new password in transaction that cleans all previous passwords for the user setting is_active to false
 func (r *PasswordRepository) Create(model dtos.PasswordCreate) (*models.Password, *application_errors.ApplicationError) {
@@ -40,23 +41,23 @@ func (r *PasswordRepository) Create(model dtos.PasswordCreate) (*models.Password
 
 	if err != nil {
 		tx.Rollback()
-		r.logger.Debug("Error deactivating previous passwords", err)
-		return nil, MapOrmError(err)
+		r.Logger.Debug("Error deactivating previous passwords", err)
+		return nil, reposhared.MapOrmError(err)
 	}
 
-	_entity := r.modelConverter.ToGormCreate(model)
+	_entity := r.ModelConverter.ToGormCreate(model)
 
-	r.logger.Debug("Creating new password", _entity)
+	r.Logger.Debug("Creating new password", _entity)
 
 	if err := tx.Create(_entity).Error; err != nil {
 		tx.Rollback()
-		return nil, MapOrmError(err)
+		return nil, reposhared.MapOrmError(err)
 	}
 	if err := tx.Commit().Error; err != nil {
-		return nil, DefaultORMError
+		return nil, reposhared.DefaultORMError
 	}
 
-	return r.modelConverter.ToDomain(_entity), nil
+	return r.ModelConverter.ToDomain(_entity), nil
 }
 
 // GetActivePassword retrieves the active password for a user by email
@@ -64,10 +65,10 @@ func (r *PasswordRepository) GetActivePassword(userEmail string) (*models.Passwo
 	var password dbModels.Password
 	// Select the user by email, then take the first active password
 	if err := r.DB.Joins(`JOIN "user" u ON u.id = password.user_id`).Where("u.email = ? AND password.is_active = ?", userEmail, true).First(&password).Error; err != nil {
-		r.logger.Debug("Error retrieving active password", err)
-		return nil, MapOrmError(err)
+		r.Logger.Debug("Error retrieving active password", err)
+		return nil, reposhared.MapOrmError(err)
 	}
-	return r.modelConverter.ToDomain(&password), nil
+	return r.ModelConverter.ToDomain(&password), nil
 }
 
 // ToGormCreate converts a password create model to a password gorm model
@@ -114,11 +115,15 @@ func (uc *PasswordConverter) ToGormUpdate(model dtos.PasswordUpdate) *dbModels.P
 // NewPasswordRepository creates a new password repository
 func NewPasswordRepository(db *gorm.DB, logger contractsProviders.ILoggerProvider) *PasswordRepository {
 	return &PasswordRepository{
-		RepositoryBase: RepositoryBase[
+		RepositoryBase: reposhared.RepositoryBase[
 			dtos.PasswordCreate,
 			dtos.PasswordUpdate,
 			models.Password,
 			dbModels.Password,
-		]{DB: db, modelConverter: &PasswordConverter{}, logger: logger},
+		]{
+			DB:             db,
+			ModelConverter: &PasswordConverter{},
+			Logger:         logger,
+		},
 	}
 }

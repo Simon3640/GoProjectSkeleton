@@ -5,7 +5,8 @@ import (
 
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
-	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
+	authrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/auth"
+	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 
 	"github.com/stretchr/testify/assert"
@@ -13,8 +14,8 @@ import (
 
 func TestOneTimeTokenGetByTokenHash(t *testing.T) {
 	assert := assert.New(t)
-	oneTimeTokenRepository := repositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger)
-	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	oneTimeTokenRepository := authrepositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	userRepository := userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	// Create user to link the one-time token
 	userCreated, _ := userRepository.Create(dtomocks.UserCreate)

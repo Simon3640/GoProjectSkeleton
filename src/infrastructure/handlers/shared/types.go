@@ -71,11 +71,11 @@ type Query struct {
 }
 
 type HandlerContext struct {
-	c      context.Context
-	Locale locales.LocaleTypeEnum
-	Params map[string]string
-	Body   *io.ReadCloser
-	Query  *Query
+	Context context.Context
+	Locale  locales.LocaleTypeEnum
+	Params  map[string]string
+	Body    *io.ReadCloser
+	Query   *Query
 
 	ResponseWriter http.ResponseWriter
 }
@@ -94,7 +94,7 @@ func NewHandlerContext(
 	}
 
 	return HandlerContext{
-		c:              c,
+		Context:        c,
 		Locale:         locales.LocaleTypeEnum(*locale),
 		Params:         params,
 		Body:           body,
