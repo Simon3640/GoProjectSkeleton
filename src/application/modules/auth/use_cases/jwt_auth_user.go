@@ -40,13 +40,9 @@ func (uc *AuthUserUseCase) Execute(ctx context.Context,
 ) *usecase.UseCaseResult[models.UserWithRole] {
 	result := usecase.NewUseCaseResult[models.UserWithRole]()
 	uc.SetLocale(locale)
-	validation, msg := uc.validate(input)
 
-	if !validation {
-		result.SetError(
-			status.Unauthorized,
-			strings.Join(msg, "\n"),
-		)
+	uc.validate(input, result)
+	if result.HasError() {
 		return result
 	}
 
@@ -55,20 +51,37 @@ func (uc *AuthUserUseCase) Execute(ctx context.Context,
 		return result
 	}
 
-	// convert subject to uint
+	userID := uc.convertSubjectToID(result, sub)
+	if result.HasError() {
+		return result
+	}
 
+	user := uc.getUser(result, userID)
+	if result.HasError() {
+		return result
+	}
+
+	uc.setSuccessResult(result, user)
+	return result
+}
+
+func (uc *AuthUserUseCase) convertSubjectToID(result *usecase.UseCaseResult[models.UserWithRole], sub *string) uint {
 	subInt, err := strconv.Atoi(*sub)
 	if err != nil {
 		result.SetError(
 			status.Unauthorized,
-			"Invalid subject in token",
+			uc.appMessages.Get(
+				uc.locale,
+				messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
+			),
 		)
-		return result
+		return 0
 	}
-	subID := uint(subInt)
+	return uint(subInt)
+}
 
-	user, appError := uc.userRepository.GetUserWithRole(subID)
-
+func (uc *AuthUserUseCase) getUser(result *usecase.UseCaseResult[models.UserWithRole], userID uint) *models.UserWithRole {
+	user, appError := uc.userRepository.GetUserWithRole(userID)
 	if appError != nil {
 		uc.log.Error("Error getting user with role", appError.ToError())
 		result.SetError(
@@ -78,9 +91,12 @@ func (uc *AuthUserUseCase) Execute(ctx context.Context,
 				appError.Context,
 			),
 		)
-		return result
+		return nil
 	}
+	return user
+}
 
+func (uc *AuthUserUseCase) setSuccessResult(result *usecase.UseCaseResult[models.UserWithRole], user *models.UserWithRole) {
 	result.SetData(
 		status.Success,
 		*user,
@@ -89,10 +105,9 @@ func (uc *AuthUserUseCase) Execute(ctx context.Context,
 			messages.MessageKeysInstance.PASSWORD_CREATED,
 		),
 	)
-	return result
 }
 
-func (uc *AuthUserUseCase) validate(input string) (bool, []string) {
+func (uc *AuthUserUseCase) validate(input string, result *usecase.UseCaseResult[models.UserWithRole]) {
 	// Validate the input data
 	var validationErrors []string
 
@@ -104,7 +119,12 @@ func (uc *AuthUserUseCase) validate(input string) (bool, []string) {
 	if !regexp.MustCompile(jwtRegex).MatchString(input) {
 		validationErrors = append(validationErrors, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.INVALID_JWT_TOKEN))
 	}
-	return len(validationErrors) == 0, validationErrors
+	if len(validationErrors) > 0 {
+		result.SetError(
+			status.Unauthorized,
+			strings.Join(validationErrors, "\n"),
+		)
+	}
 }
 
 func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *usecase.UseCaseResult[models.UserWithRole]) *string {
