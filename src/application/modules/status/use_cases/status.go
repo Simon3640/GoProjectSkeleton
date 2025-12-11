@@ -5,6 +5,7 @@ import (
 	"time"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	statuscontracts "github.com/simon3640/goprojectskeleton/src/application/modules/status/contracts"
 	locales "github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	messages "github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	status "github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -15,7 +16,7 @@ import (
 type GetStatusUseCase struct {
 	appMessages       *locales.Locale
 	log               contractsProviders.ILoggerProvider
-	apiStatusProvider contractsProviders.IApiStatusProvider
+	apiStatusProvider statuscontracts.IApiStatusProvider
 	locale            locales.LocaleTypeEnum
 }
 
@@ -45,7 +46,7 @@ func (uc *GetStatusUseCase) Execute(ctx context.Context,
 
 func NewGetStatusUseCase(
 	log contractsProviders.ILoggerProvider,
-	apiStatusProvider contractsProviders.IApiStatusProvider,
+	apiStatusProvider statuscontracts.IApiStatusProvider,
 ) *GetStatusUseCase {
 	return &GetStatusUseCase{
 		appMessages:       locales.NewLocale(locales.EN_US),
