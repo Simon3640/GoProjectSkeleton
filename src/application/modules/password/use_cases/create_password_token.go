@@ -12,6 +12,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type CreatePasswordTokenUseCase struct {
@@ -30,6 +31,9 @@ func (uc *CreatePasswordTokenUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	}
 }
 
+// Execute creates a password token for the user
+// it creates a password token for the user and sets the password token in the result
+// returns the password token if created successfully, otherwise returns an error
 func (uc *CreatePasswordTokenUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input dtos.PasswordTokenCreate,
@@ -40,9 +44,28 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx context.Context,
 	if result.HasError() {
 		return result
 	}
+	oneTimeToken := uc.validateAndGetToken(result, input.Token)
+	if result.HasError() {
+		return result
+	}
 
-	hash := uc.hashProvider.HashOneTimeToken(input.Token)
-	oneTimeToke, err := uc.oneTimetokenRepo.GetByTokenHash(hash)
+	uc.createPassword(result, oneTimeToken, input.NoHashedPassword)
+	if result.HasError() {
+		return result
+	}
+
+	uc.markTokenAsUsed(result, oneTimeToken.ID)
+	if result.HasError() {
+		return result
+	}
+
+	uc.setSuccessResult(result)
+	return result
+}
+
+func (uc *CreatePasswordTokenUseCase) validateAndGetToken(result *usecase.UseCaseResult[bool], token string) *models.OneTimeToken {
+	hash := uc.hashProvider.HashOneTimeToken(token)
+	oneTimeToken, err := uc.oneTimetokenRepo.GetByTokenHash(hash)
 	if err != nil {
 		uc.log.Error("Error getting one time token by hash", err.ToError())
 		result.SetError(
@@ -52,10 +75,10 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return nil
 	}
 
-	if oneTimeToke == nil || oneTimeToke.IsUsed || oneTimeToke.Expires.Before(time.Now()) {
+	if oneTimeToken == nil || oneTimeToken.IsUsed || oneTimeToken.Expires.Before(time.Now()) {
 		uc.log.Error("One time token is not valid", nil)
 		result.SetError(
 			status.Conflict,
@@ -64,17 +87,20 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx context.Context,
 				messages.MessageKeysInstance.INVALID_PASSWORD_RESET_TOKEN,
 			),
 		)
-		return result
+		return nil
 	}
 
+	return oneTimeToken
+}
+
+func (uc *CreatePasswordTokenUseCase) createPassword(result *usecase.UseCaseResult[bool], oneTimeToken *models.OneTimeToken, noHashedPassword string) {
 	passwordCreateNoHash := dtos.PasswordCreateNoHash{
-		UserID:           oneTimeToke.UserID,
-		NoHashedPassword: input.NoHashedPassword,
+		UserID:           oneTimeToken.UserID,
+		NoHashedPassword: noHashedPassword,
 		IsActive:         true,
 	}
 
-	_, err = services.CreatePasswordService(passwordCreateNoHash, uc.hashProvider, uc.passRepo)
-
+	_, err := services.CreatePasswordService(passwordCreateNoHash, uc.hashProvider, uc.passRepo)
 	if err != nil {
 		uc.log.Error("CreatePasswordTokenUseCase: Execute: Error creating password", err.ToError())
 		result.SetError(
@@ -84,13 +110,13 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return
 	}
+}
 
-	// Mark the token as used
-
-	_, err = uc.oneTimetokenRepo.Update(oneTimeToke.ID,
-		dtos.OneTimeTokenUpdate{IsUsed: true, ID: oneTimeToke.ID})
+func (uc *CreatePasswordTokenUseCase) markTokenAsUsed(result *usecase.UseCaseResult[bool], tokenID uint) {
+	_, err := uc.oneTimetokenRepo.Update(tokenID,
+		dtos.OneTimeTokenUpdate{IsUsed: true, ID: tokenID})
 
 	if err != nil {
 		uc.log.Error("Error updating one time token as used", err.ToError())
@@ -101,9 +127,11 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return
 	}
+}
 
+func (uc *CreatePasswordTokenUseCase) setSuccessResult(result *usecase.UseCaseResult[bool]) {
 	result.SetData(
 		status.Success,
 		true,
@@ -112,8 +140,6 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx context.Context,
 			messages.MessageKeysInstance.RESET_PASSWORD_TOKEN_VALID,
 		),
 	)
-
-	return result
 }
 
 func NewCreatePasswordTokenUseCase(
