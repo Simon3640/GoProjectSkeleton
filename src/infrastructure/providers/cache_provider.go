@@ -114,4 +114,69 @@ func (r *RedisCacheProvider) Flush() *application_errors.ApplicationError {
 	return nil
 }
 
+// Increment atomically increments the value of a key by 1 if the key does not exist creates it with the value 1 and sets the TTL
+// returns the incremented value and an error if any
+func (r *RedisCacheProvider) Increment(key string, ttl time.Duration) (int64, *application_errors.ApplicationError) {
+	ctx := context.Background()
+	cmd := r.client.Incr(ctx, key)
+	if err := cmd.Err(); err != nil {
+		return 0, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			err.Error(),
+		)
+	}
+	if cmd.Val() == 1 {
+		if err := r.client.Expire(ctx, key, ttl).Err(); err != nil {
+			return 0, application_errors.NewApplicationError(
+				status.ProviderError,
+				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				err.Error(),
+			)
+		}
+	}
+	return cmd.Val(), nil
+}
+
+// IncrementBy atomically increments the value of a key by a given amount
+// returns the incremented value and an error if any
+func (r *RedisCacheProvider) IncrementBy(key string, increment int64, ttl time.Duration) (int64, *application_errors.ApplicationError) {
+	ctx := context.Background()
+	cmd := r.client.IncrBy(ctx, key, increment)
+	if err := cmd.Err(); err != nil {
+		return 0, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			err.Error(),
+		)
+	}
+	if cmd.Val() == increment {
+		if err := r.client.Expire(ctx, key, ttl).Err(); err != nil {
+			return 0, application_errors.NewApplicationError(
+				status.ProviderError,
+				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+				err.Error(),
+			)
+		}
+	}
+	return cmd.Val(), nil
+}
+
+// GetInt64 gets the value of a key as an int64
+// returns the value and an error if any
+func (r *RedisCacheProvider) GetInt64(key string) (int64, *application_errors.ApplicationError) {
+	ctx := context.Background()
+	data, err := r.client.Get(ctx, key).Int64()
+	if err == redis.Nil {
+		return 0, nil
+	} else if err != nil {
+		return 0, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			err.Error(),
+		)
+	}
+	return data, nil
+}
+
 var CacheProviderInstance contractsProviders.ICacheProvider

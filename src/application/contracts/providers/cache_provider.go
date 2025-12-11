@@ -15,4 +15,14 @@ type ICacheProvider interface {
 	Delete(key string) *application_errors.ApplicationError
 	// Flush removes all values from the cache.
 	Flush() *application_errors.ApplicationError
+
+	// Increment atomically increments the value of a key by 1 if the key does not exist creates it with the value 1 and sets the TTL
+	// returns the incremented value and an error if any
+	Increment(key string, ttl time.Duration) (int64, *application_errors.ApplicationError)
+	// IncrementBy atomically increments the value of a key by a given amount if the key does not exist creates it with the value increment and sets the TTL
+	// returns the incremented value and an error if any
+	IncrementBy(key string, increment int64, ttl time.Duration) (int64, *application_errors.ApplicationError)
+	// GetInt64 gets the value of a key as an int64
+	// returns the value and an error if any
+	GetInt64(key string) (int64, *application_errors.ApplicationError)
 }
