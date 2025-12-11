@@ -7,6 +7,7 @@ import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -45,21 +46,16 @@ func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 		return result
 	}
 
-	input.Password, _ = uc.hashProvider.HashPassword(input.Password)
-
-	res, err := uc.repo.CreateWithPassword(input)
-
-	if err != nil {
-		uc.log.Error("Error creating user with password", err.ToError())
-		result.SetError(
-			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
-				err.Context,
-			),
-		)
+	uc.hashPassword(&input, result)
+	if result.HasError() {
 		return result
 	}
+
+	res := uc.createUser(input, result)
+	if result.HasError() {
+		return result
+	}
+
 	result.SetData(
 		status.Success,
 		*res,
@@ -69,6 +65,31 @@ func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 		),
 	)
 	return result
+}
+
+func (uc *CreateUserAndPasswordUseCase) createUser(input dtos.UserAndPasswordCreate, result *usecase.UseCaseResult[models.User]) *models.User {
+	res, err := uc.repo.CreateWithPassword(input)
+	if err != nil {
+		uc.log.Error("Error creating user with password", err.ToError())
+		result.SetError(
+			err.Code,
+			uc.appMessages.Get(uc.locale, err.Context),
+		)
+		return nil
+	}
+	return res
+}
+
+func (uc *CreateUserAndPasswordUseCase) hashPassword(input *dtos.UserAndPasswordCreate, result *usecase.UseCaseResult[models.User]) {
+	var err *application_errors.ApplicationError
+	input.Password, err = uc.hashProvider.HashPassword(input.Password)
+	if err != nil {
+		uc.log.Error("Error hashing password", err.ToError())
+		result.SetError(
+			err.Code,
+			uc.appMessages.Get(uc.locale, err.Context),
+		)
+	}
 }
 
 func (uc *CreateUserAndPasswordUseCase) validate(
