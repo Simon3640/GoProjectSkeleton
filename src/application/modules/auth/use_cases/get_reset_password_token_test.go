@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
@@ -22,7 +23,7 @@ func TestGetResetPasswordTokenUseCase(t *testing.T) {
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testMockHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepo := new(repositoriesmocks.MockOneTimeTokenRepository)
-	testUserRepo := new(repositoriesmocks.MockUserRepository)
+	testUserRepo := new(authmocks.MockUserRepository)
 
 	uc := NewGetResetPasswordTokenUseCase(testLogger,
 		testOneTimeTokenRepo,

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -16,18 +16,20 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// AuthUserUseCase is the use case for authenticating a user with a JWT token
 type AuthUserUseCase struct {
 	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
+	log         contractsproviders.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
-	userRepository contracts_repositories.IUserRepository
+	userRepository authcontracts.IUserRepository
 
-	jwtProvider contractsProviders.IJWTProvider
+	jwtProvider authcontracts.IJWTProvider
 }
 
 var _ usecase.BaseUseCase[string, models.UserWithRole] = (*AuthUserUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *AuthUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
@@ -183,9 +185,9 @@ func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *use
 }
 
 func NewAuthUserUseCase(
-	log contractsProviders.ILoggerProvider,
-	userRepository contracts_repositories.IUserRepository,
-	jwtProvider contractsProviders.IJWTProvider,
+	log contractsproviders.ILoggerProvider,
+	userRepository authcontracts.IUserRepository,
+	jwtProvider authcontracts.IJWTProvider,
 ) *AuthUserUseCase {
 	return &AuthUserUseCase{
 		appMessages:    locales.NewLocale(locales.EN_US),

@@ -5,7 +5,8 @@ import (
 	"testing"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
+	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 
@@ -18,13 +19,13 @@ func TestAuthenticationRefreshUseCase(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	uc := NewAuthenticationRefreshUseCase(testLogger, testJWTProvider)
 
 	// Valid Token Refresh
 	validToken := "validAccessToken.123"
-	claimsReturn := contractsProviders.JWTCLaims{
+	claimsReturn := authcontracts.JWTCLaims{
 		"sub": "1",
 		"typ": "refresh",
 		"exp": float64(time.Now().Add(1 * time.Hour).Unix()),

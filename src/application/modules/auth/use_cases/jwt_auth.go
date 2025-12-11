@@ -8,9 +8,10 @@ import (
 	"strings"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -27,16 +28,16 @@ import (
 // AuthenticateUseCase is the use case for the authentication of a user
 type AuthenticateUseCase struct {
 	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
+	log         contractproviders.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
-	pass     contracts_repositories.IPasswordRepository
-	userRepo contracts_repositories.IUserRepository
-	otpRepo  contracts_repositories.IOneTimePasswordRepository
+	pass     authcontracts.IPasswordRepository
+	userRepo authcontracts.IUserRepository
+	otpRepo  contractsrepositories.IOneTimePasswordRepository
 
-	jwtProvider   contractsProviders.IJWTProvider
-	hashProvider  contractsProviders.IHashProvider
-	cacheProvider contractsProviders.ICacheProvider
+	jwtProvider   authcontracts.IJWTProvider
+	hashProvider  contractproviders.IHashProvider
+	cacheProvider contractproviders.ICacheProvider
 }
 
 var _ usecase.BaseUseCase[dtos.UserCredentials, dtos.Token] = (*AuthenticateUseCase)(nil)
@@ -232,7 +233,7 @@ func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos
 }
 
 func (uc *AuthenticateUseCase) generateTokens(ctx context.Context, result *usecase.UseCaseResult[dtos.Token], userIDString string, user *models.UserWithRole) dtos.Token {
-	claims := contractsProviders.JWTCLaims{
+	claims := authcontracts.JWTCLaims{
 		"role": user.GetRoleKey(),
 	}
 
@@ -347,13 +348,13 @@ func (uc *AuthenticateUseCase) getRateLimitKey(email string) string {
 }
 
 func NewAuthenticateUseCase(
-	log contractsProviders.ILoggerProvider,
-	pass contracts_repositories.IPasswordRepository,
-	userRepo contracts_repositories.IUserRepository,
-	otpRepo contracts_repositories.IOneTimePasswordRepository,
-	hashProvider contractsProviders.IHashProvider,
-	jwtProvider contractsProviders.IJWTProvider,
-	cacheProvider contractsProviders.ICacheProvider,
+	log contractproviders.ILoggerProvider,
+	pass authcontracts.IPasswordRepository,
+	userRepo authcontracts.IUserRepository,
+	otpRepo contractsrepositories.IOneTimePasswordRepository,
+	hashProvider contractproviders.IHashProvider,
+	jwtProvider authcontracts.IJWTProvider,
+	cacheProvider contractproviders.ICacheProvider,
 ) *AuthenticateUseCase {
 	return &AuthenticateUseCase{
 		appMessages:   locales.NewLocale(locales.EN_US),

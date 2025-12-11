@@ -7,7 +7,8 @@ import (
 	"testing"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
+	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -22,7 +23,7 @@ func TestAuthUserCase(t *testing.T) {
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(repositoriesmocks.MockUserRepository)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
 		testLogger,
@@ -31,7 +32,7 @@ func TestAuthUserCase(t *testing.T) {
 	)
 
 	validToken := "validToken.123"
-	claimsReturn := contractsProviders.JWTCLaims{
+	claimsReturn := authcontracts.JWTCLaims{
 		"sub": "1",
 		"typ": "access",
 		"exp": float64(time.Now().Add(1 * time.Hour).Unix()),
@@ -57,8 +58,8 @@ func TestAuthUserCase_InvalidToken(t *testing.T) {
 	assert := assert.New(t)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testUserRepository := new(authmocks.MockUserRepository)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
 		testLogger,
@@ -81,7 +82,7 @@ func TestAuthUserCase_ExpiredToken(t *testing.T) {
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(repositoriesmocks.MockUserRepository)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
 		testLogger,
@@ -90,7 +91,7 @@ func TestAuthUserCase_ExpiredToken(t *testing.T) {
 	)
 
 	expiredToken := "expiredToken.123"
-	claimsReturn := contractsProviders.JWTCLaims{
+	claimsReturn := authcontracts.JWTCLaims{
 		"sub": "1",
 		"typ": "access",
 		"exp": float64(time.Now().Add(-1 * time.Hour).Unix()),
@@ -111,7 +112,7 @@ func TestAuthUserCase_NoAccessToken(t *testing.T) {
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(repositoriesmocks.MockUserRepository)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
 		testLogger,
@@ -120,7 +121,7 @@ func TestAuthUserCase_NoAccessToken(t *testing.T) {
 	)
 
 	noAccessToken := "noAccessToken.123"
-	claimsReturn := contractsProviders.JWTCLaims{
+	claimsReturn := authcontracts.JWTCLaims{
 		"sub": "1",
 		"typ": "refresh",
 		"exp": float64(time.Now().Add(1 * time.Hour).Unix()),

@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -21,9 +22,9 @@ func TestAuthenticateOTPUseCase_Valid(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(authmocks.MockUserRepository)
 	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	authOTPUseCase := NewAuthenticateOTPUseCase(
@@ -77,9 +78,9 @@ func TestAuthenticateOTPUseCase_InvalidOTP(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(authmocks.MockUserRepository)
 	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	authOTPUseCase := NewAuthenticateOTPUseCase(
