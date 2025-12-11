@@ -3,6 +3,9 @@ package repositories
 import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+
+	// Decouple modules dependencies
+	passworddtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
@@ -31,7 +34,7 @@ func (ur *UserRepository) CreateWithPassword(input dtos.UserAndPasswordCreate) (
 	}
 	userInDB := ur.modelConverter.ToDomain(userCreate)
 	// Create password
-	passwordCreate := dtos.PasswordCreate{
+	passwordCreate := passworddtos.PasswordCreate{
 		PasswordBase: models.PasswordBase{
 			UserID:   userInDB.ID,
 			Hash:     input.Password,

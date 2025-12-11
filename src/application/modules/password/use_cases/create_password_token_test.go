@@ -1,4 +1,4 @@
-package usecases_password
+package passwordusecases
 
 import (
 	"context"
@@ -6,7 +6,9 @@ import (
 	"testing"
 	"time"
 
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
+	passwordmocks "github.com/simon3640/goprojectskeleton/src/application/modules/password/mocks"
+	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -24,7 +26,7 @@ func TestCreatePasswordTokenUseCase_Execute_Success(t *testing.T) {
 
 	ctx := context.Background()
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
@@ -74,7 +76,7 @@ func TestCreatePasswordTokenUseCase_Execute_Success(t *testing.T) {
 		ID: 1,
 	}, nil)
 
-	tokenUpdate := dtos.OneTimeTokenUpdate{IsUsed: true, ID: validToken.ID}
+	tokenUpdate := shareddtos.OneTimeTokenUpdate{IsUsed: true, ID: validToken.ID}
 	updatedToken := &models.OneTimeToken{
 		OneTimeTokenBase: models.OneTimeTokenBase{
 			UserID:  userID,
@@ -115,7 +117,7 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorGettingToken(t *testing.T) {
 
 	ctx := context.Background()
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
@@ -159,7 +161,7 @@ func TestCreatePasswordTokenUseCase_Execute_TokenIsNil(t *testing.T) {
 
 	ctx := context.Background()
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
@@ -197,7 +199,7 @@ func TestCreatePasswordTokenUseCase_Execute_TokenIsUsed(t *testing.T) {
 
 	ctx := context.Background()
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
@@ -252,7 +254,7 @@ func TestCreatePasswordTokenUseCase_Execute_TokenExpired(t *testing.T) {
 
 	ctx := context.Background()
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
@@ -307,7 +309,7 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorCreatingPassword(t *testing.T) 
 
 	ctx := context.Background()
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
@@ -370,7 +372,7 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorMarkingTokenAsUsed(t *testing.T
 
 	ctx := context.Background()
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
@@ -426,7 +428,7 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorMarkingTokenAsUsed(t *testing.T
 		ID: 1,
 	}, nil)
 
-	tokenUpdate := dtos.OneTimeTokenUpdate{IsUsed: true, ID: validToken.ID}
+	tokenUpdate := shareddtos.OneTimeTokenUpdate{IsUsed: true, ID: validToken.ID}
 	testOneTimeTokenRepository.On("Update", validToken.ID, tokenUpdate).Return(nil, appError)
 
 	uc := NewCreatePasswordTokenUseCase(
@@ -452,7 +454,7 @@ func TestCreatePasswordTokenUseCase_Execute_TokenPurposeIsNotPasswordReset(t *te
 
 	ctx := context.Background()
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
