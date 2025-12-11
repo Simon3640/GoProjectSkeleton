@@ -9,7 +9,7 @@ import (
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	passwordmocks "github.com/simon3640/goprojectskeleton/src/application/modules/password/mocks"
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -129,7 +129,7 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorGettingToken(t *testing.T) {
 		NoHashedPassword: "NewPassword123!",
 	}
 
-	appError := application_errors.NewApplicationError(
+	appError := applicationerrors.NewApplicationError(
 		status.NotFound,
 		messages.MessageKeysInstance.RESOURCE_NOT_FOUND,
 		"Token not found",
@@ -339,7 +339,7 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorCreatingPassword(t *testing.T) 
 		NoHashedPassword: noHashedPassword,
 	}
 
-	appError := application_errors.NewApplicationError(
+	appError := applicationerrors.NewApplicationError(
 		status.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Error creating password",
@@ -403,7 +403,7 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorMarkingTokenAsUsed(t *testing.T
 		NoHashedPassword: noHashedPassword,
 	}
 
-	appError := application_errors.NewApplicationError(
+	appError := applicationerrors.NewApplicationError(
 		status.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Error updating token",

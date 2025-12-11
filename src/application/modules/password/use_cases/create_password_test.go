@@ -7,7 +7,7 @@ import (
 
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	passwordmocks "github.com/simon3640/goprojectskeleton/src/application/modules/password/mocks"
-	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	appcontext "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -33,7 +33,7 @@ func TestCreatePasswordUseCase(t *testing.T) {
 		IsActive:         true,
 	}
 
-	contextWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+	contextWithUser := context.WithValue(ctx, appcontext.UserKey, actor)
 
 	testPasswordCreate := dtos.NewPasswordCreate(
 		testPassword.UserID,

@@ -5,7 +5,7 @@ import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	passwordcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/password/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
@@ -14,7 +14,7 @@ func CreatePasswordService(
 	passwordCreateNoHash dtos.PasswordCreateNoHash,
 	hashProvider contractsProviders.IHashProvider,
 	passwordRepository passwordcontracts.IPasswordRepository,
-) (*models.Password, *application_errors.ApplicationError) {
+) (*models.Password, *applicationerrors.ApplicationError) {
 	hashedPassword, err := hashProvider.HashPassword(passwordCreateNoHash.NoHashedPassword)
 	if err != nil {
 		return nil, err
