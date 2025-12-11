@@ -4,9 +4,9 @@ package shared
 import (
 	"fmt"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
 
 	"gorm.io/gorm"
@@ -17,12 +17,12 @@ import (
 // It implements the IRepositoryBase interface
 type RepositoryBase[CreateModel any, UpdateModel any, Model any, DBModel any] struct {
 	DB             *gorm.DB
-	Logger         contractsProviders.ILoggerProvider
+	Logger         contractsproviders.ILoggerProvider
 	ModelConverter ModelConverter[CreateModel, UpdateModel, Model, DBModel]
 }
 
 func SetUpRepositoryBase[CreateModel, UpdateModel, Model, DBModel any](db *gorm.DB,
-	logger contractsProviders.ILoggerProvider,
+	logger contractsproviders.ILoggerProvider,
 	modelConverter ModelConverter[CreateModel, UpdateModel, Model, DBModel],
 ) RepositoryBase[CreateModel, UpdateModel, Model, DBModel] {
 	return RepositoryBase[CreateModel, UpdateModel, Model, DBModel]{
@@ -32,7 +32,7 @@ func SetUpRepositoryBase[CreateModel, UpdateModel, Model, DBModel any](db *gorm.
 	}
 }
 
-var _ contracts_repositories.IRepositoryBase[any, any, any, any] = (*RepositoryBase[any, any, any, any])(nil)
+var _ contractsrepositories.IRepositoryBase[any, any, any, any] = (*RepositoryBase[any, any, any, any])(nil)
 
 // FilterToGorm converts a filter to a GORM filter
 func FilterToGorm(f domain_utils.Filter) (string, []interface{}, error) {
@@ -81,7 +81,7 @@ func SortToGorm(s domain_utils.Sort) string {
 }
 
 // Create creates a new entity
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Create(entity CreateModel) (*Model, *application_errors.ApplicationError) {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Create(entity CreateModel) (*Model, *applicationerrors.ApplicationError) {
 	// Convertir a modelo de GORM
 	_entity := rb.ModelConverter.ToGormCreate(entity)
 	if err := rb.DB.Create(_entity).Error; err != nil {
@@ -95,7 +95,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Create(entit
 }
 
 // GetByID retrieves an entity by its ID
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetByID(id uint) (*Model, *application_errors.ApplicationError) {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetByID(id uint) (*Model, *applicationerrors.ApplicationError) {
 	var entity DBModel
 	if err := rb.DB.First(&entity, id).Error; err != nil {
 		appErr := MapOrmError(err)
@@ -107,7 +107,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetByID(id u
 }
 
 // Update updates an entity
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id uint, entity UpdateModel) (*Model, *application_errors.ApplicationError) {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id uint, entity UpdateModel) (*Model, *applicationerrors.ApplicationError) {
 	updateData := rb.ModelConverter.ToGormUpdate(entity)
 
 	if err := rb.DB.Model(new(DBModel)).Where("id = ?", id).Updates(updateData).Error; err != nil {
@@ -121,7 +121,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id ui
 }
 
 // SoftDelete soft deletes an entity
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) SoftDelete(id uint) *application_errors.ApplicationError {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) SoftDelete(id uint) *applicationerrors.ApplicationError {
 	if err := rb.DB.Delete(new(DBModel), id).Error; err != nil {
 		appErr := MapOrmError(err)
 		rb.Logger.Debug("Error deleting entity", appErr.ToError())
@@ -131,7 +131,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) SoftDelete(i
 }
 
 // Delete hard deletes an entity
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id uint) *application_errors.ApplicationError {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id uint) *applicationerrors.ApplicationError {
 	if err := rb.DB.Unscoped().Delete(new(DBModel), id).Error; err != nil {
 		appErr := MapOrmError(err)
 		rb.Logger.Debug("Error hard deleting entity", appErr.ToError())
@@ -141,12 +141,12 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id ui
 }
 
 // GetAll retrieves all entities
-func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[Model], skip, limit int) ([]Model, int64, *application_errors.ApplicationError) {
+func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[Model], skip, limit int) ([]Model, int64, *applicationerrors.ApplicationError) {
 	var entities []DBModel
 	// Apply filters from payload
 
 	query := rb.DB.Model(new(DBModel))
-		if payload != nil {
+	if payload != nil {
 		for _, filter := range payload.Filters {
 			gormCondition, args, err := FilterToGorm(filter)
 			if err != nil {

@@ -13,7 +13,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-// CreateUser
+// CreateUser create a new user
 // @Summary This endpoint Create a new user
 // @Description This endpoint Create a new user
 // @Schemes userdtos.UserCreate

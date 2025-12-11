@@ -1,7 +1,7 @@
 package userrepositories
 
 import (
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsprovider "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	dbmodels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
@@ -64,7 +64,7 @@ func (uc *RoleConverter) ToGormUpdate(model models.RoleUpdate) *dbmodels.Role {
 }
 
 // NewRoleRepository creates a new role repository
-func NewRoleRepository(db *gorm.DB, logger contractsProviders.ILoggerProvider) *RoleRepository {
+func NewRoleRepository(db *gorm.DB, logger contractsprovider.ILoggerProvider) *RoleRepository {
 	return &RoleRepository{
 		RepositoryBase: reposhared.RepositoryBase[
 			models.RoleCreate,

@@ -6,13 +6,13 @@ import (
 	authpipes "github.com/simon3640/goprojectskeleton/src/application/modules/auth/pipes"
 	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
-	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	authrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/auth"
+	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-// password-reset
+// RequestPasswordReset request a password reset and send an email with a one-time token
 // @Summary      Request password reset
 // @Description  This endpoint allows a user to request a password reset. An email with a
 //

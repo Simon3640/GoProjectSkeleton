@@ -14,7 +14,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-// UpdateUser
+// UpdateUser update a user by ID
 // @Summary This endpoint Update a user by ID
 // @Description This endpoint Update a user by ID
 // @Tags User

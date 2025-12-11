@@ -1,3 +1,4 @@
+// Package authhandlers contains the handlers for the auth module
 package authhandlers
 
 import (
@@ -6,13 +7,13 @@ import (
 	authdtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
-	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	authrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/auth"
+	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-// OTP login
+// LoginOTP login with OTP and get JWT tokens
 // @Summary      Login with OTP and get JWT tokens
 // @Description  This endpoint allows a user to log in with OTP and receive JWT access and
 // @Tags         Auth

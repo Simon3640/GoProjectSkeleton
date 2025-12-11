@@ -3,7 +3,7 @@ package shared
 import (
 	"errors"
 
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
@@ -12,23 +12,23 @@ import (
 )
 
 // ORMErrorMapping is the mapping of GORM errors to application errors
-var ORMErrorMapping = map[error]*application_errors.ApplicationError{
-	gorm.ErrDuplicatedKey: application_errors.NewApplicationError(
+var ORMErrorMapping = map[error]*applicationerrors.ApplicationError{
+	gorm.ErrDuplicatedKey: applicationerrors.NewApplicationError(
 		status.Conflict,
 		messages.MessageKeysInstance.RESOURCE_EXISTS,
 		"Resource already exists",
 	),
-	gorm.ErrInvalidData: application_errors.NewApplicationError(
+	gorm.ErrInvalidData: applicationerrors.NewApplicationError(
 		status.InvalidInput,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Invalid data",
 	),
-	gorm.ErrRecordNotFound: application_errors.NewApplicationError(
+	gorm.ErrRecordNotFound: applicationerrors.NewApplicationError(
 		status.NotFound,
 		messages.MessageKeysInstance.RESOURCE_NOT_FOUND,
 		"Resource not found",
 	),
-	gorm.ErrForeignKeyViolated: application_errors.NewApplicationError(
+	gorm.ErrForeignKeyViolated: applicationerrors.NewApplicationError(
 		status.Conflict,
 		messages.MessageKeysInstance.RESOURCE_NOT_FOUND,
 		"Foreign key violation",
@@ -36,38 +36,38 @@ var ORMErrorMapping = map[error]*application_errors.ApplicationError{
 }
 
 // PostgresErrorMapping is the mapping of Postgres errors to application errors
-var PostgresErrorMapping = map[string]*application_errors.ApplicationError{
-	"23505": application_errors.NewApplicationError(
+var PostgresErrorMapping = map[string]*applicationerrors.ApplicationError{
+	"23505": applicationerrors.NewApplicationError(
 		status.Conflict,
 		messages.MessageKeysInstance.RESOURCE_EXISTS,
 		"Unique constraint violated",
 	),
-	"23503": application_errors.NewApplicationError(
+	"23503": applicationerrors.NewApplicationError(
 		status.Conflict,
 		messages.MessageKeysInstance.RESOURCE_NOT_FOUND,
 		"Foreign key violation",
 	),
-	"23502": application_errors.NewApplicationError(
+	"23502": applicationerrors.NewApplicationError(
 		status.InvalidInput,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Null value violation",
 	),
-	"22001": application_errors.NewApplicationError(
+	"22001": applicationerrors.NewApplicationError(
 		status.InvalidInput,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Value too long for column",
 	),
-	"22P02": application_errors.NewApplicationError(
+	"22P02": applicationerrors.NewApplicationError(
 		status.InvalidInput,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Invalid input syntax",
 	),
-	"23514": application_errors.NewApplicationError(
+	"23514": applicationerrors.NewApplicationError(
 		status.InvalidInput,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Check constraint violation",
 	),
-	"40001": application_errors.NewApplicationError(
+	"40001": applicationerrors.NewApplicationError(
 		status.Conflict,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Serialization failure",
@@ -75,14 +75,14 @@ var PostgresErrorMapping = map[string]*application_errors.ApplicationError{
 }
 
 // DefaultORMError is the default application error for database errors
-var DefaultORMError = application_errors.NewApplicationError(
+var DefaultORMError = applicationerrors.NewApplicationError(
 	status.InternalError,
 	messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 	"Unexpected database error",
 )
 
 // MapOrmError maps a GORM error to an application error
-func MapOrmError(err error) *application_errors.ApplicationError {
+func MapOrmError(err error) *applicationerrors.ApplicationError {
 	if err == nil {
 		return nil
 	}

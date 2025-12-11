@@ -7,14 +7,14 @@ import (
 	authdtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
-	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	authrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/auth"
 	passwordrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/password"
+	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-// access-token
+// Login login with email and password and get JWT tokens
 // @Summary      Login and get JWT tokens
 // @Description  This endpoint allows a user to log in and receive JWT access and refresh tokens
 // @Tags         Auth

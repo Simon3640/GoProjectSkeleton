@@ -9,13 +9,13 @@ import (
 	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
-	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	authrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/auth"
+	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-// CreateUserAndPassword
+// CreateUserAndPassword create a new user and password
 // @Summary This endpoint Create a new user
 // @Description This endpoint Create a new user and password
 // @Schemes models.UserAndPasswordCreate

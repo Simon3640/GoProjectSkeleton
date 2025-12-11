@@ -11,7 +11,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-// GetAllUser
+// GetAllUser get all users
 // @Summary Get all users
 // @Description Retrieve all users with support for filtering, sorting, and pagination.
 // @Tags User

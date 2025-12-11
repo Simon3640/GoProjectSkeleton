@@ -1,3 +1,4 @@
+// Package aws provides initialization functions for AWS Lambda functions.
 package aws
 
 import (

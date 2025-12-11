@@ -2,8 +2,8 @@
 package database
 
 import (
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
@@ -17,7 +17,15 @@ type GoProjectSkeletonDB struct {
 }
 
 // SetUp sets up the database connection for the GoProjectSkeleton project
-func (gpsbd *GoProjectSkeletonDB) SetUp(host string, port string, user string, password string, dbname string, ssl *bool, logger contractsProviders.ILoggerProvider) *application_errors.ApplicationError {
+func (gpsbd *GoProjectSkeletonDB) SetUp(
+	host string,
+	port string,
+	user string,
+	password string,
+	dbname string,
+	ssl *bool,
+	logger contractsproviders.ILoggerProvider,
+) *applicationerrors.ApplicationError {
 	var sslmode string
 	if ssl != nil && *ssl {
 		logger.Info("SSL is enabled")
@@ -29,7 +37,7 @@ func (gpsbd *GoProjectSkeletonDB) SetUp(host string, port string, user string, p
 	dsn := "host=" + host + " port=" + port + " user=" + user + " password=" + password + " dbname=" + dbname + " sslmode=" + sslmode
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return application_errors.NewApplicationError(status.DatabaseInitializationError, messages.MessageKeysInstance.SOMETHING_WENT_WRONG, err.Error())
+		return applicationerrors.NewApplicationError(status.DatabaseInitializationError, messages.MessageKeysInstance.SOMETHING_WENT_WRONG, err.Error())
 	}
 	gpsbd.DB = db
 	logger.Info("Database connection established")
