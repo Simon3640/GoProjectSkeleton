@@ -8,15 +8,15 @@ import (
 	"strings"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
+	authservices "github.com/simon3640/goprojectskeleton/src/application/modules/auth/services"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
-	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
-	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	emailservices "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
@@ -27,16 +27,16 @@ import (
 // AuthenticateUseCase is the use case for the authentication of a user
 type AuthenticateUseCase struct {
 	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
+	log         contractproviders.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
-	pass     contracts_repositories.IPasswordRepository
-	userRepo contracts_repositories.IUserRepository
-	otpRepo  contracts_repositories.IOneTimePasswordRepository
+	pass     authcontracts.IPasswordRepository
+	userRepo authcontracts.IUserRepository
+	otpRepo  authcontracts.IOneTimePasswordRepository
 
-	jwtProvider   contractsProviders.IJWTProvider
-	hashProvider  contractsProviders.IHashProvider
-	cacheProvider contractsProviders.ICacheProvider
+	jwtProvider   authcontracts.IJWTProvider
+	hashProvider  contractproviders.IHashProvider
+	cacheProvider contractproviders.ICacheProvider
 }
 
 var _ usecase.BaseUseCase[dtos.UserCredentials, dtos.Token] = (*AuthenticateUseCase)(nil)
@@ -185,7 +185,7 @@ func (uc *AuthenticateUseCase) validatePassword(result *usecase.UseCaseResult[dt
 }
 
 func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos.Token], user *models.UserWithRole) {
-	otp, err := services.CreateOneTimePasswordService(user.ID, models.OneTimePasswordLogin, uc.hashProvider, uc.otpRepo)
+	otp, err := authservices.CreateOneTimePasswordService(user.ID, models.OneTimePasswordLogin, uc.hashProvider, uc.otpRepo)
 	if err != nil {
 		uc.log.Error("Error creating OTP", err.ToError())
 		result.SetError(
@@ -198,7 +198,7 @@ func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos
 		return
 	}
 
-	otpEmailData := email_models.OneTimePasswordEmailData{
+	otpEmailData := emailmodels.OneTimePasswordEmailData{
 		Name:              user.Name,
 		OTPCode:           otp,
 		ExpirationMinutes: int(settings.AppSettingsInstance.OneTimeTokenPasswordTTL),
@@ -206,12 +206,12 @@ func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos
 		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
 
-	if err := email_service.OneTimePasswordEmailServiceInstance.SendWithTemplate(
+	if err := emailservices.OneTimePasswordEmailServiceInstance.SendWithTemplate(
 		otpEmailData,
 		user.Email,
 		uc.locale,
 		templates.TemplateKeysInstance.OTPEmail,
-		email_service.SubjectKeysInstance.OTPEmail,
+		emailservices.SubjectKeysInstance.OTPEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
@@ -232,7 +232,7 @@ func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos
 }
 
 func (uc *AuthenticateUseCase) generateTokens(ctx context.Context, result *usecase.UseCaseResult[dtos.Token], userIDString string, user *models.UserWithRole) dtos.Token {
-	claims := contractsProviders.JWTCLaims{
+	claims := authcontracts.JWTCLaims{
 		"role": user.GetRoleKey(),
 	}
 
@@ -295,7 +295,7 @@ func (uc *AuthenticateUseCase) validate(input dtos.UserCredentials) (bool, []str
 }
 
 // checkRateLimit verify if the user has exceeded the login failed attempts limit
-func (uc *AuthenticateUseCase) checkRateLimit(email string) (bool, *application_errors.ApplicationError) {
+func (uc *AuthenticateUseCase) checkRateLimit(email string) (bool, *applicationerrors.ApplicationError) {
 	if uc.cacheProvider == nil {
 		return false, nil
 	}
@@ -347,13 +347,13 @@ func (uc *AuthenticateUseCase) getRateLimitKey(email string) string {
 }
 
 func NewAuthenticateUseCase(
-	log contractsProviders.ILoggerProvider,
-	pass contracts_repositories.IPasswordRepository,
-	userRepo contracts_repositories.IUserRepository,
-	otpRepo contracts_repositories.IOneTimePasswordRepository,
-	hashProvider contractsProviders.IHashProvider,
-	jwtProvider contractsProviders.IJWTProvider,
-	cacheProvider contractsProviders.ICacheProvider,
+	log contractproviders.ILoggerProvider,
+	pass authcontracts.IPasswordRepository,
+	userRepo authcontracts.IUserRepository,
+	otpRepo authcontracts.IOneTimePasswordRepository,
+	hashProvider contractproviders.IHashProvider,
+	jwtProvider authcontracts.IJWTProvider,
+	cacheProvider contractproviders.ICacheProvider,
 ) *AuthenticateUseCase {
 	return &AuthenticateUseCase{
 		appMessages:   locales.NewLocale(locales.EN_US),

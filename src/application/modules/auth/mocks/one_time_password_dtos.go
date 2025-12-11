@@ -1,10 +1,10 @@
-package dtomocks
+package authmocks
 
 import (
 	"encoding/hex"
 	"time"
 
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
