@@ -7,8 +7,8 @@ import (
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
-	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
@@ -50,8 +50,8 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 	return result
 }
 
-func (uc *GetResetPasswordSendEmailUseCase) buildEmailData(input shareddtos.OneTimeTokenUser) email_models.ResetPasswordEmailData {
-	return email_models.ResetPasswordEmailData{
+func (uc *GetResetPasswordSendEmailUseCase) buildEmailData(input shareddtos.OneTimeTokenUser) emailmodels.ResetPasswordEmailData {
+	return emailmodels.ResetPasswordEmailData{
 		Name:              input.User.Name,
 		ResetLink:         input.BuildURL(settings.AppSettingsInstance.FrontendResetPasswordURL),
 		ExpirationMinutes: settings.AppSettingsInstance.OneTimeTokenPasswordTTL,
@@ -62,16 +62,16 @@ func (uc *GetResetPasswordSendEmailUseCase) buildEmailData(input shareddtos.OneT
 
 func (uc *GetResetPasswordSendEmailUseCase) sendResetPasswordEmail(
 	result *usecase.UseCaseResult[bool],
-	emailData email_models.ResetPasswordEmailData,
+	emailData emailmodels.ResetPasswordEmailData,
 	userEmail string,
 	locale locales.LocaleTypeEnum,
 ) {
-	if err := email_service.ResetPasswordEmailServiceInstance.SendWithTemplate(
+	if err := emailservice.ResetPasswordEmailServiceInstance.SendWithTemplate(
 		emailData,
 		userEmail,
 		locale,
 		templates.TemplateKeysInstance.PasswordResetEmail,
-		email_service.SubjectKeysInstance.PasswordResetEmail,
+		emailservice.SubjectKeysInstance.PasswordResetEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(

@@ -3,7 +3,7 @@ package authmocks
 import (
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
@@ -14,11 +14,11 @@ type MockOneTimePasswordRepository struct {
 }
 
 // GetByPasswordHash gets a one time password by its hash
-func (m *MockOneTimePasswordRepository) GetByPasswordHash(tokenHash []byte) (*models.OneTimePassword, *application_errors.ApplicationError) {
+func (m *MockOneTimePasswordRepository) GetByPasswordHash(tokenHash []byte) (*models.OneTimePassword, *applicationerrors.ApplicationError) {
 	args := m.Called(tokenHash)
 	errorArg := args.Get(1)
 	if errorArg != nil {
-		return nil, errorArg.(*application_errors.ApplicationError)
+		return nil, errorArg.(*applicationerrors.ApplicationError)
 	}
 	return args.Get(0).(*models.OneTimePassword), nil
 }

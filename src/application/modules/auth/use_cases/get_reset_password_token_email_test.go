@@ -6,12 +6,12 @@ import (
 	"time"
 
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
-	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
@@ -24,7 +24,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_Success(t *testing.T) {
 
 	ctx := context.Background()
 	testLogger := new(providersmocks.MockLoggerProvider)
-	mockRenderProvider := new(providersmocks.MockRenderProvider[email_models.ResetPasswordEmailData])
+	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
 	userStatus := models.UserStatusActive
@@ -52,7 +52,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_Success(t *testing.T) {
 	mockRenderProvider.On("Render", mock.Anything, mock.Anything).Return("test-rendered-email", nil)
 	mockEmailProvider.On("SendEmail", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	email_service.ResetPasswordEmailServiceInstance.SetUp(
+	emailservice.ResetPasswordEmailServiceInstance.SetUp(
 		mockRenderProvider,
 		mockEmailProvider,
 	)
@@ -75,7 +75,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing
 
 	ctx := context.Background()
 	testLogger := new(providersmocks.MockLoggerProvider)
-	mockRenderProvider := new(providersmocks.MockRenderProvider[email_models.ResetPasswordEmailData])
+	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
 	userStatus := models.UserStatusActive
@@ -99,7 +99,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing
 		Token: token,
 	}
 
-	appError := application_errors.NewApplicationError(
+	appError := applicationerrors.NewApplicationError(
 		status.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Error rendering email template",
@@ -108,7 +108,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing
 	// Mock email service - error al renderizar
 	mockRenderProvider.On("Render", mock.Anything, mock.Anything).Return("", appError)
 
-	email_service.ResetPasswordEmailServiceInstance.SetUp(
+	emailservice.ResetPasswordEmailServiceInstance.SetUp(
 		mockRenderProvider,
 		mockEmailProvider,
 	)
@@ -129,7 +129,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorSendingEmail(t *testing.T
 
 	ctx := context.Background()
 	testLogger := new(providersmocks.MockLoggerProvider)
-	mockRenderProvider := new(providersmocks.MockRenderProvider[email_models.ResetPasswordEmailData])
+	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
 	userStatus := models.UserStatusActive
@@ -153,7 +153,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorSendingEmail(t *testing.T
 		Token: token,
 	}
 
-	appError := application_errors.NewApplicationError(
+	appError := applicationerrors.NewApplicationError(
 		status.ProviderError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Error sending email",
@@ -163,7 +163,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorSendingEmail(t *testing.T
 	mockRenderProvider.On("Render", mock.Anything, mock.Anything).Return("test-rendered-email", nil)
 	mockEmailProvider.On("SendEmail", mock.Anything, mock.Anything, mock.Anything).Return(appError)
 
-	email_service.ResetPasswordEmailServiceInstance.SetUp(
+	emailservice.ResetPasswordEmailServiceInstance.SetUp(
 		mockRenderProvider,
 		mockEmailProvider,
 	)

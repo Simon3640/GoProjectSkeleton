@@ -5,7 +5,7 @@ import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
@@ -14,7 +14,7 @@ func CreateOneTimePasswordService(
 	purpose models.OneTimePasswordPurpose,
 	hashProvider contractsProviders.IHashProvider,
 	passwordRepository authcontracts.IOneTimePasswordRepository,
-) (string, *application_errors.ApplicationError) {
+) (string, *applicationerrors.ApplicationError) {
 	password, hash, err := hashProvider.GenerateOTP()
 	if err != nil {
 		return "", err
