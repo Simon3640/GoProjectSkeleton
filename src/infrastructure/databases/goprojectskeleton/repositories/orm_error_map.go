@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// ORMErrorMapping is the mapping of GORM errors to application errors
 var ORMErrorMapping = map[error]*application_errors.ApplicationError{
 	gorm.ErrDuplicatedKey: application_errors.NewApplicationError(
 		status.Conflict,
@@ -34,7 +35,7 @@ var ORMErrorMapping = map[error]*application_errors.ApplicationError{
 	),
 }
 
-// Errores Postgres por código
+// PostgresErrorMapping is the mapping of Postgres errors to application errors
 var PostgresErrorMapping = map[string]*application_errors.ApplicationError{
 	"23505": application_errors.NewApplicationError(
 		status.Conflict,
@@ -73,14 +74,14 @@ var PostgresErrorMapping = map[string]*application_errors.ApplicationError{
 	),
 }
 
-// Error por defecto
+// DefaultORMError is the default application error for database errors
 var DefaultORMError = application_errors.NewApplicationError(
 	status.InternalError,
 	messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 	"Unexpected database error",
 )
 
-// Función de mapeo unificada
+// MapOrmError maps a GORM error to an application error
 func MapOrmError(err error) *application_errors.ApplicationError {
 	if err == nil {
 		return nil

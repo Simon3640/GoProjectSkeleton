@@ -6,21 +6,24 @@ import (
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
-	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
+	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
 
 	"gorm.io/gorm"
 )
 
+// PasswordRepository is the repository for the password model
 type PasswordRepository struct {
 	RepositoryBase[dtos.PasswordCreate, dtos.PasswordUpdate, models.Password, dbModels.Password]
 }
 
 var _ passwordcontracts.IPasswordRepository = (*PasswordRepository)(nil)
 
+// PasswordConverter is the converter for the password model
 type PasswordConverter struct{}
 
 var _ ModelConverter[dtos.PasswordCreate, dtos.PasswordUpdate, models.Password, dbModels.Password] = (*PasswordConverter)(nil)
 
+// Create creates a new password in transaction that cleans all previous passwords for the user setting is_active to false
 func (r *PasswordRepository) Create(model dtos.PasswordCreate) (*models.Password, *application_errors.ApplicationError) {
 	// start a transaction thay clean all previous passwords for the user setting is_active to false
 	// and then create the new password
@@ -56,6 +59,7 @@ func (r *PasswordRepository) Create(model dtos.PasswordCreate) (*models.Password
 	return r.modelConverter.ToDomain(_entity), nil
 }
 
+// GetActivePassword retrieves the active password for a user by email
 func (r *PasswordRepository) GetActivePassword(userEmail string) (*models.Password, *application_errors.ApplicationError) {
 	var password dbModels.Password
 	// Select the user by email, then take the first active password
@@ -66,6 +70,7 @@ func (r *PasswordRepository) GetActivePassword(userEmail string) (*models.Passwo
 	return r.modelConverter.ToDomain(&password), nil
 }
 
+// ToGormCreate converts a password create model to a password gorm model
 func (uc *PasswordConverter) ToGormCreate(model dtos.PasswordCreate) *dbModels.Password {
 	return &dbModels.Password{
 		Hash:      model.Hash,
@@ -75,6 +80,7 @@ func (uc *PasswordConverter) ToGormCreate(model dtos.PasswordCreate) *dbModels.P
 	}
 }
 
+// ToDomain converts a password gorm model to a password domain model
 func (uc *PasswordConverter) ToDomain(ormModel *dbModels.Password) *models.Password {
 	return &models.Password{
 		ID: ormModel.ID,
@@ -87,6 +93,7 @@ func (uc *PasswordConverter) ToDomain(ormModel *dbModels.Password) *models.Passw
 	}
 }
 
+// ToGormUpdate converts a password update model to a password gorm model
 func (uc *PasswordConverter) ToGormUpdate(model dtos.PasswordUpdate) *dbModels.Password {
 	password := &dbModels.Password{}
 
@@ -104,6 +111,7 @@ func (uc *PasswordConverter) ToGormUpdate(model dtos.PasswordUpdate) *dbModels.P
 	return password
 }
 
+// NewPasswordRepository creates a new password repository
 func NewPasswordRepository(db *gorm.DB, logger contractsProviders.ILoggerProvider) *PasswordRepository {
 	return &PasswordRepository{
 		RepositoryBase: RepositoryBase[

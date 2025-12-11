@@ -5,7 +5,7 @@ import (
 	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	settings "github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	config "github.com/simon3640/goprojectskeleton/src/infrastructure/config"
-	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	providers "github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 

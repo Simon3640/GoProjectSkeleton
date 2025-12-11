@@ -6,7 +6,7 @@ import (
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	initdb "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/init_db"
+	initdb "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/init_db"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

@@ -5,9 +5,9 @@ import (
 
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
-	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
+	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"

@@ -9,14 +9,14 @@ import (
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
-	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
+	dbmodels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
 
 	"gorm.io/gorm"
 )
 
 // UserRepository is the repository for the user model
 type UserRepository struct {
-	RepositoryBase[userdtos.UserCreate, userdtos.UserUpdate, models.User, dbModels.User]
+	RepositoryBase[userdtos.UserCreate, userdtos.UserUpdate, models.User, dbmodels.User]
 }
 
 // CreateWithPassword creates a new user with a password
@@ -44,7 +44,7 @@ func (ur *UserRepository) CreateWithPassword(input userdtos.UserAndPasswordCreat
 		},
 	}
 	passwordCreate.SetDefaultExpiresAt()
-	passwordModel := dbModels.Password{
+	passwordModel := dbmodels.Password{
 		Hash:      passwordCreate.Hash,
 		ExpiresAt: passwordCreate.ExpiresAt,
 		IsActive:  passwordCreate.IsActive,
@@ -65,7 +65,7 @@ func (ur *UserRepository) CreateWithPassword(input userdtos.UserAndPasswordCreat
 
 // GetUserWithRole gets a user with their role
 func (ur *UserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *application_errors.ApplicationError) {
-	var userWithRole dbModels.User
+	var userWithRole dbmodels.User
 	if err := ur.DB.Preload("Role").First(&userWithRole, id).Error; err != nil {
 		ur.logger.Debug("Error retrieving user with role", err)
 		return nil, MapOrmError(err)
@@ -95,7 +95,7 @@ func (ur *UserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *appli
 
 // GetByEmailOrPhone gets a user by email or phone
 func (ur *UserRepository) GetByEmailOrPhone(emailOrPhone string) (*models.User, *application_errors.ApplicationError) {
-	var user dbModels.User
+	var user dbmodels.User
 	if err := ur.DB.Where("email = ? OR phone = ?", emailOrPhone, emailOrPhone).First(&user).Error; err != nil {
 		ur.logger.Debug("Error retrieving user by email or phone", err)
 		return nil, MapOrmError(err)
@@ -109,11 +109,11 @@ var _ usercontracts.IUserRepository = (*UserRepository)(nil)
 // UserConverter is the converter for the user model
 type UserConverter struct{}
 
-var _ ModelConverter[userdtos.UserCreate, userdtos.UserUpdate, models.User, dbModels.User] = (*UserConverter)(nil)
+var _ ModelConverter[userdtos.UserCreate, userdtos.UserUpdate, models.User, dbmodels.User] = (*UserConverter)(nil)
 
 // ToGormCreate converts a user create model to a user gorm model
-func (uc *UserConverter) ToGormCreate(model userdtos.UserCreate) *dbModels.User {
-	return &dbModels.User{
+func (uc *UserConverter) ToGormCreate(model userdtos.UserCreate) *dbmodels.User {
+	return &dbmodels.User{
 		Name:     model.Name,
 		Email:    model.Email,
 		Phone:    model.Phone,
@@ -124,7 +124,7 @@ func (uc *UserConverter) ToGormCreate(model userdtos.UserCreate) *dbModels.User 
 }
 
 // ToDomain converts a user gorm model to a user domain model
-func (uc *UserConverter) ToDomain(ormModel *dbModels.User) *models.User {
+func (uc *UserConverter) ToDomain(ormModel *dbmodels.User) *models.User {
 	userStatus := models.UserStatus(ormModel.Status)
 	return &models.User{
 		DBBaseModel: models.DBBaseModel{
@@ -145,8 +145,8 @@ func (uc *UserConverter) ToDomain(ormModel *dbModels.User) *models.User {
 }
 
 // ToGormUpdate converts a user update model to a user gorm model
-func (uc *UserConverter) ToGormUpdate(model userdtos.UserUpdate) *dbModels.User {
-	user := &dbModels.User{}
+func (uc *UserConverter) ToGormUpdate(model userdtos.UserUpdate) *dbmodels.User {
+	user := &dbmodels.User{}
 
 	if model.Name != nil {
 		user.Name = *model.Name
@@ -180,7 +180,7 @@ func NewUserRepository(db *gorm.DB, logger contractsProviders.ILoggerProvider) *
 			userdtos.UserCreate,
 			userdtos.UserUpdate,
 			models.User,
-			dbModels.User,
+			dbmodels.User,
 		]{DB: db, modelConverter: &UserConverter{}, logger: logger},
 	}
 }
