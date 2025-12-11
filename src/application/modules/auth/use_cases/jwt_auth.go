@@ -9,13 +9,12 @@ import (
 	"time"
 
 	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contractsrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
+	authservices "github.com/simon3640/goprojectskeleton/src/application/modules/auth/services"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
@@ -33,7 +32,7 @@ type AuthenticateUseCase struct {
 
 	pass     authcontracts.IPasswordRepository
 	userRepo authcontracts.IUserRepository
-	otpRepo  contractsrepositories.IOneTimePasswordRepository
+	otpRepo  authcontracts.IOneTimePasswordRepository
 
 	jwtProvider   authcontracts.IJWTProvider
 	hashProvider  contractproviders.IHashProvider
@@ -186,7 +185,7 @@ func (uc *AuthenticateUseCase) validatePassword(result *usecase.UseCaseResult[dt
 }
 
 func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos.Token], user *models.UserWithRole) {
-	otp, err := services.CreateOneTimePasswordService(user.ID, models.OneTimePasswordLogin, uc.hashProvider, uc.otpRepo)
+	otp, err := authservices.CreateOneTimePasswordService(user.ID, models.OneTimePasswordLogin, uc.hashProvider, uc.otpRepo)
 	if err != nil {
 		uc.log.Error("Error creating OTP", err.ToError())
 		result.SetError(
@@ -351,7 +350,7 @@ func NewAuthenticateUseCase(
 	log contractproviders.ILoggerProvider,
 	pass authcontracts.IPasswordRepository,
 	userRepo authcontracts.IUserRepository,
-	otpRepo contractsrepositories.IOneTimePasswordRepository,
+	otpRepo authcontracts.IOneTimePasswordRepository,
 	hashProvider contractproviders.IHashProvider,
 	jwtProvider authcontracts.IJWTProvider,
 	cacheProvider contractproviders.ICacheProvider,

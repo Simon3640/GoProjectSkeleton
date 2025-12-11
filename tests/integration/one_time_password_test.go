@@ -3,6 +3,7 @@ package integrationtest
 import (
 	"testing"
 
+	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
@@ -21,7 +22,7 @@ func TestOneTimePasswordGetByPasswordHash(t *testing.T) {
 
 	defer userRepository.Delete(userCreated.ID)
 
-	oneTimePasswordCreate := dtomocks.OneTimePasswordCreate
+	oneTimePasswordCreate := authmocks.OneTimePasswordCreate
 	oneTimePasswordCreate.UserID = userCreated.ID
 
 	// Create one-time token to test GetByPasswordHash

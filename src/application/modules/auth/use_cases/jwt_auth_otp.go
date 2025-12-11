@@ -5,10 +5,8 @@ import (
 	"time"
 
 	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contractrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
-	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -23,7 +21,7 @@ type AuthenticateOTPUseCase struct {
 	locale      locales.LocaleTypeEnum
 
 	userRepo authcontracts.IUserRepository
-	otpRepo  contractrepositories.IOneTimePasswordRepository
+	otpRepo  authcontracts.IOneTimePasswordRepository
 
 	jwtProvider  authcontracts.IJWTProvider
 	hashProvider contractproviders.IHashProvider
@@ -158,7 +156,7 @@ func (uc *AuthenticateOTPUseCase) generateTokens(ctx context.Context, result *us
 
 func (uc *AuthenticateOTPUseCase) markOTPAsUsed(result *usecase.UseCaseResult[dtos.Token], otpID uint) {
 	_, err := uc.otpRepo.Update(otpID,
-		shareddtos.OneTimePasswordUpdate{IsUsed: true, ID: otpID})
+		dtos.OneTimePasswordUpdate{IsUsed: true, ID: otpID})
 	if err != nil {
 		uc.log.Error("Error updating one time password as used", err.ToError())
 		result.SetError(
@@ -199,7 +197,7 @@ func (uc *AuthenticateOTPUseCase) Validate(input string, result *usecase.UseCase
 func NewAuthenticateOTPUseCase(
 	log contractproviders.ILoggerProvider,
 	userRepo authcontracts.IUserRepository,
-	otpRepo contractrepositories.IOneTimePasswordRepository,
+	otpRepo authcontracts.IOneTimePasswordRepository,
 	hashProvider contractproviders.IHashProvider,
 	jwtProvider authcontracts.IJWTProvider,
 ) *AuthenticateOTPUseCase {
