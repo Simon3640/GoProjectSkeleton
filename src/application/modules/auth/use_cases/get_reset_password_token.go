@@ -3,8 +3,9 @@ package authusecases
 import (
 	"context"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -13,16 +14,18 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// GetResetPasswordTokenUseCase is the use case for generating a reset password token
 type GetResetPasswordTokenUseCase struct {
 	usecase.BaseUseCaseValidation[string, dtos.OneTimeTokenUser]
-	log contractsProviders.ILoggerProvider
+	log contractproviders.ILoggerProvider
 
-	tokenRepo contracts_repositories.IOneTimeTokenRepository
-	userRepo  contracts_repositories.IUserRepository
+	tokenRepo contractrepositories.IOneTimeTokenRepository
+	userRepo  authcontracts.IUserRepository
 
-	hashProvider contractsProviders.IHashProvider
+	hashProvider contractproviders.IHashProvider
 }
 
+// SetLocale sets the locale for the use case
 func (uc *GetResetPasswordTokenUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.Locale = locale
@@ -131,10 +134,10 @@ func (uc *GetResetPasswordTokenUseCase) Validate(
 }
 
 func NewGetResetPasswordTokenUseCase(
-	log contractsProviders.ILoggerProvider,
-	tokenRepo contracts_repositories.IOneTimeTokenRepository,
-	userRepo contracts_repositories.IUserRepository,
-	hashProvider contractsProviders.IHashProvider,
+	log contractproviders.ILoggerProvider,
+	tokenRepo contractrepositories.IOneTimeTokenRepository,
+	userRepo authcontracts.IUserRepository,
+	hashProvider contractproviders.IHashProvider,
 ) *GetResetPasswordTokenUseCase {
 	return &GetResetPasswordTokenUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, dtos.OneTimeTokenUser]{

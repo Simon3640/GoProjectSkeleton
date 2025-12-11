@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
-	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
@@ -43,7 +43,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_Success(t *testing.T) {
 	}
 
 	token := "test-reset-token-123"
-	input := dtos.OneTimeTokenUser{
+	input := shareddtos.OneTimeTokenUser{
 		User:  testUser,
 		Token: token,
 	}
@@ -94,7 +94,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing
 	}
 
 	token := "test-reset-token-123"
-	input := dtos.OneTimeTokenUser{
+	input := shareddtos.OneTimeTokenUser{
 		User:  testUser,
 		Token: token,
 	}
@@ -148,7 +148,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorSendingEmail(t *testing.T
 	}
 
 	token := "test-reset-token-123"
-	input := dtos.OneTimeTokenUser{
+	input := shareddtos.OneTimeTokenUser{
 		User:  testUser,
 		Token: token,
 	}
@@ -202,7 +202,7 @@ func TestGetResetPasswordSendEmailUseCase_buildEmailData(t *testing.T) {
 	}
 
 	token := "test-reset-token-123"
-	input := dtos.OneTimeTokenUser{
+	input := shareddtos.OneTimeTokenUser{
 		User:  testUser,
 		Token: token,
 	}

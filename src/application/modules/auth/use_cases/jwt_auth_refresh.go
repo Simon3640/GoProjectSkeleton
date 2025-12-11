@@ -6,30 +6,34 @@ import (
 	"strings"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 )
 
+// AuthenticationRefreshUseCase is the use case for refreshing a JWT token
 type AuthenticationRefreshUseCase struct {
 	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
+	log         contractproviders.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
-	jwtProvider contractsProviders.IJWTProvider
+	jwtProvider authcontracts.IJWTProvider
 }
 
 var _ usecase.BaseUseCase[string, dtos.Token] = (*AuthenticationRefreshUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *AuthenticationRefreshUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
 	}
 }
 
+// Execute refreshes a JWT token
 func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input string,
@@ -73,7 +77,7 @@ func (uc *AuthenticationRefreshUseCase) validateInput(result *usecase.UseCaseRes
 	}
 }
 
-func (uc *AuthenticationRefreshUseCase) parseAndValidateToken(result *usecase.UseCaseResult[dtos.Token], token string) contractsProviders.JWTCLaims {
+func (uc *AuthenticationRefreshUseCase) parseAndValidateToken(result *usecase.UseCaseResult[dtos.Token], token string) authcontracts.JWTCLaims {
 	claims, err := uc.jwtProvider.ParseTokenAndValidate(token)
 	if err != nil {
 		uc.log.Error("Error parsing or validating token", err.ToError())
@@ -89,7 +93,7 @@ func (uc *AuthenticationRefreshUseCase) parseAndValidateToken(result *usecase.Us
 	return claims
 }
 
-func (uc *AuthenticationRefreshUseCase) validateClaims(result *usecase.UseCaseResult[dtos.Token], claims contractsProviders.JWTCLaims) string {
+func (uc *AuthenticationRefreshUseCase) validateClaims(result *usecase.UseCaseResult[dtos.Token], claims authcontracts.JWTCLaims) string {
 	sub, ok := claims["sub"].(string)
 	if !ok {
 		uc.log.Error("Invalid subject in claims", nil)
@@ -193,8 +197,8 @@ func (uc *AuthenticationRefreshUseCase) validate(input string) (bool, []string) 
 }
 
 func NewAuthenticationRefreshUseCase(
-	log contractsProviders.ILoggerProvider,
-	jwtProvider contractsProviders.IJWTProvider,
+	log contractproviders.ILoggerProvider,
+	jwtProvider authcontracts.IJWTProvider,
 ) *AuthenticationRefreshUseCase {
 	return &AuthenticationRefreshUseCase{
 		appMessages: locales.NewLocale(locales.EN_US),
