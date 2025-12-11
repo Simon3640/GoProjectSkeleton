@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
+	passworddtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	usecases_password "github.com/simon3640/goprojectskeleton/src/application/modules/password/use_cases"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
@@ -25,7 +25,7 @@ import (
 // @Router /api/password [post]
 // @Security Bearer
 func CreatePassword(ctx HandlerContext) {
-	var passwordCreate dtos.PasswordCreateNoHash
+	var passwordCreate passworddtos.PasswordCreateNoHash
 
 	if err := json.NewDecoder(*ctx.Body).Decode(&passwordCreate); err != nil {
 		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
@@ -57,7 +57,7 @@ func CreatePassword(ctx HandlerContext) {
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/password/reset-token [post]
 func CreatePasswordToken(ctx HandlerContext) {
-	var passwordTokenCreate dtos.PasswordTokenCreate
+	var passwordTokenCreate passworddtos.PasswordTokenCreate
 
 	if err := json.NewDecoder(*ctx.Body).Decode(&passwordTokenCreate); err != nil {
 		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)

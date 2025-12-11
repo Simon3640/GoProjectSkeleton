@@ -35,6 +35,7 @@ services:
       - ../src/infrastructure/handlers:/app/handlers
       - ../src/domain/models:/app/models
       - ../src/application/shared/DTOs:/app/DTOs
+      - ../src/application/modules:/app/modules
       - ../src/infrastructure/docs/swagger:/app/swagger
       - ../.air.swagger.toml:/app/.air.swagger.toml
     networks:
