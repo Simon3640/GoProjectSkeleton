@@ -8,7 +8,7 @@ import (
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -16,18 +16,18 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
-	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
+	domainutils "github.com/simon3640/goprojectskeleton/src/domain/utils"
 )
 
 // GetAllUserUseCase is a use case that gets all users
 type GetAllUserUseCase struct {
-	usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], userdtos.UserMultiResponse]
+	usecase.BaseUseCaseValidation[domainutils.QueryPayloadBuilder[models.User], userdtos.UserMultiResponse]
 	log   contractsProviders.ILoggerProvider
 	repo  usercontracts.IUserRepository
 	cache contractsProviders.ICacheProvider
 }
 
-var _ usecase.BaseUseCase[domain_utils.QueryPayloadBuilder[models.User], userdtos.UserMultiResponse] = (*GetAllUserUseCase)(nil)
+var _ usecase.BaseUseCase[domainutils.QueryPayloadBuilder[models.User], userdtos.UserMultiResponse] = (*GetAllUserUseCase)(nil)
 
 // SetLocale sets the locale for the use case
 func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
@@ -40,7 +40,7 @@ func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 func (uc *GetAllUserUseCase) Execute(
 	ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input domain_utils.QueryPayloadBuilder[models.User],
+	input domainutils.QueryPayloadBuilder[models.User],
 ) *usecase.UseCaseResult[userdtos.UserMultiResponse] {
 	result := usecase.NewUseCaseResult[userdtos.UserMultiResponse]()
 	uc.SetLocale(locale)
@@ -78,7 +78,7 @@ func (uc *GetAllUserUseCase) Execute(
 // it builds the response with the data, total, meta and links
 func (uc *GetAllUserUseCase) buildMultiResponse(
 	data []models.User, total int64,
-	input domain_utils.QueryPayloadBuilder[models.User],
+	input domainutils.QueryPayloadBuilder[models.User],
 	cached bool,
 ) userdtos.UserMultiResponse {
 	var response userdtos.UserMultiResponse
@@ -96,7 +96,7 @@ func (uc *GetAllUserUseCase) buildMultiResponse(
 // getUsersFromCache gets the users from the cache
 // it checks if the cache is hit and if it is, it sets the result with a complete UserMultiResponse object (including records and meta information such as total)
 func (uc *GetAllUserUseCase) getUsersFromCache(
-	input domain_utils.QueryPayloadBuilder[models.User],
+	input domainutils.QueryPayloadBuilder[models.User],
 	result *usecase.UseCaseResult[userdtos.UserMultiResponse],
 ) {
 	// Check Cache
@@ -130,16 +130,16 @@ func (uc *GetAllUserUseCase) getUsersFromCache(
 
 // cacheKey builds the cache key for the users
 // it builds the key with the input query key
-func (uc *GetAllUserUseCase) cacheKey(input domain_utils.QueryPayloadBuilder[models.User]) string {
+func (uc *GetAllUserUseCase) cacheKey(input domainutils.QueryPayloadBuilder[models.User]) string {
 	return "users:" + input.GetQueryKey()
 }
 
 // getUsersFromRepository gets the users from the repository
 // it returns the users and total, or sets an error in the result if the repository call fails
 func (uc *GetAllUserUseCase) getUsersFromRepository(
-	input domain_utils.QueryPayloadBuilder[models.User],
+	input domainutils.QueryPayloadBuilder[models.User],
 	result *usecase.UseCaseResult[userdtos.UserMultiResponse],
-) ([]models.User, int64, *application_errors.ApplicationError) {
+) ([]models.User, int64, *applicationerrors.ApplicationError) {
 	data, total, err := uc.repo.GetAll(&input, input.Pagination.GetOffset(), input.Pagination.GetLimit())
 	if err != nil {
 		uc.log.Error("Error getting all users", err.ToError())
@@ -154,7 +154,7 @@ func (uc *GetAllUserUseCase) getUsersFromRepository(
 
 // setCache sets the cache for the users
 // it sets the cache for the users with the data and total
-func (uc *GetAllUserUseCase) setCache(input domain_utils.QueryPayloadBuilder[models.User], data []models.User, total int64) {
+func (uc *GetAllUserUseCase) setCache(input domainutils.QueryPayloadBuilder[models.User], data []models.User, total int64) {
 	if err := uc.cache.Set(uc.cacheKey(input), data, time.Duration(settings.AppSettingsInstance.RedisTTL)*time.Second); err != nil {
 		uc.log.Error("Error setting cache for users", err.ToError())
 	}
@@ -170,7 +170,7 @@ func NewGetAllUserUseCase(
 	cache contractsProviders.ICacheProvider,
 ) *GetAllUserUseCase {
 	return &GetAllUserUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[domain_utils.QueryPayloadBuilder[models.User], userdtos.UserMultiResponse]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[domainutils.QueryPayloadBuilder[models.User], userdtos.UserMultiResponse]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(guards.RoleGuard("admin")),
 		},

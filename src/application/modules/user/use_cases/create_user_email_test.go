@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	applicationerror "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -119,7 +119,7 @@ func TestCreateUserSendEmailUseCase_Execute_OneTimeTokenError(t *testing.T) {
 	}
 
 	// Mock OneTimeToken returning error
-	appErr := application_errors.NewApplicationError(
+	appErr := applicationerror.NewApplicationError(
 		status.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Failed to generate token",
@@ -172,7 +172,7 @@ func TestCreateUserSendEmailUseCase_Execute_TokenRepositoryCreateError(t *testin
 	testHashProvider.On("OneTimeToken").Return(token, tokenHash, nil)
 
 	// Mock Create token repository returning error
-	appErr := application_errors.NewApplicationError(
+	appErr := applicationerror.NewApplicationError(
 		status.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Failed to create token in repository",
@@ -242,7 +242,7 @@ func TestCreateUserSendEmailUseCase_Execute_EmailSendError(t *testing.T) {
 	}, nil)
 
 	// Mock email service returning error
-	appErr := application_errors.NewApplicationError(
+	appErr := applicationerror.NewApplicationError(
 		status.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Failed to send email",
@@ -319,7 +319,7 @@ func TestCreateUserSendEmailUseCase_Execute_EmailRenderError(t *testing.T) {
 	}, nil)
 
 	// Mock email render returning error
-	appErr := application_errors.NewApplicationError(
+	appErr := applicationerror.NewApplicationError(
 		status.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Failed to render email template",

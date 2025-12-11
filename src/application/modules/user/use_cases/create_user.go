@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
@@ -17,7 +17,7 @@ import (
 // CreateUserUseCase is a use case that creates a user
 type CreateUserUseCase struct {
 	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
+	log         contractsproviders.ILoggerProvider
 	repo        usercontracts.IUserRepository
 	locale      locales.LocaleTypeEnum
 }
@@ -83,7 +83,7 @@ func (uc *CreateUserUseCase) validate(
 
 // NewCreateUserUseCase creates a new create user use case
 func NewCreateUserUseCase(
-	log contractsProviders.ILoggerProvider,
+	log contractsproviders.ILoggerProvider,
 	repo usercontracts.IUserRepository,
 ) *CreateUserUseCase {
 	return &CreateUserUseCase{

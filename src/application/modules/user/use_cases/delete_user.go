@@ -3,7 +3,7 @@ package userusecases
 import (
 	"context"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
@@ -15,7 +15,7 @@ import (
 // DeleteUserUseCase is a use case that deletes a user
 type DeleteUserUseCase struct {
 	usecase.BaseUseCaseValidation[uint, bool]
-	log  contractsProviders.ILoggerProvider
+	log  contractsproviders.ILoggerProvider
 	repo usercontracts.IUserRepository
 }
 
@@ -69,7 +69,7 @@ func (uc *DeleteUserUseCase) deleteUser(id uint, result *usecase.UseCaseResult[b
 
 // NewDeleteUserUseCase creates a new delete user use case
 func NewDeleteUserUseCase(
-	log contractsProviders.ILoggerProvider,
+	log contractsproviders.ILoggerProvider,
 	repo usercontracts.IUserRepository,
 ) *DeleteUserUseCase {
 	return &DeleteUserUseCase{

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
-	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	appcontext "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -20,7 +20,7 @@ func TestDeleteUserUseCase(t *testing.T) {
 	ctx := context.Background()
 
 	actor := dtomocks.UserWithRole
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, actor)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -43,7 +43,7 @@ func TestDeleteUserUseCase_DifferentUser(t *testing.T) {
 	ctx := context.Background()
 
 	actor := dtomocks.UserWithRole
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, actor)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)

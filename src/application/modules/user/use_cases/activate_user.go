@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	contractrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
@@ -18,11 +18,11 @@ import (
 // ActivateUserUseCase is a use case that activates a user
 type ActivateUserUseCase struct {
 	usecase.BaseUseCaseValidation[userdtos.UserActivate, bool]
-	log              contractsProviders.ILoggerProvider
+	log              contractsproviders.ILoggerProvider
 	userRepo         usercontracts.IUserRepository
 	oneTimetokenRepo contractrepositories.IOneTimeTokenRepository
 
-	hashProvider contractsProviders.IHashProvider
+	hashProvider contractsproviders.IHashProvider
 }
 
 var _ usecase.BaseUseCase[userdtos.UserActivate, bool] = (*ActivateUserUseCase)(nil)
@@ -121,10 +121,10 @@ func (uc *ActivateUserUseCase) updateUser(userID uint, result *usecase.UseCaseRe
 
 // NewActivateUserUseCase creates a new activate user use case
 func NewActivateUserUseCase(
-	log contractsProviders.ILoggerProvider,
+	log contractsproviders.ILoggerProvider,
 	userRepo usercontracts.IUserRepository,
 	oneTimeTokenRepository contractrepositories.IOneTimeTokenRepository,
-	hashProvider contractsProviders.IHashProvider,
+	hashProvider contractsproviders.IHashProvider,
 ) *ActivateUserUseCase {
 	return &ActivateUserUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[userdtos.UserActivate, bool]{
