@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
+	authdtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	authpipes "github.com/simon3640/goprojectskeleton/src/application/modules/auth/pipes"
 	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
@@ -18,14 +18,14 @@ import (
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        request body dtos.UserCredentials true "User credentials"
+// @Param        request body authdtos.UserCredentials true "User credentials"
 // @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
-// @Success      200 {object} dtos.Token "Tokens generated successfully"
+// @Success      200 {object} authdtos.Token "Tokens generated successfully"
 // @Success 	 204 {object} nil "OTP login enabled, OTP Sended to user email or phone"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/login [post]
 func Login(ctx HandlerContext) {
-	var userCredentials dtos.UserCredentials
+	var userCredentials authdtos.UserCredentials
 	if err := json.NewDecoder(*ctx.Body).Decode(&userCredentials); err != nil {
 		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
 		return
@@ -46,7 +46,7 @@ func Login(ctx HandlerContext) {
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
+	NewRequestResolver[authdtos.Token]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }
 
 // access-token-refresh
@@ -57,7 +57,7 @@ func Login(ctx HandlerContext) {
 // @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Produce      json
 // @Param        request body string true "Refresh token"
-// @Success      200 {object} dtos.Token
+// @Success      200 {object} authdtos.Token
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/refresh [post]
 func RefreshAccessToken(ctx HandlerContext) {
@@ -73,7 +73,7 @@ func RefreshAccessToken(ctx HandlerContext) {
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
+	NewRequestResolver[authdtos.Token]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }
 
 // password-reset
@@ -131,7 +131,7 @@ func RequestPasswordReset(ctx HandlerContext) {
 // @Produce      json
 // @Param        otp path string true "One Time Password"
 // @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
-// @Success      200 {object} dtos.Token "Tokens generated successfully"
+// @Success      200 {object} authdtos.Token "Tokens generated successfully"
 // @Failure      400 {object} map[string]string "Validation error"
 // @Router       /api/auth/login-otp/{otp} [get]
 func LoginOTP(ctx HandlerContext) {
@@ -153,6 +153,6 @@ func LoginOTP(ctx HandlerContext) {
 	headers := map[HTTPHeaderTypeEnum]string{
 		CONTENT_TYPE: string(APPLICATION_JSON),
 	}
-	NewRequestResolver[dtos.Token]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
+	NewRequestResolver[authdtos.Token]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 
 }

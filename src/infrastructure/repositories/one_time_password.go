@@ -2,8 +2,8 @@ package repositories
 
 import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
@@ -15,7 +15,7 @@ type OneTimePasswordRepository struct {
 	RepositoryBase[dtos.OneTimePasswordCreate, dtos.OneTimePasswordUpdate, models.OneTimePassword, dbModels.OneTimePassword]
 }
 
-var _ contracts_repositories.IOneTimePasswordRepository = (*OneTimePasswordRepository)(nil)
+var _ authcontracts.IOneTimePasswordRepository = (*OneTimePasswordRepository)(nil)
 
 func (or *OneTimePasswordRepository) GetByPasswordHash(tokenHash []byte) (*models.OneTimePassword, *application_errors.ApplicationError) {
 	var ormModel dbModels.OneTimePassword

@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -14,26 +14,29 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// AuthenticateOTPUseCase is the use case for authenticating a user with an OTP
 type AuthenticateOTPUseCase struct {
 	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
+	log         contractproviders.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
-	userRepo contracts_repositories.IUserRepository
-	otpRepo  contracts_repositories.IOneTimePasswordRepository
+	userRepo authcontracts.IUserRepository
+	otpRepo  authcontracts.IOneTimePasswordRepository
 
-	jwtProvider  contractsProviders.IJWTProvider
-	hashProvider contractsProviders.IHashProvider
+	jwtProvider  authcontracts.IJWTProvider
+	hashProvider contractproviders.IHashProvider
 }
 
 var _ usecase.BaseUseCase[string, dtos.Token] = (*AuthenticateOTPUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *AuthenticateOTPUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
 	}
 }
 
+// Execute authenticates a user with an OTP
 func (uc *AuthenticateOTPUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input string,
@@ -114,7 +117,7 @@ func (uc *AuthenticateOTPUseCase) getUser(result *usecase.UseCaseResult[dtos.Tok
 }
 
 func (uc *AuthenticateOTPUseCase) generateTokens(ctx context.Context, result *usecase.UseCaseResult[dtos.Token], user *models.UserWithRole) dtos.Token {
-	claims := contractsProviders.JWTCLaims{
+	claims := authcontracts.JWTCLaims{
 		"role": user.GetRoleKey(),
 	}
 
@@ -192,11 +195,11 @@ func (uc *AuthenticateOTPUseCase) Validate(input string, result *usecase.UseCase
 }
 
 func NewAuthenticateOTPUseCase(
-	log contractsProviders.ILoggerProvider,
-	userRepo contracts_repositories.IUserRepository,
-	otpRepo contracts_repositories.IOneTimePasswordRepository,
-	hashProvider contractsProviders.IHashProvider,
-	jwtProvider contractsProviders.IJWTProvider,
+	log contractproviders.ILoggerProvider,
+	userRepo authcontracts.IUserRepository,
+	otpRepo authcontracts.IOneTimePasswordRepository,
+	hashProvider contractproviders.IHashProvider,
+	jwtProvider authcontracts.IJWTProvider,
 ) *AuthenticateOTPUseCase {
 	return &AuthenticateOTPUseCase{
 		appMessages:  locales.NewLocale(locales.EN_US),

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -12,6 +12,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// Config is the configuration for the JWT provider
 type Config struct {
 	Secret     []byte
 	Issuer     string
@@ -21,12 +22,14 @@ type Config struct {
 	ClockSkew  time.Duration
 }
 
+// JWTProvider is the implementation of the JWT provider
 type JWTProvider struct {
 	config Config
 }
 
-var _ contractsProviders.IJWTProvider = (*JWTProvider)(nil)
+var _ authcontracts.IJWTProvider = (*JWTProvider)(nil)
 
+// Setup sets up the JWT provider
 func (jp *JWTProvider) Setup(Secret string, Issuer string, Audience string,
 	AccessTTL int64, RefreshTTL int64, ClockSkew int64) {
 	jp.config = Config{
@@ -39,13 +42,15 @@ func (jp *JWTProvider) Setup(Secret string, Issuer string, Audience string,
 	}
 }
 
+// NewJWTProvider creates a new JWT provider
 func NewJWTProvider() *JWTProvider {
 	return &JWTProvider{}
 }
 
+// GenerateAccessToken generates an access token
 func (jp *JWTProvider) GenerateAccessToken(ctx context.Context,
 	subject string,
-	claimsMap contractsProviders.JWTCLaims) (string, time.Time, *application_errors.ApplicationError) {
+	claimsMap authcontracts.JWTCLaims) (string, time.Time, *application_errors.ApplicationError) {
 	now := time.Now().Add(jp.config.ClockSkew)
 	exp := now.Add(jp.config.AccessTTL)
 	claims := jwt.MapClaims{
@@ -73,6 +78,7 @@ func (jp *JWTProvider) GenerateAccessToken(ctx context.Context,
 	return signedToken, exp, nil
 }
 
+// GenerateRefreshToken generates a refresh token
 func (jp *JWTProvider) GenerateRefreshToken(ctx context.Context,
 	subject string) (string, time.Time, *application_errors.ApplicationError) {
 	now := time.Now().Add(jp.config.ClockSkew)
@@ -98,7 +104,8 @@ func (jp *JWTProvider) GenerateRefreshToken(ctx context.Context,
 	)
 }
 
-func (jp *JWTProvider) ParseTokenAndValidate(tokenString string) (contractsProviders.JWTCLaims, *application_errors.ApplicationError) {
+// ParseTokenAndValidate parses and validates a token
+func (jp *JWTProvider) ParseTokenAndValidate(tokenString string) (authcontracts.JWTCLaims, *application_errors.ApplicationError) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrTokenMalformed
@@ -115,7 +122,7 @@ func (jp *JWTProvider) ParseTokenAndValidate(tokenString string) (contractsProvi
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		result := make(contractsProviders.JWTCLaims)
+		result := make(authcontracts.JWTCLaims)
 		for k, v := range claims {
 			result[k] = v
 		}
@@ -129,6 +136,7 @@ func (jp *JWTProvider) ParseTokenAndValidate(tokenString string) (contractsProvi
 	}
 }
 
+// JWTProviderInstance is the instance of the JWT provider
 var JWTProviderInstance *JWTProvider
 
 func init() {

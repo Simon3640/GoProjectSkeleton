@@ -3,26 +3,28 @@ package authusecases
 import (
 	"context"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
-	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 )
 
+// GetResetPasswordSendEmailUseCase is the use case for sending a reset password email
 type GetResetPasswordSendEmailUseCase struct {
 	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
+	log         contractsproviders.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 }
 
-var _ usecase.BaseUseCase[dtos.OneTimeTokenUser, bool] = (*GetResetPasswordSendEmailUseCase)(nil)
+var _ usecase.BaseUseCase[shareddtos.OneTimeTokenUser, bool] = (*GetResetPasswordSendEmailUseCase)(nil)
 
+// SetLocale sets the locale for the use case
 func (uc *GetResetPasswordSendEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.locale = locale
@@ -32,7 +34,7 @@ func (uc *GetResetPasswordSendEmailUseCase) SetLocale(locale locales.LocaleTypeE
 // Execute sends a reset password email to the user
 func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input dtos.OneTimeTokenUser,
+	input shareddtos.OneTimeTokenUser,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
@@ -48,8 +50,8 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
 	return result
 }
 
-func (uc *GetResetPasswordSendEmailUseCase) buildEmailData(input dtos.OneTimeTokenUser) email_models.ResetPasswordEmailData {
-	return email_models.ResetPasswordEmailData{
+func (uc *GetResetPasswordSendEmailUseCase) buildEmailData(input shareddtos.OneTimeTokenUser) emailmodels.ResetPasswordEmailData {
+	return emailmodels.ResetPasswordEmailData{
 		Name:              input.User.Name,
 		ResetLink:         input.BuildURL(settings.AppSettingsInstance.FrontendResetPasswordURL),
 		ExpirationMinutes: settings.AppSettingsInstance.OneTimeTokenPasswordTTL,
@@ -60,16 +62,16 @@ func (uc *GetResetPasswordSendEmailUseCase) buildEmailData(input dtos.OneTimeTok
 
 func (uc *GetResetPasswordSendEmailUseCase) sendResetPasswordEmail(
 	result *usecase.UseCaseResult[bool],
-	emailData email_models.ResetPasswordEmailData,
+	emailData emailmodels.ResetPasswordEmailData,
 	userEmail string,
 	locale locales.LocaleTypeEnum,
 ) {
-	if err := email_service.ResetPasswordEmailServiceInstance.SendWithTemplate(
+	if err := emailservice.ResetPasswordEmailServiceInstance.SendWithTemplate(
 		emailData,
 		userEmail,
 		locale,
 		templates.TemplateKeysInstance.PasswordResetEmail,
-		email_service.SubjectKeysInstance.PasswordResetEmail,
+		emailservice.SubjectKeysInstance.PasswordResetEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
@@ -94,7 +96,7 @@ func (uc *GetResetPasswordSendEmailUseCase) setSuccessResult(result *usecase.Use
 }
 
 func NewGetResetPasswordSendEmailUseCase(
-	log contractsProviders.ILoggerProvider,
+	log contractsproviders.ILoggerProvider,
 ) *GetResetPasswordSendEmailUseCase {
 	return &GetResetPasswordSendEmailUseCase{
 		appMessages: locales.NewLocale(locales.EN_US),
