@@ -78,8 +78,9 @@ func (uc *CreatePasswordTokenUseCase) validateAndGetToken(result *usecase.UseCas
 		return nil
 	}
 
-	if oneTimeToken == nil || oneTimeToken.IsUsed || oneTimeToken.Expires.Before(time.Now()) {
-		uc.log.Error("One time token is not valid", nil)
+	if oneTimeToken == nil || oneTimeToken.IsUsed || oneTimeToken.Expires.Before(time.Now()) ||
+		oneTimeToken.Purpose != models.OneTimeTokenPurposePasswordReset {
+		uc.log.Error("One time token is not valid or has incorrect purpose", nil)
 		result.SetError(
 			status.Conflict,
 			uc.AppMessages.Get(
