@@ -131,11 +131,7 @@ func TestAuthenticationUseCase_RateLimitExceeded(t *testing.T) {
 	}
 
 	attempts := 5
-	cacheProvider.On("Get", "login_attempts:user@example.com", mock.AnythingOfType("*int")).Return(true, nil, attempts).Run(func(args mock.Arguments) {
-		if dest, ok := args.Get(1).(*int); ok {
-			*dest = attempts
-		}
-	})
+	cacheProvider.On("GetInt64", "login_attempts:user@example.com").Return(int64(attempts), nil)
 
 	result := uc.Execute(ctx, locales.EN_US, userCredentials)
 	assert.NotNil(result)
@@ -175,11 +171,7 @@ func TestAuthenticationUseCase_RateLimitNotExceeded(t *testing.T) {
 	}
 
 	attempts := 3
-	cacheProvider.On("Get", "login_attempts:user@example.com", mock.AnythingOfType("*int")).Return(true, nil, attempts).Run(func(args mock.Arguments) {
-		if dest, ok := args.Get(1).(*int); ok {
-			*dest = attempts
-		}
-	})
+	cacheProvider.On("GetInt64", "login_attempts:user@example.com").Return(int64(attempts), nil)
 
 	passwordExpiresAt := time.Now().Add(30 * 24 * time.Hour)
 	passwordBase := models.PasswordBase{
@@ -242,11 +234,7 @@ func TestAuthenticationUseCase_IncrementFailedAttempts(t *testing.T) {
 
 	// Primero verifica rate limit (no excedido)
 	existingAttempts := 2
-	cacheProvider.On("Get", "login_attempts:user@example.com", mock.AnythingOfType("*int")).Return(true, nil, existingAttempts).Run(func(args mock.Arguments) {
-		if dest, ok := args.Get(1).(*int); ok {
-			*dest = existingAttempts
-		}
-	}).Once()
+	cacheProvider.On("GetInt64", "login_attempts:user@example.com").Return(int64(existingAttempts), nil)
 
 	passwordExpiresAt := time.Now().Add(30 * 24 * time.Hour)
 	passwordBase := models.PasswordBase{
@@ -263,12 +251,8 @@ func TestAuthenticationUseCase_IncrementFailedAttempts(t *testing.T) {
 	testUserRepository.On("GetUserWithRole", uint(1)).Return(&dtomocks.UserWithRole, nil)
 
 	// Debe incrementar el contador (2 -> 3)
-	cacheProvider.On("Get", "login_attempts:user@example.com", mock.AnythingOfType("*int")).Return(true, nil, existingAttempts).Run(func(args mock.Arguments) {
-		if dest, ok := args.Get(1).(*int); ok {
-			*dest = existingAttempts
-		}
-	}).Once()
-	cacheProvider.On("Set", "login_attempts:user@example.com", 3, mock.AnythingOfType("time.Duration")).Return(nil)
+	cacheProvider.On("GetInt64", "login_attempts:user@example.com").Return(int64(existingAttempts), nil)
+	cacheProvider.On("Increment", "login_attempts:user@example.com", time.Duration(settings.AppSettingsInstance.LoginAttemptsWindowMinutes)*time.Minute).Return(int64(3), nil)
 
 	result := uc.Execute(ctx, locales.EN_US, userCredentials)
 	assert.NotNil(result)
@@ -353,7 +337,7 @@ func TestAuthenticationUseCase_IncrementFailedAttemptsWhenNoPreviousAttempts(t *
 	}
 
 	// Primero verifica rate limit (no existe contador previo)
-	cacheProvider.On("Get", "login_attempts:user@example.com", mock.AnythingOfType("*int")).Return(false, nil, nil).Once()
+	cacheProvider.On("GetInt64", "login_attempts:user@example.com").Return(int64(0), nil)
 
 	passwordExpiresAt := time.Now().Add(30 * 24 * time.Hour)
 	passwordBase := models.PasswordBase{
@@ -370,8 +354,8 @@ func TestAuthenticationUseCase_IncrementFailedAttemptsWhenNoPreviousAttempts(t *
 	testUserRepository.On("GetUserWithRole", uint(1)).Return(&dtomocks.UserWithRole, nil)
 
 	// Debe crear el contador con valor 1 (desde 0)
-	cacheProvider.On("Get", "login_attempts:user@example.com", mock.AnythingOfType("*int")).Return(false, nil, nil).Once()
-	cacheProvider.On("Set", "login_attempts:user@example.com", 1, mock.AnythingOfType("time.Duration")).Return(nil)
+	cacheProvider.On("GetInt64", "login_attempts:user@example.com").Return(int64(0), nil)
+	cacheProvider.On("Increment", "login_attempts:user@example.com", time.Duration(settings.AppSettingsInstance.LoginAttemptsWindowMinutes)*time.Minute).Return(int64(1), nil)
 
 	result := uc.Execute(ctx, locales.EN_US, userCredentials)
 	assert.NotNil(result)
@@ -431,7 +415,7 @@ func TestAuthenticationUseCase_RateLimitWithMaxAttemptsZero(t *testing.T) {
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())
 	// No debe llamar a Get del cache porque maxAttempts es 0
-	cacheProvider.AssertNotCalled(t, "Get", "login_attempts:user@example.com", mock.Anything)
+	cacheProvider.AssertNotCalled(t, "GetInt64", "login_attempts:user@example.com")
 	testPasswordRepository.AssertExpectations(t)
 	testHashProvider.AssertExpectations(t)
 	testJWTProvider.AssertExpectations(t)
