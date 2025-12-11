@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	passworddtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	usecases_password "github.com/simon3640/goprojectskeleton/src/application/modules/password/use_cases"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
@@ -19,13 +19,13 @@ import (
 // @Accept json
 // @Produce json
 // @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
-// @Param request body dtos.PasswordCreateNoHash true "Datos del usuario"
+// @Param request body passworddtos.PasswordCreateNoHash true "Datos del usuario"
 // @Success 201 {object} bool "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/password [post]
 // @Security Bearer
 func CreatePassword(ctx HandlerContext) {
-	var passwordCreate dtos.PasswordCreateNoHash
+	var passwordCreate passworddtos.PasswordCreateNoHash
 
 	if err := json.NewDecoder(*ctx.Body).Decode(&passwordCreate); err != nil {
 		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)
@@ -47,17 +47,17 @@ func CreatePassword(ctx HandlerContext) {
 // CreatePasswordResetToken
 // @Summary This endpoint Create a new password reset token
 // @Description This endpoint Create a new password reset token
-// @Schemes dtos.PasswordTokenCreate
+// @Schemes passworddtos.PasswordTokenCreate
 // @Tags Password
 // @Accept json
 // @Produce json
 // @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
-// @Param request body dtos.PasswordTokenCreate true "Datos del usuario"
+// @Param request body passworddtos.PasswordTokenCreate true "Datos del usuario"
 // @Success 201 {object} bool "Token creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/password/reset-token [post]
 func CreatePasswordToken(ctx HandlerContext) {
-	var passwordTokenCreate dtos.PasswordTokenCreate
+	var passwordTokenCreate passworddtos.PasswordTokenCreate
 
 	if err := json.NewDecoder(*ctx.Body).Decode(&passwordTokenCreate); err != nil {
 		http.Error(ctx.ResponseWriter, err.Error(), http.StatusBadRequest)

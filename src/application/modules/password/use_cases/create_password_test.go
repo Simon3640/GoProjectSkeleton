@@ -1,16 +1,16 @@
-package usecases_password
+package passwordusecases
 
 import (
 	"context"
 	"testing"
 	"time"
 
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
-	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
+	passwordmocks "github.com/simon3640/goprojectskeleton/src/application/modules/password/mocks"
+	appcontext "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -24,7 +24,7 @@ func TestCreatePasswordUseCase(t *testing.T) {
 	actor := dtomocks.UserWithRole
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testPassword := dtos.PasswordCreateNoHash{
 		UserID:           actor.ID,
@@ -33,7 +33,7 @@ func TestCreatePasswordUseCase(t *testing.T) {
 		IsActive:         true,
 	}
 
-	contextWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+	contextWithUser := context.WithValue(ctx, appcontext.UserKey, actor)
 
 	testPasswordCreate := dtos.NewPasswordCreate(
 		testPassword.UserID,
