@@ -1,5 +1,5 @@
-// Package repositoriesmocks contains mock implementations of the contracts/repositories/ interfaces
-package repositoriesmocks
+// Package usermocks contains mock implementations of the contracts/repositories/ interfaces
+package usermocks
 
 import (
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
