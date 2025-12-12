@@ -6,6 +6,7 @@ import (
 	"time"
 
 	statusmocks "github.com/simon3640/goprojectskeleton/src/application/modules/status/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -17,7 +18,7 @@ import (
 func TestStatusUseCase(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testStatusProvider := new(statusmocks.MockStatusProvider)

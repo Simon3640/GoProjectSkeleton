@@ -7,6 +7,7 @@ import (
 
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -20,7 +21,7 @@ import (
 
 func TestAuthenticationUseCase(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testJWTProvider := new(authmocks.MockJWTProvider)
@@ -62,7 +63,7 @@ func TestAuthenticationUseCase(t *testing.T) {
 
 func TestAuthenticationUseCase_InvalidCredentials(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testJWTProvider := new(authmocks.MockJWTProvider)
@@ -103,7 +104,7 @@ func TestAuthenticationUseCase_InvalidCredentials(t *testing.T) {
 
 func TestAuthenticationUseCase_RateLimitExceeded(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	// Guardar valores originales
 	originalMaxAttempts := settings.AppSettingsInstance.LoginMaxAttempts
@@ -143,7 +144,7 @@ func TestAuthenticationUseCase_RateLimitExceeded(t *testing.T) {
 
 func TestAuthenticationUseCase_RateLimitNotExceeded(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	// Guardar valores originales
 	originalMaxAttempts := settings.AppSettingsInstance.LoginMaxAttempts
@@ -202,7 +203,7 @@ func TestAuthenticationUseCase_RateLimitNotExceeded(t *testing.T) {
 
 func TestAuthenticationUseCase_IncrementFailedAttempts(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	// Guardar valores originales
 	originalMaxAttempts := settings.AppSettingsInstance.LoginMaxAttempts
@@ -263,7 +264,7 @@ func TestAuthenticationUseCase_IncrementFailedAttempts(t *testing.T) {
 
 func TestAuthenticationUseCase_RateLimitWithNoCacheProvider(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testJWTProvider := new(authmocks.MockJWTProvider)
@@ -306,7 +307,7 @@ func TestAuthenticationUseCase_RateLimitWithNoCacheProvider(t *testing.T) {
 
 func TestAuthenticationUseCase_IncrementFailedAttemptsWhenNoPreviousAttempts(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	// Guardar valores originales
 	originalMaxAttempts := settings.AppSettingsInstance.LoginMaxAttempts
@@ -366,7 +367,7 @@ func TestAuthenticationUseCase_IncrementFailedAttemptsWhenNoPreviousAttempts(t *
 
 func TestAuthenticationUseCase_RateLimitWithMaxAttemptsZero(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	// Guardar valores originales
 	originalMaxAttempts := settings.AppSettingsInstance.LoginMaxAttempts

@@ -1,13 +1,13 @@
 package userusecases
 
 import (
-	"context"
 	"strings"
 
 	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	contractsrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
@@ -41,7 +41,7 @@ func (uc *ResendWelcomeEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 }
 
 // Execute executes the use case
-func (uc *ResendWelcomeEmailUseCase) Execute(_ context.Context,
+func (uc *ResendWelcomeEmailUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input userdtos.ResendWelcomeEmailRequest,
 ) *usecase.UseCaseResult[bool] {

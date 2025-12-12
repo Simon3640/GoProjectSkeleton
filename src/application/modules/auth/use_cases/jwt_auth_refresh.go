@@ -9,6 +9,7 @@ import (
 	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -34,7 +35,7 @@ func (uc *AuthenticationRefreshUseCase) SetLocale(locale locales.LocaleTypeEnum)
 }
 
 // Execute refreshes a JWT token
-func (uc *AuthenticationRefreshUseCase) Execute(ctx context.Context,
+func (uc *AuthenticationRefreshUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input string,
 ) *usecase.UseCaseResult[dtos.Token] {

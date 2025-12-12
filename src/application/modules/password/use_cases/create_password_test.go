@@ -1,13 +1,12 @@
 package passwordusecases
 
 import (
-	"context"
 	"testing"
 	"time"
 
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	passwordmocks "github.com/simon3640/goprojectskeleton/src/application/modules/password/mocks"
-	appcontext "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -18,8 +17,6 @@ import (
 
 func TestCreatePasswordUseCase(t *testing.T) {
 	assert := assert.New(t)
-
-	ctx := context.Background()
 
 	actor := dtomocks.UserWithRole
 
@@ -33,7 +30,7 @@ func TestCreatePasswordUseCase(t *testing.T) {
 		IsActive:         true,
 	}
 
-	contextWithUser := context.WithValue(ctx, appcontext.UserKey, actor)
+	ctxWithUser := app_context.NewContextWithUser(&actor)
 
 	testPasswordCreate := dtos.NewPasswordCreate(
 		testPassword.UserID,
@@ -56,7 +53,7 @@ func TestCreatePasswordUseCase(t *testing.T) {
 
 	uc := NewCreatePasswordUseCase(testLogger, testPasswordRepository, testHashProvider, false)
 
-	result := uc.Execute(contextWithUser, locales.EN_US, testPassword)
+	result := uc.Execute(ctxWithUser, locales.EN_US, testPassword)
 
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())

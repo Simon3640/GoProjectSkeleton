@@ -2,19 +2,16 @@
 package usecase
 
 import (
-	"context"
 	"strings"
 
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
-	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type BaseUseCase[Input any, Output any] interface {
 	SetLocale(locale locales.LocaleTypeEnum)
-	Execute(ctx context.Context,
+	Execute(appContext *app_context.AppContext,
 		locale locales.LocaleTypeEnum,
 		input Input,
 	) *UseCaseResult[Output]
@@ -27,7 +24,7 @@ type BaseUseCaseValidation[Input any, Output any] struct {
 }
 
 func (v *BaseUseCaseValidation[Input, Output]) Validate(
-	ctx context.Context,
+	appContext *app_context.AppContext,
 	input Input,
 	result *UseCaseResult[Output],
 ) {
@@ -45,29 +42,7 @@ func (v *BaseUseCaseValidation[Input, Output]) Validate(
 	if len(v.Guards.list) == 0 {
 		return
 	}
-	user := ctx.Value(app_context.UserKey)
-	if user == nil {
-		result.SetError(
-			status.InternalError,
-			v.AppMessages.Get(
-				v.Locale,
-				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
-			),
-		)
-		return
-	}
-	user_ctx, ok := user.(models.UserWithRole)
-	if !ok {
-		result.SetError(
-			status.Unauthorized,
-			v.AppMessages.Get(
-				v.Locale,
-				messages.MessageKeysInstance.AUTHORIZATION_REQUIRED,
-			),
-		)
-		return
-	}
-	v.Guards.SetActor(user_ctx)
+	v.Guards.SetActor(*appContext.User)
 	if err := v.Guards.Validate(input); err != nil {
 		result.SetError(
 			status.Unauthorized,

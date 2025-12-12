@@ -9,6 +9,7 @@ import (
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	passwordmocks "github.com/simon3640/goprojectskeleton/src/application/modules/password/mocks"
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -24,7 +25,7 @@ import (
 func TestCreatePasswordTokenUseCase_Execute_Success(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -115,7 +116,7 @@ func TestCreatePasswordTokenUseCase_Execute_Success(t *testing.T) {
 func TestCreatePasswordTokenUseCase_Execute_ErrorGettingToken(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -159,7 +160,7 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorGettingToken(t *testing.T) {
 func TestCreatePasswordTokenUseCase_Execute_TokenIsNil(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -197,7 +198,7 @@ func TestCreatePasswordTokenUseCase_Execute_TokenIsNil(t *testing.T) {
 func TestCreatePasswordTokenUseCase_Execute_TokenIsUsed(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -252,7 +253,7 @@ func TestCreatePasswordTokenUseCase_Execute_TokenIsUsed(t *testing.T) {
 func TestCreatePasswordTokenUseCase_Execute_TokenExpired(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -307,7 +308,7 @@ func TestCreatePasswordTokenUseCase_Execute_TokenExpired(t *testing.T) {
 func TestCreatePasswordTokenUseCase_Execute_ErrorCreatingPassword(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -370,7 +371,7 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorCreatingPassword(t *testing.T) 
 func TestCreatePasswordTokenUseCase_Execute_ErrorMarkingTokenAsUsed(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -452,7 +453,7 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorMarkingTokenAsUsed(t *testing.T
 func TestCreatePasswordTokenUseCase_Execute_TokenPurposeIsNotPasswordReset(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)

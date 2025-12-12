@@ -1,7 +1,6 @@
 package authusecases
 
 import (
-	"context"
 	"regexp"
 	"strconv"
 	"strings"
@@ -9,6 +8,7 @@ import (
 
 	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -36,7 +36,7 @@ func (uc *AuthUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	}
 }
 
-func (uc *AuthUserUseCase) Execute(ctx context.Context,
+func (uc *AuthUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input string,
 ) *usecase.UseCaseResult[models.UserWithRole] {

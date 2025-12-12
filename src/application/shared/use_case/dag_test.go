@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
@@ -17,7 +18,7 @@ import (
 type UCStringToInt struct{}
 
 func (uc *UCStringToInt) SetLocale(_ locales.LocaleTypeEnum) {}
-func (uc *UCStringToInt) Execute(_ context.Context, _ locales.LocaleTypeEnum, input string) *UseCaseResult[int] {
+func (uc *UCStringToInt) Execute(_ *app_context.AppContext, _ locales.LocaleTypeEnum, input string) *UseCaseResult[int] {
 	result := NewUseCaseResult[int]()
 	intValue, err := strconv.Atoi(input)
 	if err != nil {
@@ -33,7 +34,7 @@ var _ BaseUseCase[string, int] = (*UCStringToInt)(nil)
 type UCIntExponent struct{}
 
 func (uc *UCIntExponent) SetLocale(_ locales.LocaleTypeEnum) {}
-func (uc *UCIntExponent) Execute(_ context.Context, _ locales.LocaleTypeEnum, input int) *UseCaseResult[int] {
+func (uc *UCIntExponent) Execute(_ *app_context.AppContext, _ locales.LocaleTypeEnum, input int) *UseCaseResult[int] {
 	result := NewUseCaseResult[int]()
 	result.SetData(status.Success, input*input, "Calculated exponent")
 	return result
@@ -42,7 +43,7 @@ func (uc *UCIntExponent) Execute(_ context.Context, _ locales.LocaleTypeEnum, in
 type UCIntToString struct{}
 
 func (uc *UCIntToString) SetLocale(_ locales.LocaleTypeEnum) {}
-func (uc *UCIntToString) Execute(_ context.Context, _ locales.LocaleTypeEnum, input int) *UseCaseResult[string] {
+func (uc *UCIntToString) Execute(_ *app_context.AppContext, _ locales.LocaleTypeEnum, input int) *UseCaseResult[string] {
 	result := NewUseCaseResult[string]()
 	result.SetData(status.Success, strconv.Itoa(input), "Converted int to string")
 	return result
@@ -56,7 +57,7 @@ type UCLogBackgroundInt struct {
 }
 
 func (uc *UCLogBackgroundInt) SetLocale(_ locales.LocaleTypeEnum) {}
-func (uc *UCLogBackgroundInt) Execute(_ context.Context, _ locales.LocaleTypeEnum, input int) *UseCaseResult[int] {
+func (uc *UCLogBackgroundInt) Execute(_ *app_context.AppContext, _ locales.LocaleTypeEnum, input int) *UseCaseResult[int] {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 	uc.logged = append(uc.logged, input)
@@ -95,7 +96,7 @@ type UCLogBackgroundString struct {
 }
 
 func (uc *UCLogBackgroundString) SetLocale(_ locales.LocaleTypeEnum) {}
-func (uc *UCLogBackgroundString) Execute(_ context.Context, _ locales.LocaleTypeEnum, input string) *UseCaseResult[string] {
+func (uc *UCLogBackgroundString) Execute(_ *app_context.AppContext, _ locales.LocaleTypeEnum, input string) *UseCaseResult[string] {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 	uc.logged = append(uc.logged, input)
@@ -129,8 +130,8 @@ var _ BaseUseCase[string, string] = (*UCLogBackgroundString)(nil)
 func TestDagExecution(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-	executor := workers.NewBackgroundExecutor(ctx, 4, 100)
+	appCtx := &app_context.AppContext{Context: context.Background()}
+	executor := workers.NewBackgroundExecutor(appCtx, 4, 100)
 	executor.Start()
 	defer executor.Stop()
 
@@ -138,7 +139,7 @@ func TestDagExecution(t *testing.T) {
 	UC2 := &UCIntExponent{}
 	UC3 := &UCIntToString{}
 
-	dag := NewDag(ctx, NewStep(UC1), locales.EN_US, executor)
+	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
 	dag2 := Then(dag, NewStep(UC2))
 	dag3 := Then(dag2, NewStep(UC3))
 
@@ -153,8 +154,8 @@ func TestDagExecution(t *testing.T) {
 func TestDagConcurrentExecution(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-	executor := workers.NewBackgroundExecutor(ctx, 4, 100)
+	appCtx := &app_context.AppContext{Context: context.Background()}
+	executor := workers.NewBackgroundExecutor(appCtx, 4, 100)
 	executor.Start()
 	defer executor.Stop()
 
@@ -163,7 +164,7 @@ func TestDagConcurrentExecution(t *testing.T) {
 	UC3 := &UCIntToString{}
 	ParallelUC := NewUseCaseParallelDag[string, int]()
 	ParallelUC.Usecases = []BaseUseCase[string, int]{UC1, UC1, UC1, UC1, UC1}
-	dag := NewDag(ctx, NewStep(UC1), locales.EN_US, executor)
+	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
 	dag2 := Then(dag, NewStep(UC2))
 	dag3 := Then(dag2, NewStep(UC3))
 	dagParallel := Then(dag3, NewStep(ParallelUC))
@@ -182,8 +183,8 @@ func TestDagConcurrentExecution(t *testing.T) {
 func TestDagWithBackgroundTask(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-	executor := workers.NewBackgroundExecutor(ctx, 4, 100)
+	appCtx := &app_context.AppContext{Context: context.Background()}
+	executor := workers.NewBackgroundExecutor(appCtx, 4, 100)
 	executor.Start()
 	defer executor.Stop()
 
@@ -191,7 +192,7 @@ func TestDagWithBackgroundTask(t *testing.T) {
 	UC2 := &UCIntExponent{}
 	backgroundUC := &UCLogBackgroundInt{}
 
-	dag := NewDag(ctx, NewStep(UC1), locales.EN_US, executor)
+	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
 	dag2 := Then(dag, NewStep(UC2))
 	dagWithBackground := ThenBackground(dag2, NewStep(backgroundUC), "log-background")
 
@@ -216,8 +217,8 @@ func TestDagWithBackgroundTask(t *testing.T) {
 func TestDagWithMultipleBackgroundTasks(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-	executor := workers.NewBackgroundExecutor(ctx, 4, 100)
+	appCtx := &app_context.AppContext{Context: context.Background()}
+	executor := workers.NewBackgroundExecutor(appCtx, 4, 100)
 	executor.Start()
 	defer executor.Stop()
 
@@ -226,7 +227,7 @@ func TestDagWithMultipleBackgroundTasks(t *testing.T) {
 	backgroundUC1 := &UCLogBackgroundInt{}
 	backgroundUC2 := &UCLogBackgroundInt{}
 
-	dag := NewDag(ctx, NewStep(UC1), locales.EN_US, executor)
+	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
 	dag2 := Then(dag, NewStep(UC2))
 	dagWithBg1 := ThenBackground(dag2, NewStep(backgroundUC1), "log-background-1")
 	dagWithBg2 := ThenBackground(dagWithBg1, NewStep(backgroundUC2), "log-background-2")
@@ -258,8 +259,8 @@ func TestDagWithMultipleBackgroundTasks(t *testing.T) {
 func TestDagExecuteWithBackground(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-	executor := workers.NewBackgroundExecutor(ctx, 4, 100)
+	appCtx := &app_context.AppContext{Context: context.Background()}
+	executor := workers.NewBackgroundExecutor(appCtx, 4, 100)
 	executor.Start()
 	defer executor.Stop()
 
@@ -267,7 +268,7 @@ func TestDagExecuteWithBackground(t *testing.T) {
 	UC2 := &UCIntExponent{}
 	backgroundUC := &UCLogBackgroundInt{}
 
-	dag := NewDag(ctx, NewStep(UC1), locales.EN_US, executor)
+	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
 	dag2 := Then(dag, NewStep(UC2))
 	dagWithBackground := ThenBackground(dag2, NewStep(backgroundUC), "log-background")
 
@@ -289,8 +290,8 @@ func TestDagExecuteWithBackground(t *testing.T) {
 func TestDagExecuteWithBackgroundTimeout(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-	executor := workers.NewBackgroundExecutor(ctx, 2, 10)
+	appCtx := &app_context.AppContext{Context: context.Background()}
+	executor := workers.NewBackgroundExecutor(appCtx, 2, 10)
 	executor.Start()
 	defer executor.Stop()
 
@@ -298,7 +299,7 @@ func TestDagExecuteWithBackgroundTimeout(t *testing.T) {
 	UC2 := &UCIntExponent{}
 	backgroundUC := &UCLogBackgroundInt{}
 
-	dag := NewDag(ctx, NewStep(UC1), locales.EN_US, executor)
+	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
 	dag2 := Then(dag, NewStep(UC2))
 	dagWithBackground := ThenBackground(dag2, NewStep(backgroundUC), "log-background")
 
@@ -315,12 +316,12 @@ func TestDagExecuteWithBackgroundTimeout(t *testing.T) {
 func TestDagWithoutExecutor(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	appCtx := &app_context.AppContext{Context: context.Background()}
 	backgroundUC := &UCLogBackgroundInt{}
 
 	// Crear DAG sin executor (nil)
 	UC1 := &UCStringToInt{}
-	dag := NewDag(ctx, NewStep(UC1), locales.EN_US, nil)
+	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, nil)
 	dagWithBackground := ThenBackground(dag, NewStep(backgroundUC), "log-background")
 
 	input := "5"
@@ -344,8 +345,8 @@ func TestDagWithoutExecutor(t *testing.T) {
 func TestDagWithBackgroundChain(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-	executor := workers.NewBackgroundExecutor(ctx, 4, 100)
+	appCtx := &app_context.AppContext{Context: context.Background()}
+	executor := workers.NewBackgroundExecutor(appCtx, 4, 100)
 	executor.Start()
 	defer executor.Stop()
 
@@ -355,7 +356,7 @@ func TestDagWithBackgroundChain(t *testing.T) {
 	backgroundUC := &UCLogBackgroundString{}
 
 	// Crear una cadena: UC1 -> UC2 -> UC3, y luego agregar background task
-	dag := NewDag(ctx, NewStep(UC1), locales.EN_US, executor)
+	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
 	dag2 := Then(dag, NewStep(UC2))
 	dag3 := Then(dag2, NewStep(UC3))
 	dagWithBackground := ThenBackground(dag3, NewStep(backgroundUC), "log-background")

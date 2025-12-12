@@ -1,12 +1,12 @@
 package userusecases
 
 import (
-	"context"
 	"strings"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	applicationerror "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -34,7 +34,7 @@ func (uc *CreateUserAndPasswordUseCase) SetLocale(locale locales.LocaleTypeEnum)
 }
 
 // Execute executes the use case
-func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
+func (uc *CreateUserAndPasswordUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input userdtos.UserAndPasswordCreate,
 ) *usecase.UseCaseResult[models.User] {

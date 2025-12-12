@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
@@ -23,22 +24,22 @@ func NewStep[I any, O any](uc BaseUseCase[I, O]) DagStep[I, O] { return DagStep[
 // backgroundEntry captures the function and an optional name for tracing
 type backgroundEntry[O any] struct {
 	name string
-	fn   func(ctx context.Context, out O)
+	fn   func(ctx *app_context.AppContext, out O)
 }
 
 // DAG is immutable: builder functions return a new DAG instance.
 type DAG[I any, O any] struct {
-	run         func(ctx context.Context, input I) *UseCaseResult[O]
-	ctx         context.Context
+	run         func(appContext *app_context.AppContext, input I) *UseCaseResult[O]
+	ctx         *app_context.AppContext
 	locale      locales.LocaleTypeEnum
 	_background []backgroundEntry[O] // internal; treat as immutable — copy on write
 	executor    *workers.BackgroundExecutor
 }
 
 // NewDag creates a new DAG starting with `first` use case. The returned dag is safe to reuse.
-func NewDag[I any, O any](ctx context.Context, first DagStep[I, O], locale locales.LocaleTypeEnum, executor *workers.BackgroundExecutor) *DAG[I, O] {
-	run := func(c context.Context, input I) *UseCaseResult[O] {
-		return first.uc.Execute(c, locale, input)
+func NewDag[I any, O any](ctx *app_context.AppContext, first DagStep[I, O], locale locales.LocaleTypeEnum, executor *workers.BackgroundExecutor) *DAG[I, O] {
+	run := func(appContext *app_context.AppContext, input I) *UseCaseResult[O] {
+		return first.uc.Execute(appContext, locale, input)
 	}
 	return &DAG[I, O]{
 		run:         run,
@@ -55,7 +56,7 @@ func Then[I any, O any, P any](d *DAG[I, O], next DagStep[O, P]) *DAG[I, P] {
 	prevBackground := make([]backgroundEntry[P], 0)
 	// intentionally empty — background entries from previous output type cannot be reused
 
-	run := func(ctx context.Context, input I) *UseCaseResult[P] {
+	run := func(ctx *app_context.AppContext, input I) *UseCaseResult[P] {
 		r1 := d.run(ctx, input)
 		if r1 == nil {
 			return nil
@@ -88,7 +89,7 @@ func ThenBackground[I any, O any, P any](d *DAG[I, O], next DagStep[O, P], name 
 	// We create a wrapper that executes 'next' but ignores its output/result. Any errors are logged.
 	entr := backgroundEntry[O]{
 		name: name,
-		fn: func(ctx context.Context, out O) {
+		fn: func(ctx *app_context.AppContext, out O) {
 			res := next.uc.Execute(ctx, d.locale, out)
 			if res == nil {
 				log.Printf("background %s returned nil result", name)
@@ -138,17 +139,20 @@ func (d *DAG[I, O]) Execute(input I) *UseCaseResult[O] {
 	// submit tasks to executor if present
 	if d.executor != nil {
 		for _, be := range d._background {
-			// capture be locally
+			// capture be locally and the AppContext
 			entry := be
+			appCtx := d.ctx // Capture the AppContext to use in background task
 			err := d.executor.Submit(func(ctx context.Context) {
-				// respect ctx cancellation
+				// respect ctx cancellation (using the executor's context)
 				select {
 				case <-ctx.Done():
 					log.Printf("background %s cancelled before start\n", entry.name)
 					return
 				default:
 				}
-				entry.fn(ctx, out)
+				// Use the captured AppContext for the background task
+				// This allows the background task to access AppContext-specific data
+				entry.fn(appCtx, out)
 			})
 			if err != nil {
 				// fallback to fire-and-forget goroutine if queue is full
@@ -169,7 +173,7 @@ func (d *DAG[I, O]) Execute(input I) *UseCaseResult[O] {
 	// no executor — spawn goroutines per task but respecting ctx
 	for _, be := range d._background {
 		entry := be
-		go func(entry backgroundEntry[O], o O, ctx context.Context) {
+		go func(entry backgroundEntry[O], o O, ctx *app_context.AppContext) {
 			defer func() {
 				if r := recover(); r != nil {
 					log.Printf("panic recovered in background goroutine: %v\n%s", r, debug.Stack())
@@ -244,7 +248,7 @@ type UseCaseParallelDag[I any, O any] struct {
 var _ BaseUseCase[any, []any] = (*UseCaseParallelDag[any, any])(nil)
 
 func (d *UseCaseParallelDag[I, O]) Execute(
-	ctx context.Context,
+	ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input I,
 ) *UseCaseResult[[]O] {

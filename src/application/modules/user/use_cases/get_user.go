@@ -2,10 +2,9 @@
 package userusecases
 
 import (
-	"context"
-
 	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -25,7 +24,7 @@ func (uc *GetUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	}
 }
 
-func (uc *GetUserUseCase) Execute(ctx context.Context,
+func (uc *GetUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input uint,
 ) *usecase.UseCaseResult[models.User] {
@@ -35,11 +34,11 @@ func (uc *GetUserUseCase) Execute(ctx context.Context,
 	if result.HasError() {
 		return result
 	}
-	uc.GetUser(ctx, result, input)
+	uc.GetUser(result, input)
 	return result
 }
 
-func (uc *GetUserUseCase) GetUser(ctx context.Context, result *usecase.UseCaseResult[models.User], id uint) {
+func (uc *GetUserUseCase) GetUser(result *usecase.UseCaseResult[models.User], id uint) {
 	res, err := uc.repo.GetByID(id)
 	if err != nil {
 		uc.log.Error("Error getting user by ID", err.ToError())

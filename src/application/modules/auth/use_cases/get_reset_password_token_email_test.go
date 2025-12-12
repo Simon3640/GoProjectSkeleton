@@ -6,6 +6,7 @@ import (
 	"time"
 
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -22,7 +23,7 @@ import (
 func TestGetResetPasswordSendEmailUseCase_Execute_Success(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
@@ -73,7 +74,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_Success(t *testing.T) {
 func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
@@ -127,7 +128,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing
 func TestGetResetPasswordSendEmailUseCase_Execute_ErrorSendingEmail(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)

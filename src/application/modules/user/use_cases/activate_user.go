@@ -1,13 +1,13 @@
 package userusecases
 
 import (
-	"context"
 	"time"
 
 	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	contractrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -35,7 +35,7 @@ func (uc *ActivateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 }
 
 // Execute executes the use case
-func (uc *ActivateUserUseCase) Execute(ctx context.Context,
+func (uc *ActivateUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input userdtos.UserActivate,
 ) *usecase.UseCaseResult[bool] {
