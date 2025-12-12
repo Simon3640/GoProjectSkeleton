@@ -9,6 +9,7 @@ import (
 
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+	workers "github.com/simon3640/goprojectskeleton/src/application/shared/workers"
 )
 
 // NewGetResetPasswordPipe creates a new get reset password pipe.
@@ -21,7 +22,7 @@ func NewGetResetPasswordPipe(
 	getResetPasswordTokenUC *authusecases.GetResetPasswordTokenUseCase,
 	getResetPasswordTokenSendEmailUC *authusecases.GetResetPasswordSendEmailUseCase,
 ) *usecase.DAG[string, shareddtos.OneTimeTokenUser] {
-	dag := usecase.NewDag(usecase.NewStep(getResetPasswordTokenUC), locale, ctx)
-	// El email se envía en background, la respuesta se retorna inmediatamente con el token
-	return usecase.ThenBackground(dag, usecase.NewStep(getResetPasswordTokenSendEmailUC))
+	dag := usecase.NewDag(ctx, usecase.NewStep(getResetPasswordTokenUC), locale, workers.GetBackgroundExecutor())
+	// The email is sent in background, the response is returned immediately with the token
+	return usecase.ThenBackground(dag, usecase.NewStep(getResetPasswordTokenSendEmailUC), "get-reset-password-send-email")
 }

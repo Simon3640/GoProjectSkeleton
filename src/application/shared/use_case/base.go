@@ -1,3 +1,4 @@
+// Package usecase provides the base interface and validation for use cases.
 package usecase
 
 import (

@@ -61,6 +61,10 @@ type AppSettings struct {
 	MailPassword     string
 	MailFrom         string
 	MailAuthRequired bool
+
+	// Background Workers
+	BackgroundWorkers  int
+	BackgroundQueueSize int
 }
 
 // NewAppSettings creates a new AppSettings instance with default values
