@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	appstatus "github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
@@ -24,7 +24,7 @@ func TestCreateUserAndPassword(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	status := models.UserStatusPending
@@ -36,8 +36,8 @@ func TestCreateUserAndPassword(t *testing.T) {
 		RoleID: 2,
 	}
 
-	testUserAndPassword := dtos.UserAndPasswordCreate{
-		UserCreate: dtos.UserCreate{
+	testUserAndPassword := userdtos.UserAndPasswordCreate{
+		UserCreate: userdtos.UserCreate{
 			UserBase: userBase,
 		},
 		Password: "P@ssw0rd",
@@ -80,7 +80,7 @@ func TestCreateUserAndPassword_InvalidPassword(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	status := models.UserStatusPending
@@ -92,8 +92,8 @@ func TestCreateUserAndPassword_InvalidPassword(t *testing.T) {
 		RoleID: 2,
 	}
 
-	testUserAndPassword := dtos.UserAndPasswordCreate{
-		UserCreate: dtos.UserCreate{
+	testUserAndPassword := userdtos.UserAndPasswordCreate{
+		UserCreate: userdtos.UserCreate{
 			UserBase: userBase,
 		},
 		Password: "short", // Invalid password (too short)
@@ -121,7 +121,7 @@ func TestCreateUserAndPassword_InvalidEmail(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	status := models.UserStatusPending
@@ -133,8 +133,8 @@ func TestCreateUserAndPassword_InvalidEmail(t *testing.T) {
 		RoleID: 2,
 	}
 
-	testUserAndPassword := dtos.UserAndPasswordCreate{
-		UserCreate: dtos.UserCreate{
+	testUserAndPassword := userdtos.UserAndPasswordCreate{
+		UserCreate: userdtos.UserCreate{
 			UserBase: userBase,
 		},
 		Password: "P@ssw0rd123",
@@ -162,7 +162,7 @@ func TestCreateUserAndPassword_InvalidRoleID(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	status := models.UserStatusPending
@@ -174,8 +174,8 @@ func TestCreateUserAndPassword_InvalidRoleID(t *testing.T) {
 		RoleID: 1, // Invalid role ID (admin role cannot be created)
 	}
 
-	testUserAndPassword := dtos.UserAndPasswordCreate{
-		UserCreate: dtos.UserCreate{
+	testUserAndPassword := userdtos.UserAndPasswordCreate{
+		UserCreate: userdtos.UserCreate{
 			UserBase: userBase,
 		},
 		Password: "P@ssw0rd123",
@@ -203,7 +203,7 @@ func TestCreateUserAndPassword_HashPasswordError(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	status := models.UserStatusPending
@@ -215,8 +215,8 @@ func TestCreateUserAndPassword_HashPasswordError(t *testing.T) {
 		RoleID: 2,
 	}
 
-	testUserAndPassword := dtos.UserAndPasswordCreate{
-		UserCreate: dtos.UserCreate{
+	testUserAndPassword := userdtos.UserAndPasswordCreate{
+		UserCreate: userdtos.UserCreate{
 			UserBase: userBase,
 		},
 		Password: "P@ssw0rd123",
@@ -253,7 +253,7 @@ func TestCreateUserAndPassword_RepositoryError(t *testing.T) {
 	ctx := context.Background()
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	status := models.UserStatusPending
@@ -265,8 +265,8 @@ func TestCreateUserAndPassword_RepositoryError(t *testing.T) {
 		RoleID: 2,
 	}
 
-	testUserAndPassword := dtos.UserAndPasswordCreate{
-		UserCreate: dtos.UserCreate{
+	testUserAndPassword := userdtos.UserAndPasswordCreate{
+		UserCreate: userdtos.UserCreate{
 			UserBase: userBase,
 		},
 		Password: "P@ssw0rd123",
@@ -308,7 +308,7 @@ func TestCreateUserAndPassword_SetLocale(t *testing.T) {
 	assert := assert.New(t)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	uc := NewCreateUserAndPasswordUseCase(

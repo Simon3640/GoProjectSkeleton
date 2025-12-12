@@ -4,7 +4,7 @@ import (
 	"context"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -16,7 +16,7 @@ import (
 type DeleteUserUseCase struct {
 	usecase.BaseUseCaseValidation[uint, bool]
 	log  contractsProviders.ILoggerProvider
-	repo contracts_repositories.IUserRepository
+	repo usercontracts.IUserRepository
 }
 
 var _ usecase.BaseUseCase[uint, bool] = (*DeleteUserUseCase)(nil)
@@ -70,7 +70,7 @@ func (uc *DeleteUserUseCase) deleteUser(id uint, result *usecase.UseCaseResult[b
 // NewDeleteUserUseCase creates a new delete user use case
 func NewDeleteUserUseCase(
 	log contractsProviders.ILoggerProvider,
-	repo contracts_repositories.IUserRepository,
+	repo usercontracts.IUserRepository,
 ) *DeleteUserUseCase {
 	return &DeleteUserUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[uint, bool]{

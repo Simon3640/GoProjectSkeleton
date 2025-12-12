@@ -10,8 +10,8 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
-	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
-	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
@@ -28,7 +28,7 @@ func TestCreateUserSendEmailUseCase_Execute_Success(t *testing.T) {
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
-	mockRenderProvider := new(providersmocks.MockRenderProvider[email_models.NewUserEmailData])
+	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.NewUserEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
 	userStatus := models.UserStatusPending
@@ -70,7 +70,7 @@ func TestCreateUserSendEmailUseCase_Execute_Success(t *testing.T) {
 	mockRenderProvider.On("Render", mock.Anything, mock.Anything).Return("test-rendered-email", nil)
 	mockEmailProvider.On("SendEmail", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	email_service.RegisterUserEmailServiceInstance.SetUp(
+	emailservice.RegisterUserEmailServiceInstance.SetUp(
 		mockRenderProvider,
 		mockEmailProvider,
 	)
@@ -203,7 +203,7 @@ func TestCreateUserSendEmailUseCase_Execute_EmailSendError(t *testing.T) {
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
-	mockRenderProvider := new(providersmocks.MockRenderProvider[email_models.NewUserEmailData])
+	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.NewUserEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
 	userStatus := models.UserStatusPending
@@ -250,7 +250,7 @@ func TestCreateUserSendEmailUseCase_Execute_EmailSendError(t *testing.T) {
 	mockRenderProvider.On("Render", mock.Anything, mock.Anything).Return("test-rendered-email", nil)
 	mockEmailProvider.On("SendEmail", mock.Anything, mock.Anything, mock.Anything).Return(appErr)
 
-	email_service.RegisterUserEmailServiceInstance.SetUp(
+	emailservice.RegisterUserEmailServiceInstance.SetUp(
 		mockRenderProvider,
 		mockEmailProvider,
 	)
@@ -280,7 +280,7 @@ func TestCreateUserSendEmailUseCase_Execute_EmailRenderError(t *testing.T) {
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
-	mockRenderProvider := new(providersmocks.MockRenderProvider[email_models.NewUserEmailData])
+	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.NewUserEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
 	userStatus := models.UserStatusPending
@@ -326,7 +326,7 @@ func TestCreateUserSendEmailUseCase_Execute_EmailRenderError(t *testing.T) {
 	)
 	mockRenderProvider.On("Render", mock.Anything, mock.Anything).Return("", appErr)
 
-	email_service.RegisterUserEmailServiceInstance.SetUp(
+	emailservice.RegisterUserEmailServiceInstance.SetUp(
 		mockRenderProvider,
 		mockEmailProvider,
 	)

@@ -5,7 +5,8 @@ import (
 	"testing"
 	"time"
 
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -26,7 +27,7 @@ func TestResendWelcomeEmailUseCase_Execute_Success(t *testing.T) {
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
 	mockRenderProvider := new(providersmocks.MockRenderProvider[email_models.NewUserEmailData])
@@ -81,7 +82,7 @@ func TestResendWelcomeEmailUseCase_Execute_Success(t *testing.T) {
 		testTokenRepository,
 	)
 
-	input := dtos.ResendWelcomeEmailRequest{
+	input := userdtos.ResendWelcomeEmailRequest{
 		Email: email,
 	}
 
@@ -101,7 +102,7 @@ func TestResendWelcomeEmailUseCase_Execute_InvalidEmail(t *testing.T) {
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
 	uc := NewResendWelcomeEmailUseCase(
@@ -111,7 +112,7 @@ func TestResendWelcomeEmailUseCase_Execute_InvalidEmail(t *testing.T) {
 		testTokenRepository,
 	)
 
-	input := dtos.ResendWelcomeEmailRequest{
+	input := userdtos.ResendWelcomeEmailRequest{
 		Email: "invalid-email",
 	}
 
@@ -129,7 +130,7 @@ func TestResendWelcomeEmailUseCase_Execute_UserAlreadyVerified(t *testing.T) {
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
 	email := "test@example.com"
@@ -159,7 +160,7 @@ func TestResendWelcomeEmailUseCase_Execute_UserAlreadyVerified(t *testing.T) {
 		testTokenRepository,
 	)
 
-	input := dtos.ResendWelcomeEmailRequest{
+	input := userdtos.ResendWelcomeEmailRequest{
 		Email: email,
 	}
 
@@ -177,7 +178,7 @@ func TestResendWelcomeEmailUseCase_Execute_UserNotFound(t *testing.T) {
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
 	email := "notfound@example.com"
@@ -197,7 +198,7 @@ func TestResendWelcomeEmailUseCase_Execute_UserNotFound(t *testing.T) {
 		testTokenRepository,
 	)
 
-	input := dtos.ResendWelcomeEmailRequest{
+	input := userdtos.ResendWelcomeEmailRequest{
 		Email: email,
 	}
 
@@ -215,7 +216,7 @@ func TestResendWelcomeEmailUseCase_Execute_RepositoryError(t *testing.T) {
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
 	email := "test@example.com"
@@ -235,7 +236,7 @@ func TestResendWelcomeEmailUseCase_Execute_RepositoryError(t *testing.T) {
 		testTokenRepository,
 	)
 
-	input := dtos.ResendWelcomeEmailRequest{
+	input := userdtos.ResendWelcomeEmailRequest{
 		Email: email,
 	}
 

@@ -2,23 +2,26 @@ package repositories
 
 import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
 
 	"gorm.io/gorm"
 )
 
+// RoleRepository is the repository for the role model
 type RoleRepository struct {
 	RepositoryBase[models.RoleCreate, models.RoleUpdate, models.Role, dbModels.Role]
 }
 
-var _ contracts_repositories.IRoleRepository = (*RoleRepository)(nil)
+var _ usercontracts.IRoleRepository = (*RoleRepository)(nil)
 
+// RoleConverter is the converter for the role model
 type RoleConverter struct{}
 
 var _ ModelConverter[models.RoleCreate, models.RoleUpdate, models.Role, dbModels.Role] = (*RoleConverter)(nil)
 
+// ToGormCreate converts a role create model to a role gorm model
 func (uc *RoleConverter) ToGormCreate(model models.RoleCreate) *dbModels.Role {
 	return &dbModels.Role{
 		Key:      model.Key,
@@ -27,6 +30,7 @@ func (uc *RoleConverter) ToGormCreate(model models.RoleCreate) *dbModels.Role {
 	}
 }
 
+// ToDomain converts a role gorm model to a role domain model
 func (uc *RoleConverter) ToDomain(ormModel *dbModels.Role) *models.Role {
 	return &models.Role{
 		ID: ormModel.ID,
@@ -38,6 +42,7 @@ func (uc *RoleConverter) ToDomain(ormModel *dbModels.Role) *models.Role {
 	}
 }
 
+// ToGormUpdate converts a role update model to a role gorm model
 func (uc *RoleConverter) ToGormUpdate(model models.RoleUpdate) *dbModels.Role {
 	Role := &dbModels.Role{}
 
@@ -57,6 +62,7 @@ func (uc *RoleConverter) ToGormUpdate(model models.RoleUpdate) *dbModels.Role {
 	return Role
 }
 
+// NewRoleRepository creates a new role repository
 func NewRoleRepository(db *gorm.DB, logger contractsProviders.ILoggerProvider) *RoleRepository {
 	return &RoleRepository{
 		RepositoryBase: RepositoryBase[

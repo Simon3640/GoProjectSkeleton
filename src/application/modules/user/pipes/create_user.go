@@ -4,8 +4,8 @@ package userpipes
 import (
 	"context"
 
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
@@ -17,7 +17,7 @@ func NewCreateUserPipe(
 	locale locales.LocaleTypeEnum,
 	createUserPasswordUC *userusecases.CreateUserAndPasswordUseCase,
 	createUserSendEmailUseCase *userusecases.CreateUserSendEmailUseCase,
-) *usecase.DAG[dtos.UserAndPasswordCreate, models.User] {
+) *usecase.DAG[userdtos.UserAndPasswordCreate, models.User] {
 	dag := usecase.NewDag(usecase.NewStep(createUserPasswordUC), locale, ctx)
 	return usecase.Then(dag, usecase.NewStep(createUserSendEmailUseCase))
 }

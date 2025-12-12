@@ -2,19 +2,22 @@
 package repositoriesmocks
 
 import (
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// MockUserRepository is the mock implementation of the UserRepository interface
 type MockUserRepository struct {
-	MockRepositoryBase[dtos.UserCreate, dtos.UserUpdate, models.User, models.User]
+	repositoriesmocks.MockRepositoryBase[userdtos.UserCreate, userdtos.UserUpdate, models.User, models.User]
 }
 
-var _ contracts_repositories.IUserRepository = (*MockUserRepository)(nil)
+var _ usercontracts.IUserRepository = (*MockUserRepository)(nil)
 
-func (m *MockUserRepository) CreateWithPassword(input dtos.UserAndPasswordCreate) (*models.User, *application_errors.ApplicationError) {
+// CreateWithPassword creates a new user with a password
+func (m *MockUserRepository) CreateWithPassword(input userdtos.UserAndPasswordCreate) (*models.User, *application_errors.ApplicationError) {
 	args := m.Called(input)
 	errorArg := args.Get(1)
 	if errorArg != nil {
@@ -23,6 +26,7 @@ func (m *MockUserRepository) CreateWithPassword(input dtos.UserAndPasswordCreate
 	return args.Get(0).(*models.User), nil
 }
 
+// GetUserWithRole gets a user with their role
 func (m *MockUserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *application_errors.ApplicationError) {
 	args := m.Called(id)
 	errorArg := args.Get(1)
@@ -32,6 +36,7 @@ func (m *MockUserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *ap
 	return args.Get(0).(*models.UserWithRole), nil
 }
 
+// GetByEmailOrPhone gets a user by email or phone
 func (m *MockUserRepository) GetByEmailOrPhone(emailOrPhone string) (*models.User, *application_errors.ApplicationError) {
 	args := m.Called(emailOrPhone)
 	errorArg := args.Get(1)

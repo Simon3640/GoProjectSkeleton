@@ -1,21 +1,29 @@
-package dtos
+// Package userdtos contains the DTOs for the user module
+package userdtos
 
-import "github.com/simon3640/goprojectskeleton/src/domain/models"
+import (
+	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
+)
 
+// UserCreate is the create structure for a user
 type UserCreate struct {
 	models.UserBase
 }
 
-// cant create admin role
+// Validate validates the user create
+// This validates also create defaults that are set in the ValidateCreate method, this is a pointer method because it needs to modify the user base
 func (u *UserCreate) Validate() []string {
 	return u.ValidateCreate()
 }
 
+// UserAndPasswordCreate is the create structure for a user and password
 type UserAndPasswordCreate struct {
 	UserCreate
 	Password string `json:"password"`
 }
 
+// Validate validates the user and password create
 func (u *UserAndPasswordCreate) Validate() []string {
 	errs := u.UserCreate.Validate()
 	if !models.IsValidPassword(u.Password) {
@@ -24,19 +32,23 @@ func (u *UserAndPasswordCreate) Validate() []string {
 	return errs
 }
 
+// UserUpdate is the update structure for a user
 type UserUpdate struct {
 	models.UserUpdateBase
 	ID uint `json:"id"`
 }
 
+// Validate validates the user update
 func (u UserUpdate) Validate() []string {
 	return u.UserUpdateBase.Validate()
 }
 
+// GetUserID returns the user ID
 func (u UserUpdate) GetUserID() uint {
 	return u.ID
 }
 
+// UserActivate is the activate structure for a user
 type UserActivate struct {
 	Token string `json:"token"`
 }
@@ -59,5 +71,8 @@ func (r *ResendWelcomeEmailRequest) Validate() []string {
 	return errs
 }
 
-type UserMultiResponse = MultipleResponse[models.User]
-type UserSingleResponse = SingleResponse[models.User]
+// UserMultiResponse is the multiple response for a user
+type UserMultiResponse = shareddtos.MultipleResponse[models.User]
+
+// UserSingleResponse is the single response for a user
+type UserSingleResponse = shareddtos.SingleResponse[models.User]
