@@ -1,26 +1,30 @@
-package usecases_password
+// Package passwordusecases contains the use cases for the password module
+package passwordusecases
 
 import (
 	"context"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	passwordcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/password/contracts"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
+	passwordservices "github.com/simon3640/goprojectskeleton/src/application/modules/password/services"
+	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// CreatePasswordTokenUseCase is the use case for creating a password token
 type CreatePasswordTokenUseCase struct {
 	usecase.BaseUseCaseValidation[dtos.PasswordTokenCreate, bool]
-	log              contractsProviders.ILoggerProvider
-	passRepo         contracts_repositories.IPasswordRepository
-	hashProvider     contractsProviders.IHashProvider
-	oneTimetokenRepo contracts_repositories.IOneTimeTokenRepository
+	log              contractsproviders.ILoggerProvider
+	passRepo         passwordcontracts.IPasswordRepository
+	hashProvider     contractsproviders.IHashProvider
+	oneTimetokenRepo contractsrepositories.IOneTimeTokenRepository
 }
 
 var _ usecase.BaseUseCase[dtos.PasswordTokenCreate, bool] = (*CreatePasswordTokenUseCase)(nil)
@@ -101,7 +105,7 @@ func (uc *CreatePasswordTokenUseCase) createPassword(result *usecase.UseCaseResu
 		IsActive:         true,
 	}
 
-	_, err := services.CreatePasswordService(passwordCreateNoHash, uc.hashProvider, uc.passRepo)
+	_, err := passwordservices.CreatePasswordService(passwordCreateNoHash, uc.hashProvider, uc.passRepo)
 	if err != nil {
 		uc.log.Error("CreatePasswordTokenUseCase: Execute: Error creating password", err.ToError())
 		result.SetError(
@@ -117,7 +121,7 @@ func (uc *CreatePasswordTokenUseCase) createPassword(result *usecase.UseCaseResu
 
 func (uc *CreatePasswordTokenUseCase) markTokenAsUsed(result *usecase.UseCaseResult[bool], tokenID uint) {
 	_, err := uc.oneTimetokenRepo.Update(tokenID,
-		dtos.OneTimeTokenUpdate{IsUsed: true, ID: tokenID})
+		shareddtos.OneTimeTokenUpdate{IsUsed: true, ID: tokenID})
 
 	if err != nil {
 		uc.log.Error("Error updating one time token as used", err.ToError())
@@ -144,10 +148,10 @@ func (uc *CreatePasswordTokenUseCase) setSuccessResult(result *usecase.UseCaseRe
 }
 
 func NewCreatePasswordTokenUseCase(
-	log contractsProviders.ILoggerProvider,
-	passRepo contracts_repositories.IPasswordRepository,
-	hashProvider contractsProviders.IHashProvider,
-	repo contracts_repositories.IOneTimeTokenRepository,
+	log contractsproviders.ILoggerProvider,
+	passRepo passwordcontracts.IPasswordRepository,
+	hashProvider contractsproviders.IHashProvider,
+	repo contractsrepositories.IOneTimeTokenRepository,
 ) *CreatePasswordTokenUseCase {
 	return &CreatePasswordTokenUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[dtos.PasswordTokenCreate, bool]{

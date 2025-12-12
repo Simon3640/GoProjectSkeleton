@@ -1,4 +1,5 @@
-package dtos
+// Package passworddtos contains the DTOs for the password module
+package passworddtos
 
 import (
 	"time"
@@ -6,10 +7,12 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// PasswordCreate is the DTO for creating a new password
 type PasswordCreate struct {
 	models.PasswordBase
 }
 
+// PasswordCreateNoHash is the DTO for creating a new password without a hash
 type PasswordCreateNoHash struct {
 	UserID           uint       `json:"user_id"`
 	NoHashedPassword string     `json:"noHashedPassword"`
@@ -17,6 +20,7 @@ type PasswordCreateNoHash struct {
 	IsActive         bool       `json:"isActive"`
 }
 
+// GetUserID returns the user ID
 func (p PasswordCreateNoHash) GetUserID() uint {
 	return p.UserID
 }
@@ -29,6 +33,7 @@ func (p *PasswordCreate) SetDefaultExpiresAt() {
 	}
 }
 
+// Validate validates the password create no hash
 func (p PasswordCreateNoHash) Validate() []string {
 	var errs []string
 	if !models.IsValidPassword(p.NoHashedPassword) {
@@ -37,6 +42,7 @@ func (p PasswordCreateNoHash) Validate() []string {
 	return errs
 }
 
+// NewPasswordCreate creates a new password create DTO
 func NewPasswordCreate(userID uint, hash string, expiresAt *time.Time, isActive bool) PasswordCreate {
 	p := PasswordCreate{
 		PasswordBase: models.PasswordBase{
@@ -50,11 +56,13 @@ func NewPasswordCreate(userID uint, hash string, expiresAt *time.Time, isActive 
 	return p
 }
 
+// PasswordTokenCreate is the DTO for creating a password reset token
 type PasswordTokenCreate struct {
 	Token            string `json:"token"`
 	NoHashedPassword string `json:"noHashedPassword"`
 }
 
+// Validate validates the password token create
 func (p PasswordTokenCreate) Validate() []string {
 	var errs []string
 	if p.Token == "" {
@@ -66,12 +74,14 @@ func (p PasswordTokenCreate) Validate() []string {
 	return errs
 }
 
+// PasswordUpdateBase is the base DTO for updating a password
 type PasswordUpdateBase struct {
 	Hash      *string    `json:"hash"`
 	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
 	IsActive  *bool      `json:"isActive,omitempty"`
 }
 
+// PasswordUpdate is the DTO for updating a password
 type PasswordUpdate struct {
 	PasswordUpdateBase
 	ID uint `json:"id"`

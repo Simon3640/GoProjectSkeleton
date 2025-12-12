@@ -2,8 +2,8 @@ package repositories
 
 import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	passwordcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/password/contracts"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
@@ -15,7 +15,7 @@ type PasswordRepository struct {
 	RepositoryBase[dtos.PasswordCreate, dtos.PasswordUpdate, models.Password, dbModels.Password]
 }
 
-var _ contracts_repositories.IPasswordRepository = (*PasswordRepository)(nil)
+var _ passwordcontracts.IPasswordRepository = (*PasswordRepository)(nil)
 
 type PasswordConverter struct{}
 

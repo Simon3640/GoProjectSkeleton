@@ -1,17 +1,19 @@
-package services
+// Package passwordservices contains the services for the password module
+package passwordservices
 
 import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	passwordcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/password/contracts"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// CreatePasswordService creates a new password
 func CreatePasswordService(
 	passwordCreateNoHash dtos.PasswordCreateNoHash,
 	hashProvider contractsProviders.IHashProvider,
-	passwordRepository contracts_repositories.IPasswordRepository,
+	passwordRepository passwordcontracts.IPasswordRepository,
 ) (*models.Password, *application_errors.ApplicationError) {
 	hashedPassword, err := hashProvider.HashPassword(passwordCreateNoHash.NoHashedPassword)
 	if err != nil {
