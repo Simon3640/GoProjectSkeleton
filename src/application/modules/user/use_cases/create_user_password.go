@@ -7,7 +7,7 @@ import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	applicationerror "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -81,7 +81,7 @@ func (uc *CreateUserAndPasswordUseCase) createUser(input userdtos.UserAndPasswor
 }
 
 func (uc *CreateUserAndPasswordUseCase) hashPassword(input *userdtos.UserAndPasswordCreate, result *usecase.UseCaseResult[models.User]) {
-	var err *application_errors.ApplicationError
+	var err *applicationerror.ApplicationError
 	input.Password, err = uc.hashProvider.HashPassword(input.Password)
 	if err != nil {
 		uc.log.Error("Error hashing password", err.ToError())

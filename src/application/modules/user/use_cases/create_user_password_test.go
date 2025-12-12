@@ -7,7 +7,7 @@ import (
 
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	applicationerror "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -223,7 +223,7 @@ func TestCreateUserAndPassword_HashPasswordError(t *testing.T) {
 	}
 
 	// Mock HashPassword returning error
-	appErr := application_errors.NewApplicationError(
+	appErr := applicationerror.NewApplicationError(
 		appstatus.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Failed to hash password",
@@ -279,7 +279,7 @@ func TestCreateUserAndPassword_RepositoryError(t *testing.T) {
 	testHashProvider.On("HashPassword", testUserAndPassword.Password).Return("hashed_password", nil)
 
 	// Mock CreateWithPassword returning error
-	appErr := application_errors.NewApplicationError(
+	appErr := applicationerror.NewApplicationError(
 		appstatus.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Failed to create user",

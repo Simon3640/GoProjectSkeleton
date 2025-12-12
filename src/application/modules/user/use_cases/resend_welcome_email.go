@@ -11,7 +11,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
-	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	emailservices "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -158,12 +158,12 @@ func (uc *ResendWelcomeEmailUseCase) sendWelcomeEmail(
 	}
 
 	// Send welcome email
-	if err := emailservice.RegisterUserEmailServiceInstance.SendWithTemplate(
+	if err := emailservices.RegisterUserEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
 		user.Email,
 		uc.locale,
 		templates.TemplateKeysInstance.WelcomeEmail,
-		emailservice.SubjectKeysInstance.WelcomeEmail,
+		emailservices.SubjectKeysInstance.WelcomeEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(

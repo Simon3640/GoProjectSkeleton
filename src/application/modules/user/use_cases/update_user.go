@@ -3,7 +3,7 @@ package userusecases
 import (
 	"context"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
@@ -17,7 +17,7 @@ import (
 // UpdateUserUseCase is a use case that updates a user
 type UpdateUserUseCase struct {
 	usecase.BaseUseCaseValidation[userdtos.UserUpdate, models.User]
-	log  contractsProviders.ILoggerProvider
+	log  contractsproviders.ILoggerProvider
 	repo usercontracts.IUserRepository
 }
 
@@ -62,7 +62,7 @@ func (uc *UpdateUserUseCase) updateUser(input userdtos.UserUpdate, result *useca
 
 // NewUpdateUserUseCase creates a new update user use case
 func NewUpdateUserUseCase(
-	log contractsProviders.ILoggerProvider,
+	log contractsproviders.ILoggerProvider,
 	repo usercontracts.IUserRepository,
 ) *UpdateUserUseCase {
 	return &UpdateUserUseCase{
