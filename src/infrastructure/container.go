@@ -5,7 +5,8 @@ import (
 	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	settings "github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	config "github.com/simon3640/goprojectskeleton/src/infrastructure/config"
-	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
+	initdb "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/init_db"
 	providers "github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
@@ -31,6 +32,11 @@ func Initialize() *application_errors.ApplicationError {
 		&settings.AppSettingsInstance.DBSSL,
 		providers.Logger,
 	); err != nil {
+		return err
+	}
+
+	// Migrate database
+	if err := initdb.InitMigrate(database.GoProjectSkeletondb.DB, providers.Logger); err != nil {
 		return err
 	}
 

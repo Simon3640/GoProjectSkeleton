@@ -27,7 +27,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		uc_result := auth.NewAuthUserUseCase(
 			providers.Logger,
-			repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
+			userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
 		).Execute(r.Context(), locales.LocaleTypeEnum(locale), token)
 

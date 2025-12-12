@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
+	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 )
 
 // LambdaAdapter converts AWS Lambda API Gateway events to handler contexts.
