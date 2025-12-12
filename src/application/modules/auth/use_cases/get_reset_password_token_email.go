@@ -21,7 +21,7 @@ type GetResetPasswordSendEmailUseCase struct {
 	locale      locales.LocaleTypeEnum
 }
 
-var _ usecase.BaseUseCase[shareddtos.OneTimeTokenUser, bool] = (*GetResetPasswordSendEmailUseCase)(nil)
+var _ usecase.BaseUseCase[bool, bool] = (*GetResetPasswordSendEmailUseCase)(nil)
 
 // SetLocale sets the locale for the use case
 func (uc *GetResetPasswordSendEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
@@ -33,14 +33,18 @@ func (uc *GetResetPasswordSendEmailUseCase) SetLocale(locale locales.LocaleTypeE
 // Execute sends a reset password email to the user
 func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
-	input shareddtos.OneTimeTokenUser,
+	input bool,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
+	uc.Validate(ctx, input, result)
+	if result.HasError() {
+		return result
+	}
 
-	emailData := uc.buildEmailData(input)
+	emailData := uc.buildEmailData(*ctx.OneTimeToken)
 
-	uc.sendResetPasswordEmail(result, emailData, input.User.Email, locale)
+	uc.sendResetPasswordEmail(result, emailData, ctx.OneTimeToken.User.Email, locale)
 	if result.HasError() {
 		return result
 	}
@@ -92,6 +96,22 @@ func (uc *GetResetPasswordSendEmailUseCase) setSuccessResult(result *usecase.Use
 			messages.MessageKeysInstance.RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY,
 		),
 	)
+}
+
+func (uc *GetResetPasswordSendEmailUseCase) Validate(
+	ctx *app_context.AppContext,
+	input bool,
+	result *usecase.UseCaseResult[bool],
+) {
+	if ctx.OneTimeToken == nil || !input || ctx.OneTimeToken.User.Email == "" {
+		result.SetError(
+			status.InvalidInput,
+			uc.appMessages.Get(
+				uc.locale,
+				messages.MessageKeysInstance.INVALID_DATA,
+			),
+		)
+	}
 }
 
 func NewGetResetPasswordSendEmailUseCase(

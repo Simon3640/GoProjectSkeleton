@@ -75,6 +75,6 @@ func TestGetResetPasswordTokenUseCase(t *testing.T) {
 
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())
-	assert.Equal(token, result.Data.Token)
+	assert.Equal(true, *result.Data)
 
 }
