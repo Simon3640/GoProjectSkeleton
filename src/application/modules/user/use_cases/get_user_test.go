@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
+	appcontext "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
@@ -21,10 +21,10 @@ func TestGetUserUseCase(t *testing.T) {
 	ctx := context.Background()
 
 	actor := dtomocks.UserWithRole
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, actor)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	var testId = actor.ID
 	userStatus := models.UserStatusActive
 	testUserRepository.On("GetByID", testId).Return(&models.User{
@@ -55,10 +55,10 @@ func TestGetUserUseCase_DifferentUser(t *testing.T) {
 	ctx := context.Background()
 
 	actor := dtomocks.UserWithRole
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, actor)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	var testId = actor.ID + 1 // Different user ID
 	userStatus := models.UserStatusActive
 	testUserRepository.On("GetByID", testId).Return(&models.User{

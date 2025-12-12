@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	applicationerror "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -19,12 +19,12 @@ import (
 type CreateUserAndPasswordUseCase struct {
 	appMessages  *locales.Locale
 	log          contractsProviders.ILoggerProvider
-	repo         contracts_repositories.IUserRepository
+	repo         usercontracts.IUserRepository
 	hashProvider contractsProviders.IHashProvider
 	locale       locales.LocaleTypeEnum
 }
 
-var _ usecase.BaseUseCase[dtos.UserAndPasswordCreate, models.User] = (*CreateUserAndPasswordUseCase)(nil)
+var _ usecase.BaseUseCase[userdtos.UserAndPasswordCreate, models.User] = (*CreateUserAndPasswordUseCase)(nil)
 
 // SetLocale sets the locale for the use case
 func (uc *CreateUserAndPasswordUseCase) SetLocale(locale locales.LocaleTypeEnum) {
@@ -36,7 +36,7 @@ func (uc *CreateUserAndPasswordUseCase) SetLocale(locale locales.LocaleTypeEnum)
 // Execute executes the use case
 func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
-	input dtos.UserAndPasswordCreate,
+	input userdtos.UserAndPasswordCreate,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
@@ -67,7 +67,7 @@ func (uc *CreateUserAndPasswordUseCase) Execute(ctx context.Context,
 	return result
 }
 
-func (uc *CreateUserAndPasswordUseCase) createUser(input dtos.UserAndPasswordCreate, result *usecase.UseCaseResult[models.User]) *models.User {
+func (uc *CreateUserAndPasswordUseCase) createUser(input userdtos.UserAndPasswordCreate, result *usecase.UseCaseResult[models.User]) *models.User {
 	res, err := uc.repo.CreateWithPassword(input)
 	if err != nil {
 		uc.log.Error("Error creating user with password", err.ToError())
@@ -80,8 +80,8 @@ func (uc *CreateUserAndPasswordUseCase) createUser(input dtos.UserAndPasswordCre
 	return res
 }
 
-func (uc *CreateUserAndPasswordUseCase) hashPassword(input *dtos.UserAndPasswordCreate, result *usecase.UseCaseResult[models.User]) {
-	var err *application_errors.ApplicationError
+func (uc *CreateUserAndPasswordUseCase) hashPassword(input *userdtos.UserAndPasswordCreate, result *usecase.UseCaseResult[models.User]) {
+	var err *applicationerror.ApplicationError
 	input.Password, err = uc.hashProvider.HashPassword(input.Password)
 	if err != nil {
 		uc.log.Error("Error hashing password", err.ToError())
@@ -93,7 +93,7 @@ func (uc *CreateUserAndPasswordUseCase) hashPassword(input *dtos.UserAndPassword
 }
 
 func (uc *CreateUserAndPasswordUseCase) validate(
-	input *dtos.UserAndPasswordCreate,
+	input *userdtos.UserAndPasswordCreate,
 	result *usecase.UseCaseResult[models.User]) {
 	msgs := input.Validate()
 
@@ -108,7 +108,7 @@ func (uc *CreateUserAndPasswordUseCase) validate(
 // NewCreateUserAndPasswordUseCase creates a new create user and password use case
 func NewCreateUserAndPasswordUseCase(
 	log contractsProviders.ILoggerProvider,
-	repo contracts_repositories.IUserRepository,
+	repo usercontracts.IUserRepository,
 	hashProvider contractsProviders.IHashProvider,
 ) *CreateUserAndPasswordUseCase {
 	return &CreateUserAndPasswordUseCase{

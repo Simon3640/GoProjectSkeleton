@@ -4,8 +4,8 @@ package userusecases
 import (
 	"context"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -15,8 +15,8 @@ import (
 
 type GetUserUseCase struct {
 	usecase.BaseUseCaseValidation[uint, models.User]
-	log  contractsProviders.ILoggerProvider
-	repo contracts_repositories.IUserRepository
+	log  contractsproviders.ILoggerProvider
+	repo usercontracts.IUserRepository
 }
 
 func (uc *GetUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
@@ -60,8 +60,8 @@ func (uc *GetUserUseCase) GetUser(ctx context.Context, result *usecase.UseCaseRe
 }
 
 func NewGetUserUseCase(
-	log contractsProviders.ILoggerProvider,
-	repo contracts_repositories.IUserRepository,
+	log contractsproviders.ILoggerProvider,
+	repo usercontracts.IUserRepository,
 ) *GetUserUseCase {
 	return &GetUserUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[uint, models.User]{

@@ -12,7 +12,6 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
 	"github.com/stretchr/testify/assert"
@@ -22,7 +21,7 @@ func TestAuthUserCase(t *testing.T) {
 	asswert := assert.New(t)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(authmocks.MockUserRepository)
 	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
@@ -81,7 +80,7 @@ func TestAuthUserCase_ExpiredToken(t *testing.T) {
 	assert := assert.New(t)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(authmocks.MockUserRepository)
 	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
@@ -111,7 +110,7 @@ func TestAuthUserCase_NoAccessToken(t *testing.T) {
 	assert := assert.New(t)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(authmocks.MockUserRepository)
 	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(

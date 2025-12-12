@@ -4,14 +4,15 @@ import (
 	"context"
 	"strings"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
-	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
-	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	emailservices "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
@@ -22,15 +23,15 @@ import (
 // ResendWelcomeEmailUseCase is a use case that resends the welcome email to the user
 type ResendWelcomeEmailUseCase struct {
 	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
+	log         contractsproviders.ILoggerProvider
 	locale      locales.LocaleTypeEnum
 
-	hashProvider contractsProviders.IHashProvider
-	userRepo     contracts_repositories.IUserRepository
-	tokenRepo    contracts_repositories.IOneTimeTokenRepository
+	hashProvider contractsproviders.IHashProvider
+	userRepo     usercontracts.IUserRepository
+	tokenRepo    contractsrepositories.IOneTimeTokenRepository
 }
 
-var _ usecase.BaseUseCase[dtos.ResendWelcomeEmailRequest, bool] = (*ResendWelcomeEmailUseCase)(nil)
+var _ usecase.BaseUseCase[userdtos.ResendWelcomeEmailRequest, bool] = (*ResendWelcomeEmailUseCase)(nil)
 
 // SetLocale sets the locale for the use case
 func (uc *ResendWelcomeEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
@@ -42,7 +43,7 @@ func (uc *ResendWelcomeEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 // Execute executes the use case
 func (uc *ResendWelcomeEmailUseCase) Execute(_ context.Context,
 	locale locales.LocaleTypeEnum,
-	input dtos.ResendWelcomeEmailRequest,
+	input userdtos.ResendWelcomeEmailRequest,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
@@ -85,7 +86,7 @@ func (uc *ResendWelcomeEmailUseCase) Execute(_ context.Context,
 // Sets errors in the result if the user is not found or is already verified.
 // Returns the user if found, or nil if an error occurs.
 func (uc *ResendWelcomeEmailUseCase) getByEmailOrPhone(
-	input dtos.ResendWelcomeEmailRequest,
+	input userdtos.ResendWelcomeEmailRequest,
 	result *usecase.UseCaseResult[bool],
 ) *models.User {
 	// Search user by email or phone
@@ -148,7 +149,7 @@ func (uc *ResendWelcomeEmailUseCase) sendWelcomeEmail(
 	result *usecase.UseCaseResult[bool],
 ) {
 	// Prepare email data
-	newUserEmailData := email_models.NewUserEmailData{
+	newUserEmailData := emailmodels.NewUserEmailData{
 		Name:              user.Name,
 		ActivationLink:    settings.AppSettingsInstance.FrontendActivateAccountURL + "?token=" + token,
 		ExpirationMinutes: int(settings.AppSettingsInstance.OneTimeTokenEmailVerifyTTL),
@@ -157,12 +158,12 @@ func (uc *ResendWelcomeEmailUseCase) sendWelcomeEmail(
 	}
 
 	// Send welcome email
-	if err := email_service.RegisterUserEmailServiceInstance.SendWithTemplate(
+	if err := emailservices.RegisterUserEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
 		user.Email,
 		uc.locale,
 		templates.TemplateKeysInstance.WelcomeEmail,
-		email_service.SubjectKeysInstance.WelcomeEmail,
+		emailservices.SubjectKeysInstance.WelcomeEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
@@ -176,7 +177,7 @@ func (uc *ResendWelcomeEmailUseCase) sendWelcomeEmail(
 }
 
 func (uc *ResendWelcomeEmailUseCase) validate(
-	input *dtos.ResendWelcomeEmailRequest,
+	input *userdtos.ResendWelcomeEmailRequest,
 	result *usecase.UseCaseResult[bool]) {
 	msgs := input.Validate()
 
@@ -190,10 +191,10 @@ func (uc *ResendWelcomeEmailUseCase) validate(
 
 // NewResendWelcomeEmailUseCase creates a new ResendWelcomeEmailUseCase
 func NewResendWelcomeEmailUseCase(
-	log contractsProviders.ILoggerProvider,
-	hashProvider contractsProviders.IHashProvider,
-	userRepo contracts_repositories.IUserRepository,
-	tokenRepo contracts_repositories.IOneTimeTokenRepository,
+	log contractsproviders.ILoggerProvider,
+	hashProvider contractsproviders.IHashProvider,
+	userRepo usercontracts.IUserRepository,
+	tokenRepo contractsrepositories.IOneTimeTokenRepository,
 ) *ResendWelcomeEmailUseCase {
 	return &ResendWelcomeEmailUseCase{
 		appMessages:  locales.NewLocale(locales.EN_US),
