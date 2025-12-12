@@ -1,24 +1,25 @@
-package usecases_password
+package passwordusecases
 
 import (
 	"context"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	passwordcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/password/contracts"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
+	passwordservices "github.com/simon3640/goprojectskeleton/src/application/modules/password/services"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 )
 
+// CreatePasswordUseCase is the use case for creating a password
 type CreatePasswordUseCase struct {
 	usecase.BaseUseCaseValidation[dtos.PasswordCreateNoHash, bool]
-	log          contractsProviders.ILoggerProvider
-	repo         contracts_repositories.IPasswordRepository
-	hashProvider contractsProviders.IHashProvider
+	log          contractsproviders.ILoggerProvider
+	repo         passwordcontracts.IPasswordRepository
+	hashProvider contractsproviders.IHashProvider
 }
 
 var _ usecase.BaseUseCase[dtos.PasswordCreateNoHash, bool] = (*CreatePasswordUseCase)(nil)
@@ -29,6 +30,7 @@ func (uc *CreatePasswordUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	}
 }
 
+// Execute executes the use case
 func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 	locale locales.LocaleTypeEnum,
 	input dtos.PasswordCreateNoHash,
@@ -50,7 +52,7 @@ func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
 }
 
 func (uc *CreatePasswordUseCase) createPassword(input dtos.PasswordCreateNoHash, result *usecase.UseCaseResult[bool]) {
-	_, err := services.CreatePasswordService(input, uc.hashProvider, uc.repo)
+	_, err := passwordservices.CreatePasswordService(input, uc.hashProvider, uc.repo)
 
 	if err != nil {
 		uc.log.Error("CreatePasswordUseCase: Execute: Error creating password", err.ToError())
@@ -76,9 +78,9 @@ func (uc *CreatePasswordUseCase) setSuccessResult(result *usecase.UseCaseResult[
 }
 
 func NewCreatePasswordUseCase(
-	log contractsProviders.ILoggerProvider,
-	repo contracts_repositories.IPasswordRepository,
-	hashProvider contractsProviders.IHashProvider,
+	log contractsproviders.ILoggerProvider,
+	repo passwordcontracts.IPasswordRepository,
+	hashProvider contractsproviders.IHashProvider,
 	skip_guards bool,
 ) *CreatePasswordUseCase {
 	return &CreatePasswordUseCase{
