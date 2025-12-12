@@ -1,3 +1,4 @@
+// Package statushandlers contains the handlers for the status module
 package statushandlers
 
 import (

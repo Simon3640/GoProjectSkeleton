@@ -11,7 +11,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-// DeleteUser
+// DeleteUser delete a user by ID
 // @Summary This endpoint Delete a user by ID
 // @Description This endpoint Delete a user by ID
 // @Tags User

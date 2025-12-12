@@ -7,13 +7,13 @@ import (
 	passworddtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	usecases_password "github.com/simon3640/goprojectskeleton/src/application/modules/password/use_cases"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
-	passwordrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/password"
 	authrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/auth"
+	passwordrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/password"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-// CreatePasswordResetToken
+// CreatePasswordToken create a new password reset token
 // @Summary This endpoint Create a new password reset token
 // @Description This endpoint Create a new password reset token
 // @Schemes passworddtos.PasswordTokenCreate

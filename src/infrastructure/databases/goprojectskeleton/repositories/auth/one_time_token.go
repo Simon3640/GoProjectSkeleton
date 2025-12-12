@@ -1,10 +1,11 @@
+// Package authrepositories contains the repository for the one time token model
 package authrepositories
 
 import (
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	dbmodels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
 	reposhared "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/shared"
@@ -17,10 +18,10 @@ type OneTimeTokenRepository struct {
 	reposhared.RepositoryBase[dtos.OneTimeTokenCreate, dtos.OneTimeTokenUpdate, models.OneTimeToken, dbmodels.OneTimeToken]
 }
 
-var _ contracts_repositories.IOneTimeTokenRepository = (*OneTimeTokenRepository)(nil)
+var _ contractsrepositories.IOneTimeTokenRepository = (*OneTimeTokenRepository)(nil)
 
 // GetByTokenHash retrieves a one time token by its hash
-func (or *OneTimeTokenRepository) GetByTokenHash(tokenHash []byte) (*models.OneTimeToken, *application_errors.ApplicationError) {
+func (or *OneTimeTokenRepository) GetByTokenHash(tokenHash []byte) (*models.OneTimeToken, *applicationerrors.ApplicationError) {
 	var ormModel dbmodels.OneTimeToken
 
 	if err := or.DB.Where("hash = ?", tokenHash).First(&ormModel).Error; err != nil {
@@ -75,7 +76,7 @@ func (uc *OneTimeTokenConverter) ToGormUpdate(model dtos.OneTimeTokenUpdate) *db
 }
 
 // NewOneTimeTokenRepository creates a new one time token repository
-func NewOneTimeTokenRepository(db *gorm.DB, logger contractsProviders.ILoggerProvider) *OneTimeTokenRepository {
+func NewOneTimeTokenRepository(db *gorm.DB, logger contractsproviders.ILoggerProvider) *OneTimeTokenRepository {
 	return &OneTimeTokenRepository{
 		RepositoryBase: reposhared.RepositoryBase[
 			dtos.OneTimeTokenCreate,

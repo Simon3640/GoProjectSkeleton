@@ -1,3 +1,4 @@
+// Package utils provides utility functions for generating and deploying AWS Lambda functions.
 package utils
 
 // FunctionConfig represents a function configuration from functions.json
@@ -25,16 +26,16 @@ func GetHandlerPackage(handlerName string) string {
 		"RequestPasswordReset": "authhandlers",
 		"LoginOTP":             "authhandlers",
 		// User handlers
-		"CreateUser":          "userhandlers",
-		"GetUser":             "userhandlers",
-		"UpdateUser":          "userhandlers",
-		"DeleteUser":          "userhandlers",
-		"GetAllUser":          "userhandlers",
+		"CreateUser":            "userhandlers",
+		"GetUser":               "userhandlers",
+		"UpdateUser":            "userhandlers",
+		"DeleteUser":            "userhandlers",
+		"GetAllUser":            "userhandlers",
 		"CreateUserAndPassword": "userhandlers",
-		"ActivateUser":        "userhandlers",
-		"ResendWelcomeEmail":  "userhandlers",
+		"ActivateUser":          "userhandlers",
+		"ResendWelcomeEmail":    "userhandlers",
 		// Password handlers
-		"CreatePassword":     "passwordhandlers",
+		"CreatePassword":      "passwordhandlers",
 		"CreatePasswordToken": "passwordhandlers",
 		// Status handlers
 		"GetHealthCheck": "statushandlers",
@@ -50,10 +51,10 @@ func GetHandlerPackage(handlerName string) string {
 // GetHandlerPackagePath returns the import path for a given handler package
 func GetHandlerPackagePath(packageName string) string {
 	packagePaths := map[string]string{
-		"authhandlers":    "auth",
-		"userhandlers":   "user",
+		"authhandlers":     "auth",
+		"userhandlers":     "user",
 		"passwordhandlers": "password",
-		"statushandlers": "status",
+		"statushandlers":   "status",
 	}
 
 	if path, ok := packagePaths[packageName]; ok {
@@ -73,14 +74,14 @@ func GetInitFunction(handlerName string) string {
 		"LoginOTP":             "InitializeForAuthLoginOTP",
 		"RequestPasswordReset": "InitializeForAuthPasswordReset",
 		// User handlers
-		"CreateUser":          "InitializeForUser",
-		"GetUser":             "InitializeForUser",
-		"UpdateUser":           "InitializeForUser",
-		"DeleteUser":           "InitializeForUser",
-		"ActivateUser":         "InitializeForUser",
-		"GetAllUser":           "InitializeForUserWithCache",
+		"CreateUser":            "InitializeForUser",
+		"GetUser":               "InitializeForUser",
+		"UpdateUser":            "InitializeForUser",
+		"DeleteUser":            "InitializeForUser",
+		"ActivateUser":          "InitializeForUser",
+		"GetAllUser":            "InitializeForUserWithCache",
 		"CreateUserAndPassword": "InitializeForUserWithEmail",
-		"ResendWelcomeEmail":   "InitializeForUserWithEmail",
+		"ResendWelcomeEmail":    "InitializeForUserWithEmail",
 		// Password handlers
 		"CreatePassword":      "InitializeForPassword",
 		"CreatePasswordToken": "InitializeForPasswordWithEmail",

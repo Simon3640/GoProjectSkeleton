@@ -12,7 +12,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-// GetUser
+// GetUser get a user by ID
 // @Summary This endpoint Get a user by ID
 // @Description This endpoint Get a user by ID
 // @Tags User

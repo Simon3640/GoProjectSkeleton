@@ -4,7 +4,7 @@ package setups
 import (
 	"fmt"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	dbmodels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
 	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/shared"
 
@@ -20,7 +20,7 @@ type SetupBase[CreateModel any, UpdateModel any, Model any, DBModel dbmodels.DBM
 func (s *SetupBase[CreateModel, UpdateModel, Model, DBModel]) Setup(db *gorm.DB,
 	dbModel DBModel,
 	defaults *[]CreateModel,
-	logger contractsProviders.ILoggerProvider) error {
+	logger contractproviders.ILoggerProvider) error {
 	logger.Info(fmt.Sprintf("Auto migrating the %s table", dbModel.TableName()))
 	dbHasTable := db.Migrator().HasTable(dbModel)
 	err := db.AutoMigrate(dbModel)

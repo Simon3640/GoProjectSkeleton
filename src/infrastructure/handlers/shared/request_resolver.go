@@ -1,3 +1,4 @@
+// Package handlers contains the shared handlers for the application
 package handlers
 
 import (
@@ -8,10 +9,12 @@ import (
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 )
 
+// RequestResolver is the request resolver for the application
 type RequestResolver[D any] struct {
 	statusMapping map[status.ApplicationStatusEnum]int
 }
 
+// NewRequestResolver creates a new request resolver
 func NewRequestResolver[D any]() *RequestResolver[D] {
 	return &RequestResolver[D]{
 		statusMapping: map[status.ApplicationStatusEnum]int{
@@ -34,6 +37,9 @@ func NewRequestResolver[D any]() *RequestResolver[D] {
 	}
 }
 
+// ResolveDTO resolves the DTO for the application
+// it sets the headers and writes the response to the client
+// it writes the response to the client
 func (rr *RequestResolver[D]) ResolveDTO(
 	w http.ResponseWriter,
 	result *usecase.UseCaseResult[D],

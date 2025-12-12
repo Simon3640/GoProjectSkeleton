@@ -1,3 +1,4 @@
+// Package passwordhandlers contains the handlers for the password module
 package passwordhandlers
 
 import (
@@ -12,7 +13,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-// CreatePassword
+// CreatePassword create a new password
 // @Summary This endpoint Create a new password
 // @Description This endpoint Create a new password
 // @Schemes dtos.PasswordCreateNoHash

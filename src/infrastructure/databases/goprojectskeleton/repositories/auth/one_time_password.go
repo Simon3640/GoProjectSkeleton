@@ -1,7 +1,7 @@
 package authrepositories
 
 import (
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsprovider "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	authdtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
@@ -75,7 +75,7 @@ func (uc *OneTimePasswordConverter) ToGormUpdate(model authdtos.OneTimePasswordU
 }
 
 // NewOneTimePasswordRepository creates a new one time password repository
-func NewOneTimePasswordRepository(db *gorm.DB, logger contractsProviders.ILoggerProvider) *OneTimePasswordRepository {
+func NewOneTimePasswordRepository(db *gorm.DB, logger contractsprovider.ILoggerProvider) *OneTimePasswordRepository {
 	return &OneTimePasswordRepository{
 		RepositoryBase: reposhared.RepositoryBase[
 			authdtos.OneTimePasswordCreate,

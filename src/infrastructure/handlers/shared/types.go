@@ -8,12 +8,14 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 )
 
+// HTTPHeaderTypeEnum is the type for the HTTP header type
 type HTTPHeaderTypeEnum string
 
 func (h HTTPHeaderTypeEnum) String() string {
 	return string(h)
 }
 
+// HTTPHeaderTypeEnum constants
 const (
 	PROXY_AUTHORIZATION HTTPHeaderTypeEnum = "proxy-authorization"
 	TRANSACTION_ID      HTTPHeaderTypeEnum = "x-transaction-id"
@@ -26,8 +28,14 @@ const (
 	AUTHORIZATION       HTTPHeaderTypeEnum = "authorization"
 )
 
+// SerializationTypeEnum is the type for the serialization type
 type SerializationTypeEnum string
 
+func (s SerializationTypeEnum) String() string {
+	return string(s)
+}
+
+// SerializationTypeEnum constants
 const (
 	JSON         SerializationTypeEnum = "json"
 	XML          SerializationTypeEnum = "xml"
@@ -37,8 +45,10 @@ const (
 	FORM_DATA    SerializationTypeEnum = "formData"
 )
 
+// HTTPContentTypeEnum is the type for the HTTP content type
 type HTTPContentTypeEnum string
 
+// HTTPContentTypeEnum constants
 const (
 	APPLICATION_JSON                  HTTPContentTypeEnum = "application/json"
 	APPLICATION_XML                   HTTPContentTypeEnum = "application/xml"
@@ -49,7 +59,14 @@ const (
 	TEXT_XML                          HTTPContentTypeEnum = "text/xml"
 )
 
+// HTTPMethodEnum is the type for the HTTP method
 type HTTPMethodEnum string
+
+func (m HTTPMethodEnum) String() string {
+	return string(m)
+}
+
+// HTTPMethodEnum constants
 
 const (
 	GET     HTTPMethodEnum = "GET"
@@ -63,6 +80,7 @@ const (
 	TRACE   HTTPMethodEnum = "TRACE"
 )
 
+// Query is the type for the query
 type Query struct {
 	Filters  []string
 	Sorts    []string
@@ -70,6 +88,7 @@ type Query struct {
 	PageSize *int
 }
 
+// HandlerContext is the context for the handler
 type HandlerContext struct {
 	Context context.Context
 	Locale  locales.LocaleTypeEnum
@@ -80,6 +99,7 @@ type HandlerContext struct {
 	ResponseWriter http.ResponseWriter
 }
 
+// NewHandlerContext creates a new handler context
 func NewHandlerContext(
 	c context.Context,
 	locale *string,

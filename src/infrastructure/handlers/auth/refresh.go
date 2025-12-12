@@ -10,7 +10,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-// access-token-refresh
+// RefreshAccessToken refresh JWT access token
 // @Summary      Refresh JWT access token
 // @Description  This endpoint allows a user to refresh their JWT access token using a valid refresh
 // @Tags         Auth
