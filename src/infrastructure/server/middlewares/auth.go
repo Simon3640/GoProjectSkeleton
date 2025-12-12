@@ -8,9 +8,9 @@ import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
-	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
+	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 
 	"github.com/gin-gonic/gin"
 )
