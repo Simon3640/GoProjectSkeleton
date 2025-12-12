@@ -11,7 +11,9 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
-// NewCreateUserPipe creates a new create user pipe
+// NewCreateUserPipe creates a new create user pipe.
+// El usuario se crea de forma síncrona, y el email de bienvenida se envía en background.
+// Esto permite retornar la respuesta inmediatamente sin esperar el envío del email.
 func NewCreateUserPipe(
 	ctx context.Context,
 	locale locales.LocaleTypeEnum,
@@ -19,5 +21,6 @@ func NewCreateUserPipe(
 	createUserSendEmailUseCase *userusecases.CreateUserSendEmailUseCase,
 ) *usecase.DAG[userdtos.UserAndPasswordCreate, models.User] {
 	dag := usecase.NewDag(usecase.NewStep(createUserPasswordUC), locale, ctx)
-	return usecase.Then(dag, usecase.NewStep(createUserSendEmailUseCase))
+	// El email se envía en background, la respuesta se retorna inmediatamente
+	return usecase.ThenBackground(dag, usecase.NewStep(createUserSendEmailUseCase))
 }
