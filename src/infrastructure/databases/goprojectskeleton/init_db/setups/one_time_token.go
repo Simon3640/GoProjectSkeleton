@@ -4,7 +4,7 @@ import (
 	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	dbmodels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
-	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
+	authrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/auth"
 )
 
 // SetupOneTimeToken is the setup struct for the one time token model
@@ -18,7 +18,7 @@ var _ SetupModel[dtos.OneTimeTokenCreate, dtos.OneTimeTokenUpdate, models.OneTim
 func NewSetupOneTimeToken() *SetupOneTimeToken {
 	return &SetupOneTimeToken{
 		SetupBase: SetupBase[dtos.OneTimeTokenCreate, dtos.OneTimeTokenUpdate, models.OneTimeToken, dbmodels.OneTimeToken]{
-			modelConverter: &repositories.OneTimeTokenConverter{},
+			modelConverter: &authrepositories.OneTimeTokenConverter{},
 		},
 	}
 }

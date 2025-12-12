@@ -9,7 +9,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
-	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
+	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +21,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		uc_result := authusecases.NewAuthUserUseCase(
 			providers.Logger,
-			repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
+			userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
 		).Execute(c, locales.EN_US, token)
 

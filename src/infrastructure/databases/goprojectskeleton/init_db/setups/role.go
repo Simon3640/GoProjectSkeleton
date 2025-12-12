@@ -3,7 +3,7 @@ package setups
 import (
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	dbmodels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
-	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
+	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 )
 
 // SetupRole is the setup struct for the role model
@@ -17,7 +17,7 @@ var _ SetupModel[models.RoleCreate, models.RoleUpdate, models.Role, dbmodels.Rol
 func NewSetUpRole() *SetupRole {
 	return &SetupRole{
 		SetupBase: SetupBase[models.RoleCreate, models.RoleUpdate, models.Role, dbmodels.Role]{
-			modelConverter: &repositories.RoleConverter{},
+			modelConverter: &userrepositories.RoleConverter{},
 		},
 	}
 }

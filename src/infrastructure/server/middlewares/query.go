@@ -3,7 +3,7 @@ package middlewares
 import (
 	"strconv"
 
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
+	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 
 	"github.com/gin-gonic/gin"
 )

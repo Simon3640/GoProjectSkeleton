@@ -2,34 +2,37 @@ package routes
 
 import (
 	"github.com/simon3640/goprojectskeleton/gin/middlewares"
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
+	authhandlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/auth"
+	passwordhandlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/password"
+	statushandlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/status"
+	userhandlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/user"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Router(r *gin.RouterGroup) {
-	r.GET("/status", wrapHandler(handlers.GetHealthCheck))
+	r.GET("/status", wrapHandler(statushandlers.GetHealthCheck))
 
 	private := r.Group("/")
 	private.Use(middlewares.AuthMiddleware())
 	// User routes
-	r.POST("/user", wrapHandler(handlers.CreateUser))
-	private.GET("/user/:id", wrapHandler(handlers.GetUser))
-	private.PATCH("/user/:id", wrapHandler(handlers.UpdateUser))
-	private.DELETE("/user/:id", wrapHandler(handlers.DeleteUser))
-	private.GET("/user", middlewares.QueryMiddleware(), wrapHandler(handlers.GetAllUser))
-	r.POST("/user-password", wrapHandler(handlers.CreateUserAndPassword))
-	r.POST("/user/activate", wrapHandler(handlers.ActivateUser))
-	r.POST("/user/resend-welcome-email", wrapHandler(handlers.ResendWelcomeEmail))
+	r.POST("/user", wrapHandler(userhandlers.CreateUser))
+	private.GET("/user/:id", wrapHandler(userhandlers.GetUser))
+	private.PATCH("/user/:id", wrapHandler(userhandlers.UpdateUser))
+	private.DELETE("/user/:id", wrapHandler(userhandlers.DeleteUser))
+	private.GET("/user", middlewares.QueryMiddleware(), wrapHandler(userhandlers.GetAllUser))
+	r.POST("/user-password", wrapHandler(userhandlers.CreateUserAndPassword))
+	r.POST("/user/activate", wrapHandler(userhandlers.ActivateUser))
+	r.POST("/user/resend-welcome-email", wrapHandler(userhandlers.ResendWelcomeEmail))
 
 	// Password routes
-	private.POST("/password", wrapHandler(handlers.CreatePassword))
-	r.POST("/password/reset-token", wrapHandler(handlers.CreatePasswordToken))
+	private.POST("/password", wrapHandler(passwordhandlers.CreatePassword))
+	r.POST("/password/reset-token", wrapHandler(passwordhandlers.CreatePasswordToken))
 
 	// Auth routes
-	r.POST("/auth/login", wrapHandler(handlers.Login))
-	r.POST("/auth/refresh", wrapHandler(handlers.RefreshAccessToken))
-	r.GET("/auth/password-reset/:identifier", wrapHandler(handlers.RequestPasswordReset))
-	r.GET("/auth/login-otp/:otp", wrapHandler(handlers.LoginOTP))
+	r.POST("/auth/login", wrapHandler(authhandlers.Login))
+	r.POST("/auth/refresh", wrapHandler(authhandlers.RefreshAccessToken))
+	r.GET("/auth/password-reset/:identifier", wrapHandler(authhandlers.RequestPasswordReset))
+	r.GET("/auth/login-otp/:otp", wrapHandler(authhandlers.LoginOTP))
 
 }

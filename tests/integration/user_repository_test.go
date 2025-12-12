@@ -5,7 +5,7 @@ import (
 
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
-	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
+	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 
 	"github.com/stretchr/testify/assert"
@@ -13,7 +13,7 @@ import (
 
 func TestUserRepository_CreateWithPassword(t *testing.T) {
 	assert := assert.New(t)
-	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	userRepository := userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	// Test Create With password
 	createdUser, appErr := userRepository.CreateWithPassword(dtomocks.UserAndPasswordCreate)
@@ -35,7 +35,7 @@ func TestUserRepository_CreateWithPassword(t *testing.T) {
 
 func TestUserRepository_GetUserWithRole(t *testing.T) {
 	assert := assert.New(t)
-	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	userRepository := userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 	// Create user to test Get User With Role
 	createdUser, appErr := userRepository.CreateWithPassword(dtomocks.UserAndPasswordCreate)
 
@@ -57,7 +57,7 @@ func TestUserRepository_GetUserWithRole(t *testing.T) {
 
 func TestUserRepository_GetByEmailOrPhone(t *testing.T) {
 	assert := assert.New(t)
-	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	userRepository := userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	createdUser, _ := userRepository.CreateWithPassword(dtomocks.UserAndPasswordCreate)
 

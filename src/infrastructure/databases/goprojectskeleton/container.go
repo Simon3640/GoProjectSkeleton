@@ -6,7 +6,6 @@ import (
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	initdb "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/init_db"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -34,9 +33,6 @@ func (gpsbd *GoProjectSkeletonDB) SetUp(host string, port string, user string, p
 	}
 	gpsbd.DB = db
 	logger.Info("Database connection established")
-	if err := initdb.InitMigrate(db, logger); err != nil {
-		return application_errors.NewApplicationError(status.DatabaseInitializationError, messages.MessageKeysInstance.SOMETHING_WENT_WRONG, err.Error())
-	}
 	return nil
 }
 

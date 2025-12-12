@@ -1,4 +1,4 @@
-package repositories
+package shared
 
 import (
 	"errors"

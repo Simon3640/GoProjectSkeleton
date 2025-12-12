@@ -1,4 +1,4 @@
-package repositories
+package shared
 
 // ModelConverter is the interface for the model converter
 type ModelConverter[ModelCreate any, ModelUpdate any, Model any, DBModel any] interface {

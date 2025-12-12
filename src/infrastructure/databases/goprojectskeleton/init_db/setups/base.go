@@ -6,7 +6,7 @@ import (
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	dbmodels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
-	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
+	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/shared"
 
 	"gorm.io/gorm"
 )

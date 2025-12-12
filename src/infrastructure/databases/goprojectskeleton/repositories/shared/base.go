@@ -1,5 +1,5 @@
-// Package repositories contains the base repository for the database models
-package repositories
+// Package shared contains the base repository for the database models
+package shared
 
 import (
 	"fmt"
@@ -17,8 +17,8 @@ import (
 // It implements the IRepositoryBase interface
 type RepositoryBase[CreateModel any, UpdateModel any, Model any, DBModel any] struct {
 	DB             *gorm.DB
-	logger         contractsProviders.ILoggerProvider
-	modelConverter ModelConverter[CreateModel, UpdateModel, Model, DBModel]
+	Logger         contractsProviders.ILoggerProvider
+	ModelConverter ModelConverter[CreateModel, UpdateModel, Model, DBModel]
 }
 
 func SetUpRepositoryBase[CreateModel, UpdateModel, Model, DBModel any](db *gorm.DB,
@@ -27,8 +27,8 @@ func SetUpRepositoryBase[CreateModel, UpdateModel, Model, DBModel any](db *gorm.
 ) RepositoryBase[CreateModel, UpdateModel, Model, DBModel] {
 	return RepositoryBase[CreateModel, UpdateModel, Model, DBModel]{
 		DB:             db,
-		logger:         logger,
-		modelConverter: modelConverter,
+		Logger:         logger,
+		ModelConverter: modelConverter,
 	}
 }
 
@@ -83,15 +83,15 @@ func SortToGorm(s domain_utils.Sort) string {
 // Create creates a new entity
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Create(entity CreateModel) (*Model, *application_errors.ApplicationError) {
 	// Convertir a modelo de GORM
-	_entity := rb.modelConverter.ToGormCreate(entity)
+	_entity := rb.ModelConverter.ToGormCreate(entity)
 	if err := rb.DB.Create(_entity).Error; err != nil {
 		appErr := MapOrmError(err)
-		rb.logger.Debug("Error creating entity", appErr.ToError())
+		rb.Logger.Debug("Error creating entity", appErr.ToError())
 		return nil, appErr
 	}
-	rb.logger.Debug("Entity created successfully", _entity)
+	rb.Logger.Debug("Entity created successfully", _entity)
 	// Convertir de nuevo a modelo de dominio
-	return rb.modelConverter.ToDomain(_entity), nil
+	return rb.ModelConverter.ToDomain(_entity), nil
 }
 
 // GetByID retrieves an entity by its ID
@@ -99,23 +99,23 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetByID(id u
 	var entity DBModel
 	if err := rb.DB.First(&entity, id).Error; err != nil {
 		appErr := MapOrmError(err)
-		rb.logger.Debug("Error retrieving entity", appErr.ToError())
+		rb.Logger.Debug("Error retrieving entity", appErr.ToError())
 		return nil, appErr
 	}
-	rb.logger.Debug("Entity retrieved successfully", entity)
-	return rb.modelConverter.ToDomain(&entity), nil
+	rb.Logger.Debug("Entity retrieved successfully", entity)
+	return rb.ModelConverter.ToDomain(&entity), nil
 }
 
 // Update updates an entity
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id uint, entity UpdateModel) (*Model, *application_errors.ApplicationError) {
-	updateData := rb.modelConverter.ToGormUpdate(entity)
+	updateData := rb.ModelConverter.ToGormUpdate(entity)
 
 	if err := rb.DB.Model(new(DBModel)).Where("id = ?", id).Updates(updateData).Error; err != nil {
 		appErr := MapOrmError(err)
-		rb.logger.Debug("Error updating entity", appErr.ToError())
+		rb.Logger.Debug("Error updating entity", appErr.ToError())
 		return nil, appErr
 	}
-	rb.logger.Debug("Entity updated successfully", updateData)
+	rb.Logger.Debug("Entity updated successfully", updateData)
 	updatedEntity, _ := rb.GetByID(id)
 	return updatedEntity, nil
 }
@@ -124,7 +124,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id ui
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) SoftDelete(id uint) *application_errors.ApplicationError {
 	if err := rb.DB.Delete(new(DBModel), id).Error; err != nil {
 		appErr := MapOrmError(err)
-		rb.logger.Debug("Error deleting entity", appErr.ToError())
+		rb.Logger.Debug("Error deleting entity", appErr.ToError())
 		return appErr
 	}
 	return nil
@@ -134,7 +134,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) SoftDelete(i
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id uint) *application_errors.ApplicationError {
 	if err := rb.DB.Unscoped().Delete(new(DBModel), id).Error; err != nil {
 		appErr := MapOrmError(err)
-		rb.logger.Debug("Error hard deleting entity", appErr.ToError())
+		rb.Logger.Debug("Error hard deleting entity", appErr.ToError())
 		return appErr
 	}
 	return nil
@@ -146,11 +146,11 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(paylo
 	// Apply filters from payload
 
 	query := rb.DB.Model(new(DBModel))
-	if payload != nil {
+		if payload != nil {
 		for _, filter := range payload.Filters {
 			gormCondition, args, err := FilterToGorm(filter)
 			if err != nil {
-				rb.logger.Debug("Error converting filter to GORM", err)
+				rb.Logger.Debug("Error converting filter to GORM", err)
 				continue
 			}
 			if args != nil {
@@ -170,7 +170,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(paylo
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
 		if appErr := MapOrmError(err); appErr != nil {
-			rb.logger.Debug("Error counting entities", appErr.ToError())
+			rb.Logger.Debug("Error counting entities", appErr.ToError())
 			return nil, 0, appErr
 		}
 		return nil, 0, DefaultORMError
@@ -180,7 +180,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(paylo
 	// Execute the query
 	if err := query.Find(&entities).Error; err != nil {
 		if appErr := MapOrmError(err); appErr != nil {
-			rb.logger.Debug("Error retrieving entities", appErr.ToError())
+			rb.Logger.Debug("Error retrieving entities", appErr.ToError())
 			return nil, 0, appErr
 		}
 		return nil, 0, DefaultORMError
@@ -189,7 +189,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(paylo
 	result := make([]Model, len(entities))
 
 	for i, entity := range entities {
-		result[i] = *rb.modelConverter.ToDomain(&entity)
+		result[i] = *rb.ModelConverter.ToDomain(&entity)
 	}
 
 	return result, total, nil

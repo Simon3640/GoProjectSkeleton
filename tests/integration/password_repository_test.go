@@ -6,7 +6,8 @@ import (
 	passwordmocks "github.com/simon3640/goprojectskeleton/src/application/modules/password/mocks"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
-	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
+	passwordrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/password"
+	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +15,7 @@ import (
 
 func TestPasswordCreate(t *testing.T) {
 	assert := assert.New(t)
-	passwordRepository := repositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	passwordRepository := passwordrepositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	passwordCreated, appErr := passwordRepository.Create(passwordmocks.PasswordCreate)
 
@@ -30,8 +31,8 @@ func TestPasswordCreate(t *testing.T) {
 
 func TestPasswordGetActivePassword(t *testing.T) {
 	assert := assert.New(t)
-	passwordRepository := repositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
-	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	passwordRepository := passwordrepositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	userRepository := userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	// Create user to link the password
 	userCreated, appErr := userRepository.Create(dtomocks.UserCreate)

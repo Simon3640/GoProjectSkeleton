@@ -6,7 +6,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
-	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
+	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/shared"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 
 	"github.com/stretchr/testify/assert"
