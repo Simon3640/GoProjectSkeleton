@@ -20,6 +20,12 @@ func NewContextWithUser(user *models.UserWithRole) *AppContext {
 	}
 }
 
+func NewVoidAppContext() *AppContext {
+	return &AppContext{
+		Context: context.Background(),
+	}
+}
+
 func (a *AppContext) AddUserToContext(user *models.UserWithRole) {
 	a.User = user
 }

@@ -18,9 +18,8 @@ import (
 
 // AuthUserUseCase is the use case for authenticating a user with a JWT token
 type AuthUserUseCase struct {
-	appMessages *locales.Locale
-	log         contractsproviders.ILoggerProvider
-	locale      locales.LocaleTypeEnum
+	usecase.BaseUseCaseValidation[string, models.UserWithRole]
+	log contractsproviders.ILoggerProvider
 
 	userRepository authcontracts.IUserRepository
 
@@ -29,20 +28,13 @@ type AuthUserUseCase struct {
 
 var _ usecase.BaseUseCase[string, models.UserWithRole] = (*AuthUserUseCase)(nil)
 
-// SetLocale sets the locale for the use case
-func (uc *AuthUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
-
 func (uc *AuthUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input string,
 ) *usecase.UseCaseResult[models.UserWithRole] {
 	result := usecase.NewUseCaseResult[models.UserWithRole]()
 	uc.SetLocale(locale)
-
+	uc.SetAppContext(ctx)
 	uc.validate(input, result)
 	if result.HasError() {
 		return result
@@ -72,8 +64,8 @@ func (uc *AuthUserUseCase) convertSubjectToID(result *usecase.UseCaseResult[mode
 	if err != nil {
 		result.SetError(
 			status.Unauthorized,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
 			),
 		)
@@ -88,8 +80,8 @@ func (uc *AuthUserUseCase) getUser(result *usecase.UseCaseResult[models.UserWith
 		uc.log.Error("Error getting user with role", appError.ToError())
 		result.SetError(
 			appError.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				appError.Context,
 			),
 		)
@@ -102,8 +94,8 @@ func (uc *AuthUserUseCase) setSuccessResult(result *usecase.UseCaseResult[models
 	result.SetData(
 		status.Success,
 		*user,
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.PASSWORD_CREATED,
 		),
 	)
@@ -114,12 +106,12 @@ func (uc *AuthUserUseCase) validate(input string, result *usecase.UseCaseResult[
 	var validationErrors []string
 
 	if input == "" {
-		validationErrors = append(validationErrors, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.AUTHORIZATION_REQUIRED))
+		validationErrors = append(validationErrors, uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.AUTHORIZATION_REQUIRED))
 	}
 	// regex for JWT token validation
 	jwtRegex := `^[A-Za-z0-9-_=]+\.([A-Za-z0-9-_=]+\.?)*$`
 	if !regexp.MustCompile(jwtRegex).MatchString(input) {
-		validationErrors = append(validationErrors, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.INVALID_JWT_TOKEN))
+		validationErrors = append(validationErrors, uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.INVALID_JWT_TOKEN))
 	}
 	if len(validationErrors) > 0 {
 		result.SetError(
@@ -135,8 +127,8 @@ func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *use
 		uc.log.Error("Failed to parse and validate token", err.ToError())
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
@@ -147,8 +139,8 @@ func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *use
 	if claims["typ"] != "access" {
 		result.SetError(
 			status.Unauthorized,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
 			),
 		)
@@ -159,8 +151,8 @@ func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *use
 		uc.log.Error("Token has expired", nil)
 		result.SetError(
 			status.Unauthorized,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.AUTHORIZATION_TOKEN_EXPIRED,
 			),
 		)
@@ -173,8 +165,8 @@ func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *use
 		uc.log.Error("Invalid subject in token claims", nil)
 		result.SetError(
 			status.Unauthorized,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.AUTHORIZATION_HEADER_INVALID,
 			),
 		)
@@ -190,7 +182,10 @@ func NewAuthUserUseCase(
 	jwtProvider authcontracts.IJWTProvider,
 ) *AuthUserUseCase {
 	return &AuthUserUseCase{
-		appMessages:    locales.NewLocale(locales.EN_US),
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, models.UserWithRole]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
 		log:            log,
 		userRepository: userRepository,
 		jwtProvider:    jwtProvider,

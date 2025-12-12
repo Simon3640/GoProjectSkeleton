@@ -15,16 +15,33 @@ type BaseUseCase[Input any, Output any] interface {
 		locale locales.LocaleTypeEnum,
 		input Input,
 	) *UseCaseResult[Output]
+	SetAppContext(appContext *app_context.AppContext)
 }
 
 type BaseUseCaseValidation[Input any, Output any] struct {
 	Guards      Guards
 	AppMessages *locales.Locale
 	Locale      locales.LocaleTypeEnum
+	AppContext  *app_context.AppContext
+}
+
+func (v *BaseUseCaseValidation[Input, Output]) SetAppContext(appContext *app_context.AppContext) {
+	if appContext != nil {
+		v.AppContext = appContext
+	} else {
+		v.AppContext = app_context.NewVoidAppContext()
+	}
+}
+
+func (v *BaseUseCaseValidation[Input, Output]) SetLocale(locale locales.LocaleTypeEnum) {
+	if locale != "" {
+		v.Locale = locale
+	} else {
+		v.Locale = locales.EN_US
+	}
 }
 
 func (v *BaseUseCaseValidation[Input, Output]) Validate(
-	appContext *app_context.AppContext,
 	input Input,
 	result *UseCaseResult[Output],
 ) {
@@ -42,7 +59,7 @@ func (v *BaseUseCaseValidation[Input, Output]) Validate(
 	if len(v.Guards.list) == 0 {
 		return
 	}
-	v.Guards.SetActor(*appContext.User)
+	v.Guards.SetActor(*v.AppContext.User)
 	if err := v.Guards.Validate(input); err != nil {
 		result.SetError(
 			status.Unauthorized,

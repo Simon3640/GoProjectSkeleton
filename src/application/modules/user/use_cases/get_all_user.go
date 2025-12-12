@@ -29,13 +29,6 @@ type GetAllUserUseCase struct {
 
 var _ usecase.BaseUseCase[domainutils.QueryPayloadBuilder[models.User], userdtos.UserMultiResponse] = (*GetAllUserUseCase)(nil)
 
-// SetLocale sets the locale for the use case
-func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.Locale = locale
-	}
-}
-
 // Execute executes the use case
 func (uc *GetAllUserUseCase) Execute(
 	ctx *app_context.AppContext,
@@ -44,7 +37,8 @@ func (uc *GetAllUserUseCase) Execute(
 ) *usecase.UseCaseResult[userdtos.UserMultiResponse] {
 	result := usecase.NewUseCaseResult[userdtos.UserMultiResponse]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}

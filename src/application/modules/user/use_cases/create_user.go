@@ -16,20 +16,12 @@ import (
 
 // CreateUserUseCase is a use case that creates a user
 type CreateUserUseCase struct {
-	appMessages *locales.Locale
-	log         contractsproviders.ILoggerProvider
-	repo        usercontracts.IUserRepository
-	locale      locales.LocaleTypeEnum
+	usecase.BaseUseCaseValidation[userdtos.UserCreate, models.User]
+	log  contractsproviders.ILoggerProvider
+	repo usercontracts.IUserRepository
 }
 
 var _ usecase.BaseUseCase[userdtos.UserCreate, models.User] = (*CreateUserUseCase)(nil)
-
-// SetLocale sets the locale for the use case
-func (uc *CreateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
 
 // Execute executes the use case
 func (uc *CreateUserUseCase) Execute(ctx *app_context.AppContext,
@@ -38,6 +30,7 @@ func (uc *CreateUserUseCase) Execute(ctx *app_context.AppContext,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
+	uc.SetAppContext(ctx)
 	uc.validate(input, result)
 
 	if result.HasError() {
@@ -50,8 +43,8 @@ func (uc *CreateUserUseCase) Execute(ctx *app_context.AppContext,
 		uc.log.Error("Error creating user", err.ToError())
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
@@ -60,8 +53,8 @@ func (uc *CreateUserUseCase) Execute(ctx *app_context.AppContext,
 	result.SetData(
 		status.Success,
 		*res,
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.USER_WAS_CREATED,
 		),
 	)
@@ -87,8 +80,11 @@ func NewCreateUserUseCase(
 	repo usercontracts.IUserRepository,
 ) *CreateUserUseCase {
 	return &CreateUserUseCase{
-		appMessages: locales.NewLocale(locales.EN_US),
-		log:         log,
-		repo:        repo,
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[userdtos.UserCreate, models.User]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
+		log:  log,
+		repo: repo,
 	}
 }

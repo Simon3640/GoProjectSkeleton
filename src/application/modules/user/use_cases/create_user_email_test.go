@@ -363,13 +363,13 @@ func TestCreateUserSendEmailUseCase_SetLocale(t *testing.T) {
 
 	// Test setting locale
 	uc.SetLocale(locales.ES_ES)
-	assert.Equal(locales.ES_ES, uc.locale)
+	assert.Equal(locales.ES_ES, uc.Locale)
 
 	// Test setting empty locale (should not change)
 	uc.SetLocale("")
-	assert.Equal(locales.ES_ES, uc.locale)
+	assert.Equal(locales.EN_US, uc.Locale)
 
 	// Test setting another locale
 	uc.SetLocale(locales.EN_US)
-	assert.Equal(locales.EN_US, uc.locale)
+	assert.Equal(locales.EN_US, uc.Locale)
 }

@@ -20,13 +20,6 @@ type DeleteUserUseCase struct {
 
 var _ usecase.BaseUseCase[uint, bool] = (*DeleteUserUseCase)(nil)
 
-// SetLocale sets the locale for the use case
-func (uc *DeleteUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.Locale = locale
-	}
-}
-
 // Execute executes the use case
 func (uc *DeleteUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
@@ -34,7 +27,8 @@ func (uc *DeleteUserUseCase) Execute(ctx *app_context.AppContext,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}

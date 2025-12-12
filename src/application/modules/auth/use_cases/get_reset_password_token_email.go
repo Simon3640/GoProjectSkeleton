@@ -16,18 +16,8 @@ import (
 
 // GetResetPasswordSendEmailUseCase is the use case for sending a reset password email
 type GetResetPasswordSendEmailUseCase struct {
-	appMessages *locales.Locale
-	log         contractsproviders.ILoggerProvider
-	locale      locales.LocaleTypeEnum
-}
-
-var _ usecase.BaseUseCase[bool, bool] = (*GetResetPasswordSendEmailUseCase)(nil)
-
-// SetLocale sets the locale for the use case
-func (uc *GetResetPasswordSendEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
+	usecase.BaseUseCaseValidation[bool, bool]
+	log contractsproviders.ILoggerProvider
 }
 
 // Execute sends a reset password email to the user
@@ -37,7 +27,8 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx *app_context.AppContext,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}
@@ -79,8 +70,8 @@ func (uc *GetResetPasswordSendEmailUseCase) sendResetPasswordEmail(
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
@@ -91,23 +82,22 @@ func (uc *GetResetPasswordSendEmailUseCase) setSuccessResult(result *usecase.Use
 	result.SetData(
 		status.Success,
 		true,
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY,
 		),
 	)
 }
 
 func (uc *GetResetPasswordSendEmailUseCase) Validate(
-	ctx *app_context.AppContext,
 	input bool,
 	result *usecase.UseCaseResult[bool],
 ) {
-	if ctx.OneTimeToken == nil || !input || ctx.OneTimeToken.User.Email == "" {
+	if uc.AppContext.OneTimeToken == nil || !input || uc.AppContext.OneTimeToken.User.Email == "" {
 		result.SetError(
 			status.InvalidInput,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_DATA,
 			),
 		)
@@ -118,7 +108,10 @@ func NewGetResetPasswordSendEmailUseCase(
 	log contractsproviders.ILoggerProvider,
 ) *GetResetPasswordSendEmailUseCase {
 	return &GetResetPasswordSendEmailUseCase{
-		appMessages: locales.NewLocale(locales.EN_US),
-		log:         log,
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[bool, bool]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
+		log: log,
 	}
 }

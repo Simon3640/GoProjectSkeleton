@@ -29,6 +29,8 @@ func (uc *UCStringToInt) Execute(_ *app_context.AppContext, _ locales.LocaleType
 	return result
 }
 
+func (uc *UCStringToInt) SetAppContext(_ *app_context.AppContext) {}
+
 var _ BaseUseCase[string, int] = (*UCStringToInt)(nil)
 
 type UCIntExponent struct{}
@@ -40,6 +42,8 @@ func (uc *UCIntExponent) Execute(_ *app_context.AppContext, _ locales.LocaleType
 	return result
 }
 
+func (uc *UCIntExponent) SetAppContext(_ *app_context.AppContext) {}
+
 type UCIntToString struct{}
 
 func (uc *UCIntToString) SetLocale(_ locales.LocaleTypeEnum) {}
@@ -48,6 +52,8 @@ func (uc *UCIntToString) Execute(_ *app_context.AppContext, _ locales.LocaleType
 	result.SetData(status.Success, strconv.Itoa(input), "Converted int to string")
 	return result
 }
+
+func (uc *UCIntToString) SetAppContext(_ *app_context.AppContext) {}
 
 // Use case para pruebas de background tasks con int
 type UCLogBackgroundInt struct {
@@ -85,6 +91,8 @@ func (uc *UCLogBackgroundInt) Reset() {
 	uc.logged = []int{}
 	uc.executed = false
 }
+
+func (uc *UCLogBackgroundInt) SetAppContext(_ *app_context.AppContext) {}
 
 var _ BaseUseCase[int, int] = (*UCLogBackgroundInt)(nil)
 
@@ -124,6 +132,8 @@ func (uc *UCLogBackgroundString) Reset() {
 	uc.logged = []string{}
 	uc.executed = false
 }
+
+func (uc *UCLogBackgroundString) SetAppContext(_ *app_context.AppContext) {}
 
 var _ BaseUseCase[string, string] = (*UCLogBackgroundString)(nil)
 

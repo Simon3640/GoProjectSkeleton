@@ -18,9 +18,8 @@ import (
 
 // CreateUserSendEmailUseCase is a use case that sends an email to a user
 type CreateUserSendEmailUseCase struct {
-	appMessages *locales.Locale
-	log         contractsproviders.ILoggerProvider
-	locale      locales.LocaleTypeEnum
+	usecase.BaseUseCaseValidation[models.User, models.User]
+	log contractsproviders.ILoggerProvider
 
 	hashProvider contractsproviders.IHashProvider
 
@@ -29,13 +28,6 @@ type CreateUserSendEmailUseCase struct {
 
 var _ usecase.BaseUseCase[models.User, models.User] = (*CreateUserSendEmailUseCase)(nil)
 
-// SetLocale sets the locale for the use case
-func (uc *CreateUserSendEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
-
 // Execute executes the use case
 func (uc *CreateUserSendEmailUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
@@ -43,7 +35,7 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx *app_context.AppContext,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
-
+	uc.SetAppContext(ctx)
 	token := uc.createOneTimeToken(input, result)
 	if result.HasError() {
 		return result
@@ -57,8 +49,8 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx *app_context.AppContext,
 	result.SetData(
 		status.Success,
 		input,
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.USER_WAS_CREATED,
 		),
 	)
@@ -78,8 +70,8 @@ func (uc *CreateUserSendEmailUseCase) createOneTimeToken(input models.User, resu
 		uc.log.Error("Error creating one time token", err.ToError())
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
@@ -101,15 +93,15 @@ func (uc *CreateUserSendEmailUseCase) sendWelcomeEmail(input models.User, token 
 	if err := emailservice.RegisterUserEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
 		input.Email,
-		uc.locale,
+		uc.Locale,
 		templates.TemplateKeysInstance.WelcomeEmail,
 		emailservice.SubjectKeysInstance.WelcomeEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
@@ -123,7 +115,10 @@ func NewCreateUserSendEmailUseCase(
 	tokenRepo contractsrepositories.IOneTimeTokenRepository,
 ) *CreateUserSendEmailUseCase {
 	return &CreateUserSendEmailUseCase{
-		appMessages:  locales.NewLocale(locales.EN_US),
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[models.User, models.User]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
 		log:          log,
 		hashProvider: hashProvider,
 		tokenRepo:    tokenRepo,

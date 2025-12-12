@@ -26,9 +26,8 @@ import (
 
 // AuthenticateUseCase is the use case for the authentication of a user
 type AuthenticateUseCase struct {
-	appMessages *locales.Locale
-	log         contractproviders.ILoggerProvider
-	locale      locales.LocaleTypeEnum
+	usecase.BaseUseCaseValidation[dtos.UserCredentials, dtos.Token]
+	log contractproviders.ILoggerProvider
 
 	pass     authcontracts.IPasswordRepository
 	userRepo authcontracts.IUserRepository
@@ -41,13 +40,6 @@ type AuthenticateUseCase struct {
 
 var _ usecase.BaseUseCase[dtos.UserCredentials, dtos.Token] = (*AuthenticateUseCase)(nil)
 
-// SetLocale set the locale for the use case
-func (uc *AuthenticateUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
-
 // Execute execute the use case
 func (uc *AuthenticateUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
@@ -55,8 +47,8 @@ func (uc *AuthenticateUseCase) Execute(ctx *app_context.AppContext,
 ) *usecase.UseCaseResult[dtos.Token] {
 	result := usecase.NewUseCaseResult[dtos.Token]()
 	uc.SetLocale(locale)
-
-	uc.validateInput(result, input)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}
@@ -122,8 +114,8 @@ func (uc *AuthenticateUseCase) checkRateLimitAndSetError(result *usecase.UseCase
 	if exceeded {
 		result.SetError(
 			status.TooManyRequests,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.LoginMaxAttemptsExceeded,
 			),
 		)
@@ -139,8 +131,8 @@ func (uc *AuthenticateUseCase) getPassword(result *usecase.UseCaseResult[dtos.To
 		}
 		result.SetError(
 			status.NotFound,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
 			),
 		)
@@ -157,8 +149,8 @@ func (uc *AuthenticateUseCase) getUser(result *usecase.UseCaseResult[dtos.Token]
 		}
 		result.SetError(
 			status.NotFound,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
 			),
 		)
@@ -175,8 +167,8 @@ func (uc *AuthenticateUseCase) validatePassword(result *usecase.UseCaseResult[dt
 		}
 		result.SetError(
 			status.NotFound,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
 			),
 		)
@@ -190,8 +182,8 @@ func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos
 		uc.log.Error("Error creating OTP", err.ToError())
 		result.SetError(
 			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
@@ -209,15 +201,15 @@ func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos
 	if err := emailservices.OneTimePasswordEmailServiceInstance.SendWithTemplate(
 		otpEmailData,
 		user.Email,
-		uc.locale,
+		uc.Locale,
 		templates.TemplateKeysInstance.OTPEmail,
 		emailservices.SubjectKeysInstance.OTPEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
@@ -225,8 +217,8 @@ func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos
 	}
 
 	result.SetSuccess(true)
-	result.SetDetails(uc.appMessages.Get(
-		uc.locale,
+	result.SetDetails(uc.AppMessages.Get(
+		uc.Locale,
 		messages.MessageKeysInstance.OTP_LOGIN_ENABLED,
 	))
 }
@@ -240,8 +232,8 @@ func (uc *AuthenticateUseCase) generateTokens(ctx *app_context.AppContext, resul
 	if err != nil {
 		result.SetError(
 			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
@@ -252,8 +244,8 @@ func (uc *AuthenticateUseCase) generateTokens(ctx *app_context.AppContext, resul
 	if err != nil {
 		result.SetError(
 			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
@@ -273,8 +265,8 @@ func (uc *AuthenticateUseCase) setSuccessResult(result *usecase.UseCaseResult[dt
 	result.SetData(
 		status.Success,
 		token,
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.AUTHORIZATION_GENERATED,
 		),
 	)
@@ -284,11 +276,11 @@ func (uc *AuthenticateUseCase) validate(input dtos.UserCredentials) (bool, []str
 	// Validate the input data
 	var validationErrors []string
 	if input.Email == "" {
-		validationErrors = append(validationErrors, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.SOME_PARAMETERS_ARE_MISSING))
+		validationErrors = append(validationErrors, uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.SOME_PARAMETERS_ARE_MISSING))
 	}
 	// regex for email validation
 	if !regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`).MatchString(input.Email) {
-		validationErrors = append(validationErrors, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.INVALID_EMAIL))
+		validationErrors = append(validationErrors, uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.INVALID_EMAIL))
 	}
 
 	return len(validationErrors) == 0, validationErrors
@@ -356,7 +348,10 @@ func NewAuthenticateUseCase(
 	cacheProvider contractproviders.ICacheProvider,
 ) *AuthenticateUseCase {
 	return &AuthenticateUseCase{
-		appMessages:   locales.NewLocale(locales.EN_US),
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[dtos.UserCredentials, dtos.Token]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
 		log:           log,
 		pass:          pass,
 		userRepo:      userRepo,
