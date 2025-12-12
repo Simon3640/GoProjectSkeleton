@@ -1,19 +1,22 @@
+// Package setups contains the setup functions for the database models
 package setups
 
 import (
 	"fmt"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
+	dbmodels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
+	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
 
 	"gorm.io/gorm"
 )
 
-type SetupBase[CreateModel any, UpdateModel any, Model any, DBModel dbModels.DBModel] struct {
+// SetupBase is the abstract base setup struct for the database models
+type SetupBase[CreateModel any, UpdateModel any, Model any, DBModel dbmodels.DBModel] struct {
 	modelConverter repositories.ModelConverter[CreateModel, UpdateModel, Model, DBModel]
 }
 
+// Setup sets up the database models
 func (s *SetupBase[CreateModel, UpdateModel, Model, DBModel]) Setup(db *gorm.DB,
 	dbModel DBModel,
 	defaults *[]CreateModel,

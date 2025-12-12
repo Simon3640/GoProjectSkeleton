@@ -6,9 +6,9 @@ import (
 
 	passworddtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	usecases_password "github.com/simon3640/goprojectskeleton/src/application/modules/password/use_cases"
-	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
+	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 )
 
 // CreatePassword

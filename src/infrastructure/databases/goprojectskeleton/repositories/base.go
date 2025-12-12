@@ -1,3 +1,4 @@
+// Package repositories contains the base repository for the database models
 package repositories
 
 import (
@@ -11,6 +12,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// RepositoryBase is the abstract base repository for the database models
+// It contains the database connection, the logger and the model converter
+// It implements the IRepositoryBase interface
 type RepositoryBase[CreateModel any, UpdateModel any, Model any, DBModel any] struct {
 	DB             *gorm.DB
 	logger         contractsProviders.ILoggerProvider
@@ -30,6 +34,7 @@ func SetUpRepositoryBase[CreateModel, UpdateModel, Model, DBModel any](db *gorm.
 
 var _ contracts_repositories.IRepositoryBase[any, any, any, any] = (*RepositoryBase[any, any, any, any])(nil)
 
+// FilterToGorm converts a filter to a GORM filter
 func FilterToGorm(f domain_utils.Filter) (string, []interface{}, error) {
 	switch f.Operator {
 	case domain_utils.OperatorEqual:
@@ -61,6 +66,7 @@ func FilterToGorm(f domain_utils.Filter) (string, []interface{}, error) {
 	}
 }
 
+// SortToGorm converts a sort to a GORM sort
 func SortToGorm(s domain_utils.Sort) string {
 	switch s.Field {
 	case "CreatedAt":
@@ -74,6 +80,7 @@ func SortToGorm(s domain_utils.Sort) string {
 	}
 }
 
+// Create creates a new entity
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Create(entity CreateModel) (*Model, *application_errors.ApplicationError) {
 	// Convertir a modelo de GORM
 	_entity := rb.modelConverter.ToGormCreate(entity)
@@ -87,6 +94,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Create(entit
 	return rb.modelConverter.ToDomain(_entity), nil
 }
 
+// GetByID retrieves an entity by its ID
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetByID(id uint) (*Model, *application_errors.ApplicationError) {
 	var entity DBModel
 	if err := rb.DB.First(&entity, id).Error; err != nil {
@@ -98,6 +106,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetByID(id u
 	return rb.modelConverter.ToDomain(&entity), nil
 }
 
+// Update updates an entity
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id uint, entity UpdateModel) (*Model, *application_errors.ApplicationError) {
 	updateData := rb.modelConverter.ToGormUpdate(entity)
 
@@ -111,6 +120,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Update(id ui
 	return updatedEntity, nil
 }
 
+// SoftDelete soft deletes an entity
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) SoftDelete(id uint) *application_errors.ApplicationError {
 	if err := rb.DB.Delete(new(DBModel), id).Error; err != nil {
 		appErr := MapOrmError(err)
@@ -120,6 +130,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) SoftDelete(i
 	return nil
 }
 
+// Delete hard deletes an entity
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id uint) *application_errors.ApplicationError {
 	if err := rb.DB.Unscoped().Delete(new(DBModel), id).Error; err != nil {
 		appErr := MapOrmError(err)
@@ -129,6 +140,7 @@ func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) Delete(id ui
 	return nil
 }
 
+// GetAll retrieves all entities
 func (rb *RepositoryBase[CreateModel, UpdateModel, Model, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[Model], skip, limit int) ([]Model, int64, *application_errors.ApplicationError) {
 	var entities []DBModel
 	// Apply filters from payload

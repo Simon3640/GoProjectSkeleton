@@ -7,9 +7,9 @@ import (
 	authdtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	authpipes "github.com/simon3640/goprojectskeleton/src/application/modules/auth/pipes"
 	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
-	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
+	repositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 )
 
 // access-token

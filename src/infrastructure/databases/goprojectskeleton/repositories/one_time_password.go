@@ -3,22 +3,24 @@ package repositories
 import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
+	authdtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
-	dbModels "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton/models"
+	dbmodels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
 
 	"gorm.io/gorm"
 )
 
+// OneTimePasswordRepository is the repository for the one time password model
 type OneTimePasswordRepository struct {
-	RepositoryBase[dtos.OneTimePasswordCreate, dtos.OneTimePasswordUpdate, models.OneTimePassword, dbModels.OneTimePassword]
+	RepositoryBase[authdtos.OneTimePasswordCreate, authdtos.OneTimePasswordUpdate, models.OneTimePassword, dbmodels.OneTimePassword]
 }
 
 var _ authcontracts.IOneTimePasswordRepository = (*OneTimePasswordRepository)(nil)
 
+// GetByPasswordHash retrieves a one time password by its hash
 func (or *OneTimePasswordRepository) GetByPasswordHash(tokenHash []byte) (*models.OneTimePassword, *application_errors.ApplicationError) {
-	var ormModel dbModels.OneTimePassword
+	var ormModel dbmodels.OneTimePassword
 
 	if err := or.DB.Where("hash = ?", tokenHash).First(&ormModel).Error; err != nil {
 		or.logger.Debug("Error fetching one-time token by hash", err)
@@ -27,12 +29,14 @@ func (or *OneTimePasswordRepository) GetByPasswordHash(tokenHash []byte) (*model
 	return or.modelConverter.ToDomain(&ormModel), nil
 }
 
+// OneTimePasswordConverter is the converter for the one time password model
 type OneTimePasswordConverter struct{}
 
-var _ ModelConverter[dtos.OneTimePasswordCreate, dtos.OneTimePasswordUpdate, models.OneTimePassword, dbModels.OneTimePassword] = (*OneTimePasswordConverter)(nil)
+var _ ModelConverter[authdtos.OneTimePasswordCreate, authdtos.OneTimePasswordUpdate, models.OneTimePassword, dbmodels.OneTimePassword] = (*OneTimePasswordConverter)(nil)
 
-func (uc *OneTimePasswordConverter) ToGormCreate(model dtos.OneTimePasswordCreate) *dbModels.OneTimePassword {
-	return &dbModels.OneTimePassword{
+// ToGormCreate converts a one time password create model to a one time password gorm model
+func (uc *OneTimePasswordConverter) ToGormCreate(model authdtos.OneTimePasswordCreate) *dbmodels.OneTimePassword {
+	return &dbmodels.OneTimePassword{
 		Purpose: string(model.Purpose),
 		Hash:    model.Hash,
 		UserID:  model.UserID,
@@ -41,7 +45,8 @@ func (uc *OneTimePasswordConverter) ToGormCreate(model dtos.OneTimePasswordCreat
 	}
 }
 
-func (uc *OneTimePasswordConverter) ToDomain(ormModel *dbModels.OneTimePassword) *models.OneTimePassword {
+// ToDomain converts a one time password gorm model to a one time password domain model
+func (uc *OneTimePasswordConverter) ToDomain(ormModel *dbmodels.OneTimePassword) *models.OneTimePassword {
 	return &models.OneTimePassword{
 		DBBaseModel: models.DBBaseModel{
 			ID:        ormModel.ID,
@@ -59,21 +64,23 @@ func (uc *OneTimePasswordConverter) ToDomain(ormModel *dbModels.OneTimePassword)
 	}
 }
 
-func (uc *OneTimePasswordConverter) ToGormUpdate(model dtos.OneTimePasswordUpdate) *dbModels.OneTimePassword {
-	OneTimePassword := &dbModels.OneTimePassword{}
+// ToGormUpdate converts a one time password update model to a one time password gorm model
+func (uc *OneTimePasswordConverter) ToGormUpdate(model authdtos.OneTimePasswordUpdate) *dbmodels.OneTimePassword {
+	OneTimePassword := &dbmodels.OneTimePassword{}
 
 	OneTimePassword.IsUsed = model.IsUsed
 	OneTimePassword.ID = model.ID
 	return OneTimePassword
 }
 
+// NewOneTimePasswordRepository creates a new one time password repository
 func NewOneTimePasswordRepository(db *gorm.DB, logger contractsProviders.ILoggerProvider) *OneTimePasswordRepository {
 	return &OneTimePasswordRepository{
 		RepositoryBase: RepositoryBase[
-			dtos.OneTimePasswordCreate,
-			dtos.OneTimePasswordUpdate,
+			authdtos.OneTimePasswordCreate,
+			authdtos.OneTimePasswordUpdate,
 			models.OneTimePassword,
-			dbModels.OneTimePassword,
+			dbmodels.OneTimePassword,
 		]{DB: db, modelConverter: &OneTimePasswordConverter{}, logger: logger},
 	}
 }
