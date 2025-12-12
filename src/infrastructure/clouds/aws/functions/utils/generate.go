@@ -11,10 +11,13 @@ import (
 
 // TemplateData holds data for template generation
 type TemplateData struct {
-	HandlerName  string
-	NeedsAuth    bool
-	ModulePath   string
-	FunctionPath string
+	HandlerName        string
+	HandlerPackage     string
+	HandlerPackagePath string
+	NeedsAuth          bool
+	InitFunction       string
+	ModulePath         string
+	FunctionPath       string
 }
 
 const templatesDir = "templates"
@@ -63,11 +66,15 @@ func GenerateFunction(fn FunctionConfig) error {
 	}
 
 	// Prepare template data
+	handlerPackage := GetHandlerPackage(fn.Handler)
 	data := TemplateData{
-		HandlerName:  fn.Handler,
-		NeedsAuth:    fn.NeedsAuth,
-		ModulePath:   modulePath,
-		FunctionPath: fn.Path,
+		HandlerName:        fn.Handler,
+		HandlerPackage:     handlerPackage,
+		HandlerPackagePath: GetHandlerPackagePath(handlerPackage),
+		NeedsAuth:          fn.NeedsAuth,
+		InitFunction:       GetInitFunction(fn.Handler),
+		ModulePath:         modulePath,
+		FunctionPath:       fn.Path,
 	}
 
 	// Generate main.go
