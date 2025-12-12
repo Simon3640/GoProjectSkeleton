@@ -17,9 +17,10 @@ func NewStep[I any, O any](uc BaseUseCase[I, O]) DagStep[I, O] {
 }
 
 type DAG[I any, O any] struct {
-	run    func(I) *UseCaseResult[O]
-	ctx    context.Context
-	locale locales.LocaleTypeEnum
+	run            func(I) *UseCaseResult[O]
+	ctx            context.Context
+	locale         locales.LocaleTypeEnum
+	backgroundRuns []func(O) // Funciones que se ejecutan en background
 }
 
 func NewDag[I any, O any](first DagStep[I, O], locale locales.LocaleTypeEnum, ctx context.Context) *DAG[I, O] {
@@ -31,8 +32,9 @@ func NewDag[I any, O any](first DagStep[I, O], locale locales.LocaleTypeEnum, ct
 				input,
 			)
 		},
-		ctx:    ctx,
-		locale: locale,
+		ctx:            ctx,
+		locale:         locale,
+		backgroundRuns: []func(O){},
 	}
 }
 
@@ -55,14 +57,94 @@ func Then[I any, O any, P any](d *DAG[I, O], next DagStep[O, P]) *DAG[I, P] {
 				*r1.Data,
 			)
 		},
+		ctx:            d.ctx,
+		locale:         d.locale,
+		backgroundRuns: []func(P){}, // Reset background runs cuando cambia el tipo de salida
 	}
 }
 
+// ThenBackground agrega un paso que se ejecutará en background después de que se retorne la respuesta.
+// El resultado del paso anterior se retorna inmediatamente, y el siguiente paso se ejecuta en background.
+// Útil para operaciones como envío de emails, notificaciones, etc.
+//
+// Ejemplo:
+//
+//	dag := NewDag(NewStep(createUserUC), locale, ctx)
+//	dag = ThenBackground(dag, NewStep(sendEmailUC))
+//	result := dag.Execute(input) // Retorna inmediatamente, sendEmailUC se ejecuta en background
+func ThenBackground[I any, O any, P any](d *DAG[I, O], next DagStep[O, P]) *DAG[I, O] {
+	// Guardar la función de ejecución en background
+	backgroundRun := func(output O) {
+		// Ejecutar el siguiente use case en background
+		next.uc.Execute(
+			d.ctx,
+			d.locale,
+			output,
+		)
+		// Nota: Los errores en background se pueden loggear pero no afectan la respuesta
+	}
+
+	return &DAG[I, O]{
+		run: func(input I) *UseCaseResult[O] {
+			// Ejecutar hasta el breakpoint
+			result := d.run(input)
+
+			// Si hay error, no ejecutar background
+			if result.HasError() {
+				return result
+			}
+
+			// Ejecutar tareas en background de forma asíncrona
+			go func() {
+				// Ejecutar todas las tareas en background acumuladas
+				for _, bgRun := range d.backgroundRuns {
+					bgRun(*result.Data)
+				}
+				// Ejecutar la nueva tarea en background
+				backgroundRun(*result.Data)
+			}()
+
+			// Retornar inmediatamente sin esperar las tareas en background
+			return result
+		},
+		ctx:            d.ctx,
+		locale:         d.locale,
+		backgroundRuns: append(d.backgroundRuns, backgroundRun),
+	}
+}
+
+// Execute ejecuta el DAG y retorna el resultado inmediatamente.
+// Si hay tareas en background, se ejecutan de forma asíncrona.
 func (d *DAG[I, O]) Execute(input I) *UseCaseResult[O] {
 	if d.run == nil {
 		return nil
 	}
 	return d.run(input)
+}
+
+// ExecuteWithBackground ejecuta el DAG y espera a que todas las tareas en background terminen.
+// Útil para testing o cuando necesitas asegurar que las tareas en background se completaron.
+func (d *DAG[I, O]) ExecuteWithBackground(input I) *UseCaseResult[O] {
+	if d.run == nil {
+		return nil
+	}
+
+	result := d.run(input)
+
+	// Si hay tareas en background, esperarlas
+	if len(d.backgroundRuns) > 0 && result.Data != nil && !result.HasError() {
+		var wg sync.WaitGroup
+		for _, bgRun := range d.backgroundRuns {
+			wg.Add(1)
+			go func(bg func(O)) {
+				defer wg.Done()
+				bg(*result.Data)
+			}(bgRun)
+		}
+		wg.Wait()
+	}
+
+	return result
 }
 
 type UseCaseParallelDag[I any, O any] struct {
