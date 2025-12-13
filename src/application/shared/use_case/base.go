@@ -9,6 +9,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 )
 
+// BaseUseCase is the base interface for all use cases
 type BaseUseCase[Input any, Output any] interface {
 	SetLocale(locale locales.LocaleTypeEnum)
 	Execute(appContext *app_context.AppContext,
@@ -18,6 +19,9 @@ type BaseUseCase[Input any, Output any] interface {
 	SetAppContext(appContext *app_context.AppContext)
 }
 
+// BaseUseCaseValidation is the base struct for all use cases with validation
+// Abstracts the validation logic from the use case implementation
+// Abstracts the guards logic from the use case implementation
 type BaseUseCaseValidation[Input any, Output any] struct {
 	Guards      Guards
 	AppMessages *locales.Locale
@@ -25,6 +29,7 @@ type BaseUseCaseValidation[Input any, Output any] struct {
 	AppContext  *app_context.AppContext
 }
 
+// SetAppContext sets the app context for the use case
 func (v *BaseUseCaseValidation[Input, Output]) SetAppContext(appContext *app_context.AppContext) {
 	if appContext != nil {
 		v.AppContext = appContext
@@ -33,6 +38,7 @@ func (v *BaseUseCaseValidation[Input, Output]) SetAppContext(appContext *app_con
 	}
 }
 
+// SetLocale sets the locale for the use case
 func (v *BaseUseCaseValidation[Input, Output]) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		v.Locale = locale
@@ -41,6 +47,12 @@ func (v *BaseUseCaseValidation[Input, Output]) SetLocale(locale locales.LocaleTy
 	}
 }
 
+// Validate validates the input for the use case
+// - If the input has the method Validate then call it
+// - If the guards are empty then return
+// - If the guards are not empty then set the actor and validate the input
+// - If the input is invalid then set the error and return
+// - If the input is valid then return
 func (v *BaseUseCaseValidation[Input, Output]) Validate(
 	input Input,
 	result *UseCaseResult[Output],
