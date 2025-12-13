@@ -1,13 +1,13 @@
 package userusecases
 
 import (
-	"context"
 	"time"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
@@ -29,22 +29,16 @@ type GetAllUserUseCase struct {
 
 var _ usecase.BaseUseCase[domainutils.QueryPayloadBuilder[models.User], userdtos.UserMultiResponse] = (*GetAllUserUseCase)(nil)
 
-// SetLocale sets the locale for the use case
-func (uc *GetAllUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.Locale = locale
-	}
-}
-
 // Execute executes the use case
 func (uc *GetAllUserUseCase) Execute(
-	ctx context.Context,
+	ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input domainutils.QueryPayloadBuilder[models.User],
 ) *usecase.UseCaseResult[userdtos.UserMultiResponse] {
 	result := usecase.NewUseCaseResult[userdtos.UserMultiResponse]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}

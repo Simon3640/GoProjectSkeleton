@@ -1,9 +1,13 @@
 package infrastructure
 
 import (
+	"context"
+
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	services "github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	settings "github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
 	config "github.com/simon3640/goprojectskeleton/src/infrastructure/config"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	initdb "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/init_db"
@@ -80,5 +84,17 @@ func Initialize() *application_errors.ApplicationError {
 		providers.RenderOTPEmailInstance,
 		providers.EmailProviderInstance,
 	)
+
+	// Initialize Background Executor
+	ctx := context.Background()
+	workers.InitializeBackgroundExecutor(
+		ctx,
+		settings.AppSettingsInstance.BackgroundWorkers,
+		settings.AppSettingsInstance.BackgroundQueueSize,
+	)
+
+	// Initialize Background Service Factory
+	services.InitializeBackgroundServiceFactory()
+
 	return nil
 }

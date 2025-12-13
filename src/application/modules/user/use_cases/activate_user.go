@@ -1,13 +1,13 @@
 package userusecases
 
 import (
-	"context"
 	"time"
 
 	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	contractrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -27,21 +27,15 @@ type ActivateUserUseCase struct {
 
 var _ usecase.BaseUseCase[userdtos.UserActivate, bool] = (*ActivateUserUseCase)(nil)
 
-// SetLocale sets the locale for the use case
-func (uc *ActivateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.Locale = locale
-	}
-}
-
 // Execute executes the use case
-func (uc *ActivateUserUseCase) Execute(ctx context.Context,
+func (uc *ActivateUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input userdtos.UserActivate,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}

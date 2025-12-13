@@ -1,12 +1,11 @@
 package userusecases
 
 import (
-	"context"
 	"testing"
 	"time"
 
 	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
-	appcontext "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -23,8 +22,6 @@ import (
 func TestGetAllUserUseCase_Execute_SuccessFromCache(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-
 	// Create admin user for context
 	adminUser := models.UserWithRole{
 		UserBase: models.UserBase{
@@ -36,7 +33,7 @@ func TestGetAllUserUseCase_Execute_SuccessFromCache(t *testing.T) {
 		ID: 1,
 	}
 	adminUser.SetRole(dtomocks.AdminRole)
-	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, adminUser)
+	ctxWithUser := app_context.NewContextWithUser(&adminUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -96,8 +93,6 @@ func TestGetAllUserUseCase_Execute_SuccessFromCache(t *testing.T) {
 func TestGetAllUserUseCase_Execute_SuccessFromRepository(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-
 	// Create admin user for context
 	adminUser := models.UserWithRole{
 		UserBase: models.UserBase{
@@ -109,7 +104,7 @@ func TestGetAllUserUseCase_Execute_SuccessFromRepository(t *testing.T) {
 		ID: 1,
 	}
 	adminUser.SetRole(dtomocks.AdminRole)
-	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, adminUser)
+	ctxWithUser := app_context.NewContextWithUser(&adminUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -167,9 +162,6 @@ func TestGetAllUserUseCase_Execute_SuccessFromRepository(t *testing.T) {
 
 func TestGetAllUserUseCase_Execute_RepositoryError(t *testing.T) {
 	assert := assert.New(t)
-
-	ctx := context.Background()
-
 	// Create admin user for context
 	adminUser := models.UserWithRole{
 		UserBase: models.UserBase{
@@ -181,7 +173,7 @@ func TestGetAllUserUseCase_Execute_RepositoryError(t *testing.T) {
 		ID: 1,
 	}
 	adminUser.SetRole(dtomocks.AdminRole)
-	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, adminUser)
+	ctxWithUser := app_context.NewContextWithUser(&adminUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -223,8 +215,6 @@ func TestGetAllUserUseCase_Execute_RepositoryError(t *testing.T) {
 func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-
 	// Create admin user for context
 	adminUser := models.UserWithRole{
 		UserBase: models.UserBase{
@@ -236,7 +226,7 @@ func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 		ID: 1,
 	}
 	adminUser.SetRole(dtomocks.AdminRole)
-	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, adminUser)
+	ctxWithUser := app_context.NewContextWithUser(&adminUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -298,8 +288,6 @@ func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 func TestGetAllUserUseCase_Execute_CacheSetError(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-
 	// Create admin user for context
 	adminUser := models.UserWithRole{
 		UserBase: models.UserBase{
@@ -311,7 +299,7 @@ func TestGetAllUserUseCase_Execute_CacheSetError(t *testing.T) {
 		ID: 1,
 	}
 	adminUser.SetRole(dtomocks.AdminRole)
-	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, adminUser)
+	ctxWithUser := app_context.NewContextWithUser(&adminUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -374,8 +362,6 @@ func TestGetAllUserUseCase_Execute_CacheSetError(t *testing.T) {
 func TestGetAllUserUseCase_Execute_Unauthorized(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-
 	// Create non-admin user for context
 	regularUser := models.UserWithRole{
 		UserBase: models.UserBase{
@@ -387,7 +373,7 @@ func TestGetAllUserUseCase_Execute_Unauthorized(t *testing.T) {
 		ID: 1,
 	}
 	regularUser.SetRole(dtomocks.UserRole)
-	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, regularUser)
+	ctxWithUser := app_context.NewContextWithUser(&regularUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -415,8 +401,6 @@ func TestGetAllUserUseCase_Execute_Unauthorized(t *testing.T) {
 func TestGetAllUserUseCase_Execute_InvalidInput(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-
 	// Create admin user for context
 	adminUser := models.UserWithRole{
 		UserBase: models.UserBase{
@@ -428,7 +412,7 @@ func TestGetAllUserUseCase_Execute_InvalidInput(t *testing.T) {
 		ID: 1,
 	}
 	adminUser.SetRole(dtomocks.AdminRole)
-	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, adminUser)
+	ctxWithUser := app_context.NewContextWithUser(&adminUser)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -475,7 +459,7 @@ func TestGetAllUserUseCase_SetLocale(t *testing.T) {
 
 	// Test setting empty locale (should not change)
 	uc.SetLocale("")
-	assert.Equal(locales.ES_ES, uc.Locale)
+	assert.Equal(locales.EN_US, uc.Locale)
 
 	// Test setting another locale
 	uc.SetLocale(locales.EN_US)

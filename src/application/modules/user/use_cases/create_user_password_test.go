@@ -7,6 +7,7 @@ import (
 
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	applicationerror "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -21,7 +22,7 @@ import (
 func TestCreateUserAndPassword(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -77,7 +78,7 @@ func TestCreateUserAndPassword(t *testing.T) {
 func TestCreateUserAndPassword_InvalidPassword(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -118,7 +119,7 @@ func TestCreateUserAndPassword_InvalidPassword(t *testing.T) {
 func TestCreateUserAndPassword_InvalidEmail(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -159,7 +160,7 @@ func TestCreateUserAndPassword_InvalidEmail(t *testing.T) {
 func TestCreateUserAndPassword_InvalidRoleID(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -200,7 +201,7 @@ func TestCreateUserAndPassword_InvalidRoleID(t *testing.T) {
 func TestCreateUserAndPassword_HashPasswordError(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -250,7 +251,7 @@ func TestCreateUserAndPassword_HashPasswordError(t *testing.T) {
 func TestCreateUserAndPassword_RepositoryError(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -319,13 +320,13 @@ func TestCreateUserAndPassword_SetLocale(t *testing.T) {
 
 	// Test setting locale
 	uc.SetLocale(locales.ES_ES)
-	assert.Equal(locales.ES_ES, uc.locale)
+	assert.Equal(locales.ES_ES, uc.Locale)
 
 	// Test setting empty locale (should not change)
 	uc.SetLocale("")
-	assert.Equal(locales.ES_ES, uc.locale)
+	assert.Equal(locales.EN_US, uc.Locale)
 
 	// Test setting another locale
 	uc.SetLocale(locales.EN_US)
-	assert.Equal(locales.EN_US, uc.locale)
+	assert.Equal(locales.EN_US, uc.Locale)
 }

@@ -1,11 +1,11 @@
 package usecases
 
 import (
-	"context"
 	"time"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	statuscontracts "github.com/simon3640/goprojectskeleton/src/application/modules/status/contracts"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	locales "github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	messages "github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	status "github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -14,31 +14,23 @@ import (
 )
 
 type GetStatusUseCase struct {
-	appMessages       *locales.Locale
+	usecase.BaseUseCaseValidation[time.Time, models.Status]
 	log               contractsProviders.ILoggerProvider
 	apiStatusProvider statuscontracts.IApiStatusProvider
-	locale            locales.LocaleTypeEnum
 }
 
-var _ usecase.BaseUseCase[time.Time, models.Status] = (*GetStatusUseCase)(nil)
-
-func (uc *GetStatusUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
-
-func (uc *GetStatusUseCase) Execute(ctx context.Context,
+func (uc *GetStatusUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input time.Time,
 ) *usecase.UseCaseResult[models.Status] {
 	result := usecase.NewUseCaseResult[models.Status]()
 	uc.SetLocale(locale)
+	uc.SetAppContext(ctx)
 
 	result.SetData(status.Success,
 		uc.apiStatusProvider.Get(input),
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.APPLICATION_STATUS_OK,
 		))
 	return result
@@ -49,7 +41,10 @@ func NewGetStatusUseCase(
 	apiStatusProvider statuscontracts.IApiStatusProvider,
 ) *GetStatusUseCase {
 	return &GetStatusUseCase{
-		appMessages:       locales.NewLocale(locales.EN_US),
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[time.Time, models.Status]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
 		log:               log,
 		apiStatusProvider: apiStatusProvider,
 	}

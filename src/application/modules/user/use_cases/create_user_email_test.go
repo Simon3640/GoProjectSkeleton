@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	applicationerror "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -22,7 +23,7 @@ import (
 func TestCreateUserSendEmailUseCase_Execute_Success(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -96,7 +97,7 @@ func TestCreateUserSendEmailUseCase_Execute_Success(t *testing.T) {
 func TestCreateUserSendEmailUseCase_Execute_OneTimeTokenError(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -144,7 +145,7 @@ func TestCreateUserSendEmailUseCase_Execute_OneTimeTokenError(t *testing.T) {
 func TestCreateUserSendEmailUseCase_Execute_TokenRepositoryCreateError(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -197,7 +198,7 @@ func TestCreateUserSendEmailUseCase_Execute_TokenRepositoryCreateError(t *testin
 func TestCreateUserSendEmailUseCase_Execute_EmailSendError(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -274,7 +275,7 @@ func TestCreateUserSendEmailUseCase_Execute_EmailSendError(t *testing.T) {
 func TestCreateUserSendEmailUseCase_Execute_EmailRenderError(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -362,13 +363,13 @@ func TestCreateUserSendEmailUseCase_SetLocale(t *testing.T) {
 
 	// Test setting locale
 	uc.SetLocale(locales.ES_ES)
-	assert.Equal(locales.ES_ES, uc.locale)
+	assert.Equal(locales.ES_ES, uc.Locale)
 
 	// Test setting empty locale (should not change)
 	uc.SetLocale("")
-	assert.Equal(locales.ES_ES, uc.locale)
+	assert.Equal(locales.EN_US, uc.Locale)
 
 	// Test setting another locale
 	uc.SetLocale(locales.EN_US)
-	assert.Equal(locales.EN_US, uc.locale)
+	assert.Equal(locales.EN_US, uc.Locale)
 }

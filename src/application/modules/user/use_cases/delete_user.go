@@ -1,10 +1,9 @@
 package userusecases
 
 import (
-	"context"
-
 	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -21,21 +20,15 @@ type DeleteUserUseCase struct {
 
 var _ usecase.BaseUseCase[uint, bool] = (*DeleteUserUseCase)(nil)
 
-// SetLocale sets the locale for the use case
-func (uc *DeleteUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.Locale = locale
-	}
-}
-
 // Execute executes the use case
-func (uc *DeleteUserUseCase) Execute(ctx context.Context,
+func (uc *DeleteUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input uint,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}

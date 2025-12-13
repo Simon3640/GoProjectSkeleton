@@ -6,6 +6,7 @@ import (
 	"time"
 
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -22,7 +23,7 @@ import (
 func TestGetResetPasswordSendEmailUseCase_Execute_Success(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
@@ -43,10 +44,10 @@ func TestGetResetPasswordSendEmailUseCase_Execute_Success(t *testing.T) {
 	}
 
 	token := "test-reset-token-123"
-	input := shareddtos.OneTimeTokenUser{
+	ctx.AddOneTimeTokenToContext(shareddtos.OneTimeTokenUser{
 		User:  testUser,
 		Token: token,
-	}
+	})
 
 	// Mock email service
 	mockRenderProvider.On("Render", mock.Anything, mock.Anything).Return("test-rendered-email", nil)
@@ -59,7 +60,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_Success(t *testing.T) {
 
 	uc := NewGetResetPasswordSendEmailUseCase(testLogger)
 
-	result := uc.Execute(ctx, locales.EN_US, input)
+	result := uc.Execute(ctx, locales.EN_US, true)
 
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())
@@ -73,7 +74,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_Success(t *testing.T) {
 func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
@@ -94,10 +95,11 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing
 	}
 
 	token := "test-reset-token-123"
-	input := shareddtos.OneTimeTokenUser{
+
+	ctx.AddOneTimeTokenToContext(shareddtos.OneTimeTokenUser{
 		User:  testUser,
 		Token: token,
-	}
+	})
 
 	appError := applicationerrors.NewApplicationError(
 		status.InternalError,
@@ -115,7 +117,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing
 
 	uc := NewGetResetPasswordSendEmailUseCase(testLogger)
 
-	result := uc.Execute(ctx, locales.EN_US, input)
+	result := uc.Execute(ctx, locales.EN_US, true)
 
 	assert.NotNil(result)
 	assert.True(result.HasError())
@@ -127,7 +129,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing
 func TestGetResetPasswordSendEmailUseCase_Execute_ErrorSendingEmail(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 	testLogger := new(providersmocks.MockLoggerProvider)
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
@@ -148,10 +150,11 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorSendingEmail(t *testing.T
 	}
 
 	token := "test-reset-token-123"
-	input := shareddtos.OneTimeTokenUser{
+
+	ctx.AddOneTimeTokenToContext(shareddtos.OneTimeTokenUser{
 		User:  testUser,
 		Token: token,
-	}
+	})
 
 	appError := applicationerrors.NewApplicationError(
 		status.ProviderError,
@@ -170,7 +173,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorSendingEmail(t *testing.T
 
 	uc := NewGetResetPasswordSendEmailUseCase(testLogger)
 
-	result := uc.Execute(ctx, locales.EN_US, input)
+	result := uc.Execute(ctx, locales.EN_US, true)
 
 	assert.NotNil(result)
 	assert.True(result.HasError())

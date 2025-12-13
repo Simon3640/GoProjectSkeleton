@@ -8,6 +8,7 @@ import (
 
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
@@ -19,7 +20,7 @@ import (
 
 func TestActivateUserUseCase(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)

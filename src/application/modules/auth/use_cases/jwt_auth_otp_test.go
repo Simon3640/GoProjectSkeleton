@@ -7,6 +7,7 @@ import (
 	"time"
 
 	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -18,7 +19,7 @@ import (
 
 func TestAuthenticateOTPUseCase_Valid(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(authmocks.MockUserRepository)
@@ -74,7 +75,7 @@ func TestAuthenticateOTPUseCase_Valid(t *testing.T) {
 
 func TestAuthenticateOTPUseCase_InvalidOTP(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(authmocks.MockUserRepository)

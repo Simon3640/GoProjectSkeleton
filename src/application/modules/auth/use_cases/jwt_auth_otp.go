@@ -7,6 +7,7 @@ import (
 	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -16,9 +17,8 @@ import (
 
 // AuthenticateOTPUseCase is the use case for authenticating a user with an OTP
 type AuthenticateOTPUseCase struct {
-	appMessages *locales.Locale
-	log         contractproviders.ILoggerProvider
-	locale      locales.LocaleTypeEnum
+	usecase.BaseUseCaseValidation[string, dtos.Token]
+	log contractproviders.ILoggerProvider
 
 	userRepo authcontracts.IUserRepository
 	otpRepo  authcontracts.IOneTimePasswordRepository
@@ -29,20 +29,14 @@ type AuthenticateOTPUseCase struct {
 
 var _ usecase.BaseUseCase[string, dtos.Token] = (*AuthenticateOTPUseCase)(nil)
 
-// SetLocale sets the locale for the use case
-func (uc *AuthenticateOTPUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
-
 // Execute authenticates a user with an OTP
-func (uc *AuthenticateOTPUseCase) Execute(ctx context.Context,
+func (uc *AuthenticateOTPUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input string,
 ) *usecase.UseCaseResult[dtos.Token] {
 	result := usecase.NewUseCaseResult[dtos.Token]()
 	uc.SetLocale(locale)
+	uc.SetAppContext(ctx)
 	uc.Validate(input, result)
 	if result.HasError() {
 		return result
@@ -79,8 +73,8 @@ func (uc *AuthenticateOTPUseCase) validateAndGetOTP(result *usecase.UseCaseResul
 	if err != nil {
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
@@ -90,8 +84,8 @@ func (uc *AuthenticateOTPUseCase) validateAndGetOTP(result *usecase.UseCaseResul
 	if oneTimePassword == nil || oneTimePassword.IsUsed || oneTimePassword.Expires.Before(time.Now()) {
 		result.SetError(
 			status.Unauthorized,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_OTP,
 			),
 		)
@@ -106,8 +100,8 @@ func (uc *AuthenticateOTPUseCase) getUser(result *usecase.UseCaseResult[dtos.Tok
 	if err != nil {
 		result.SetError(
 			status.NotFound,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
 			),
 		)
@@ -125,8 +119,8 @@ func (uc *AuthenticateOTPUseCase) generateTokens(ctx context.Context, result *us
 	if err != nil {
 		result.SetError(
 			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
@@ -137,8 +131,8 @@ func (uc *AuthenticateOTPUseCase) generateTokens(ctx context.Context, result *us
 	if err != nil {
 		result.SetError(
 			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
@@ -161,8 +155,8 @@ func (uc *AuthenticateOTPUseCase) markOTPAsUsed(result *usecase.UseCaseResult[dt
 		uc.log.Error("Error updating one time password as used", err.ToError())
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
@@ -174,8 +168,8 @@ func (uc *AuthenticateOTPUseCase) setSuccessResult(result *usecase.UseCaseResult
 	result.SetData(
 		status.Success,
 		token,
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.AUTHORIZATION_GENERATED,
 		),
 	)
@@ -185,8 +179,8 @@ func (uc *AuthenticateOTPUseCase) Validate(input string, result *usecase.UseCase
 	if input == "" {
 		result.SetError(
 			status.InvalidInput,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_DATA,
 			),
 		)
@@ -202,7 +196,10 @@ func NewAuthenticateOTPUseCase(
 	jwtProvider authcontracts.IJWTProvider,
 ) *AuthenticateOTPUseCase {
 	return &AuthenticateOTPUseCase{
-		appMessages:  locales.NewLocale(locales.EN_US),
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, dtos.Token]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
 		log:          log,
 		userRepo:     userRepo,
 		otpRepo:      otpRepo,
