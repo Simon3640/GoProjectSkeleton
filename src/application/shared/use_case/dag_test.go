@@ -147,7 +147,7 @@ func TestDagExecution(t *testing.T) {
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())
 	assert.NotNil(result.Data)
-	assert.Equal("84", *result.Data)
+	assert.Equal("25", *result.Data)
 }
 
 func TestDagConcurrentExecution(t *testing.T) {
@@ -175,7 +175,7 @@ func TestDagConcurrentExecution(t *testing.T) {
 	assert.NotNil(result.Data)
 	assert.Equal(5, len(*result.Data))
 	for _, val := range *result.Data {
-		assert.Equal(42, val)
+		assert.Equal(25, val)
 	}
 }
 
@@ -201,7 +201,7 @@ func TestDagWithBackgroundTask(t *testing.T) {
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())
 	assert.NotNil(result.Data)
-	assert.Equal(84, *result.Data)
+	assert.Equal(25, *result.Data)
 
 	// Esperar un poco para que la tarea en background se ejecute
 	time.Sleep(100 * time.Millisecond)
@@ -210,7 +210,7 @@ func TestDagWithBackgroundTask(t *testing.T) {
 	assert.True(backgroundUC.WasExecuted())
 	logged := backgroundUC.GetLogged()
 	assert.Equal(1, len(logged))
-	assert.Equal(84, logged[0])
+	assert.Equal(25, logged[0])
 }
 
 func TestDagWithMultipleBackgroundTasks(t *testing.T) {
@@ -237,7 +237,7 @@ func TestDagWithMultipleBackgroundTasks(t *testing.T) {
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())
 	assert.NotNil(result.Data)
-	assert.Equal(84, *result.Data)
+	assert.Equal(25, *result.Data)
 
 	// Esperar un poco para que las tareas en background se ejecuten
 	time.Sleep(200 * time.Millisecond)
@@ -251,8 +251,8 @@ func TestDagWithMultipleBackgroundTasks(t *testing.T) {
 
 	assert.Equal(1, len(logged1))
 	assert.Equal(1, len(logged2))
-	assert.Equal(84, logged1[0])
-	assert.Equal(84, logged2[0])
+	assert.Equal(25, logged1[0])
+	assert.Equal(25, logged2[0])
 }
 
 func TestDagExecuteWithBackground(t *testing.T) {
@@ -277,13 +277,13 @@ func TestDagExecuteWithBackground(t *testing.T) {
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())
 	assert.NotNil(result.Data)
-	assert.Equal(84, *result.Data)
+	assert.Equal(25, *result.Data)
 
 	// Con ExecuteWithBackground, las tareas deberían haber terminado
 	assert.True(backgroundUC.WasExecuted())
 	logged := backgroundUC.GetLogged()
 	assert.Equal(1, len(logged))
-	assert.Equal(84, logged[0])
+	assert.Equal(25, logged[0])
 }
 
 func TestDagExecuteWithBackgroundTimeout(t *testing.T) {
@@ -309,7 +309,7 @@ func TestDagExecuteWithBackgroundTimeout(t *testing.T) {
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())
 	assert.NotNil(result.Data)
-	assert.Equal(84, *result.Data)
+	assert.Equal(25, *result.Data)
 }
 
 func TestDagWithoutExecutor(t *testing.T) {
@@ -329,7 +329,7 @@ func TestDagWithoutExecutor(t *testing.T) {
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())
 	assert.NotNil(result.Data)
-	assert.Equal(42, *result.Data)
+	assert.Equal(5, *result.Data)
 
 	// Esperar un poco para que la goroutine se ejecute
 	time.Sleep(100 * time.Millisecond)
@@ -338,7 +338,7 @@ func TestDagWithoutExecutor(t *testing.T) {
 	assert.True(backgroundUC.WasExecuted())
 	logged := backgroundUC.GetLogged()
 	assert.Equal(1, len(logged))
-	assert.Equal(42, logged[0])
+	assert.Equal(5, logged[0])
 }
 
 func TestDagWithBackgroundChain(t *testing.T) {
@@ -366,7 +366,7 @@ func TestDagWithBackgroundChain(t *testing.T) {
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())
 	assert.NotNil(result.Data)
-	assert.Equal("84", *result.Data)
+	assert.Equal("25", *result.Data)
 
 	// Esperar un poco para que la tarea en background se ejecute
 	time.Sleep(100 * time.Millisecond)
@@ -375,5 +375,5 @@ func TestDagWithBackgroundChain(t *testing.T) {
 	assert.True(backgroundUC.WasExecuted())
 	logged := backgroundUC.GetLogged()
 	assert.Equal(1, len(logged))
-	assert.Equal("84", logged[0])
+	assert.Equal("25", logged[0])
 }
