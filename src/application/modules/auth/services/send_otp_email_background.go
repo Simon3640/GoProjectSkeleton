@@ -2,8 +2,6 @@
 package authservices
 
 import (
-	"time"
-
 	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
@@ -64,7 +62,6 @@ func (s *SendOTPEmailBackgroundService) Execute(
 		s.log.Error("Error creating OTP in background service", err.ToError())
 		return err.ToError()
 	}
-	time.Sleep(10 * time.Second)
 
 	// Build email data
 	otpEmailData := emailmodels.OneTimePasswordEmailData{
