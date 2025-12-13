@@ -64,6 +64,10 @@ type Config struct {
 	MailPassword     string `env:"MAIL_PASSWORD" envDefault:"password"`
 	MailFrom         string `env:"MAIL_FROM" envDefault:"noreply@example.com"`
 	MailAuthRequired string `env:"MAIL_AUTH_REQUIRED" envDefault:"true"`
+
+	// Background Workers
+	BackgroundWorkers  string `env:"BACKGROUND_WORKERS" envDefault:"4"`
+	BackgroundQueueSize string `env:"BACKGROUND_QUEUE_SIZE" envDefault:"100"`
 }
 
 func (c *Config) ToMap() map[string]string {

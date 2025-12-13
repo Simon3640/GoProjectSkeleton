@@ -2,7 +2,6 @@
 package passwordusecases
 
 import (
-	"context"
 	"time"
 
 	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
@@ -11,6 +10,7 @@ import (
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	passwordservices "github.com/simon3640/goprojectskeleton/src/application/modules/password/services"
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -38,13 +38,14 @@ func (uc *CreatePasswordTokenUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 // Execute creates a password token for the user
 // it creates a password token for the user and sets the password token in the result
 // returns the password token if created successfully, otherwise returns an error
-func (uc *CreatePasswordTokenUseCase) Execute(ctx context.Context,
+func (uc *CreatePasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input dtos.PasswordTokenCreate,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}

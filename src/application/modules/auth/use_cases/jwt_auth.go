@@ -2,33 +2,29 @@
 package authusecases
 
 import (
-	"context"
 	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	authservices "github.com/simon3640/goprojectskeleton/src/application/modules/auth/services"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	emailservices "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
-	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	services "github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 // AuthenticateUseCase is the use case for the authentication of a user
 type AuthenticateUseCase struct {
-	appMessages *locales.Locale
-	log         contractproviders.ILoggerProvider
-	locale      locales.LocaleTypeEnum
+	usecase.BaseUseCaseValidation[dtos.UserCredentials, dtos.Token]
+	log contractproviders.ILoggerProvider
 
 	pass     authcontracts.IPasswordRepository
 	userRepo authcontracts.IUserRepository
@@ -41,22 +37,23 @@ type AuthenticateUseCase struct {
 
 var _ usecase.BaseUseCase[dtos.UserCredentials, dtos.Token] = (*AuthenticateUseCase)(nil)
 
-// SetLocale set the locale for the use case
-func (uc *AuthenticateUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
-
 // Execute execute the use case
-func (uc *AuthenticateUseCase) Execute(ctx context.Context,
+// - Check the rate limit: if the user has exceeded the login failed attempts limit, set the error and return the result
+// - Get the password: get the password from the database
+// - Get the user: get the user from the database
+// - Validate the password: validate the password
+// - Generate the tokens: generate the tokens
+// - Set the success result: set the success result
+// - Send the OTP email in background: send the OTP email in background
+// - Return the result: return the result
+func (uc *AuthenticateUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input dtos.UserCredentials,
 ) *usecase.UseCaseResult[dtos.Token] {
 	result := usecase.NewUseCaseResult[dtos.Token]()
 	uc.SetLocale(locale)
-
-	uc.validateInput(result, input)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}
@@ -84,7 +81,13 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 	uc.clearFailedAttempts(input.Email)
 
 	if user.OTPLogin {
-		uc.handleOTPLogin(result, user)
+		// OTP login: send OTP email in background
+		uc.sendOTPEmailInBackground(ctx, user, locale)
+		result.SetSuccess(true)
+		result.SetDetails(uc.AppMessages.Get(
+			uc.Locale,
+			messages.MessageKeysInstance.OTP_LOGIN_ENABLED,
+		))
 		return result
 	}
 
@@ -95,17 +98,6 @@ func (uc *AuthenticateUseCase) Execute(ctx context.Context,
 
 	uc.setSuccessResult(result, token)
 	return result
-}
-
-func (uc *AuthenticateUseCase) validateInput(result *usecase.UseCaseResult[dtos.Token], input dtos.UserCredentials) {
-	validation, msg := uc.validate(input)
-	if !validation {
-		result.SetError(
-			status.InvalidInput,
-			strings.Join(msg, "\n"),
-		)
-		return
-	}
 }
 
 func (uc *AuthenticateUseCase) checkRateLimitAndSetError(result *usecase.UseCaseResult[dtos.Token], email string) {
@@ -122,8 +114,8 @@ func (uc *AuthenticateUseCase) checkRateLimitAndSetError(result *usecase.UseCase
 	if exceeded {
 		result.SetError(
 			status.TooManyRequests,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.LoginMaxAttemptsExceeded,
 			),
 		)
@@ -139,8 +131,8 @@ func (uc *AuthenticateUseCase) getPassword(result *usecase.UseCaseResult[dtos.To
 		}
 		result.SetError(
 			status.NotFound,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
 			),
 		)
@@ -157,8 +149,8 @@ func (uc *AuthenticateUseCase) getUser(result *usecase.UseCaseResult[dtos.Token]
 		}
 		result.SetError(
 			status.NotFound,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
 			),
 		)
@@ -175,8 +167,8 @@ func (uc *AuthenticateUseCase) validatePassword(result *usecase.UseCaseResult[dt
 		}
 		result.SetError(
 			status.NotFound,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
 			),
 		)
@@ -184,54 +176,7 @@ func (uc *AuthenticateUseCase) validatePassword(result *usecase.UseCaseResult[dt
 	}
 }
 
-func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos.Token], user *models.UserWithRole) {
-	otp, err := authservices.CreateOneTimePasswordService(user.ID, models.OneTimePasswordLogin, uc.hashProvider, uc.otpRepo)
-	if err != nil {
-		uc.log.Error("Error creating OTP", err.ToError())
-		result.SetError(
-			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
-				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
-			),
-		)
-		return
-	}
-
-	otpEmailData := emailmodels.OneTimePasswordEmailData{
-		Name:              user.Name,
-		OTPCode:           otp,
-		ExpirationMinutes: int(settings.AppSettingsInstance.OneTimeTokenPasswordTTL),
-		AppName:           settings.AppSettingsInstance.AppName,
-		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
-	}
-
-	if err := emailservices.OneTimePasswordEmailServiceInstance.SendWithTemplate(
-		otpEmailData,
-		user.Email,
-		uc.locale,
-		templates.TemplateKeysInstance.OTPEmail,
-		emailservices.SubjectKeysInstance.OTPEmail,
-	); err != nil {
-		uc.log.Error("Error sending email", err.ToError())
-		result.SetError(
-			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
-				err.Context,
-			),
-		)
-		return
-	}
-
-	result.SetSuccess(true)
-	result.SetDetails(uc.appMessages.Get(
-		uc.locale,
-		messages.MessageKeysInstance.OTP_LOGIN_ENABLED,
-	))
-}
-
-func (uc *AuthenticateUseCase) generateTokens(ctx context.Context, result *usecase.UseCaseResult[dtos.Token], userIDString string, user *models.UserWithRole) dtos.Token {
+func (uc *AuthenticateUseCase) generateTokens(ctx *app_context.AppContext, result *usecase.UseCaseResult[dtos.Token], userIDString string, user *models.UserWithRole) dtos.Token {
 	claims := authcontracts.JWTCLaims{
 		"role": user.GetRoleKey(),
 	}
@@ -240,8 +185,8 @@ func (uc *AuthenticateUseCase) generateTokens(ctx context.Context, result *useca
 	if err != nil {
 		result.SetError(
 			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
@@ -252,8 +197,8 @@ func (uc *AuthenticateUseCase) generateTokens(ctx context.Context, result *useca
 	if err != nil {
 		result.SetError(
 			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
@@ -273,22 +218,50 @@ func (uc *AuthenticateUseCase) setSuccessResult(result *usecase.UseCaseResult[dt
 	result.SetData(
 		status.Success,
 		token,
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.AUTHORIZATION_GENERATED,
 		),
 	)
+}
+
+// sendOTPEmailInBackground sends an OTP email to the user in the background
+func (uc *AuthenticateUseCase) sendOTPEmailInBackground(
+	ctx *app_context.AppContext,
+	user *models.UserWithRole,
+	locale locales.LocaleTypeEnum,
+) {
+	// Create the background service
+	sendOTPService := authservices.NewSendOTPEmailBackgroundService(
+		uc.log,
+		uc.otpRepo,
+		uc.hashProvider,
+	)
+
+	// Prepare the input
+	input := authservices.SendOTPEmailInput{
+		UserID:   user.ID,
+		Email:    user.Email,
+		UserName: user.Name,
+	}
+
+	// Execute the service in background (fire-and-forget)
+	if err := services.ExecuteBackgroundService(sendOTPService, ctx, locale, input); err != nil {
+		// Log error but don't fail the authentication
+		// The service will log its own errors internally
+		uc.log.Error("Error submitting OTP email service to background executor", err)
+	}
 }
 
 func (uc *AuthenticateUseCase) validate(input dtos.UserCredentials) (bool, []string) {
 	// Validate the input data
 	var validationErrors []string
 	if input.Email == "" {
-		validationErrors = append(validationErrors, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.SOME_PARAMETERS_ARE_MISSING))
+		validationErrors = append(validationErrors, uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.SOME_PARAMETERS_ARE_MISSING))
 	}
 	// regex for email validation
 	if !regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`).MatchString(input.Email) {
-		validationErrors = append(validationErrors, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.INVALID_EMAIL))
+		validationErrors = append(validationErrors, uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.INVALID_EMAIL))
 	}
 
 	return len(validationErrors) == 0, validationErrors
@@ -356,7 +329,10 @@ func NewAuthenticateUseCase(
 	cacheProvider contractproviders.ICacheProvider,
 ) *AuthenticateUseCase {
 	return &AuthenticateUseCase{
-		appMessages:   locales.NewLocale(locales.EN_US),
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[dtos.UserCredentials, dtos.Token]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
 		log:           log,
 		pass:          pass,
 		userRepo:      userRepo,

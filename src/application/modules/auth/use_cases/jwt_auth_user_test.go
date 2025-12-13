@@ -9,6 +9,7 @@ import (
 
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -40,7 +41,7 @@ func TestAuthUserCase(t *testing.T) {
 	testJWTProvider.On("ParseTokenAndValidate", validToken).Return(claimsReturn, nil)
 	testUserRepository.On("GetUserWithRole", uint(1)).Return(&dtomocks.UserWithRole, nil)
 
-	result := authUserUseCase.Execute(context.Background(), locales.EN_US, validToken)
+	result := authUserUseCase.Execute(&app_context.AppContext{Context: context.Background()}, locales.EN_US, validToken)
 
 	asswert.NotNil(result)
 	asswert.True(result.IsSuccess())
@@ -68,7 +69,7 @@ func TestAuthUserCase_InvalidToken(t *testing.T) {
 
 	invalidToken := "invalidToken"
 
-	result := authUserUseCase.Execute(context.Background(), locales.EN_US, invalidToken)
+	result := authUserUseCase.Execute(&app_context.AppContext{Context: context.Background()}, locales.EN_US, invalidToken)
 
 	assert.NotNil(result)
 	assert.True(result.HasError())
@@ -98,7 +99,7 @@ func TestAuthUserCase_ExpiredToken(t *testing.T) {
 
 	testJWTProvider.On("ParseTokenAndValidate", expiredToken).Return(claimsReturn, nil)
 
-	result := authUserUseCase.Execute(context.Background(), locales.EN_US, expiredToken)
+	result := authUserUseCase.Execute(&app_context.AppContext{Context: context.Background()}, locales.EN_US, expiredToken)
 
 	assert.NotNil(result)
 	assert.True(result.HasError())
@@ -128,7 +129,7 @@ func TestAuthUserCase_NoAccessToken(t *testing.T) {
 
 	testJWTProvider.On("ParseTokenAndValidate", noAccessToken).Return(claimsReturn, nil)
 
-	result := authUserUseCase.Execute(context.Background(), locales.EN_US, noAccessToken)
+	result := authUserUseCase.Execute(&app_context.AppContext{Context: context.Background()}, locales.EN_US, noAccessToken)
 
 	assert.NotNil(result)
 	assert.True(result.HasError())

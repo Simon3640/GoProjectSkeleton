@@ -7,6 +7,7 @@ import (
 
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 
@@ -16,7 +17,7 @@ import (
 
 func TestAuthenticationRefreshUseCase(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testJWTProvider := new(authmocks.MockJWTProvider)

@@ -19,11 +19,12 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
 
+		appContext := app_context.AppContext{Context: c.Request.Context()}
 		uc_result := authusecases.NewAuthUserUseCase(
 			providers.Logger,
 			userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
-		).Execute(c, locales.EN_US, token)
+		).Execute(&appContext, locales.EN_US, token)
 
 		if uc_result.HasError() {
 			headers := map[api.HTTPHeaderTypeEnum]string{

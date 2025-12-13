@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"context"
 	"io"
 	"net/http"
 
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 )
 
@@ -90,18 +90,19 @@ type Query struct {
 
 // HandlerContext is the context for the handler
 type HandlerContext struct {
-	Context context.Context
-	Locale  locales.LocaleTypeEnum
-	Params  map[string]string
-	Body    *io.ReadCloser
-	Query   *Query
+	Context *app_context.AppContext
+
+	Locale locales.LocaleTypeEnum
+	Params map[string]string
+	Body   *io.ReadCloser
+	Query  *Query
 
 	ResponseWriter http.ResponseWriter
 }
 
 // NewHandlerContext creates a new handler context
 func NewHandlerContext(
-	c context.Context,
+	c *app_context.AppContext,
 	locale *string,
 	params map[string]string,
 	body *io.ReadCloser,

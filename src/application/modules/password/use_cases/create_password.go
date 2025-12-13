@@ -1,12 +1,11 @@
 package passwordusecases
 
 import (
-	"context"
-
 	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	passwordcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/password/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	passwordservices "github.com/simon3640/goprojectskeleton/src/application/modules/password/services"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -31,13 +30,14 @@ func (uc *CreatePasswordUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 }
 
 // Execute executes the use case
-func (uc *CreatePasswordUseCase) Execute(ctx context.Context,
+func (uc *CreatePasswordUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input dtos.PasswordCreateNoHash,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}

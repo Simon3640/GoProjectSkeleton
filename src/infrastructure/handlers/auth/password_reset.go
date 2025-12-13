@@ -56,5 +56,7 @@ func RequestPasswordReset(ctx handlers.HandlerContext) {
 		handlers.CONTENT_TYPE: string(handlers.APPLICATION_JSON),
 	}
 
+	// Retorna OneTimeTokenUser (que incluye el token) en lugar de bool
+	// El email se envía en background, por lo que la respuesta es inmediata
 	handlers.NewRequestResolver[bool]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }
