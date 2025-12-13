@@ -307,6 +307,12 @@ func (d *UseCaseParallelDag[I, O]) SetLocale(locale locales.LocaleTypeEnum) {
 	}
 }
 
+func (d *UseCaseParallelDag[I, O]) SetAppContext(appContext *app_context.AppContext) {
+	for _, uc := range d.Usecases {
+		uc.SetAppContext(appContext)
+	}
+}
+
 // NewUseCaseParallelDag creates a new UseCaseParallelDag.
 func NewUseCaseParallelDag[I any, O any]() *UseCaseParallelDag[I, O] {
 	return &UseCaseParallelDag[I, O]{}

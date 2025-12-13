@@ -1,7 +1,6 @@
 package usecases
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -18,7 +17,7 @@ import (
 func TestStatusUseCase(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := &app_context.AppContext{Context: context.Background()}
+	ctx := app_context.NewVoidAppContext()
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testStatusProvider := new(statusmocks.MockStatusProvider)

@@ -40,7 +40,8 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}
@@ -60,7 +61,7 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 		return result
 	}
 
-	uc.setSuccessResult(ctx, result, user, token)
+	uc.setSuccessResult(result, user, token)
 	return result
 }
 
@@ -112,9 +113,9 @@ func (uc *GetResetPasswordTokenUseCase) createToken(result *usecase.UseCaseResul
 	}
 }
 
-func (uc *GetResetPasswordTokenUseCase) setSuccessResult(ctx *app_context.AppContext, result *usecase.UseCaseResult[bool], user *models.User, token string) {
+func (uc *GetResetPasswordTokenUseCase) setSuccessResult(result *usecase.UseCaseResult[bool], user *models.User, token string) {
 	oneTimeToken := dtos.OneTimeTokenUser{User: *user, Token: token}
-	ctx.AddOneTimeTokenToContext(oneTimeToken)
+	uc.AppContext.AddOneTimeTokenToContext(oneTimeToken)
 	result.SetData(
 		status.Success,
 		true,
@@ -123,14 +124,6 @@ func (uc *GetResetPasswordTokenUseCase) setSuccessResult(ctx *app_context.AppCon
 			messages.MessageKeysInstance.PASSWORD_TOKEN_CREATED,
 		),
 	)
-}
-
-func (uc *GetResetPasswordTokenUseCase) Validate(
-	ctx *app_context.AppContext,
-	input string,
-	result *usecase.UseCaseResult[bool],
-) {
-	// Skip input validation as it's just a string (email or phone)
 }
 
 func NewGetResetPasswordTokenUseCase(

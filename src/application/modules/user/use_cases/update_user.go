@@ -22,13 +22,6 @@ type UpdateUserUseCase struct {
 
 var _ usecase.BaseUseCase[userdtos.UserUpdate, models.User] = (*UpdateUserUseCase)(nil)
 
-// SetLocale sets the locale for the use case
-func (uc *UpdateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.Locale = locale
-	}
-}
-
 // Execute executes the use case
 func (uc *UpdateUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
@@ -36,7 +29,8 @@ func (uc *UpdateUserUseCase) Execute(ctx *app_context.AppContext,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}

@@ -22,9 +22,8 @@ import (
 
 // ResendWelcomeEmailUseCase is a use case that resends the welcome email to the user
 type ResendWelcomeEmailUseCase struct {
-	appMessages *locales.Locale
-	log         contractsproviders.ILoggerProvider
-	locale      locales.LocaleTypeEnum
+	usecase.BaseUseCaseValidation[userdtos.ResendWelcomeEmailRequest, bool]
+	log contractsproviders.ILoggerProvider
 
 	hashProvider contractsproviders.IHashProvider
 	userRepo     usercontracts.IUserRepository
@@ -33,13 +32,6 @@ type ResendWelcomeEmailUseCase struct {
 
 var _ usecase.BaseUseCase[userdtos.ResendWelcomeEmailRequest, bool] = (*ResendWelcomeEmailUseCase)(nil)
 
-// SetLocale sets the locale for the use case
-func (uc *ResendWelcomeEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
-
 // Execute executes the use case
 func (uc *ResendWelcomeEmailUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
@@ -47,7 +39,7 @@ func (uc *ResendWelcomeEmailUseCase) Execute(ctx *app_context.AppContext,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
-
+	uc.SetAppContext(ctx)
 	// Validar input
 	uc.validate(&input, result)
 	if result.HasError() {
@@ -74,8 +66,8 @@ func (uc *ResendWelcomeEmailUseCase) Execute(ctx *app_context.AppContext,
 	result.SetData(
 		status.Success,
 		true,
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.WelcomeEmailResent,
 		),
 	)
@@ -95,8 +87,8 @@ func (uc *ResendWelcomeEmailUseCase) getByEmailOrPhone(
 		uc.log.Error("Error getting user by email or phone", err.ToError())
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
@@ -106,8 +98,8 @@ func (uc *ResendWelcomeEmailUseCase) getByEmailOrPhone(
 	if *user.Status == models.UserStatusActive {
 		result.SetError(
 			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.UserAlreadyVerified,
 			),
 		)
@@ -132,8 +124,8 @@ func (uc *ResendWelcomeEmailUseCase) createOneTimeToken(
 		uc.log.Error("Error creating one time token", err.ToError())
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
@@ -161,15 +153,15 @@ func (uc *ResendWelcomeEmailUseCase) sendWelcomeEmail(
 	if err := emailservices.RegisterUserEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
 		user.Email,
-		uc.locale,
+		uc.Locale,
 		templates.TemplateKeysInstance.WelcomeEmail,
 		emailservices.SubjectKeysInstance.WelcomeEmail,
 	); err != nil {
 		uc.log.Error("Error sending email", err.ToError())
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
@@ -197,7 +189,10 @@ func NewResendWelcomeEmailUseCase(
 	tokenRepo contractsrepositories.IOneTimeTokenRepository,
 ) *ResendWelcomeEmailUseCase {
 	return &ResendWelcomeEmailUseCase{
-		appMessages:  locales.NewLocale(locales.EN_US),
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[userdtos.ResendWelcomeEmailRequest, bool]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
 		log:          log,
 		hashProvider: hashProvider,
 		userRepo:     userRepo,

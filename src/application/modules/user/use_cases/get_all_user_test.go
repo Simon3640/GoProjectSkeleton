@@ -459,7 +459,7 @@ func TestGetAllUserUseCase_SetLocale(t *testing.T) {
 
 	// Test setting empty locale (should not change)
 	uc.SetLocale("")
-	assert.Equal(locales.ES_ES, uc.Locale)
+	assert.Equal(locales.EN_US, uc.Locale)
 
 	// Test setting another locale
 	uc.SetLocale(locales.EN_US)

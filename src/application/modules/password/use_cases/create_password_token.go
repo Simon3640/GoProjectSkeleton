@@ -44,7 +44,8 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}
