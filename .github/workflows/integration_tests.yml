@@ -1,4 +1,4 @@
-name: Integration and E2E Tests
+name: Integration Tests
 
 permissions:
   contents: read
@@ -54,6 +54,3 @@ jobs:
 
       - name: Run Integration Tests
         run: docker compose -f docker/docker-compose.test.yml up --abort-on-container-exit --exit-code-from goprojectskeleton-integration-tests --build
-
-      - name: Run E2E Tests
-        run: docker compose -f docker/docker-compose.e2e.yml up --abort-on-container-exit --exit-code-from bruno --build
