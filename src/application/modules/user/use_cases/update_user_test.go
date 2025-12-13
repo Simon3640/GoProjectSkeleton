@@ -1,13 +1,12 @@
 package userusecases
 
 import (
-	"context"
 	"testing"
 	"time"
 
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
-	appcontext "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -20,10 +19,8 @@ import (
 func TestUpdateUserUseCase(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-
 	actor := dtomocks.UserWithRole
-	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, actor)
+	ctxWithUser := app_context.NewContextWithUser(&actor)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
@@ -59,10 +56,8 @@ func TestUpdateUserUseCase(t *testing.T) {
 func TestUpdateUserUseCase_DifferentUser(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-
 	actor := dtomocks.UserWithRole
-	ctxWithUser := context.WithValue(ctx, appcontext.UserKey, actor)
+	ctxWithUser := app_context.NewContextWithUser(&actor)
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)

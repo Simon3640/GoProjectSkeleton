@@ -2,10 +2,9 @@
 package userpipes
 
 import (
-	"context"
-
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	workers "github.com/simon3640/goprojectskeleton/src/application/shared/workers"
@@ -16,7 +15,7 @@ import (
 // The user is created synchronously, and the welcome email is sent in background.
 // This allows returning the response immediately without waiting for the email to be sent.
 func NewCreateUserPipe(
-	ctx context.Context,
+	ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	createUserPasswordUC *userusecases.CreateUserAndPasswordUseCase,
 	createUserSendEmailUseCase *userusecases.CreateUserSendEmailUseCase,

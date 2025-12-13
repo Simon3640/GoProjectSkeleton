@@ -8,12 +8,16 @@ import (
 
 type AppContext struct {
 	context.Context
-	User *models.User
+	User *models.UserWithRole
 }
 
-func NewContextWithUser(user *models.User) *AppContext {
+func NewContextWithUser(user *models.UserWithRole) *AppContext {
 	return &AppContext{
 		Context: context.Background(),
 		User:    user,
 	}
+}
+
+func (a *AppContext) AddUserToContext(user *models.UserWithRole) {
+	a.User = user
 }

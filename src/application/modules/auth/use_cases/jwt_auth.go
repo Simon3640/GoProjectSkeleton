@@ -2,7 +2,6 @@
 package authusecases
 
 import (
-	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	authservices "github.com/simon3640/goprojectskeleton/src/application/modules/auth/services"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -49,7 +49,7 @@ func (uc *AuthenticateUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 }
 
 // Execute execute the use case
-func (uc *AuthenticateUseCase) Execute(ctx context.Context,
+func (uc *AuthenticateUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input dtos.UserCredentials,
 ) *usecase.UseCaseResult[dtos.Token] {
@@ -231,7 +231,7 @@ func (uc *AuthenticateUseCase) handleOTPLogin(result *usecase.UseCaseResult[dtos
 	))
 }
 
-func (uc *AuthenticateUseCase) generateTokens(ctx context.Context, result *usecase.UseCaseResult[dtos.Token], userIDString string, user *models.UserWithRole) dtos.Token {
+func (uc *AuthenticateUseCase) generateTokens(ctx *app_context.AppContext, result *usecase.UseCaseResult[dtos.Token], userIDString string, user *models.UserWithRole) dtos.Token {
 	claims := authcontracts.JWTCLaims{
 		"role": user.GetRoleKey(),
 	}

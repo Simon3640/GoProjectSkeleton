@@ -1,12 +1,11 @@
 package authusecases
 
 import (
-	"context"
-
 	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	contractrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -33,7 +32,7 @@ func (uc *GetResetPasswordTokenUseCase) SetLocale(locale locales.LocaleTypeEnum)
 }
 
 // Execute generates a reset password token for the user identified by email or phone
-func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
+func (uc *GetResetPasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input string,
 ) *usecase.UseCaseResult[dtos.OneTimeTokenUser] {
@@ -126,7 +125,7 @@ func (uc *GetResetPasswordTokenUseCase) setSuccessResult(result *usecase.UseCase
 }
 
 func (uc *GetResetPasswordTokenUseCase) Validate(
-	ctx context.Context,
+	ctx *app_context.AppContext,
 	input string,
 	result *usecase.UseCaseResult[dtos.OneTimeTokenUser],
 ) {

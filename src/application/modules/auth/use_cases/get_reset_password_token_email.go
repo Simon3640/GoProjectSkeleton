@@ -1,10 +1,9 @@
 package authusecases
 
 import (
-	"context"
-
 	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
@@ -32,7 +31,7 @@ func (uc *GetResetPasswordSendEmailUseCase) SetLocale(locale locales.LocaleTypeE
 }
 
 // Execute sends a reset password email to the user
-func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
+func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input shareddtos.OneTimeTokenUser,
 ) *usecase.UseCaseResult[bool] {

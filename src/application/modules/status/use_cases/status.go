@@ -1,11 +1,11 @@
 package usecases
 
 import (
-	"context"
 	"time"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	statuscontracts "github.com/simon3640/goprojectskeleton/src/application/modules/status/contracts"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	locales "github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	messages "github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	status "github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -28,7 +28,7 @@ func (uc *GetStatusUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	}
 }
 
-func (uc *GetStatusUseCase) Execute(ctx context.Context,
+func (uc *GetStatusUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input time.Time,
 ) *usecase.UseCaseResult[models.Status] {

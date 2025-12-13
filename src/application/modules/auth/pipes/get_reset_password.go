@@ -2,10 +2,9 @@
 package authpipes
 
 import (
-	"context"
-
 	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
@@ -17,7 +16,7 @@ import (
 // Esto permite retornar la respuesta inmediatamente sin esperar el envío del email.
 // Retorna el tipo OneTimeTokenUser (que incluye el token) en lugar de bool.
 func NewGetResetPasswordPipe(
-	ctx context.Context,
+	ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	getResetPasswordTokenUC *authusecases.GetResetPasswordTokenUseCase,
 	getResetPasswordTokenSendEmailUC *authusecases.GetResetPasswordSendEmailUseCase,

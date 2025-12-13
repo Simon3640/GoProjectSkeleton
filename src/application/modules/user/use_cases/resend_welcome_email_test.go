@@ -7,6 +7,7 @@ import (
 
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
@@ -23,7 +24,7 @@ import (
 func TestResendWelcomeEmailUseCase_Execute_Success(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -98,7 +99,7 @@ func TestResendWelcomeEmailUseCase_Execute_Success(t *testing.T) {
 func TestResendWelcomeEmailUseCase_Execute_InvalidEmail(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -126,7 +127,7 @@ func TestResendWelcomeEmailUseCase_Execute_InvalidEmail(t *testing.T) {
 func TestResendWelcomeEmailUseCase_Execute_UserAlreadyVerified(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -174,7 +175,7 @@ func TestResendWelcomeEmailUseCase_Execute_UserAlreadyVerified(t *testing.T) {
 func TestResendWelcomeEmailUseCase_Execute_UserNotFound(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -212,7 +213,7 @@ func TestResendWelcomeEmailUseCase_Execute_UserNotFound(t *testing.T) {
 func TestResendWelcomeEmailUseCase_Execute_RepositoryError(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)

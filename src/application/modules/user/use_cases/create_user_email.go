@@ -1,10 +1,9 @@
 package userusecases
 
 import (
-	"context"
-
 	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	contractsrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
@@ -38,7 +37,7 @@ func (uc *CreateUserSendEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 }
 
 // Execute executes the use case
-func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
+func (uc *CreateUserSendEmailUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input models.User,
 ) *usecase.UseCaseResult[models.User] {
