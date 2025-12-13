@@ -54,19 +54,20 @@ go run src/infrastructure/server/cmd/main.go
 3. [Arquitectura del Proyecto](#arquitectura-del-proyecto)
 4. [Escalabilidad y Serverless](#escalabilidad-y-serverless)
 5. [Flujo Completo de Request](#flujo-completo-de-request)
-6. [Virtudes y Beneficios](#virtudes-y-beneficios)
-7. [Estructura del Proyecto - Capa por Capa](#estructura-del-proyecto---capa-por-capa)
-8. [Revisión Exhaustiva por Carpetas](#revisión-exhaustiva-por-carpetas)
-9. [Tecnologías y Dependencias](#tecnologías-y-dependencias)
-10. [Configuración y Setup](#configuración-y-setup)
-11. [Módulos de Negocio](#módulos-de-negocio)
-12. [API y Endpoints](#api-y-endpoints)
-13. [Base de Datos y Persistencia](#base-de-datos-y-persistencia)
-14. [Autenticación y Seguridad](#autenticación-y-seguridad)
-15. [Testing](#testing)
-16. [Docker y Despliegue](#docker-y-despliegue)
-17. [Despliegue con GitHub Actions](#despliegue-con-github-actions)
-18. [Guía de Desarrollo](#guía-de-desarrollo)
+6. [Ejecución de Tareas en Background](#-ejecución-de-tareas-en-background)
+7. [Virtudes y Beneficios](#virtudes-y-beneficios)
+8. [Estructura del Proyecto - Capa por Capa](#estructura-del-proyecto---capa-por-capa)
+9. [Revisión Exhaustiva por Carpetas](#revisión-exhaustiva-por-carpetas)
+10. [Tecnologías y Dependencias](#tecnologías-y-dependencias)
+11. [Configuración y Setup](#configuración-y-setup)
+12. [Módulos de Negocio](#módulos-de-negocio)
+13. [API y Endpoints](#api-y-endpoints)
+14. [Base de Datos y Persistencia](#base-de-datos-y-persistencia)
+15. [Autenticación y Seguridad](#autenticación-y-seguridad)
+16. [Testing](#testing)
+17. [Docker y Despliegue](#docker-y-despliegue)
+18. [Despliegue con GitHub Actions](#despliegue-con-github-actions)
+19. [Guía de Desarrollo](#guía-de-desarrollo)
 
 ---
 
@@ -1734,6 +1735,745 @@ func CreateUserAndPassword(ctx HandlerContext) {
 El DAG ejecuta:
 1. `CreateUserAndPasswordUseCase` → retorna `User`
 2. `CreateUserSendEmailUseCase` → recibe `User`, envía email, retorna `User`
+
+---
+
+## ⚡ Ejecución de Tareas en Background
+
+**GoProjectSkeleton** proporciona tres mecanismos principales para ejecutar tareas en background, cada uno diseñado para diferentes casos de uso. Esta sección explica cada opción, cuándo usarla y cómo implementarla.
+
+### Visión General
+
+El proyecto ofrece tres niveles de abstracción para ejecución en background:
+
+1. **BackgroundExecutor (Workers)** - Pool de workers de bajo nivel para tareas genéricas
+2. **BackgroundService** - Abstracción de alto nivel para servicios de negocio
+3. **DAG con ThenBackground** - Ejecución de casos de uso en background después de operaciones exitosas
+
+```mermaid
+graph TB
+    subgraph Niveles["Niveles de Abstracción"]
+        Low[BackgroundExecutor<br/>Bajo Nivel<br/>Pool de Workers]
+        Mid[BackgroundService<br/>Nivel Medio<br/>Servicios de Negocio]
+        High[DAG ThenBackground<br/>Alto Nivel<br/>Casos de Uso]
+    end
+
+    Low -->|Usado por| Mid
+    Mid -->|Usado por| High
+    Low -->|Directo| DirectUse[Uso Directo<br/>Tareas Genéricas]
+
+    style Low fill:#ffcdd2
+    style Mid fill:#fff9c4
+    style High fill:#c8e6c9
+```
+
+### 1. BackgroundExecutor (Workers)
+
+**BackgroundExecutor** es un pool de workers configurable que ejecuta tareas genéricas en background. Es la capa más baja de abstracción y proporciona control total sobre la ejecución.
+
+#### Características
+
+- ✅ **Pool de Workers Configurable**: Número de workers y tamaño de cola personalizables
+- ✅ **Gestión de Contexto**: Soporte para cancelación mediante context
+- ✅ **Recuperación de Panics**: Los panics en tareas no crashean la aplicación
+- ✅ **Thread-Safe**: Seguro para uso concurrente
+- ✅ **Singleton Pattern**: Instancia única global disponible
+
+#### Inicialización
+
+El executor se inicializa durante el arranque de la aplicación:
+
+```go
+// En infrastructure/container.go
+ctx := context.Background()
+workers.InitializeBackgroundExecutor(
+    ctx,
+    settings.AppSettingsInstance.BackgroundWorkers,  // Número de workers (default: 4)
+    settings.AppSettingsInstance.BackgroundQueueSize, // Tamaño de cola (default: 100)
+)
+
+// Obtener la instancia singleton
+executor := workers.GetBackgroundExecutor()
+```
+
+#### Uso Básico
+
+```go
+import (
+    "context"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/workers"
+)
+
+// Obtener el executor
+executor := workers.GetBackgroundExecutor()
+
+// Enviar una tarea
+err := executor.Submit(func(ctx context.Context) {
+    // Tu lógica aquí
+    // Esta función se ejecutará en un worker del pool
+    doSomething()
+})
+
+if err != nil {
+    // Manejar error (ej: cola llena)
+    log.Printf("Error al enviar tarea: %v", err)
+}
+```
+
+#### Ejemplo Completo: Procesamiento de Imágenes
+
+```go
+type ImageProcessor struct {
+    executor *workers.BackgroundExecutor
+}
+
+func NewImageProcessor() *ImageProcessor {
+    return &ImageProcessor{
+        executor: workers.GetBackgroundExecutor(),
+    }
+}
+
+func (p *ImageProcessor) ProcessImageAsync(imagePath string) error {
+    return p.executor.Submit(func(ctx context.Context) {
+        // Verificar cancelación
+        select {
+        case <-ctx.Done():
+            log.Printf("Procesamiento cancelado: %s", imagePath)
+            return
+        default:
+        }
+
+        // Procesar imagen
+        if err := processImage(imagePath); err != nil {
+            log.Printf("Error procesando imagen %s: %v", imagePath, err)
+            return
+        }
+
+        // Notificar completado
+        log.Printf("Imagen procesada: %s", imagePath)
+    })
+}
+
+func processImage(path string) error {
+    // Lógica de procesamiento
+    return nil
+}
+```
+
+#### Control de Ciclo de Vida
+
+```go
+executor := workers.GetBackgroundExecutor()
+
+// Iniciar workers (se hace automáticamente al hacer Submit, pero puedes hacerlo manualmente)
+executor.Start()
+
+// Esperar a que todas las tareas en cola se completen
+executor.Wait()
+
+// Detener el executor (cancela contexto y cierra workers)
+executor.Stop()
+```
+
+#### Configuración Recomendada
+
+| Escenario | Workers | Queue Size | Razón |
+|-----------|---------|------------|-------|
+| **Desarrollo** | 2-4 | 50-100 | Recursos limitados |
+| **Producción Ligera** | 4-8 | 100-200 | Carga moderada |
+| **Producción Media** | 8-16 | 200-500 | Carga media |
+| **Producción Alta** | 16-32 | 500-1000 | Alta concurrencia |
+
+### 2. BackgroundService
+
+**BackgroundService** es una abstracción de alto nivel diseñada para ejecutar servicios de negocio en background. Proporciona una interfaz tipada y estructurada para servicios que necesitan contexto de aplicación.
+
+#### Características
+
+- ✅ **Interfaz Tipada**: Servicios con tipos de entrada específicos
+- ✅ **Contexto de Aplicación**: Acceso a AppContext y Locale
+- ✅ **Factory Pattern**: Gestión centralizada de ejecución
+- ✅ **Fire-and-Forget**: Ejecución asíncrona sin bloquear
+- ✅ **Fallback Automático**: Si no hay executor, usa goroutine simple
+
+#### Definir un BackgroundService
+
+```go
+import (
+    app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/services"
+)
+
+// Definir el servicio
+type SendWelcomeEmailService struct {
+    emailProvider contracts.IEmailProvider
+}
+
+func NewSendWelcomeEmailService(emailProvider contracts.IEmailProvider) *SendWelcomeEmailService {
+    return &SendWelcomeEmailService{
+        emailProvider: emailProvider,
+    }
+}
+
+// Implementar la interfaz BackgroundService
+func (s *SendWelcomeEmailService) Execute(
+    ctx *app_context.AppContext,
+    locale locales.LocaleTypeEnum,
+    input UserEmailData,
+) error {
+    // Lógica del servicio
+    email := renderWelcomeEmail(input, locale)
+    return s.emailProvider.SendEmail(email)
+}
+
+func (s *SendWelcomeEmailService) Name() string {
+    return "SendWelcomeEmailService"
+}
+
+// Tipo de entrada del servicio
+type UserEmailData struct {
+    UserID  uint
+    Email   string
+    Name    string
+}
+```
+
+#### Ejecutar un BackgroundService
+
+```go
+import (
+    "github.com/simon3640/goprojectskeleton/src/application/shared/services"
+)
+
+// Obtener el factory singleton (inicializado en container.go)
+factory := services.GetBackgroundServiceFactory()
+
+// Crear el servicio
+emailService := NewSendWelcomeEmailService(emailProvider)
+
+// Ejecutar en background
+input := UserEmailData{
+    UserID: user.ID,
+    Email: user.Email,
+    Name:  user.Name,
+}
+
+err := services.ExecuteService(
+    factory,
+    emailService,
+    appCtx,
+    locale,
+    input,
+)
+
+if err != nil {
+    // Error al encolar (ej: cola llena)
+    log.Printf("Error al encolar servicio: %v", err)
+}
+```
+
+#### Ejemplo Completo: Servicio de Notificaciones
+
+```go
+// Servicio de notificaciones
+type NotificationService struct {
+    emailProvider contracts.IEmailProvider
+    cacheProvider contracts.ICacheProvider
+}
+
+func NewNotificationService(
+    emailProvider contracts.IEmailProvider,
+    cacheProvider contracts.ICacheProvider,
+) *NotificationService {
+    return &NotificationService{
+        emailProvider: emailProvider,
+        cacheProvider: cacheProvider,
+    }
+}
+
+type NotificationInput struct {
+    UserID    uint
+    Type      string // "welcome", "password_reset", etc.
+    Data      map[string]interface{}
+}
+
+func (s *NotificationService) Execute(
+    ctx *app_context.AppContext,
+    locale locales.LocaleTypeEnum,
+    input NotificationInput,
+) error {
+    // 1. Verificar si el usuario tiene notificaciones deshabilitadas
+    key := fmt.Sprintf("user:%d:notifications:disabled", input.UserID)
+    disabled, _ := s.cacheProvider.Exists(key)
+    if disabled {
+        return nil // Usuario deshabilitó notificaciones
+    }
+
+    // 2. Renderizar template según tipo
+    var template string
+    switch input.Type {
+    case "welcome":
+        template = renderWelcomeEmail(input.Data, locale)
+    case "password_reset":
+        template = renderPasswordResetEmail(input.Data, locale)
+    default:
+        return fmt.Errorf("tipo de notificación desconocido: %s", input.Type)
+    }
+
+    // 3. Enviar email
+    return s.emailProvider.SendEmail(template)
+}
+
+func (s *NotificationService) Name() string {
+    return "NotificationService"
+}
+
+// Uso en un handler
+func CreateUserHandler(ctx HandlerContext) {
+    // ... crear usuario ...
+
+    // Enviar notificación en background
+    notificationService := NewNotificationService(emailProvider, cacheProvider)
+    input := NotificationInput{
+        UserID: user.ID,
+        Type:   "welcome",
+        Data: map[string]interface{}{
+            "name": user.Name,
+            "email": user.Email,
+        },
+    }
+
+    services.ExecuteService(
+        services.GetBackgroundServiceFactory(),
+        notificationService,
+        ctx.AppContext,
+        ctx.Locale,
+        input,
+    )
+}
+```
+
+### 3. DAG con ThenBackground
+
+**ThenBackground** permite ejecutar casos de uso en background después de que un DAG se ejecute exitosamente. Es ideal para tareas que deben ejecutarse después de operaciones principales pero no deben bloquear la respuesta.
+
+#### Características
+
+- ✅ **Integración con DAG**: Se ejecuta automáticamente después de éxito
+- ✅ **Fire-and-Forget**: No bloquea la respuesta principal
+- ✅ **Múltiples Background Steps**: Puedes agregar múltiples tareas en background
+- ✅ **Respeto de Contexto**: Las tareas pueden ser canceladas
+- ✅ **Manejo de Errores**: Los errores se registran pero no afectan el resultado principal
+
+#### Uso Básico
+
+```go
+import (
+    "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+)
+
+// Crear DAG principal
+dag := use_case.NewDag(
+    appCtx,
+    use_case.NewStep(createUserUseCase),
+    locale,
+    executor, // BackgroundExecutor opcional
+)
+
+// Agregar paso en background
+dag = use_case.ThenBackground(
+    dag,
+    use_case.NewStep(sendWelcomeEmailUseCase),
+    "send-welcome-email", // Nombre para logging
+)
+
+// Ejecutar DAG
+result := dag.Execute(userCreate)
+// El email se enviará en background si la creación fue exitosa
+```
+
+#### Ejemplo Completo: Crear Usuario con Tareas en Background
+
+```go
+func CreateUserWithBackgroundTasks(ctx HandlerContext) {
+    // 1. Casos de uso principales (síncronos)
+    createUserUC := usecases_user.NewCreateUserAndPasswordUseCase(...)
+    activateUserUC := usecases_user.NewActivateUserUseCase(...)
+
+    // 2. Casos de uso en background
+    sendWelcomeEmailUC := usecases_user.NewCreateUserSendEmailUseCase(...)
+    sendNotificationUC := usecases_user.NewSendUserNotificationUseCase(...)
+    updateAnalyticsUC := usecases_user.NewUpdateUserAnalyticsUseCase(...)
+
+    // 3. Obtener executor (opcional, si es nil usa goroutines)
+    executor := workers.GetBackgroundExecutor()
+
+    // 4. Construir DAG
+    dag := use_case.NewDag(
+        ctx.AppContext,
+        use_case.NewStep(createUserUC),
+        ctx.Locale,
+        executor,
+    )
+
+    // 5. Agregar paso síncrono
+    dag = use_case.Then(dag, use_case.NewStep(activateUserUC))
+
+    // 6. Agregar pasos en background (se ejecutan solo si todo fue exitoso)
+    dag = use_case.ThenBackground(
+        dag,
+        use_case.NewStep(sendWelcomeEmailUC),
+        "send-welcome-email",
+    )
+    dag = use_case.ThenBackground(
+        dag,
+        use_case.NewStep(sendNotificationUC),
+        "send-notification",
+    )
+    dag = use_case.ThenBackground(
+        dag,
+        use_case.NewStep(updateAnalyticsUC),
+        "update-analytics",
+    )
+
+    // 7. Ejecutar DAG
+    result := dag.Execute(userCreate)
+
+    // 8. Resolver respuesta (las tareas en background se ejecutan asíncronamente)
+    NewRequestResolver[models.User]().ResolveDTO(
+        ctx.ResponseWriter,
+        result,
+        headers,
+    )
+}
+```
+
+#### Flujo de Ejecución
+
+```mermaid
+sequenceDiagram
+    participant Handler as Handler
+    participant DAG as DAG
+    participant UC1 as CreateUser<br/>(Síncrono)
+    participant UC2 as ActivateUser<br/>(Síncrono)
+    participant BG1 as SendEmail<br/>(Background)
+    participant BG2 as Notification<br/>(Background)
+
+    Handler->>DAG: Execute(input)
+    DAG->>UC1: Execute(input)
+    UC1-->>DAG: Success[User]
+    DAG->>UC2: Execute(User)
+    UC2-->>DAG: Success[User]
+    DAG-->>Handler: Return Result[User]
+
+    Note over Handler: Respuesta enviada al cliente
+
+    par Tareas en Background
+        DAG->>BG1: Execute(User) [Async]
+        DAG->>BG2: Execute(User) [Async]
+    end
+
+    BG1-->>DAG: (Fire-and-forget)
+    BG2-->>DAG: (Fire-and-forget)
+```
+
+#### Ejecutar y Esperar Background Tasks
+
+Si necesitas esperar a que las tareas en background se completen (útil en tests o operaciones críticas):
+
+```go
+// Ejecutar y esperar con timeout
+result := dag.ExecuteWithBackground(input, 30*time.Second)
+
+// O esperar indefinidamente
+result := dag.ExecuteWithBackground(input, 0)
+```
+
+### Comparación y Guía de Selección
+
+#### Tabla Comparativa
+
+| Característica | BackgroundExecutor | BackgroundService | DAG ThenBackground |
+|----------------|-------------------|-------------------|---------------------|
+| **Nivel de Abstracción** | Bajo | Medio | Alto |
+| **Tipado** | Genérico (`func(ctx)`) | Tipado (`BackgroundService[Input]`) | Tipado (Use Cases) |
+| **Contexto** | `context.Context` | `AppContext` + `Locale` | `AppContext` + `Locale` |
+| **Integración con DAG** | No | No | Sí |
+| **Casos de Uso** | Tareas genéricas | Servicios de negocio | Casos de uso después de DAG |
+| **Control de Flujo** | Manual | Manual | Automático (después de éxito) |
+| **Manejo de Errores** | Manual | Logging automático | Logging automático |
+
+#### Cuándo Usar Cada Opción
+
+##### Usa BackgroundExecutor cuando:
+
+- ✅ Necesitas ejecutar tareas genéricas sin estructura de negocio
+- ✅ Requieres control total sobre la ejecución
+- ✅ Las tareas no están relacionadas con casos de uso
+- ✅ Ejemplos: procesamiento de archivos, limpieza de cache, sincronización de datos
+
+```go
+// Ejemplo: Limpieza periódica de cache
+executor.Submit(func(ctx context.Context) {
+    cleanExpiredCacheEntries()
+})
+```
+
+##### Usa BackgroundService cuando:
+
+- ✅ Tienes un servicio de negocio bien definido
+- ✅ Necesitas contexto de aplicación (AppContext, Locale)
+- ✅ El servicio tiene entrada tipada
+- ✅ Quieres reutilizar el servicio en múltiples lugares
+- ✅ Ejemplos: envío de emails, notificaciones, reportes
+
+```go
+// Ejemplo: Servicio de reportes
+reportService := NewGenerateReportService(...)
+services.ExecuteService(factory, reportService, appCtx, locale, reportInput)
+```
+
+##### Usa DAG ThenBackground cuando:
+
+- ✅ Necesitas ejecutar casos de uso después de una operación exitosa
+- ✅ Las tareas están relacionadas con el flujo principal
+- ✅ Quieres que se ejecuten automáticamente solo si el DAG fue exitoso
+- ✅ Necesitas múltiples tareas en background relacionadas
+- ✅ Ejemplos: enviar emails después de crear usuario, actualizar analytics después de transacción
+
+```go
+// Ejemplo: Flujo completo con background
+dag = Then(dag, NewStep(mainUseCase))
+dag = ThenBackground(dag, NewStep(emailUseCase), "email")
+dag = ThenBackground(dag, NewStep(analyticsUseCase), "analytics")
+```
+
+### Ejemplos Prácticos Completos
+
+#### Ejemplo 1: Sistema de Notificaciones Completo
+
+```go
+// 1. Definir servicio de notificaciones
+type UserNotificationService struct {
+    emailProvider contracts.IEmailProvider
+    logger        contracts.ILoggerProvider
+}
+
+type NotificationData struct {
+    UserID  uint
+    Type    string
+    Subject string
+    Body    string
+}
+
+func (s *UserNotificationService) Execute(
+    ctx *app_context.AppContext,
+    locale locales.LocaleTypeEnum,
+    input NotificationData,
+) error {
+    s.logger.Info("Enviando notificación", map[string]interface{}{
+        "user_id": input.UserID,
+        "type":    input.Type,
+    })
+
+    email := &Email{
+        To:      getUserEmail(input.UserID),
+        Subject: input.Subject,
+        Body:    input.Body,
+    }
+
+    return s.emailProvider.SendEmail(email)
+}
+
+func (s *UserNotificationService) Name() string {
+    return "UserNotificationService"
+}
+
+// 2. Usar en un handler
+func UpdateUserHandler(ctx HandlerContext) {
+    // ... actualizar usuario ...
+
+    // Enviar notificación en background
+    notificationService := NewUserNotificationService(emailProvider, logger)
+    notificationData := NotificationData{
+        UserID:  user.ID,
+        Type:    "profile_updated",
+        Subject: "Tu perfil ha sido actualizado",
+        Body:    renderNotificationBody(user, ctx.Locale),
+    }
+
+    services.ExecuteService(
+        services.GetBackgroundServiceFactory(),
+        notificationService,
+        ctx.AppContext,
+        ctx.Locale,
+        notificationData,
+    )
+}
+```
+
+#### Ejemplo 2: Procesamiento Asíncrono de Archivos
+
+```go
+// Usando BackgroundExecutor directamente
+type FileProcessor struct {
+    executor *workers.BackgroundExecutor
+}
+
+func (p *FileProcessor) ProcessFileAsync(filePath string) error {
+    executor := workers.GetBackgroundExecutor()
+
+    return executor.Submit(func(ctx context.Context) {
+        // Verificar cancelación
+        select {
+        case <-ctx.Done():
+            log.Printf("Procesamiento cancelado: %s", filePath)
+            return
+        default:
+        }
+
+        // Procesar archivo
+        if err := processFile(filePath); err != nil {
+            log.Printf("Error procesando archivo %s: %v", filePath, err)
+            return
+        }
+
+        // Actualizar estado
+        updateFileStatus(filePath, "processed")
+    })
+}
+```
+
+#### Ejemplo 3: DAG Completo con Múltiples Background Tasks
+
+```go
+func CompleteUserRegistration(ctx HandlerContext) {
+    // Casos de uso principales
+    createUserUC := usecases_user.NewCreateUserAndPasswordUseCase(...)
+    createProfileUC := usecases_user.NewCreateUserProfileUseCase(...)
+
+    // Casos de uso en background
+    sendWelcomeEmailUC := usecases_user.NewSendWelcomeEmailUseCase(...)
+    sendVerificationEmailUC := usecases_user.NewSendVerificationEmailUseCase(...)
+    createUserAnalyticsUC := usecases_user.NewCreateUserAnalyticsUseCase(...)
+    notifyAdminsUC := usecases_user.NewNotifyAdminsNewUserUseCase(...)
+
+    executor := workers.GetBackgroundExecutor()
+
+    // Construir DAG
+    dag := use_case.NewDag(
+        ctx.AppContext,
+        use_case.NewStep(createUserUC),
+        ctx.Locale,
+        executor,
+    )
+
+    // Paso síncrono
+    dag = use_case.Then(dag, use_case.NewStep(createProfileUC))
+
+    // Múltiples tareas en background
+    dag = use_case.ThenBackground(dag, use_case.NewStep(sendWelcomeEmailUC), "welcome-email")
+    dag = use_case.ThenBackground(dag, use_case.NewStep(sendVerificationEmailUC), "verification-email")
+    dag = use_case.ThenBackground(dag, use_case.NewStep(createUserAnalyticsUC), "analytics")
+    dag = use_case.ThenBackground(dag, use_case.NewStep(notifyAdminsUC), "admin-notification")
+
+    // Ejecutar
+    result := dag.Execute(userRegistrationInput)
+
+    // Responder inmediatamente (las tareas en background se ejecutan asíncronamente)
+    NewRequestResolver[models.User]().ResolveDTO(ctx.ResponseWriter, result, headers)
+}
+```
+
+### Mejores Prácticas
+
+#### 1. Selección de Mecanismo
+
+- **Usa el nivel más alto posible**: DAG ThenBackground > BackgroundService > BackgroundExecutor
+- **Mantén la consistencia**: Si ya usas DAG, usa ThenBackground para tareas relacionadas
+- **Separa responsabilidades**: BackgroundExecutor para infraestructura, BackgroundService para negocio
+
+#### 2. Manejo de Errores
+
+```go
+// ✅ Correcto: Logging en background service
+func (s *MyService) Execute(ctx *app_context.AppContext, locale locales.LocaleTypeEnum, input Input) error {
+    if err := doSomething(); err != nil {
+        // Log pero no propagues el error (fire-and-forget)
+        s.logger.Error("Error en background service", err)
+        return err // Se loguea pero no afecta al caller
+    }
+    return nil
+}
+
+// ❌ Incorrecto: Panic en background
+func (s *MyService) Execute(...) error {
+    if err := doSomething(); err != nil {
+        panic(err) // No hacer panic, usar logging
+    }
+}
+```
+
+#### 3. Gestión de Contexto
+
+```go
+// ✅ Correcto: Respetar cancelación
+func (s *MyService) Execute(ctx *app_context.AppContext, locale locales.LocaleTypeEnum, input Input) error {
+    // Verificar cancelación antes de operaciones largas
+    select {
+    case <-ctx.Done():
+        return ctx.Err()
+    default:
+    }
+
+    // Operación que puede tardar
+    return longRunningOperation()
+}
+```
+
+#### 4. Configuración de Workers
+
+```go
+// En settings o configuración
+BackgroundWorkers: 8,      // Ajustar según carga
+BackgroundQueueSize: 200,  // Ajustar según picos de tráfico
+```
+
+#### 5. Testing
+
+```go
+// En tests, puedes usar un executor pequeño
+func TestMyService(t *testing.T) {
+    ctx := context.Background()
+    executor := workers.NewBackgroundExecutor(ctx, 2, 10)
+    executor.Start()
+    defer executor.Stop()
+
+    factory := services.NewBackgroundServiceFactory(
+        services.NewBackgroundExecutorAdapter(executor),
+    )
+
+    // Test tu servicio
+    service := NewMyService(...)
+    err := services.ExecuteService(factory, service, appCtx, locale, input)
+    assert.NoError(t, err)
+
+    // Esperar a que se complete
+    executor.Wait()
+}
+```
+
+### Resumen
+
+| Necesidad | Solución Recomendada | Razón |
+|-----------|---------------------|-------|
+| Tarea genérica simple | `BackgroundExecutor` | Control directo, sin abstracciones |
+| Servicio de negocio reutilizable | `BackgroundService` | Tipado, contexto de aplicación |
+| Tarea después de DAG exitoso | `DAG ThenBackground` | Integración automática, flujo claro |
+| Múltiples tareas relacionadas | `DAG ThenBackground` | Agregar múltiples pasos fácilmente |
+| Procesamiento de archivos | `BackgroundExecutor` | Tareas de infraestructura |
+| Envío de emails/notificaciones | `BackgroundService` | Servicios de negocio bien definidos |
 
 ---
 
