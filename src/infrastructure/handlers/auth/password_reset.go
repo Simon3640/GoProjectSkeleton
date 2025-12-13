@@ -5,7 +5,6 @@ import (
 
 	authpipes "github.com/simon3640/goprojectskeleton/src/application/modules/auth/pipes"
 	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
-	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	authrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/auth"
 	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
@@ -59,5 +58,5 @@ func RequestPasswordReset(ctx handlers.HandlerContext) {
 
 	// Retorna OneTimeTokenUser (que incluye el token) en lugar de bool
 	// El email se envía en background, por lo que la respuesta es inmediata
-	handlers.NewRequestResolver[shareddtos.OneTimeTokenUser]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
+	handlers.NewRequestResolver[bool]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }

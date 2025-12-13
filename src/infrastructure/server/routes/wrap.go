@@ -23,12 +23,12 @@ func wrapHandler(h func(handlers.HandlerContext)) gin.HandlerFunc {
 				query = &castedQP
 			}
 		}
-		var appContext *app_context.AppContext
+		appContext := app_context.AppContext{Context: c.Request.Context()}
 		user := c.Request.Context().Value(app_context.UserKey)
 		if user, ok := user.(models.UserWithRole); ok {
-			appContext = app_context.NewContextWithUser(&user)
+			appContext.AddUserToContext(&user)
 		}
-		hContext := handlers.NewHandlerContext(appContext,
+		hContext := handlers.NewHandlerContext(&appContext,
 			&locale,
 			params,
 			&c.Request.Body,

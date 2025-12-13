@@ -15,7 +15,7 @@ import (
 
 // GetResetPasswordTokenUseCase is the use case for generating a reset password token
 type GetResetPasswordTokenUseCase struct {
-	usecase.BaseUseCaseValidation[string, dtos.OneTimeTokenUser]
+	usecase.BaseUseCaseValidation[string, bool]
 	log contractproviders.ILoggerProvider
 
 	tokenRepo contractrepositories.IOneTimeTokenRepository
@@ -23,6 +23,8 @@ type GetResetPasswordTokenUseCase struct {
 
 	hashProvider contractproviders.IHashProvider
 }
+
+var _ usecase.BaseUseCase[string, bool] = (*GetResetPasswordTokenUseCase)(nil)
 
 // SetLocale sets the locale for the use case
 func (uc *GetResetPasswordTokenUseCase) SetLocale(locale locales.LocaleTypeEnum) {
@@ -35,8 +37,8 @@ func (uc *GetResetPasswordTokenUseCase) SetLocale(locale locales.LocaleTypeEnum)
 func (uc *GetResetPasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input string,
-) *usecase.UseCaseResult[dtos.OneTimeTokenUser] {
-	result := usecase.NewUseCaseResult[dtos.OneTimeTokenUser]()
+) *usecase.UseCaseResult[bool] {
+	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
 	uc.Validate(ctx, input, result)
 	if result.HasError() {
@@ -58,11 +60,11 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 		return result
 	}
 
-	uc.setSuccessResult(result, user, token)
+	uc.setSuccessResult(ctx, result, user, token)
 	return result
 }
 
-func (uc *GetResetPasswordTokenUseCase) getUser(result *usecase.UseCaseResult[dtos.OneTimeTokenUser], emailOrPhone string) *models.User {
+func (uc *GetResetPasswordTokenUseCase) getUser(result *usecase.UseCaseResult[bool], emailOrPhone string) *models.User {
 	user, err := uc.userRepo.GetByEmailOrPhone(emailOrPhone)
 	if err != nil {
 		uc.log.Error("Error getting user by email or phone", err.ToError())
@@ -78,7 +80,7 @@ func (uc *GetResetPasswordTokenUseCase) getUser(result *usecase.UseCaseResult[dt
 	return user
 }
 
-func (uc *GetResetPasswordTokenUseCase) generateToken(result *usecase.UseCaseResult[dtos.OneTimeTokenUser]) (string, []byte) {
+func (uc *GetResetPasswordTokenUseCase) generateToken(result *usecase.UseCaseResult[bool]) (string, []byte) {
 	token, hash, err := uc.hashProvider.OneTimeToken()
 	if err != nil {
 		uc.log.Error("Error generating one time token", err.ToError())
@@ -94,7 +96,7 @@ func (uc *GetResetPasswordTokenUseCase) generateToken(result *usecase.UseCaseRes
 	return token, hash
 }
 
-func (uc *GetResetPasswordTokenUseCase) createToken(result *usecase.UseCaseResult[dtos.OneTimeTokenUser], userID uint, hash []byte) {
+func (uc *GetResetPasswordTokenUseCase) createToken(result *usecase.UseCaseResult[bool], userID uint, hash []byte) {
 	tokenCreate := dtos.NewOneTimeTokenCreate(userID, models.OneTimeTokenPurposePasswordReset, hash)
 	_, err := uc.tokenRepo.Create(*tokenCreate)
 	if err != nil {
@@ -110,13 +112,12 @@ func (uc *GetResetPasswordTokenUseCase) createToken(result *usecase.UseCaseResul
 	}
 }
 
-func (uc *GetResetPasswordTokenUseCase) setSuccessResult(result *usecase.UseCaseResult[dtos.OneTimeTokenUser], user *models.User, token string) {
+func (uc *GetResetPasswordTokenUseCase) setSuccessResult(ctx *app_context.AppContext, result *usecase.UseCaseResult[bool], user *models.User, token string) {
+	oneTimeToken := dtos.OneTimeTokenUser{User: *user, Token: token}
+	ctx.AddOneTimeTokenToContext(oneTimeToken)
 	result.SetData(
 		status.Success,
-		dtos.OneTimeTokenUser{
-			User:  *user,
-			Token: token,
-		},
+		true,
 		uc.AppMessages.Get(
 			uc.Locale,
 			messages.MessageKeysInstance.PASSWORD_TOKEN_CREATED,
@@ -127,7 +128,7 @@ func (uc *GetResetPasswordTokenUseCase) setSuccessResult(result *usecase.UseCase
 func (uc *GetResetPasswordTokenUseCase) Validate(
 	ctx *app_context.AppContext,
 	input string,
-	result *usecase.UseCaseResult[dtos.OneTimeTokenUser],
+	result *usecase.UseCaseResult[bool],
 ) {
 	// Skip input validation as it's just a string (email or phone)
 }
@@ -139,7 +140,7 @@ func NewGetResetPasswordTokenUseCase(
 	hashProvider contractproviders.IHashProvider,
 ) *GetResetPasswordTokenUseCase {
 	return &GetResetPasswordTokenUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, dtos.OneTimeTokenUser]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, bool]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
