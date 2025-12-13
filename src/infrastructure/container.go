@@ -5,6 +5,7 @@ import (
 
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	services "github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	settings "github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
 	config "github.com/simon3640/goprojectskeleton/src/infrastructure/config"
@@ -91,6 +92,9 @@ func Initialize() *application_errors.ApplicationError {
 		settings.AppSettingsInstance.BackgroundWorkers,
 		settings.AppSettingsInstance.BackgroundQueueSize,
 	)
+
+	// Initialize Background Service Factory
+	services.InitializeBackgroundServiceFactory()
 
 	return nil
 }
