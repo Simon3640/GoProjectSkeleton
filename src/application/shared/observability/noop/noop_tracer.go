@@ -146,5 +146,5 @@ func (n *NoOpTraceContext) SpanID() string {
 
 // IsValid always returns false for no-op context
 func (n *NoOpTraceContext) IsValid() bool {
-	return false
+	return true
 }

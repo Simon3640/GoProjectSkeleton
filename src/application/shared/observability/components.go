@@ -23,7 +23,7 @@ func NewDefaultObservabilityComponents() *ObservabilityComponents {
 		Propagator: noop.NewNoOpTracePropagator(),
 		Metrics:    noop.NewNoOpMetricsCollector(),
 		Clock:      noop.NewNoOpClock(),
-		Logger:     noop.NewNoOpLogger(),
+		Logger:     noop.Logger,
 	}
 }
 

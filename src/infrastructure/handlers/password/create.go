@@ -36,8 +36,8 @@ func CreatePassword(ctx handlers.HandlerContext) {
 
 	passwordRepository := passwordrepositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
-	ucResult := usecases_password.NewCreatePasswordUseCase(providers.Logger,
-		passwordRepository, providers.HashProviderInstance, false,
+	ucResult := usecases_password.NewCreatePasswordUseCase(
+		passwordRepository, providers.HashProviderInstance,
 	).Execute(ctx.Context, ctx.Locale, passwordCreate)
 	headers := map[handlers.HTTPHeaderTypeEnum]string{
 		handlers.CONTENT_TYPE: string(handlers.APPLICATION_JSON),

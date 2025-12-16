@@ -9,6 +9,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 )
@@ -16,7 +17,6 @@ import (
 // CreatePasswordUseCase is the use case for creating a password
 type CreatePasswordUseCase struct {
 	usecase.BaseUseCaseValidation[dtos.PasswordCreateNoHash, bool]
-	log          contractsproviders.ILoggerProvider
 	repo         passwordcontracts.IPasswordRepository
 	hashProvider contractsproviders.IHashProvider
 }
@@ -48,6 +48,7 @@ func (uc *CreatePasswordUseCase) Execute(ctx *app_context.AppContext,
 	}
 
 	uc.setSuccessResult(result)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("password_created", uc.AppContext)
 	return result
 }
 
@@ -55,7 +56,7 @@ func (uc *CreatePasswordUseCase) createPassword(input dtos.PasswordCreateNoHash,
 	_, err := passwordservices.CreatePasswordService(input, uc.hashProvider, uc.repo)
 
 	if err != nil {
-		uc.log.Error("CreatePasswordUseCase: Execute: Error creating password", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error creating password", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -77,11 +78,10 @@ func (uc *CreatePasswordUseCase) setSuccessResult(result *usecase.UseCaseResult[
 	)
 }
 
+// NewCreatePasswordUseCase creates a new CreatePasswordUseCase
 func NewCreatePasswordUseCase(
-	log contractsproviders.ILoggerProvider,
 	repo passwordcontracts.IPasswordRepository,
 	hashProvider contractsproviders.IHashProvider,
-	skip_guards bool,
 ) *CreatePasswordUseCase {
 	return &CreatePasswordUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[dtos.PasswordCreateNoHash, bool]{
@@ -91,7 +91,6 @@ func NewCreatePasswordUseCase(
 				guards.UserResourceGuard[dtos.PasswordCreateNoHash](),
 			),
 		},
-		log:          log,
 		repo:         repo,
 		hashProvider: hashProvider,
 	}

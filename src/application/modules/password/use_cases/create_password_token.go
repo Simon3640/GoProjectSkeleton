@@ -13,6 +13,7 @@ import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
@@ -21,7 +22,6 @@ import (
 // CreatePasswordTokenUseCase is the use case for creating a password token
 type CreatePasswordTokenUseCase struct {
 	usecase.BaseUseCaseValidation[dtos.PasswordTokenCreate, bool]
-	log              contractsproviders.ILoggerProvider
 	passRepo         passwordcontracts.IPasswordRepository
 	hashProvider     contractsproviders.IHashProvider
 	oneTimetokenRepo contractsrepositories.IOneTimeTokenRepository
@@ -49,7 +49,7 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 	if result.HasError() {
 		return result
 	}
-	oneTimeToken := uc.validateAndGetToken(result, input.Token)
+	oneTimeToken := uc.getToken(result, input.Token)
 	if result.HasError() {
 		return result
 	}
@@ -65,14 +65,15 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 	}
 
 	uc.setSuccessResult(result)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("passwod_reset_token_completed", uc.AppContext)
 	return result
 }
 
-func (uc *CreatePasswordTokenUseCase) validateAndGetToken(result *usecase.UseCaseResult[bool], token string) *models.OneTimeToken {
+func (uc *CreatePasswordTokenUseCase) getToken(result *usecase.UseCaseResult[bool], token string) *models.OneTimeToken {
 	hash := uc.hashProvider.HashOneTimeToken(token)
 	oneTimeToken, err := uc.oneTimetokenRepo.GetByTokenHash(hash)
 	if err != nil {
-		uc.log.Error("Error getting one time token by hash", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting one time token by hash", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -85,7 +86,7 @@ func (uc *CreatePasswordTokenUseCase) validateAndGetToken(result *usecase.UseCas
 
 	if oneTimeToken == nil || oneTimeToken.IsUsed || oneTimeToken.Expires.Before(time.Now()) ||
 		oneTimeToken.Purpose != models.OneTimeTokenPurposePasswordReset {
-		uc.log.Error("One time token is not valid or has incorrect purpose", nil)
+		observability.GetObservabilityComponents().Logger.WarningWithContext("One time token is not valid or has incorrect purpose", uc.AppContext)
 		result.SetError(
 			status.Conflict,
 			uc.AppMessages.Get(
@@ -108,7 +109,7 @@ func (uc *CreatePasswordTokenUseCase) createPassword(result *usecase.UseCaseResu
 
 	_, err := passwordservices.CreatePasswordService(passwordCreateNoHash, uc.hashProvider, uc.passRepo)
 	if err != nil {
-		uc.log.Error("CreatePasswordTokenUseCase: Execute: Error creating password", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("CreatePasswordTokenUseCase: Execute: Error creating password", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -125,7 +126,7 @@ func (uc *CreatePasswordTokenUseCase) markTokenAsUsed(result *usecase.UseCaseRes
 		shareddtos.OneTimeTokenUpdate{IsUsed: true, ID: tokenID})
 
 	if err != nil {
-		uc.log.Error("Error updating one time token as used", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error updating one time token as used", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -149,7 +150,6 @@ func (uc *CreatePasswordTokenUseCase) setSuccessResult(result *usecase.UseCaseRe
 }
 
 func NewCreatePasswordTokenUseCase(
-	log contractsproviders.ILoggerProvider,
 	passRepo passwordcontracts.IPasswordRepository,
 	hashProvider contractsproviders.IHashProvider,
 	repo contractsrepositories.IOneTimeTokenRepository,
@@ -159,7 +159,6 @@ func NewCreatePasswordTokenUseCase(
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
-		log:              log,
 		passRepo:         passRepo,
 		hashProvider:     hashProvider,
 		oneTimetokenRepo: repo,

@@ -20,7 +20,6 @@ func TestCreatePasswordUseCase(t *testing.T) {
 
 	actor := dtomocks.UserWithRole
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testPassword := dtos.PasswordCreateNoHash{
@@ -51,7 +50,7 @@ func TestCreatePasswordUseCase(t *testing.T) {
 
 	testHashProvider.On("HashPassword", testPassword.NoHashedPassword).Return("HashedPassword123!", nil)
 
-	uc := NewCreatePasswordUseCase(testLogger, testPasswordRepository, testHashProvider, false)
+	uc := NewCreatePasswordUseCase(testPasswordRepository, testHashProvider)
 
 	result := uc.Execute(ctxWithUser, locales.EN_US, testPassword)
 
