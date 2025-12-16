@@ -8,6 +8,7 @@ import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
@@ -16,7 +17,6 @@ import (
 // GetResetPasswordTokenUseCase is the use case for generating a reset password token
 type GetResetPasswordTokenUseCase struct {
 	usecase.BaseUseCaseValidation[string, bool]
-	log contractproviders.ILoggerProvider
 
 	tokenRepo contractrepositories.IOneTimeTokenRepository
 	userRepo  authcontracts.IUserRepository
@@ -68,7 +68,7 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 func (uc *GetResetPasswordTokenUseCase) getUser(result *usecase.UseCaseResult[bool], emailOrPhone string) *models.User {
 	user, err := uc.userRepo.GetByEmailOrPhone(emailOrPhone)
 	if err != nil {
-		uc.log.Error("Error getting user by email or phone", err.ToError())
+		observability.GetObservabilityComponents().Logger.Error("Error getting user by email or phone", err.ToError())
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -84,7 +84,7 @@ func (uc *GetResetPasswordTokenUseCase) getUser(result *usecase.UseCaseResult[bo
 func (uc *GetResetPasswordTokenUseCase) generateToken(result *usecase.UseCaseResult[bool]) (string, []byte) {
 	token, hash, err := uc.hashProvider.OneTimeToken()
 	if err != nil {
-		uc.log.Error("Error generating one time token", err.ToError())
+		observability.GetObservabilityComponents().Logger.Error("Error generating one time token", err.ToError())
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -101,7 +101,7 @@ func (uc *GetResetPasswordTokenUseCase) createToken(result *usecase.UseCaseResul
 	tokenCreate := dtos.NewOneTimeTokenCreate(userID, models.OneTimeTokenPurposePasswordReset, hash)
 	_, err := uc.tokenRepo.Create(*tokenCreate)
 	if err != nil {
-		uc.log.Error("Error creating one time token", err.ToError())
+		observability.GetObservabilityComponents().Logger.Error("Error creating one time token", err.ToError())
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -127,7 +127,6 @@ func (uc *GetResetPasswordTokenUseCase) setSuccessResult(result *usecase.UseCase
 }
 
 func NewGetResetPasswordTokenUseCase(
-	log contractproviders.ILoggerProvider,
 	tokenRepo contractrepositories.IOneTimeTokenRepository,
 	userRepo authcontracts.IUserRepository,
 	hashProvider contractproviders.IHashProvider,
@@ -137,7 +136,6 @@ func NewGetResetPasswordTokenUseCase(
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
-		log:          log,
 		tokenRepo:    tokenRepo,
 		userRepo:     userRepo,
 		hashProvider: hashProvider,

@@ -39,7 +39,7 @@ func Login(ctx handlers.HandlerContext) {
 	userRepository := userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 	otpRepository := authrepositories.NewOneTimePasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
-	uc := authusecases.NewAuthenticateUseCase(providers.Logger,
+	uc := authusecases.NewAuthenticateUseCase(
 		passwordRepository,
 		userRepository,
 		otpRepository,

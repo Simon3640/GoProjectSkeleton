@@ -25,7 +25,6 @@ import (
 // AuthenticateUseCase is the use case for the authentication of a user
 type AuthenticateUseCase struct {
 	usecase.BaseUseCaseValidation[dtos.UserCredentials, dtos.Token]
-	log contractproviders.ILoggerProvider
 
 	pass     authcontracts.IPasswordRepository
 	userRepo authcontracts.IUserRepository
@@ -108,7 +107,7 @@ func (uc *AuthenticateUseCase) checkRateLimitAndSetError(result *usecase.UseCase
 
 	exceeded, err := uc.checkRateLimit(email)
 	if err != nil {
-		observability.ObservabilityComponentsInstance.Logger.ErrorWithContext("Error checking rate limit, continuing with authentication", err.ToError(), uc.AppContext)
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error checking rate limit, continuing with authentication", err.ToError(), uc.AppContext)
 		return
 	}
 
@@ -233,9 +232,9 @@ func (uc *AuthenticateUseCase) sendOTPEmailInBackground(
 	locale locales.LocaleTypeEnum,
 ) {
 	// Create the background service
-	observability.ObservabilityComponentsInstance.Logger.InfoWithContext("Creating OTP email background service", ctx)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("Creating OTP email background service", ctx)
 	sendOTPService := authservices.NewSendOTPEmailBackgroundService(
-		observability.ObservabilityComponentsInstance,
+		observability.GetObservabilityComponents(),
 		uc.otpRepo,
 		uc.hashProvider,
 	)
@@ -251,7 +250,7 @@ func (uc *AuthenticateUseCase) sendOTPEmailInBackground(
 	if err := services.ExecuteBackgroundService(sendOTPService, ctx, locale, input); err != nil {
 		// Log error but don't fail the authentication
 		// The service will log its own errors internally
-		observability.ObservabilityComponentsInstance.Logger.ErrorWithContext("Error submitting OTP email service to background executor", err, ctx)
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error submitting OTP email service to background executor", err, ctx)
 	}
 }
 
@@ -322,7 +321,6 @@ func (uc *AuthenticateUseCase) getRateLimitKey(email string) string {
 }
 
 func NewAuthenticateUseCase(
-	log contractproviders.ILoggerProvider,
 	pass authcontracts.IPasswordRepository,
 	userRepo authcontracts.IUserRepository,
 	otpRepo authcontracts.IOneTimePasswordRepository,
@@ -335,7 +333,6 @@ func NewAuthenticateUseCase(
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
-		log:           log,
 		pass:          pass,
 		userRepo:      userRepo,
 		otpRepo:       otpRepo,

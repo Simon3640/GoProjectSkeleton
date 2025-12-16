@@ -9,7 +9,6 @@ import (
 	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
-	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -19,10 +18,9 @@ func TestAuthenticationRefreshUseCase(t *testing.T) {
 	assert := assert.New(t)
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testJWTProvider := new(authmocks.MockJWTProvider)
 
-	uc := NewAuthenticationRefreshUseCase(testLogger, testJWTProvider)
+	uc := NewAuthenticationRefreshUseCase(testJWTProvider)
 
 	// Valid Token Refresh
 	validToken := "validAccessToken.123"
