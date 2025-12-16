@@ -1,5 +1,5 @@
-// Package main contains the implementation of the OtelInit
-package main
+// Package otel contains the implementation of the OtelInit
+package otel
 
 import (
 	"context"

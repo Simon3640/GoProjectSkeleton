@@ -1,4 +1,4 @@
-package main
+package otel
 
 import (
 	contractsobservability "github.com/simon3640/goprojectskeleton/src/application/contracts/observability"
