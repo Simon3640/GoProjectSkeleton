@@ -19,6 +19,8 @@ type BaseUseCase[Input any, Output any] interface {
 	SetAppContext(appContext *app_context.AppContext)
 }
 
+var _ BaseUseCase[any, any] = (*BaseUseCaseValidation[any, any])(nil)
+
 // BaseUseCaseValidation is the base struct for all use cases with validation
 // Abstracts the validation logic from the use case implementation
 // Abstracts the guards logic from the use case implementation
@@ -27,6 +29,14 @@ type BaseUseCaseValidation[Input any, Output any] struct {
 	AppMessages *locales.Locale
 	Locale      locales.LocaleTypeEnum
 	AppContext  *app_context.AppContext
+}
+
+func (v *BaseUseCaseValidation[Input, Output]) Execute(
+	_ *app_context.AppContext,
+	_ locales.LocaleTypeEnum,
+	_ Input,
+) *UseCaseResult[Output] {
+	return nil
 }
 
 // SetAppContext sets the app context for the use case

@@ -14,6 +14,7 @@ import (
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	services "github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
@@ -107,7 +108,7 @@ func (uc *AuthenticateUseCase) checkRateLimitAndSetError(result *usecase.UseCase
 
 	exceeded, err := uc.checkRateLimit(email)
 	if err != nil {
-		uc.log.Error("Error checking rate limit, continuing with authentication", err.ToError())
+		observability.ObservabilityComponentsInstance.Logger.ErrorWithContext("Error checking rate limit, continuing with authentication", err.ToError(), uc.AppContext)
 		return
 	}
 
@@ -232,8 +233,9 @@ func (uc *AuthenticateUseCase) sendOTPEmailInBackground(
 	locale locales.LocaleTypeEnum,
 ) {
 	// Create the background service
+	observability.ObservabilityComponentsInstance.Logger.InfoWithContext("Creating OTP email background service", ctx)
 	sendOTPService := authservices.NewSendOTPEmailBackgroundService(
-		uc.log,
+		observability.ObservabilityComponentsInstance,
 		uc.otpRepo,
 		uc.hashProvider,
 	)
@@ -249,7 +251,7 @@ func (uc *AuthenticateUseCase) sendOTPEmailInBackground(
 	if err := services.ExecuteBackgroundService(sendOTPService, ctx, locale, input); err != nil {
 		// Log error but don't fail the authentication
 		// The service will log its own errors internally
-		uc.log.Error("Error submitting OTP email service to background executor", err)
+		observability.ObservabilityComponentsInstance.Logger.ErrorWithContext("Error submitting OTP email service to background executor", err, ctx)
 	}
 }
 
@@ -281,7 +283,7 @@ func (uc *AuthenticateUseCase) checkRateLimit(email string) (bool, *applicatione
 	key := uc.getRateLimitKey(email)
 	attempts, err := uc.cacheProvider.GetInt64(key)
 	if err != nil {
-		uc.log.Error("Error getting failed attempts", err.ToError())
+		observability.ObservabilityComponentsInstance.Logger.Error("Error getting failed attempts", err.ToError())
 		return false, err
 	}
 
@@ -297,7 +299,7 @@ func (uc *AuthenticateUseCase) incrementFailedAttempts(email string) {
 	key := uc.getRateLimitKey(email)
 	_, err := uc.cacheProvider.Increment(key, time.Duration(settings.AppSettingsInstance.LoginAttemptsWindowMinutes)*time.Minute)
 	if err != nil {
-		uc.log.Error("Error incrementing failed attempts", err.ToError())
+		observability.ObservabilityComponentsInstance.Logger.Error("Error incrementing failed attempts", err.ToError())
 		return
 	}
 }
@@ -310,7 +312,7 @@ func (uc *AuthenticateUseCase) clearFailedAttempts(email string) {
 
 	key := uc.getRateLimitKey(email)
 	if err := uc.cacheProvider.Delete(key); err != nil {
-		uc.log.Error("Error clearing failed attempts", err.ToError())
+		observability.ObservabilityComponentsInstance.Logger.Error("Error clearing failed attempts", err.ToError())
 	}
 }
 

@@ -150,8 +150,8 @@ func TestDagExecution(t *testing.T) {
 	UC3 := &UCIntToString{}
 
 	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
-	dag2 := Then(dag, NewStep(UC2))
-	dag3 := Then(dag2, NewStep(UC3))
+	dag2 := Then(dag, NewStep(UC2), "uc2")
+	dag3 := Then(dag2, NewStep(UC3), "uc3")
 
 	input := "5"
 	result := dag3.Execute(input)
@@ -175,9 +175,9 @@ func TestDagConcurrentExecution(t *testing.T) {
 	ParallelUC := NewUseCaseParallelDag[string, int]()
 	ParallelUC.Usecases = []BaseUseCase[string, int]{UC1, UC1, UC1, UC1, UC1}
 	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
-	dag2 := Then(dag, NewStep(UC2))
-	dag3 := Then(dag2, NewStep(UC3))
-	dagParallel := Then(dag3, NewStep(ParallelUC))
+	dag2 := Then(dag, NewStep(UC2), "uc2")
+	dag3 := Then(dag2, NewStep(UC3), "uc3")
+	dagParallel := Then(dag3, NewStep(ParallelUC), "parallel")
 
 	input := "5"
 	result := dagParallel.Execute(input)
@@ -203,7 +203,7 @@ func TestDagWithBackgroundTask(t *testing.T) {
 	backgroundUC := &UCLogBackgroundInt{}
 
 	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
-	dag2 := Then(dag, NewStep(UC2))
+	dag2 := Then(dag, NewStep(UC2), "uc2")
 	dagWithBackground := ThenBackground(dag2, NewStep(backgroundUC), "log-background")
 
 	input := "5"
@@ -238,7 +238,7 @@ func TestDagWithMultipleBackgroundTasks(t *testing.T) {
 	backgroundUC2 := &UCLogBackgroundInt{}
 
 	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
-	dag2 := Then(dag, NewStep(UC2))
+	dag2 := Then(dag, NewStep(UC2), "uc2")
 	dagWithBg1 := ThenBackground(dag2, NewStep(backgroundUC1), "log-background-1")
 	dagWithBg2 := ThenBackground(dagWithBg1, NewStep(backgroundUC2), "log-background-2")
 
@@ -279,7 +279,7 @@ func TestDagExecuteWithBackground(t *testing.T) {
 	backgroundUC := &UCLogBackgroundInt{}
 
 	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
-	dag2 := Then(dag, NewStep(UC2))
+	dag2 := Then(dag, NewStep(UC2), "uc2")
 	dagWithBackground := ThenBackground(dag2, NewStep(backgroundUC), "log-background")
 
 	input := "5"
@@ -310,7 +310,7 @@ func TestDagExecuteWithBackgroundTimeout(t *testing.T) {
 	backgroundUC := &UCLogBackgroundInt{}
 
 	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
-	dag2 := Then(dag, NewStep(UC2))
+	dag2 := Then(dag, NewStep(UC2), "uc2")
 	dagWithBackground := ThenBackground(dag2, NewStep(backgroundUC), "log-background")
 
 	input := "5"
@@ -367,8 +367,8 @@ func TestDagWithBackgroundChain(t *testing.T) {
 
 	// Crear una cadena: UC1 -> UC2 -> UC3, y luego agregar background task
 	dag := NewDag(appCtx, NewStep(UC1), locales.EN_US, executor)
-	dag2 := Then(dag, NewStep(UC2))
-	dag3 := Then(dag2, NewStep(UC3))
+	dag2 := Then(dag, NewStep(UC2), "uc2")
+	dag3 := Then(dag2, NewStep(UC3), "uc3")
 	dagWithBackground := ThenBackground(dag3, NewStep(backgroundUC), "log-background")
 
 	input := "5"
