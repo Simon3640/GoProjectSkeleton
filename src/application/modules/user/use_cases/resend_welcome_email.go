@@ -10,6 +10,7 @@ import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	emailservices "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
@@ -23,7 +24,6 @@ import (
 // ResendWelcomeEmailUseCase is a use case that resends the welcome email to the user
 type ResendWelcomeEmailUseCase struct {
 	usecase.BaseUseCaseValidation[userdtos.ResendWelcomeEmailRequest, bool]
-	log contractsproviders.ILoggerProvider
 
 	hashProvider contractsproviders.IHashProvider
 	userRepo     usercontracts.IUserRepository
@@ -71,6 +71,7 @@ func (uc *ResendWelcomeEmailUseCase) Execute(ctx *app_context.AppContext,
 			messages.MessageKeysInstance.WelcomeEmailResent,
 		),
 	)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("Welcome email resent successfully", uc.AppContext)
 	return result
 }
 
@@ -84,7 +85,7 @@ func (uc *ResendWelcomeEmailUseCase) getByEmailOrPhone(
 	// Search user by email or phone
 	user, err := uc.userRepo.GetByEmailOrPhone(input.Email)
 	if err != nil {
-		uc.log.Error("Error getting user by email or phone", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user by email or phone", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -121,7 +122,7 @@ func (uc *ResendWelcomeEmailUseCase) createOneTimeToken(
 		uc.tokenRepo,
 	)
 	if err != nil {
-		uc.log.Error("Error creating one time token", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error creating one time token", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -157,7 +158,7 @@ func (uc *ResendWelcomeEmailUseCase) sendWelcomeEmail(
 		templates.TemplateKeysInstance.WelcomeEmail,
 		emailservices.SubjectKeysInstance.WelcomeEmail,
 	); err != nil {
-		uc.log.Error("Error sending email", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error sending email", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -174,6 +175,7 @@ func (uc *ResendWelcomeEmailUseCase) validate(
 	msgs := input.Validate()
 
 	if len(msgs) > 0 {
+		observability.GetObservabilityComponents().Logger.WarningWithContext("Invalid input", uc.AppContext)
 		result.SetError(
 			status.InvalidInput,
 			strings.Join(msgs, "\n"),
@@ -183,7 +185,6 @@ func (uc *ResendWelcomeEmailUseCase) validate(
 
 // NewResendWelcomeEmailUseCase creates a new ResendWelcomeEmailUseCase
 func NewResendWelcomeEmailUseCase(
-	log contractsproviders.ILoggerProvider,
 	hashProvider contractsproviders.IHashProvider,
 	userRepo usercontracts.IUserRepository,
 	tokenRepo contractsrepositories.IOneTimeTokenRepository,
@@ -193,7 +194,6 @@ func NewResendWelcomeEmailUseCase(
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
-		log:          log,
 		hashProvider: hashProvider,
 		userRepo:     userRepo,
 		tokenRepo:    tokenRepo,

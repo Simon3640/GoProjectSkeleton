@@ -12,6 +12,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
@@ -22,7 +23,6 @@ import (
 // GetAllUserUseCase is a use case that gets all users
 type GetAllUserUseCase struct {
 	usecase.BaseUseCaseValidation[domainutils.QueryPayloadBuilder[models.User], userdtos.UserMultiResponse]
-	log   contractsProviders.ILoggerProvider
 	repo  usercontracts.IUserRepository
 	cache contractsProviders.ICacheProvider
 }
@@ -50,7 +50,7 @@ func (uc *GetAllUserUseCase) Execute(
 
 	data, total, err := uc.getUsersFromRepository(input, result)
 	if err != nil {
-		uc.log.Error("Error getting all users from repository", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting all users from repository", err.ToError(), uc.AppContext)
 		return result
 	}
 
@@ -99,16 +99,16 @@ func (uc *GetAllUserUseCase) getUsersFromCache(
 	found, err := uc.cache.Get(cacheKey, &data)
 
 	if err != nil {
-		uc.log.Error("Error getting cache for users", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting cache for users", err.ToError(), uc.AppContext)
 	}
 
 	if found {
 		var total int64
 		found, err = uc.cache.Get(cacheKey+":total", &total)
 		if err != nil {
-			uc.log.Error("Error getting cache for users total", err.ToError())
+			observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting cache for users total", err.ToError(), uc.AppContext)
 		}
-		uc.log.Debug("Cache hit for users", map[string]any{"cacheKey": cacheKey, "total": total})
+		observability.GetObservabilityComponents().Logger.DebugWithContext("Cache hit for users", map[string]any{"cacheKey": cacheKey, "total": total}, uc.AppContext)
 		if found {
 			result.SetData(
 				status.Success,
@@ -136,7 +136,7 @@ func (uc *GetAllUserUseCase) getUsersFromRepository(
 ) ([]models.User, int64, *applicationerrors.ApplicationError) {
 	data, total, err := uc.repo.GetAll(&input, input.Pagination.GetOffset(), input.Pagination.GetLimit())
 	if err != nil {
-		uc.log.Error("Error getting all users", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting all users", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(uc.Locale, err.Context),
@@ -150,16 +150,15 @@ func (uc *GetAllUserUseCase) getUsersFromRepository(
 // it sets the cache for the users with the data and total
 func (uc *GetAllUserUseCase) setCache(input domainutils.QueryPayloadBuilder[models.User], data []models.User, total int64) {
 	if err := uc.cache.Set(uc.cacheKey(input), data, time.Duration(settings.AppSettingsInstance.RedisTTL)*time.Second); err != nil {
-		uc.log.Error("Error setting cache for users", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error setting cache for users", err.ToError(), uc.AppContext)
 	}
 	if err := uc.cache.Set(uc.cacheKey(input)+":total", total, time.Duration(settings.AppSettingsInstance.RedisTTL)*time.Second); err != nil {
-		uc.log.Error("Error setting cache for users total", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error setting cache for users total", err.ToError(), uc.AppContext)
 	}
 }
 
 // NewGetAllUserUseCase creates a new get all user use case
 func NewGetAllUserUseCase(
-	log contractsProviders.ILoggerProvider,
 	repo usercontracts.IUserRepository,
 	cache contractsProviders.ICacheProvider,
 ) *GetAllUserUseCase {
@@ -168,7 +167,6 @@ func NewGetAllUserUseCase(
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(guards.RoleGuard("admin")),
 		},
-		log:   log,
 		repo:  repo,
 		cache: cache,
 	}

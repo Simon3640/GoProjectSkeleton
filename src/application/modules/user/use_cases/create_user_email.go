@@ -6,6 +6,7 @@ import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
@@ -19,7 +20,6 @@ import (
 // CreateUserSendEmailUseCase is a use case that sends an email to a user
 type CreateUserSendEmailUseCase struct {
 	usecase.BaseUseCaseValidation[models.User, models.User]
-	log contractsproviders.ILoggerProvider
 
 	hashProvider contractsproviders.IHashProvider
 
@@ -54,6 +54,7 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx *app_context.AppContext,
 			messages.MessageKeysInstance.USER_WAS_CREATED,
 		),
 	)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("user_created_and_email_sent", uc.AppContext)
 	return result
 }
 
@@ -67,7 +68,7 @@ func (uc *CreateUserSendEmailUseCase) createOneTimeToken(input models.User, resu
 		uc.tokenRepo,
 	)
 	if err != nil {
-		uc.log.Error("Error creating one time token", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error creating one time token", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -97,7 +98,7 @@ func (uc *CreateUserSendEmailUseCase) sendWelcomeEmail(input models.User, token 
 		templates.TemplateKeysInstance.WelcomeEmail,
 		emailservice.SubjectKeysInstance.WelcomeEmail,
 	); err != nil {
-		uc.log.Error("Error sending email", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error sending email", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -110,7 +111,6 @@ func (uc *CreateUserSendEmailUseCase) sendWelcomeEmail(input models.User, token 
 
 // NewCreateUserSendEmailUseCase creates a new create user send email use case
 func NewCreateUserSendEmailUseCase(
-	log contractsproviders.ILoggerProvider,
 	hashProvider contractsproviders.IHashProvider,
 	tokenRepo contractsrepositories.IOneTimeTokenRepository,
 ) *CreateUserSendEmailUseCase {
@@ -119,7 +119,6 @@ func NewCreateUserSendEmailUseCase(
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
-		log:          log,
 		hashProvider: hashProvider,
 		tokenRepo:    tokenRepo,
 	}

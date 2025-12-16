@@ -9,7 +9,6 @@ import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
-	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
@@ -22,7 +21,6 @@ func TestUpdateUserUseCase(t *testing.T) {
 	actor := dtomocks.UserWithRole
 	ctxWithUser := app_context.NewContextWithUser(&actor)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	name := "Update"
 	testUser := userdtos.UserUpdate{
@@ -43,7 +41,7 @@ func TestUpdateUserUseCase(t *testing.T) {
 		},
 	}, nil)
 
-	uc := NewUpdateUserUseCase(testLogger, testUserRepository)
+	uc := NewUpdateUserUseCase(testUserRepository)
 
 	result := uc.Execute(ctxWithUser, locales.EN_US, testUser)
 
@@ -59,7 +57,6 @@ func TestUpdateUserUseCase_DifferentUser(t *testing.T) {
 	actor := dtomocks.UserWithRole
 	ctxWithUser := app_context.NewContextWithUser(&actor)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	name := "Update"
 	testUser := userdtos.UserUpdate{
@@ -69,7 +66,7 @@ func TestUpdateUserUseCase_DifferentUser(t *testing.T) {
 
 	testUserRepository.On("Update", testUser.ID, testUser).Return(nil)
 
-	uc := NewUpdateUserUseCase(testLogger, testUserRepository)
+	uc := NewUpdateUserUseCase(testUserRepository)
 
 	result := uc.Execute(ctxWithUser, locales.EN_US, testUser)
 
