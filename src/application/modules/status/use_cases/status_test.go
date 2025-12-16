@@ -8,7 +8,6 @@ import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -19,7 +18,6 @@ func TestStatusUseCase(t *testing.T) {
 
 	ctx := app_context.NewVoidAppContext()
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testStatusProvider := new(statusmocks.MockStatusProvider)
 	testTime := time.Now()
 	testStatusProvider.On(
@@ -32,7 +30,7 @@ func TestStatusUseCase(t *testing.T) {
 		Date:    testTime.Format("2006-01-02 15:04:05"),
 	})
 
-	uc := NewGetStatusUseCase(testLogger, testStatusProvider)
+	uc := NewGetStatusUseCase(testStatusProvider)
 
 	result_en := uc.Execute(ctx, locales.EN_US, testTime)
 	result_es := uc.Execute(ctx, locales.ES_ES, testTime)
