@@ -55,6 +55,7 @@ func (uc *AuthUserUseCase) Execute(ctx *app_context.AppContext,
 	}
 
 	uc.setSuccessResult(result, user)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("JWT token authenticated successfully", uc.AppContext)
 	return result
 }
 
@@ -76,7 +77,7 @@ func (uc *AuthUserUseCase) convertSubjectToID(result *usecase.UseCaseResult[mode
 func (uc *AuthUserUseCase) getUser(result *usecase.UseCaseResult[models.UserWithRole], userID uint) *models.UserWithRole {
 	user, appError := uc.userRepository.GetUserWithRole(userID)
 	if appError != nil {
-		observability.GetObservabilityComponents().Logger.Error("Error getting user with role", appError.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user with role", appError.ToError(), uc.AppContext)
 		result.SetError(
 			appError.Code,
 			uc.AppMessages.Get(
@@ -123,7 +124,7 @@ func (uc *AuthUserUseCase) validate(input string, result *usecase.UseCaseResult[
 func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *usecase.UseCaseResult[models.UserWithRole]) *string {
 	claims, err := uc.jwtProvider.ParseTokenAndValidate(tokenString)
 	if err != nil {
-		observability.GetObservabilityComponents().Logger.Error("Failed to parse and validate token", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Failed to parse and validate token", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -147,7 +148,7 @@ func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *use
 	}
 
 	if exp, ok := claims["exp"].(float64); !ok || exp < float64(time.Now().Unix()) {
-		observability.GetObservabilityComponents().Logger.Error("Token has expired", nil)
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Token has expired", nil, uc.AppContext)
 		result.SetError(
 			status.Unauthorized,
 			uc.AppMessages.Get(
@@ -161,7 +162,7 @@ func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *use
 	// Extract subject from claims
 	sub, ok := claims["sub"].(string)
 	if !ok {
-		observability.GetObservabilityComponents().Logger.Error("Invalid subject in token claims", nil)
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Invalid subject in token claims", nil, uc.AppContext)
 		result.SetError(
 			status.Unauthorized,
 			uc.AppMessages.Get(

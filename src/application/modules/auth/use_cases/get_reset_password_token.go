@@ -62,13 +62,14 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 	}
 
 	uc.setSuccessResult(result, user, token)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("Reset password token created successfully", uc.AppContext)
 	return result
 }
 
 func (uc *GetResetPasswordTokenUseCase) getUser(result *usecase.UseCaseResult[bool], emailOrPhone string) *models.User {
 	user, err := uc.userRepo.GetByEmailOrPhone(emailOrPhone)
 	if err != nil {
-		observability.GetObservabilityComponents().Logger.Error("Error getting user by email or phone", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user by email or phone", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -84,7 +85,7 @@ func (uc *GetResetPasswordTokenUseCase) getUser(result *usecase.UseCaseResult[bo
 func (uc *GetResetPasswordTokenUseCase) generateToken(result *usecase.UseCaseResult[bool]) (string, []byte) {
 	token, hash, err := uc.hashProvider.OneTimeToken()
 	if err != nil {
-		observability.GetObservabilityComponents().Logger.Error("Error generating one time token", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error generating one time token", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -101,7 +102,7 @@ func (uc *GetResetPasswordTokenUseCase) createToken(result *usecase.UseCaseResul
 	tokenCreate := dtos.NewOneTimeTokenCreate(userID, models.OneTimeTokenPurposePasswordReset, hash)
 	_, err := uc.tokenRepo.Create(*tokenCreate)
 	if err != nil {
-		observability.GetObservabilityComponents().Logger.Error("Error creating one time token", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error creating one time token", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(

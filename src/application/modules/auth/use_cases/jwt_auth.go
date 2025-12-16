@@ -3,7 +3,6 @@ package authusecases
 
 import (
 	"fmt"
-	"regexp"
 	"time"
 
 	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
@@ -97,6 +96,7 @@ func (uc *AuthenticateUseCase) Execute(ctx *app_context.AppContext,
 	}
 
 	uc.setSuccessResult(result, token)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("Authentication successful", uc.AppContext)
 	return result
 }
 
@@ -112,6 +112,7 @@ func (uc *AuthenticateUseCase) checkRateLimitAndSetError(result *usecase.UseCase
 	}
 
 	if exceeded {
+		observability.GetObservabilityComponents().Logger.WarningWithContext("Rate limit exceeded, continuing with authentication", uc.AppContext)
 		result.SetError(
 			status.TooManyRequests,
 			uc.AppMessages.Get(
@@ -129,6 +130,7 @@ func (uc *AuthenticateUseCase) getPassword(result *usecase.UseCaseResult[dtos.To
 		if uc.cacheProvider != nil {
 			uc.incrementFailedAttempts(email)
 		}
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting password", err.ToError(), uc.AppContext)
 		result.SetError(
 			status.NotFound,
 			uc.AppMessages.Get(
@@ -147,6 +149,7 @@ func (uc *AuthenticateUseCase) getUser(result *usecase.UseCaseResult[dtos.Token]
 		if uc.cacheProvider != nil {
 			uc.incrementFailedAttempts(email)
 		}
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user", err.ToError(), uc.AppContext)
 		result.SetError(
 			status.NotFound,
 			uc.AppMessages.Get(
@@ -165,6 +168,7 @@ func (uc *AuthenticateUseCase) validatePassword(result *usecase.UseCaseResult[dt
 		if uc.cacheProvider != nil {
 			uc.incrementFailedAttempts(email)
 		}
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error validating password", verifyErr.ToError(), uc.AppContext)
 		result.SetError(
 			status.NotFound,
 			uc.AppMessages.Get(
@@ -183,6 +187,7 @@ func (uc *AuthenticateUseCase) generateTokens(ctx *app_context.AppContext, resul
 
 	access, exp, err := uc.jwtProvider.GenerateAccessToken(ctx, userIDString, claims)
 	if err != nil {
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error generating access token", err.ToError(), uc.AppContext)
 		result.SetError(
 			status.Conflict,
 			uc.AppMessages.Get(
@@ -195,6 +200,7 @@ func (uc *AuthenticateUseCase) generateTokens(ctx *app_context.AppContext, resul
 
 	refresh, expRefresh, err := uc.jwtProvider.GenerateRefreshToken(ctx, userIDString)
 	if err != nil {
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error generating refresh token", err.ToError(), uc.AppContext)
 		result.SetError(
 			status.Conflict,
 			uc.AppMessages.Get(
@@ -254,20 +260,6 @@ func (uc *AuthenticateUseCase) sendOTPEmailInBackground(
 	}
 }
 
-func (uc *AuthenticateUseCase) validate(input dtos.UserCredentials) (bool, []string) {
-	// Validate the input data
-	var validationErrors []string
-	if input.Email == "" {
-		validationErrors = append(validationErrors, uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.SOME_PARAMETERS_ARE_MISSING))
-	}
-	// regex for email validation
-	if !regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`).MatchString(input.Email) {
-		validationErrors = append(validationErrors, uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.INVALID_EMAIL))
-	}
-
-	return len(validationErrors) == 0, validationErrors
-}
-
 // checkRateLimit verify if the user has exceeded the login failed attempts limit
 func (uc *AuthenticateUseCase) checkRateLimit(email string) (bool, *applicationerrors.ApplicationError) {
 	if uc.cacheProvider == nil {
@@ -282,7 +274,7 @@ func (uc *AuthenticateUseCase) checkRateLimit(email string) (bool, *applicatione
 	key := uc.getRateLimitKey(email)
 	attempts, err := uc.cacheProvider.GetInt64(key)
 	if err != nil {
-		observability.ObservabilityComponentsInstance.Logger.Error("Error getting failed attempts", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting failed attempts", err.ToError(), uc.AppContext)
 		return false, err
 	}
 
@@ -298,7 +290,7 @@ func (uc *AuthenticateUseCase) incrementFailedAttempts(email string) {
 	key := uc.getRateLimitKey(email)
 	_, err := uc.cacheProvider.Increment(key, time.Duration(settings.AppSettingsInstance.LoginAttemptsWindowMinutes)*time.Minute)
 	if err != nil {
-		observability.ObservabilityComponentsInstance.Logger.Error("Error incrementing failed attempts", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error incrementing failed attempts", err.ToError(), uc.AppContext)
 		return
 	}
 }
@@ -311,7 +303,7 @@ func (uc *AuthenticateUseCase) clearFailedAttempts(email string) {
 
 	key := uc.getRateLimitKey(email)
 	if err := uc.cacheProvider.Delete(key); err != nil {
-		observability.ObservabilityComponentsInstance.Logger.Error("Error clearing failed attempts", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error clearing failed attempts", err.ToError(), uc.AppContext)
 	}
 }
 
