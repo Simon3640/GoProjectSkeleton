@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
@@ -19,7 +19,6 @@ import (
 // AuthUserUseCase is the use case for authenticating a user with a JWT token
 type AuthUserUseCase struct {
 	usecase.BaseUseCaseValidation[string, models.UserWithRole]
-	log contractsproviders.ILoggerProvider
 
 	userRepository authcontracts.IUserRepository
 
@@ -56,6 +55,7 @@ func (uc *AuthUserUseCase) Execute(ctx *app_context.AppContext,
 	}
 
 	uc.setSuccessResult(result, user)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("JWT token authenticated successfully", uc.AppContext)
 	return result
 }
 
@@ -77,7 +77,7 @@ func (uc *AuthUserUseCase) convertSubjectToID(result *usecase.UseCaseResult[mode
 func (uc *AuthUserUseCase) getUser(result *usecase.UseCaseResult[models.UserWithRole], userID uint) *models.UserWithRole {
 	user, appError := uc.userRepository.GetUserWithRole(userID)
 	if appError != nil {
-		uc.log.Error("Error getting user with role", appError.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user with role", appError.ToError(), uc.AppContext)
 		result.SetError(
 			appError.Code,
 			uc.AppMessages.Get(
@@ -124,7 +124,7 @@ func (uc *AuthUserUseCase) validate(input string, result *usecase.UseCaseResult[
 func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *usecase.UseCaseResult[models.UserWithRole]) *string {
 	claims, err := uc.jwtProvider.ParseTokenAndValidate(tokenString)
 	if err != nil {
-		uc.log.Error("Failed to parse and validate token", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Failed to parse and validate token", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -148,7 +148,7 @@ func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *use
 	}
 
 	if exp, ok := claims["exp"].(float64); !ok || exp < float64(time.Now().Unix()) {
-		uc.log.Error("Token has expired", nil)
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Token has expired", nil, uc.AppContext)
 		result.SetError(
 			status.Unauthorized,
 			uc.AppMessages.Get(
@@ -162,7 +162,7 @@ func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *use
 	// Extract subject from claims
 	sub, ok := claims["sub"].(string)
 	if !ok {
-		uc.log.Error("Invalid subject in token claims", nil)
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Invalid subject in token claims", nil, uc.AppContext)
 		result.SetError(
 			status.Unauthorized,
 			uc.AppMessages.Get(
@@ -177,7 +177,6 @@ func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *use
 }
 
 func NewAuthUserUseCase(
-	log contractsproviders.ILoggerProvider,
 	userRepository authcontracts.IUserRepository,
 	jwtProvider authcontracts.IJWTProvider,
 ) *AuthUserUseCase {
@@ -186,7 +185,6 @@ func NewAuthUserUseCase(
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
-		log:            log,
 		userRepository: userRepository,
 		jwtProvider:    jwtProvider,
 	}

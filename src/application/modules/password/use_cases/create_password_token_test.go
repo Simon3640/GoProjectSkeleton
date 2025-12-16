@@ -26,7 +26,6 @@ func TestCreatePasswordTokenUseCase_Execute_Success(t *testing.T) {
 	assert := assert.New(t)
 
 	ctx := &app_context.AppContext{Context: context.Background()}
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
@@ -95,7 +94,6 @@ func TestCreatePasswordTokenUseCase_Execute_Success(t *testing.T) {
 	testOneTimeTokenRepository.On("Update", validToken.ID, tokenUpdate).Return(updatedToken, nil)
 
 	uc := NewCreatePasswordTokenUseCase(
-		testLogger,
 		testPasswordRepository,
 		testHashProvider,
 		testOneTimeTokenRepository,
@@ -117,7 +115,6 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorGettingToken(t *testing.T) {
 	assert := assert.New(t)
 
 	ctx := &app_context.AppContext{Context: context.Background()}
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
@@ -141,7 +138,6 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorGettingToken(t *testing.T) {
 	testOneTimeTokenRepository.On("GetByTokenHash", tokenHash).Return(nil, appError)
 
 	uc := NewCreatePasswordTokenUseCase(
-		testLogger,
 		testPasswordRepository,
 		testHashProvider,
 		testOneTimeTokenRepository,
@@ -161,7 +157,6 @@ func TestCreatePasswordTokenUseCase_Execute_TokenIsNil(t *testing.T) {
 	assert := assert.New(t)
 
 	ctx := &app_context.AppContext{Context: context.Background()}
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
@@ -179,7 +174,6 @@ func TestCreatePasswordTokenUseCase_Execute_TokenIsNil(t *testing.T) {
 	testOneTimeTokenRepository.On("GetByTokenHash", tokenHash).Return(nil, nil)
 
 	uc := NewCreatePasswordTokenUseCase(
-		testLogger,
 		testPasswordRepository,
 		testHashProvider,
 		testOneTimeTokenRepository,
@@ -199,7 +193,6 @@ func TestCreatePasswordTokenUseCase_Execute_TokenIsUsed(t *testing.T) {
 	assert := assert.New(t)
 
 	ctx := &app_context.AppContext{Context: context.Background()}
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
@@ -231,10 +224,8 @@ func TestCreatePasswordTokenUseCase_Execute_TokenIsUsed(t *testing.T) {
 	// Configure mocks
 	testHashProvider.On("HashOneTimeToken", token).Return(tokenHash)
 	testOneTimeTokenRepository.On("GetByTokenHash", tokenHash).Return(usedToken, nil)
-	testLogger.On("Error", mock.Anything, mock.Anything).Return()
 
 	uc := NewCreatePasswordTokenUseCase(
-		testLogger,
 		testPasswordRepository,
 		testHashProvider,
 		testOneTimeTokenRepository,
@@ -254,7 +245,6 @@ func TestCreatePasswordTokenUseCase_Execute_TokenExpired(t *testing.T) {
 	assert := assert.New(t)
 
 	ctx := &app_context.AppContext{Context: context.Background()}
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
@@ -286,10 +276,8 @@ func TestCreatePasswordTokenUseCase_Execute_TokenExpired(t *testing.T) {
 	// Configure mocks
 	testHashProvider.On("HashOneTimeToken", token).Return(tokenHash)
 	testOneTimeTokenRepository.On("GetByTokenHash", tokenHash).Return(expiredToken, nil)
-	testLogger.On("Error", mock.Anything, mock.Anything).Return()
 
 	uc := NewCreatePasswordTokenUseCase(
-		testLogger,
 		testPasswordRepository,
 		testHashProvider,
 		testOneTimeTokenRepository,
@@ -309,7 +297,6 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorCreatingPassword(t *testing.T) 
 	assert := assert.New(t)
 
 	ctx := &app_context.AppContext{Context: context.Background()}
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
@@ -352,7 +339,6 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorCreatingPassword(t *testing.T) 
 	testHashProvider.On("HashPassword", noHashedPassword).Return("", appError)
 
 	uc := NewCreatePasswordTokenUseCase(
-		testLogger,
 		testPasswordRepository,
 		testHashProvider,
 		testOneTimeTokenRepository,
@@ -372,7 +358,6 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorMarkingTokenAsUsed(t *testing.T
 	assert := assert.New(t)
 
 	ctx := &app_context.AppContext{Context: context.Background()}
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
@@ -433,7 +418,6 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorMarkingTokenAsUsed(t *testing.T
 	testOneTimeTokenRepository.On("Update", validToken.ID, tokenUpdate).Return(nil, appError)
 
 	uc := NewCreatePasswordTokenUseCase(
-		testLogger,
 		testPasswordRepository,
 		testHashProvider,
 		testOneTimeTokenRepository,
@@ -454,7 +438,6 @@ func TestCreatePasswordTokenUseCase_Execute_TokenPurposeIsNotPasswordReset(t *te
 	assert := assert.New(t)
 
 	ctx := &app_context.AppContext{Context: context.Background()}
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
@@ -488,10 +471,8 @@ func TestCreatePasswordTokenUseCase_Execute_TokenPurposeIsNotPasswordReset(t *te
 	// Configure mocks
 	testHashProvider.On("HashOneTimeToken", token).Return(tokenHash)
 	testOneTimeTokenRepository.On("GetByTokenHash", tokenHash).Return(validToken, nil)
-	testLogger.On("Error", mock.Anything, mock.Anything).Return()
 
 	uc := NewCreatePasswordTokenUseCase(
-		testLogger,
 		testPasswordRepository,
 		testHashProvider,
 		testOneTimeTokenRepository,

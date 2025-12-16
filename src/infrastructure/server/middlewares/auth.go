@@ -7,6 +7,8 @@ import (
 	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
@@ -20,11 +22,20 @@ func AuthMiddleware() gin.HandlerFunc {
 		token := c.GetHeader("Authorization")
 
 		appContext := app_context.AppContext{Context: c.Request.Context()}
-		uc_result := authusecases.NewAuthUserUseCase(
-			providers.Logger,
+		uc := authusecases.NewAuthUserUseCase(
 			userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
-		).Execute(&appContext, locales.EN_US, token)
+		)
+		uc_result := usecase.InstrumentUseCase(
+			uc,
+			&appContext,
+			locales.EN_US,
+			token,
+			observability.GetObservabilityComponents().Tracer,
+			observability.GetObservabilityComponents().Metrics,
+			observability.GetObservabilityComponents().Clock,
+			"auth_user_use_case",
+		)
 
 		if uc_result.HasError() {
 			headers := map[api.HTTPHeaderTypeEnum]string{

@@ -16,7 +16,6 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestCreateUserAndPassword(t *testing.T) {
@@ -24,7 +23,6 @@ func TestCreateUserAndPassword(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
@@ -61,7 +59,6 @@ func TestCreateUserAndPassword(t *testing.T) {
 
 	// Create the use case
 	useCase := NewCreateUserAndPasswordUseCase(
-		testLogger,
 		testUserRepository,
 		testHashProvider,
 	)
@@ -80,7 +77,6 @@ func TestCreateUserAndPassword_InvalidPassword(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
@@ -102,7 +98,6 @@ func TestCreateUserAndPassword_InvalidPassword(t *testing.T) {
 
 	// Create the use case
 	useCase := NewCreateUserAndPasswordUseCase(
-		testLogger,
 		testUserRepository,
 		testHashProvider,
 	)
@@ -121,7 +116,6 @@ func TestCreateUserAndPassword_InvalidEmail(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
@@ -143,7 +137,6 @@ func TestCreateUserAndPassword_InvalidEmail(t *testing.T) {
 
 	// Create the use case
 	useCase := NewCreateUserAndPasswordUseCase(
-		testLogger,
 		testUserRepository,
 		testHashProvider,
 	)
@@ -162,7 +155,6 @@ func TestCreateUserAndPassword_InvalidRoleID(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
@@ -184,7 +176,6 @@ func TestCreateUserAndPassword_InvalidRoleID(t *testing.T) {
 
 	// Create the use case
 	useCase := NewCreateUserAndPasswordUseCase(
-		testLogger,
 		testUserRepository,
 		testHashProvider,
 	)
@@ -203,7 +194,6 @@ func TestCreateUserAndPassword_HashPasswordError(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
@@ -230,11 +220,9 @@ func TestCreateUserAndPassword_HashPasswordError(t *testing.T) {
 		"Failed to hash password",
 	)
 	testHashProvider.On("HashPassword", testUserAndPassword.Password).Return("", appErr)
-	testLogger.On("Error", mock.Anything, mock.Anything).Return()
 
 	// Create the use case
 	useCase := NewCreateUserAndPasswordUseCase(
-		testLogger,
 		testUserRepository,
 		testHashProvider,
 	)
@@ -253,7 +241,6 @@ func TestCreateUserAndPassword_RepositoryError(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
@@ -287,11 +274,9 @@ func TestCreateUserAndPassword_RepositoryError(t *testing.T) {
 	)
 	var nilUser *models.User
 	testUserRepository.On("CreateWithPassword", testUserAndPasswordHash).Return(nilUser, appErr)
-	testLogger.On("Error", mock.Anything, mock.Anything).Return()
 
 	// Create the use case
 	useCase := NewCreateUserAndPasswordUseCase(
-		testLogger,
 		testUserRepository,
 		testHashProvider,
 	)
@@ -308,12 +293,10 @@ func TestCreateUserAndPassword_RepositoryError(t *testing.T) {
 func TestCreateUserAndPassword_SetLocale(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	uc := NewCreateUserAndPasswordUseCase(
-		testLogger,
 		testUserRepository,
 		testHashProvider,
 	)

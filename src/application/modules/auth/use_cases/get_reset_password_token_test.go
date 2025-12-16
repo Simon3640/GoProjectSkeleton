@@ -21,12 +21,11 @@ func TestGetResetPasswordTokenUseCase(t *testing.T) {
 	assert := assert.New(t)
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testMockHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepo := new(repositoriesmocks.MockOneTimeTokenRepository)
 	testUserRepo := new(authmocks.MockUserRepository)
 
-	uc := NewGetResetPasswordTokenUseCase(testLogger,
+	uc := NewGetResetPasswordTokenUseCase(
 		testOneTimeTokenRepo,
 		testUserRepo,
 		testMockHashProvider,

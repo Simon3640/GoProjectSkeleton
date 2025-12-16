@@ -2,11 +2,11 @@
 package userusecases
 
 import (
-	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
@@ -14,7 +14,6 @@ import (
 
 type GetUserUseCase struct {
 	usecase.BaseUseCaseValidation[uint, models.User]
-	log  contractsproviders.ILoggerProvider
 	repo usercontracts.IUserRepository
 }
 
@@ -35,14 +34,19 @@ func (uc *GetUserUseCase) Execute(ctx *app_context.AppContext,
 	if result.HasError() {
 		return result
 	}
-	uc.GetUser(result, input)
+	res := uc.getUser(result, input)
+	if result.HasError() {
+		return result
+	}
+	result.SetData(status.Success, *res, "")
+	observability.GetObservabilityComponents().Logger.InfoWithContext("User retrieved successfully", uc.AppContext)
 	return result
 }
 
-func (uc *GetUserUseCase) GetUser(result *usecase.UseCaseResult[models.User], id uint) {
+func (uc *GetUserUseCase) getUser(result *usecase.UseCaseResult[models.User], id uint) *models.User {
 	res, err := uc.repo.GetByID(id)
 	if err != nil {
-		uc.log.Error("Error getting user by ID", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user by ID", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -50,17 +54,11 @@ func (uc *GetUserUseCase) GetUser(result *usecase.UseCaseResult[models.User], id
 				err.Context,
 			),
 		)
-		return
 	}
-	result.SetData(
-		status.Success,
-		*res,
-		"",
-	)
+	return res
 }
 
 func NewGetUserUseCase(
-	log contractsproviders.ILoggerProvider,
 	repo usercontracts.IUserRepository,
 ) *GetUserUseCase {
 	return &GetUserUseCase{
@@ -68,7 +66,6 @@ func NewGetUserUseCase(
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(guards.RoleGuard("admin", "user"), guards.UserGetItSelf),
 		},
-		log:  log,
 		repo: repo,
 	}
 }

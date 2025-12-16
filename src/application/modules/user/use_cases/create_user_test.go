@@ -10,7 +10,6 @@ import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
-	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
@@ -22,7 +21,6 @@ func TestCreateUserUseCase(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testUser := dtomocks.UserCreate
 	userStatus := models.UserStatusPending
@@ -41,7 +39,7 @@ func TestCreateUserUseCase(t *testing.T) {
 		},
 	}, nil)
 
-	uc := NewCreateUserUseCase(testLogger, testUserRepository)
+	uc := NewCreateUserUseCase(testUserRepository)
 
 	result := uc.Execute(ctx, locales.EN_US, testUser)
 
@@ -55,7 +53,6 @@ func TestCreateUserUseCase_InvalidInput(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	userStatus := models.UserStatusPending
 	testUserInvalidRoleID := userdtos.UserCreate{
@@ -67,7 +64,7 @@ func TestCreateUserUseCase_InvalidInput(t *testing.T) {
 		},
 	}
 
-	uc := NewCreateUserUseCase(testLogger, testUserRepository)
+	uc := NewCreateUserUseCase(testUserRepository)
 
 	result := uc.Execute(ctx, locales.EN_US, testUserInvalidRoleID)
 
