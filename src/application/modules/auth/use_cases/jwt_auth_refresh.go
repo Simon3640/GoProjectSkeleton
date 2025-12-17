@@ -54,13 +54,14 @@ func (uc *AuthenticationRefreshUseCase) Execute(ctx *app_context.AppContext,
 	}
 
 	uc.setSuccessResult(result, token)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("JWT token refreshed successfully", uc.AppContext)
 	return result
 }
 
 func (uc *AuthenticationRefreshUseCase) validateInput(result *usecase.UseCaseResult[dtos.Token], input string) {
 	validation, msg := uc.validate(input)
 	if !validation {
-		observability.GetObservabilityComponents().Logger.Error("Invalid input", nil)
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Invalid input", nil, uc.AppContext)
 		result.SetError(
 			status.InvalidInput,
 			strings.Join(msg, "\n"),
@@ -72,7 +73,7 @@ func (uc *AuthenticationRefreshUseCase) validateInput(result *usecase.UseCaseRes
 func (uc *AuthenticationRefreshUseCase) parseAndValidateToken(result *usecase.UseCaseResult[dtos.Token], token string) authcontracts.JWTCLaims {
 	claims, err := uc.jwtProvider.ParseTokenAndValidate(token)
 	if err != nil {
-		observability.GetObservabilityComponents().Logger.Error("Error parsing or validating token", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error parsing or validating token", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -88,7 +89,7 @@ func (uc *AuthenticationRefreshUseCase) parseAndValidateToken(result *usecase.Us
 func (uc *AuthenticationRefreshUseCase) validateClaims(result *usecase.UseCaseResult[dtos.Token], claims authcontracts.JWTCLaims) string {
 	sub, ok := claims["sub"].(string)
 	if !ok {
-		observability.GetObservabilityComponents().Logger.Error("Invalid subject in claims", nil)
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Invalid subject in claims", nil, uc.AppContext)
 		result.SetError(
 			status.Unauthorized,
 			uc.AppMessages.Get(
@@ -100,7 +101,7 @@ func (uc *AuthenticationRefreshUseCase) validateClaims(result *usecase.UseCaseRe
 	}
 
 	if claims["typ"] != "refresh" {
-		observability.GetObservabilityComponents().Logger.Error("Invalid token type", nil)
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Invalid token type", nil, uc.AppContext)
 		result.SetError(
 			status.Unauthorized,
 			uc.AppMessages.Get(
@@ -112,7 +113,7 @@ func (uc *AuthenticationRefreshUseCase) validateClaims(result *usecase.UseCaseRe
 	}
 
 	if exp, ok := claims["exp"].(float64); !ok || exp < float64(time.Now().Unix()) {
-		observability.GetObservabilityComponents().Logger.Error("Token has expired", nil)
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Token has expired", nil, uc.AppContext)
 		result.SetError(
 			status.Unauthorized,
 			uc.AppMessages.Get(
@@ -130,7 +131,7 @@ func (uc *AuthenticationRefreshUseCase) generateTokens(ctx context.Context, resu
 	var claimsMap map[string]interface{}
 	access, exp, err := uc.jwtProvider.GenerateAccessToken(ctx, subject, claimsMap)
 	if err != nil {
-		observability.GetObservabilityComponents().Logger.Error("Error generating access token", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error generating access token", err.ToError(), uc.AppContext)
 		result.SetError(
 			status.InternalError,
 			uc.AppMessages.Get(
@@ -143,7 +144,7 @@ func (uc *AuthenticationRefreshUseCase) generateTokens(ctx context.Context, resu
 
 	refresh, expRefresh, err := uc.jwtProvider.GenerateRefreshToken(ctx, subject)
 	if err != nil {
-		observability.GetObservabilityComponents().Logger.Error("Error generating refresh token", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error generating refresh token", err.ToError(), uc.AppContext)
 		result.SetError(
 			status.InternalError,
 			uc.AppMessages.Get(

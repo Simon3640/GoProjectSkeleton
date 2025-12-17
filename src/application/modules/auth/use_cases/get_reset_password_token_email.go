@@ -40,6 +40,7 @@ func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx *app_context.AppContext,
 	}
 
 	uc.setSuccessResult(result)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("Reset password email sent successfully", ctx)
 	return result
 }
 
@@ -93,6 +94,7 @@ func (uc *GetResetPasswordSendEmailUseCase) Validate(
 	result *usecase.UseCaseResult[bool],
 ) {
 	if uc.AppContext.OneTimeToken == nil || !input || uc.AppContext.OneTimeToken.User.Email == "" {
+		observability.GetObservabilityComponents().Logger.WarningWithContext("Invalid data", uc.AppContext)
 		result.SetError(
 			status.InvalidInput,
 			uc.AppMessages.Get(
