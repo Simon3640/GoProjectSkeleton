@@ -26,7 +26,6 @@ func TestResendWelcomeEmailUseCase_Execute_Success(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
@@ -77,7 +76,6 @@ func TestResendWelcomeEmailUseCase_Execute_Success(t *testing.T) {
 	)
 
 	uc := NewResendWelcomeEmailUseCase(
-		testLogger,
 		testHashProvider,
 		testUserRepository,
 		testTokenRepository,
@@ -101,13 +99,11 @@ func TestResendWelcomeEmailUseCase_Execute_InvalidEmail(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
 	uc := NewResendWelcomeEmailUseCase(
-		testLogger,
 		testHashProvider,
 		testUserRepository,
 		testTokenRepository,
@@ -129,7 +125,6 @@ func TestResendWelcomeEmailUseCase_Execute_UserAlreadyVerified(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
@@ -155,7 +150,6 @@ func TestResendWelcomeEmailUseCase_Execute_UserAlreadyVerified(t *testing.T) {
 	testUserRepository.On("GetByEmailOrPhone", email).Return(testUser, nil)
 
 	uc := NewResendWelcomeEmailUseCase(
-		testLogger,
 		testHashProvider,
 		testUserRepository,
 		testTokenRepository,
@@ -177,7 +171,6 @@ func TestResendWelcomeEmailUseCase_Execute_UserNotFound(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
@@ -193,7 +186,6 @@ func TestResendWelcomeEmailUseCase_Execute_UserNotFound(t *testing.T) {
 	testUserRepository.On("GetByEmailOrPhone", email).Return(nil, appErr)
 
 	uc := NewResendWelcomeEmailUseCase(
-		testLogger,
 		testHashProvider,
 		testUserRepository,
 		testTokenRepository,
@@ -215,7 +207,6 @@ func TestResendWelcomeEmailUseCase_Execute_RepositoryError(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
@@ -231,7 +222,6 @@ func TestResendWelcomeEmailUseCase_Execute_RepositoryError(t *testing.T) {
 	testUserRepository.On("GetByEmailOrPhone", email).Return(nil, appErr)
 
 	uc := NewResendWelcomeEmailUseCase(
-		testLogger,
 		testHashProvider,
 		testUserRepository,
 		testTokenRepository,

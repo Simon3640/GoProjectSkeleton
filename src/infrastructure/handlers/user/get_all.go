@@ -3,6 +3,8 @@ package userhandlers
 import (
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	domainutils "github.com/simon3640/goprojectskeleton/src/domain/utils"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
@@ -32,10 +34,20 @@ import (
 // @Router /api/user [get]
 func GetAllUser(ctx handlers.HandlerContext) {
 	queryParams := domainutils.NewQueryPayloadBuilder[models.User](ctx.Query.Sorts, ctx.Query.Filters, ctx.Query.Page, ctx.Query.PageSize)
-	ucResult := userusecases.NewGetAllUserUseCase(providers.Logger,
+	uc := userusecases.NewGetAllUserUseCase(
 		userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		providers.CacheProviderInstance,
-	).Execute(ctx.Context, ctx.Locale, queryParams)
+	)
+	ucResult := usecase.InstrumentUseCase(
+		uc,
+		ctx.Context,
+		ctx.Locale,
+		queryParams,
+		observability.GetObservabilityComponents().Tracer,
+		observability.GetObservabilityComponents().Metrics,
+		observability.GetObservabilityComponents().Clock,
+		"get_all_user_use_case",
+	)
 	headers := map[handlers.HTTPHeaderTypeEnum]string{
 		handlers.CONTENT_TYPE: string(handlers.APPLICATION_JSON),
 	}
