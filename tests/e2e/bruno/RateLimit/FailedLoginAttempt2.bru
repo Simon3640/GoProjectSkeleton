@@ -16,7 +16,7 @@ headers {
 
 body:json {
   {
-    "email": "{{rateLimitUserEmail}}",
+    "email": "{{rateLimitEmail}}",
     "password": "wrongPassword2"
   }
 }
@@ -29,4 +29,5 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

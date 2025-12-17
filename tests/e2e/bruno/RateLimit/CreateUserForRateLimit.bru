@@ -20,11 +20,11 @@ auth:bearer {
 
 body:json {
   {
-    "email": "ratelimit@example.com",
+    "email": "{{rateLimitEmail}}",
     "name": "Rate Limit Test User",
     "otpLogin": false,
     "password": "{{strongPassword}}",
-    "phone": "5465413515415341",
+    "phone": "{{rateLimitPhone}}",
     "role_id": 2
   }
 }
@@ -36,7 +36,7 @@ script:post-response {
       expect(res.getStatus()).to.equal(201);
   });
 
-  bru.setEnvVar("rateLimitUserEmail", response.data.email);
+
   bru.setEnvVar("rateLimitUserId", response.data.id);
 
   test("User ID is present", function () {
