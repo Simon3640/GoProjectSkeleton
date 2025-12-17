@@ -24,7 +24,6 @@ import (
 // @Router /api/status [get]
 func GetHealthCheck(ctx handlers.HandlerContext) {
 	uc := usecases.NewGetStatusUseCase(
-		providers.Logger,
 		providers.NewApiStatusProvider(),
 	)
 	ucResult := usecase.InstrumentUseCase(
