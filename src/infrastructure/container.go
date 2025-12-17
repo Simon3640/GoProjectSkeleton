@@ -4,8 +4,9 @@ import (
 	"context"
 
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
-	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability/noop"
 	services "github.com/simon3640/goprojectskeleton/src/application/shared/services"
+	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	settings "github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
 	config "github.com/simon3640/goprojectskeleton/src/infrastructure/config"
@@ -24,6 +25,10 @@ func Initialize() *application_errors.ApplicationError {
 		return err
 	}
 	providers.Logger.Setup(
+		settings.AppSettingsInstance.EnableLog,
+		settings.AppSettingsInstance.DebugLog,
+	)
+	noop.Logger.Setup(
 		settings.AppSettingsInstance.EnableLog,
 		settings.AppSettingsInstance.DebugLog,
 	)
@@ -93,8 +98,6 @@ func Initialize() *application_errors.ApplicationError {
 		settings.AppSettingsInstance.BackgroundQueueSize,
 	)
 
-	// Initialize Background Service Factory
 	services.InitializeBackgroundServiceFactory()
-
 	return nil
 }

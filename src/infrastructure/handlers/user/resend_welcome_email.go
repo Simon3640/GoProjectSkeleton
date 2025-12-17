@@ -6,9 +6,11 @@ import (
 
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
-	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	authrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/auth"
+	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
@@ -33,12 +35,21 @@ func ResendWelcomeEmail(ctx handlers.HandlerContext) {
 		return
 	}
 
-	ucResult := userusecases.NewResendWelcomeEmailUseCase(
-		providers.Logger,
+	uc := userusecases.NewResendWelcomeEmailUseCase(
 		providers.HashProviderInstance,
 		userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		authrepositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger),
-	).Execute(ctx.Context, ctx.Locale, resendRequest)
+	)
+	ucResult := usecase.InstrumentUseCase(
+		uc,
+		ctx.Context,
+		ctx.Locale,
+		resendRequest,
+		observability.GetObservabilityComponents().Tracer,
+		observability.GetObservabilityComponents().Metrics,
+		observability.GetObservabilityComponents().Clock,
+		"resend_welcome_email_use_case",
+	)
 	headers := map[handlers.HTTPHeaderTypeEnum]string{
 		handlers.CONTENT_TYPE: string(handlers.APPLICATION_JSON),
 	}

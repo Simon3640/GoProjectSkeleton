@@ -7,6 +7,8 @@ import (
 
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	authrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/auth"
 	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
@@ -34,12 +36,21 @@ func ActivateUser(ctx handlers.HandlerContext) {
 		return
 	}
 
-	ucResult := userusecases.NewActivateUserUseCase(
-		providers.Logger,
+	uc := userusecases.NewActivateUserUseCase(
 		userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		authrepositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		providers.HashProviderInstance,
-	).Execute(ctx.Context, ctx.Locale, userActivate)
+	)
+	ucResult := usecase.InstrumentUseCase(
+		uc,
+		ctx.Context,
+		ctx.Locale,
+		userActivate,
+		observability.GetObservabilityComponents().Tracer,
+		observability.GetObservabilityComponents().Metrics,
+		observability.GetObservabilityComponents().Clock,
+		"activate_user_use_case",
+	)
 	headers := map[handlers.HTTPHeaderTypeEnum]string{
 		handlers.CONTENT_TYPE: string(handlers.APPLICATION_JSON),
 	}

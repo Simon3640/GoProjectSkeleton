@@ -3,11 +3,11 @@ package usecases
 import (
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	statuscontracts "github.com/simon3640/goprojectskeleton/src/application/modules/status/contracts"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	locales "github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	messages "github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	status "github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	models "github.com/simon3640/goprojectskeleton/src/domain/models"
@@ -15,7 +15,6 @@ import (
 
 type GetStatusUseCase struct {
 	usecase.BaseUseCaseValidation[time.Time, models.Status]
-	log               contractsProviders.ILoggerProvider
 	apiStatusProvider statuscontracts.IApiStatusProvider
 }
 
@@ -33,11 +32,11 @@ func (uc *GetStatusUseCase) Execute(ctx *app_context.AppContext,
 			uc.Locale,
 			messages.MessageKeysInstance.APPLICATION_STATUS_OK,
 		))
+	observability.GetObservabilityComponents().Logger.InfoWithContext("status_retrieved", uc.AppContext)
 	return result
 }
 
 func NewGetStatusUseCase(
-	log contractsProviders.ILoggerProvider,
 	apiStatusProvider statuscontracts.IApiStatusProvider,
 ) *GetStatusUseCase {
 	return &GetStatusUseCase{
@@ -45,7 +44,6 @@ func NewGetStatusUseCase(
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
-		log:               log,
 		apiStatusProvider: apiStatusProvider,
 	}
 }

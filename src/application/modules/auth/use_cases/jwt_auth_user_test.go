@@ -12,7 +12,6 @@ import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
-	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
 	"github.com/stretchr/testify/assert"
@@ -21,12 +20,10 @@ import (
 func TestAuthUserCase(t *testing.T) {
 	asswert := assert.New(t)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(authmocks.MockUserRepository)
 	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
-		testLogger,
 		testUserRepository,
 		testJWTProvider,
 	)
@@ -57,12 +54,10 @@ func TestAuthUserCase(t *testing.T) {
 func TestAuthUserCase_InvalidToken(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(authmocks.MockUserRepository)
 	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
-		testLogger,
 		testUserRepository,
 		testJWTProvider,
 	)
@@ -80,12 +75,10 @@ func TestAuthUserCase_InvalidToken(t *testing.T) {
 func TestAuthUserCase_ExpiredToken(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(authmocks.MockUserRepository)
 	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
-		testLogger,
 		testUserRepository,
 		testJWTProvider,
 	)
@@ -110,12 +103,10 @@ func TestAuthUserCase_ExpiredToken(t *testing.T) {
 func TestAuthUserCase_NoAccessToken(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(authmocks.MockUserRepository)
 	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
-		testLogger,
 		testUserRepository,
 		testJWTProvider,
 	)

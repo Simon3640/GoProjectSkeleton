@@ -3,12 +3,12 @@ package userusecases
 import (
 	"strings"
 
-	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
@@ -17,7 +17,6 @@ import (
 // CreateUserUseCase is a use case that creates a user
 type CreateUserUseCase struct {
 	usecase.BaseUseCaseValidation[userdtos.UserCreate, models.User]
-	log  contractsproviders.ILoggerProvider
 	repo usercontracts.IUserRepository
 }
 
@@ -37,19 +36,11 @@ func (uc *CreateUserUseCase) Execute(ctx *app_context.AppContext,
 		return result
 	}
 
-	res, err := uc.repo.Create(input)
-
-	if err != nil {
-		uc.log.Error("Error creating user", err.ToError())
-		result.SetError(
-			err.Code,
-			uc.AppMessages.Get(
-				uc.Locale,
-				err.Context,
-			),
-		)
+	res := uc.createUser(input, result)
+	if result.HasError() {
 		return result
 	}
+
 	result.SetData(
 		status.Success,
 		*res,
@@ -61,12 +52,22 @@ func (uc *CreateUserUseCase) Execute(ctx *app_context.AppContext,
 	return result
 }
 
+func (uc *CreateUserUseCase) createUser(input userdtos.UserCreate, result *usecase.UseCaseResult[models.User]) *models.User {
+	res, err := uc.repo.Create(input)
+	if err != nil {
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error creating user", err.ToError(), uc.AppContext)
+		result.SetError(err.Code, uc.AppMessages.Get(uc.Locale, err.Context))
+	}
+	return res
+}
+
 func (uc *CreateUserUseCase) validate(
 	input userdtos.UserCreate,
 	result *usecase.UseCaseResult[models.User]) {
 	msgs := input.Validate()
 
 	if len(msgs) > 0 {
+		observability.GetObservabilityComponents().Logger.WarningWithContext("Invalid input", uc.AppContext)
 		result.SetError(
 			status.InvalidInput,
 			strings.Join(msgs, "\n"),
@@ -76,7 +77,6 @@ func (uc *CreateUserUseCase) validate(
 
 // NewCreateUserUseCase creates a new create user use case
 func NewCreateUserUseCase(
-	log contractsproviders.ILoggerProvider,
 	repo usercontracts.IUserRepository,
 ) *CreateUserUseCase {
 	return &CreateUserUseCase{
@@ -84,7 +84,6 @@ func NewCreateUserUseCase(
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
-		log:  log,
 		repo: repo,
 	}
 }

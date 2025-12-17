@@ -22,7 +22,6 @@ func TestActivateUserUseCase(t *testing.T) {
 	assert := assert.New(t)
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testOneTimeTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
@@ -65,7 +64,6 @@ func TestActivateUserUseCase(t *testing.T) {
 
 	// Create the use case
 	useCase := NewActivateUserUseCase(
-		testLogger,
 		testUserRepository,
 		testOneTimeTokenRepository,
 		testHashProvider,

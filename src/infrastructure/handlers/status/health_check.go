@@ -5,6 +5,8 @@ import (
 	"time"
 
 	usecases "github.com/simon3640/goprojectskeleton/src/application/modules/status/use_cases"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
@@ -21,10 +23,19 @@ import (
 // @Success 200 {object} models.Status "Status of the API"
 // @Router /api/status [get]
 func GetHealthCheck(ctx handlers.HandlerContext) {
-	ucResult := usecases.NewGetStatusUseCase(
-		providers.Logger,
+	uc := usecases.NewGetStatusUseCase(
 		providers.NewApiStatusProvider(),
-	).Execute(ctx.Context, ctx.Locale, time.Now())
+	)
+	ucResult := usecase.InstrumentUseCase(
+		uc,
+		ctx.Context,
+		ctx.Locale,
+		time.Now(),
+		observability.GetObservabilityComponents().Tracer,
+		observability.GetObservabilityComponents().Metrics,
+		observability.GetObservabilityComponents().Clock,
+		"get_status_use_case",
+	)
 
 	requestResolver := handlers.NewRequestResolver[models.Status]()
 	headers := map[handlers.HTTPHeaderTypeEnum]string{

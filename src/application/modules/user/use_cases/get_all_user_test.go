@@ -35,7 +35,6 @@ func TestGetAllUserUseCase_Execute_SuccessFromCache(t *testing.T) {
 	adminUser.SetRole(dtomocks.AdminRole)
 	ctxWithUser := app_context.NewContextWithUser(&adminUser)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
@@ -71,10 +70,8 @@ func TestGetAllUserUseCase_Execute_SuccessFromCache(t *testing.T) {
 		dest := args.Get(1).(*int64)
 		*dest = total
 	})
-	testLogger.On("Debug", mock.Anything, mock.Anything).Return()
 
 	uc := NewGetAllUserUseCase(
-		testLogger,
 		testUserRepository,
 		testCacheProvider,
 	)
@@ -106,7 +103,6 @@ func TestGetAllUserUseCase_Execute_SuccessFromRepository(t *testing.T) {
 	adminUser.SetRole(dtomocks.AdminRole)
 	ctxWithUser := app_context.NewContextWithUser(&adminUser)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
@@ -144,7 +140,6 @@ func TestGetAllUserUseCase_Execute_SuccessFromRepository(t *testing.T) {
 	testCacheProvider.On("Set", cacheKey+":total", total, mock.AnythingOfType("time.Duration")).Return(nil)
 
 	uc := NewGetAllUserUseCase(
-		testLogger,
 		testUserRepository,
 		testCacheProvider,
 	)
@@ -175,7 +170,6 @@ func TestGetAllUserUseCase_Execute_RepositoryError(t *testing.T) {
 	adminUser.SetRole(dtomocks.AdminRole)
 	ctxWithUser := app_context.NewContextWithUser(&adminUser)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
@@ -196,10 +190,8 @@ func TestGetAllUserUseCase_Execute_RepositoryError(t *testing.T) {
 		"Database error",
 	)
 	testUserRepository.On("GetAll", mock.Anything, 0, 10).Return(nil, int64(0), appErr)
-	testLogger.On("Error", mock.Anything, mock.Anything).Return()
 
 	uc := NewGetAllUserUseCase(
-		testLogger,
 		testUserRepository,
 		testCacheProvider,
 	)
@@ -228,7 +220,6 @@ func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 	adminUser.SetRole(dtomocks.AdminRole)
 	ctxWithUser := app_context.NewContextWithUser(&adminUser)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
@@ -245,7 +236,6 @@ func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 		"Cache error",
 	)
 	testCacheProvider.On("Get", cacheKey, mock.AnythingOfType("*[]models.User")).Return(false, appErr)
-	testLogger.On("Error", mock.Anything, mock.Anything).Return()
 
 	// Mock repository
 	testUsers := []models.User{
@@ -271,7 +261,6 @@ func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 	testCacheProvider.On("Set", cacheKey+":total", total, mock.AnythingOfType("time.Duration")).Return(nil)
 
 	uc := NewGetAllUserUseCase(
-		testLogger,
 		testUserRepository,
 		testCacheProvider,
 	)
@@ -301,7 +290,6 @@ func TestGetAllUserUseCase_Execute_CacheSetError(t *testing.T) {
 	adminUser.SetRole(dtomocks.AdminRole)
 	ctxWithUser := app_context.NewContextWithUser(&adminUser)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
@@ -342,10 +330,8 @@ func TestGetAllUserUseCase_Execute_CacheSetError(t *testing.T) {
 	)
 	testCacheProvider.On("Set", cacheKey, testUsers, mock.AnythingOfType("time.Duration")).Return(appErr)
 	testCacheProvider.On("Set", cacheKey+":total", total, mock.AnythingOfType("time.Duration")).Return(appErr)
-	testLogger.On("Error", mock.Anything, mock.Anything).Return()
 
 	uc := NewGetAllUserUseCase(
-		testLogger,
 		testUserRepository,
 		testCacheProvider,
 	)
@@ -375,7 +361,6 @@ func TestGetAllUserUseCase_Execute_Unauthorized(t *testing.T) {
 	regularUser.SetRole(dtomocks.UserRole)
 	ctxWithUser := app_context.NewContextWithUser(&regularUser)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
@@ -385,7 +370,6 @@ func TestGetAllUserUseCase_Execute_Unauthorized(t *testing.T) {
 	queryPayload := domain_utils.NewQueryPayloadBuilder[models.User](nil, nil, &page, &pageSize)
 
 	uc := NewGetAllUserUseCase(
-		testLogger,
 		testUserRepository,
 		testCacheProvider,
 	)
@@ -414,7 +398,6 @@ func TestGetAllUserUseCase_Execute_InvalidInput(t *testing.T) {
 	adminUser.SetRole(dtomocks.AdminRole)
 	ctxWithUser := app_context.NewContextWithUser(&adminUser)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
@@ -427,7 +410,6 @@ func TestGetAllUserUseCase_Execute_InvalidInput(t *testing.T) {
 	}
 
 	uc := NewGetAllUserUseCase(
-		testLogger,
 		testUserRepository,
 		testCacheProvider,
 	)
@@ -443,12 +425,10 @@ func TestGetAllUserUseCase_Execute_InvalidInput(t *testing.T) {
 func TestGetAllUserUseCase_SetLocale(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(usermocks.MockUserRepository)
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
 	uc := NewGetAllUserUseCase(
-		testLogger,
 		testUserRepository,
 		testCacheProvider,
 	)

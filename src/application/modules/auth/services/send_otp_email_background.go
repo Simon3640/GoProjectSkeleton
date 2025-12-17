@@ -6,6 +6,7 @@ import (
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	services "github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	emailservices "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
@@ -26,28 +27,28 @@ type SendOTPEmailInput struct {
 
 // SendOTPEmailBackgroundService is a background service that creates an OTP and sends it via email
 type SendOTPEmailBackgroundService struct {
-	log          contractproviders.ILoggerProvider
-	otpRepo      authcontracts.IOneTimePasswordRepository
-	hashProvider contractproviders.IHashProvider
+	observabilityComponents *observability.ObservabilityComponents
+	otpRepo                 authcontracts.IOneTimePasswordRepository
+	hashProvider            contractproviders.IHashProvider
 }
 
 // NewSendOTPEmailBackgroundService creates a new instance of SendOTPEmailBackgroundService
 func NewSendOTPEmailBackgroundService(
-	log contractproviders.ILoggerProvider,
+	observabilityComponents *observability.ObservabilityComponents,
 	otpRepo authcontracts.IOneTimePasswordRepository,
 	hashProvider contractproviders.IHashProvider,
 ) *SendOTPEmailBackgroundService {
 	return &SendOTPEmailBackgroundService{
-		log:          log,
-		otpRepo:      otpRepo,
-		hashProvider: hashProvider,
+		observabilityComponents: observabilityComponents,
+		otpRepo:                 otpRepo,
+		hashProvider:            hashProvider,
 	}
 }
 
 // Execute implements the BackgroundService interface
 // It creates an OTP and sends it via email to the user
 func (s *SendOTPEmailBackgroundService) Execute(
-	_ *app_context.AppContext,
+	ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input SendOTPEmailInput,
 ) error {
@@ -59,7 +60,7 @@ func (s *SendOTPEmailBackgroundService) Execute(
 		s.otpRepo,
 	)
 	if err != nil {
-		s.log.Error("Error creating OTP in background service", err.ToError())
+		s.observabilityComponents.Logger.ErrorWithContext("Error creating OTP in background service", err.ToError(), ctx)
 		return err.ToError()
 	}
 
@@ -80,10 +81,10 @@ func (s *SendOTPEmailBackgroundService) Execute(
 		templates.TemplateKeysInstance.OTPEmail,
 		emailservices.SubjectKeysInstance.OTPEmail,
 	); err != nil {
-		s.log.Error("Error sending OTP email in background service", err.ToError())
+		s.observabilityComponents.Logger.ErrorWithContext("Error sending OTP email in background service", err.ToError(), ctx)
 		return err.ToError()
 	}
-
+	s.observabilityComponents.Logger.InfoWithContext("OTP email sent successfully", ctx)
 	return nil
 }
 

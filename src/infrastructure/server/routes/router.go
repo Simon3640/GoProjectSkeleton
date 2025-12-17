@@ -11,8 +11,8 @@ import (
 )
 
 func Router(r *gin.RouterGroup) {
-	r.GET("/status", wrapHandler(statushandlers.GetHealthCheck))
 
+	r.GET("/status", wrapHandler(statushandlers.GetHealthCheck))
 	private := r.Group("/")
 	private.Use(middlewares.AuthMiddleware())
 	// User routes

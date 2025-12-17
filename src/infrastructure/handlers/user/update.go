@@ -7,6 +7,8 @@ import (
 
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
@@ -41,9 +43,19 @@ func UpdateUser(ctx handlers.HandlerContext) {
 	}
 
 	userUpdate.ID = uint(id)
-	ucResult := userusecases.NewUpdateUserUseCase(providers.Logger,
+	uc := userusecases.NewUpdateUserUseCase(
 		userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
-	).Execute(ctx.Context, ctx.Locale, userUpdate)
+	)
+	ucResult := usecase.InstrumentUseCase(
+		uc,
+		ctx.Context,
+		ctx.Locale,
+		userUpdate,
+		observability.GetObservabilityComponents().Tracer,
+		observability.GetObservabilityComponents().Metrics,
+		observability.GetObservabilityComponents().Clock,
+		"update_user_use_case",
+	)
 	headers := map[handlers.HTTPHeaderTypeEnum]string{
 		handlers.CONTENT_TYPE: string(handlers.APPLICATION_JSON),
 	}

@@ -10,6 +10,7 @@ import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
@@ -18,7 +19,6 @@ import (
 // ActivateUserUseCase is a use case that activates a user
 type ActivateUserUseCase struct {
 	usecase.BaseUseCaseValidation[userdtos.UserActivate, bool]
-	log              contractsproviders.ILoggerProvider
 	userRepo         usercontracts.IUserRepository
 	oneTimetokenRepo contractrepositories.IOneTimeTokenRepository
 
@@ -58,6 +58,7 @@ func (uc *ActivateUserUseCase) Execute(ctx *app_context.AppContext,
 			messages.MessageKeysInstance.USER_WAS_CREATED,
 		),
 	)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("User activated successfully", uc.AppContext)
 	return result
 }
 
@@ -67,7 +68,7 @@ func (uc *ActivateUserUseCase) validateOneTimeToken(input userdtos.UserActivate,
 	hash := uc.hashProvider.HashOneTimeToken(input.Token)
 	oneTimeToken, err := uc.oneTimetokenRepo.GetByTokenHash(hash)
 	if err != nil {
-		uc.log.Error("Error getting one time token by hash", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting one time token by hash", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -79,7 +80,7 @@ func (uc *ActivateUserUseCase) validateOneTimeToken(input userdtos.UserActivate,
 	}
 
 	if oneTimeToken == nil || oneTimeToken.IsUsed || oneTimeToken.Expires.Before(time.Now()) {
-		uc.log.Error("One time token is not valid", nil)
+		observability.GetObservabilityComponents().Logger.WarningWithContext("One time token is not valid", uc.AppContext)
 		result.SetError(
 			status.Conflict,
 			uc.AppMessages.Get(
@@ -102,7 +103,7 @@ func (uc *ActivateUserUseCase) updateUser(userID uint, result *usecase.UseCaseRe
 	_, err := uc.userRepo.Update(userID, updateUser)
 
 	if err != nil {
-		uc.log.Error("Error updating user", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error updating user", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -115,7 +116,6 @@ func (uc *ActivateUserUseCase) updateUser(userID uint, result *usecase.UseCaseRe
 
 // NewActivateUserUseCase creates a new activate user use case
 func NewActivateUserUseCase(
-	log contractsproviders.ILoggerProvider,
 	userRepo usercontracts.IUserRepository,
 	oneTimeTokenRepository contractrepositories.IOneTimeTokenRepository,
 	hashProvider contractsproviders.IHashProvider,
@@ -125,7 +125,6 @@ func NewActivateUserUseCase(
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
-		log:              log,
 		userRepo:         userRepo,
 		oneTimetokenRepo: oneTimeTokenRepository,
 		hashProvider:     hashProvider,

@@ -37,14 +37,12 @@ func RequestPasswordReset(ctx handlers.HandlerContext) {
 	oneTimeTokenRepository := authrepositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	ucResetPasswordToken := authusecases.NewGetResetPasswordTokenUseCase(
-		providers.Logger,
 		oneTimeTokenRepository,
 		userRepository,
 		providers.HashProviderInstance,
 	)
 
-	ucResetPasswordTokenEmail := authusecases.NewGetResetPasswordSendEmailUseCase(
-		providers.Logger)
+	ucResetPasswordTokenEmail := authusecases.NewGetResetPasswordSendEmailUseCase()
 
 	ucResult := authpipes.NewGetResetPasswordPipe(
 		ctx.Context,

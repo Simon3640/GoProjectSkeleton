@@ -7,8 +7,10 @@ import (
 	"sync"
 	"time"
 
+	contractsobservability "github.com/simon3640/goprojectskeleton/src/application/contracts/observability"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
 )
@@ -87,17 +89,33 @@ func NewDag[I any, O any](ctx *app_context.AppContext, first DagStep[I, O], loca
 // Note:
 //   - Background steps are not carried over when the output type changes,
 //     since they are bound to the previous output type.
-func Then[I any, O any, P any](d *DAG[I, O], next DagStep[O, P]) *DAG[I, P] {
+func Then[I any, O any, P any](d *DAG[I, O], next DagStep[O, P], name string) *DAG[I, P] {
 	// capture previous background entries immutably by copying the slice
 	prevBackground := make([]backgroundEntry[P], 0)
 	// intentionally empty — background entries from previous output type cannot be reused
 
 	run := func(ctx *app_context.AppContext, input I) *UseCaseResult[P] {
+		tracer := observability.GetObservabilityComponents().Tracer
+		clock := observability.GetObservabilityComponents().Clock
+		metrics := observability.GetObservabilityComponents().Metrics
+
+		span := tracer.StartSpan(ctx, "dag.step.execute."+name)
+		defer span.End()
+		span.UpdateAppContext(ctx)
+
+		start := clock.Now()
 		r1 := d.run(ctx, input)
-		if r1 == nil {
-			return nil
+		duration := clock.Now().Sub(start)
+
+		tags := map[string]string{
+			"dag_step": name,
 		}
+		metrics.RecordLatency("dag.step.execute."+name, duration, tags)
+
 		if r1.HasError() {
+			span.SetStatus(contractsobservability.SpanStatusError, r1.GetError().Error())
+			tags["status"] = "error"
+			metrics.IncrementCounter("dag.step.error."+name, tags)
 			return &UseCaseResult[P]{
 				StatusCode: r1.StatusCode,
 				Success:    false,
@@ -136,16 +154,49 @@ func Then[I any, O any, P any](d *DAG[I, O], next DagStep[O, P]) *DAG[I, P] {
 //     For long-running or critical work, prefer queues or message brokers.
 func ThenBackground[I any, O any, P any](d *DAG[I, O], next DagStep[O, P], name string) *DAG[I, O] {
 	// We create a wrapper that executes 'next' but ignores its output/result. Any errors are logged.
+	// Capture observability components for background task
+	tracer := observability.GetObservabilityComponents().Tracer
+	metrics := observability.GetObservabilityComponents().Metrics
+	clock := observability.GetObservabilityComponents().Clock
+	parentTraceCtx := d.ctx.TraceContext()
+
 	entr := backgroundEntry[O]{
 		name: name,
 		fn: func(ctx *app_context.AppContext, out O) {
+			// Always instrument background task (observability is always enabled)
+			// Create span with follows_from relation if parent trace context is valid
+			var span contractsobservability.Span
+			if parentTraceCtx != nil && parentTraceCtx.IsValid() {
+				span = tracer.StartSpan(ctx, "background."+name, observability.WithFollowsFrom(parentTraceCtx))
+			} else {
+				span = tracer.StartSpan(ctx, "background."+name)
+			}
+			defer span.End()
+			span.UpdateAppContext(ctx)
+
+			start := clock.Now()
 			res := next.uc.Execute(ctx, d.locale, out)
+			duration := clock.Now().Sub(start)
+
+			tags := map[string]string{
+				"background_task": name,
+			}
+			metrics.RecordLatency("background.execute."+name, duration, tags)
+
 			if res == nil {
-				log.Printf("background %s returned nil result", name)
+				span.SetStatus(contractsobservability.SpanStatusError, "nil result")
+				tags["status"] = "error"
+				metrics.IncrementCounter("background.error."+name, tags)
 				return
 			}
 			if res.HasError() {
-				log.Printf("background %s returned error: %v", name, res.Error)
+				span.SetStatus(contractsobservability.SpanStatusError, res.GetError().Error())
+				tags["status"] = "error"
+				metrics.IncrementCounter("background.error."+name, tags)
+			} else {
+				span.SetStatus(contractsobservability.SpanStatusOK, "")
+				tags["status"] = "success"
+				metrics.IncrementCounter("background.success."+name, tags)
 			}
 		},
 	}
@@ -199,7 +250,38 @@ func (d *DAG[I, O]) Execute(input I) *UseCaseResult[O] {
 	if d.run == nil {
 		return nil
 	}
+
+	tracer := observability.GetObservabilityComponents().Tracer
+	clock := observability.GetObservabilityComponents().Clock
+	metrics := observability.GetObservabilityComponents().Metrics
+
+	// Always instrument DAG execution (observability is always enabled)
+	span := tracer.StartSpan(d.ctx, "dag.execute")
+	defer span.End()
+	span.UpdateAppContext(d.ctx)
+
+	start := clock.Now()
 	res := d.run(d.ctx, input)
+	duration := clock.Now().Sub(start)
+
+	tags := map[string]string{}
+	metrics.RecordLatency("dag.execute", duration, tags)
+
+	if res != nil {
+		if res.HasError() {
+			span.SetStatus(contractsobservability.SpanStatusError, res.GetError().Error())
+			tags["status"] = "error"
+			metrics.IncrementCounter("dag.error", tags)
+		} else {
+			span.SetStatus(contractsobservability.SpanStatusOK, "")
+			tags["status"] = "success"
+			metrics.IncrementCounter("dag.success", tags)
+		}
+	} else {
+		span.SetStatus(contractsobservability.SpanStatusError, "nil result")
+		tags["status"] = "error"
+		metrics.IncrementCounter("dag.error", tags)
+	}
 	if res == nil {
 		return nil
 	}

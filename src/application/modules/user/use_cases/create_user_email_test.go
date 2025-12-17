@@ -25,7 +25,6 @@ func TestCreateUserSendEmailUseCase_Execute_Success(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
@@ -77,7 +76,6 @@ func TestCreateUserSendEmailUseCase_Execute_Success(t *testing.T) {
 	)
 
 	uc := NewCreateUserSendEmailUseCase(
-		testLogger,
 		testHashProvider,
 		testTokenRepository,
 	)
@@ -99,7 +97,6 @@ func TestCreateUserSendEmailUseCase_Execute_OneTimeTokenError(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
@@ -126,10 +123,8 @@ func TestCreateUserSendEmailUseCase_Execute_OneTimeTokenError(t *testing.T) {
 		"Failed to generate token",
 	)
 	testHashProvider.On("OneTimeToken").Return("", []byte(nil), appErr)
-	testLogger.On("Error", mock.Anything, mock.Anything).Return()
 
 	uc := NewCreateUserSendEmailUseCase(
-		testLogger,
 		testHashProvider,
 		testTokenRepository,
 	)
@@ -147,7 +142,6 @@ func TestCreateUserSendEmailUseCase_Execute_TokenRepositoryCreateError(t *testin
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
@@ -179,10 +173,8 @@ func TestCreateUserSendEmailUseCase_Execute_TokenRepositoryCreateError(t *testin
 		"Failed to create token in repository",
 	)
 	testTokenRepository.On("Create", mock.AnythingOfType("dtos.OneTimeTokenCreate")).Return((*models.OneTimeToken)(nil), appErr)
-	testLogger.On("Error", mock.Anything, mock.Anything).Return()
 
 	uc := NewCreateUserSendEmailUseCase(
-		testLogger,
 		testHashProvider,
 		testTokenRepository,
 	)
@@ -200,7 +192,6 @@ func TestCreateUserSendEmailUseCase_Execute_EmailSendError(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
@@ -256,10 +247,7 @@ func TestCreateUserSendEmailUseCase_Execute_EmailSendError(t *testing.T) {
 		mockEmailProvider,
 	)
 
-	testLogger.On("Error", mock.Anything, mock.Anything).Return()
-
 	uc := NewCreateUserSendEmailUseCase(
-		testLogger,
 		testHashProvider,
 		testTokenRepository,
 	)
@@ -277,7 +265,6 @@ func TestCreateUserSendEmailUseCase_Execute_EmailRenderError(t *testing.T) {
 
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
@@ -332,10 +319,7 @@ func TestCreateUserSendEmailUseCase_Execute_EmailRenderError(t *testing.T) {
 		mockEmailProvider,
 	)
 
-	testLogger.On("Error", mock.Anything, mock.Anything).Return()
-
 	uc := NewCreateUserSendEmailUseCase(
-		testLogger,
 		testHashProvider,
 		testTokenRepository,
 	)
@@ -351,12 +335,10 @@ func TestCreateUserSendEmailUseCase_Execute_EmailRenderError(t *testing.T) {
 func TestCreateUserSendEmailUseCase_SetLocale(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
 	uc := NewCreateUserSendEmailUseCase(
-		testLogger,
 		testHashProvider,
 		testTokenRepository,
 	)

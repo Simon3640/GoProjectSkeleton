@@ -35,12 +35,10 @@ func CreateUserAndPassword(ctx handlers.HandlerContext) {
 		return
 	}
 	createUserSendEmailUC := userusecases.NewCreateUserSendEmailUseCase(
-		providers.Logger,
 		providers.HashProviderInstance,
 		authrepositories.NewOneTimeTokenRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 	)
-
-	createUserPasswordUC := userusecases.NewCreateUserAndPasswordUseCase(providers.Logger,
+	createUserPasswordUC := userusecases.NewCreateUserAndPasswordUseCase(
 		userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		providers.HashProviderInstance,
 	)

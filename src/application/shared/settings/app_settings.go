@@ -63,8 +63,14 @@ type AppSettings struct {
 	MailAuthRequired bool
 
 	// Background Workers
-	BackgroundWorkers  int
+	BackgroundWorkers   int
 	BackgroundQueueSize int
+
+	// Observability
+	ObservabilityEnabled      bool
+	ObservabilityBackend      string
+	OTLPEndpoint              string
+	ObservabilitySamplingRate string
 }
 
 // NewAppSettings creates a new AppSettings instance with default values
