@@ -1,11 +1,11 @@
 package authusecases
 
 import (
-	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
@@ -17,7 +17,6 @@ import (
 // GetResetPasswordSendEmailUseCase is the use case for sending a reset password email
 type GetResetPasswordSendEmailUseCase struct {
 	usecase.BaseUseCaseValidation[bool, bool]
-	log contractsproviders.ILoggerProvider
 }
 
 // Execute sends a reset password email to the user
@@ -67,7 +66,7 @@ func (uc *GetResetPasswordSendEmailUseCase) sendResetPasswordEmail(
 		templates.TemplateKeysInstance.PasswordResetEmail,
 		emailservice.SubjectKeysInstance.PasswordResetEmail,
 	); err != nil {
-		uc.log.Error("Error sending email", err.ToError())
+		observability.GetObservabilityComponents().Logger.Error("Error sending email", err.ToError())
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -104,14 +103,12 @@ func (uc *GetResetPasswordSendEmailUseCase) Validate(
 	}
 }
 
-func NewGetResetPasswordSendEmailUseCase(
-	log contractsproviders.ILoggerProvider,
-) *GetResetPasswordSendEmailUseCase {
+// NewGetResetPasswordSendEmailUseCase creates a new GetResetPasswordSendEmailUseCase
+func NewGetResetPasswordSendEmailUseCase() *GetResetPasswordSendEmailUseCase {
 	return &GetResetPasswordSendEmailUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[bool, bool]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
-		log: log,
 	}
 }

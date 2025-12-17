@@ -6,6 +6,8 @@ import (
 
 	authdtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
@@ -28,9 +30,19 @@ func RefreshAccessToken(ctx handlers.HandlerContext) {
 		return
 	}
 
-	ucResult := authusecases.NewAuthenticationRefreshUseCase(providers.Logger,
+	uc := authusecases.NewAuthenticationRefreshUseCase(
 		providers.JWTProviderInstance,
-	).Execute(ctx.Context, ctx.Locale, refreshToken)
+	)
+	ucResult := usecase.InstrumentUseCase(
+		uc,
+		ctx.Context,
+		ctx.Locale,
+		refreshToken,
+		observability.GetObservabilityComponents().Tracer,
+		observability.GetObservabilityComponents().Metrics,
+		observability.GetObservabilityComponents().Clock,
+		"authenticate_refresh_use_case",
+	)
 	headers := map[handlers.HTTPHeaderTypeEnum]string{
 		handlers.CONTENT_TYPE: string(handlers.APPLICATION_JSON),
 	}

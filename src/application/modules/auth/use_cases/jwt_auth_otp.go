@@ -10,6 +10,7 @@ import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
@@ -18,7 +19,6 @@ import (
 // AuthenticateOTPUseCase is the use case for authenticating a user with an OTP
 type AuthenticateOTPUseCase struct {
 	usecase.BaseUseCaseValidation[string, dtos.Token]
-	log contractproviders.ILoggerProvider
 
 	userRepo authcontracts.IUserRepository
 	otpRepo  authcontracts.IOneTimePasswordRepository
@@ -152,7 +152,7 @@ func (uc *AuthenticateOTPUseCase) markOTPAsUsed(result *usecase.UseCaseResult[dt
 	_, err := uc.otpRepo.Update(otpID,
 		dtos.OneTimePasswordUpdate{IsUsed: true, ID: otpID})
 	if err != nil {
-		uc.log.Error("Error updating one time password as used", err.ToError())
+		observability.GetObservabilityComponents().Logger.Error("Error updating one time password as used", err.ToError())
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -189,7 +189,6 @@ func (uc *AuthenticateOTPUseCase) Validate(input string, result *usecase.UseCase
 }
 
 func NewAuthenticateOTPUseCase(
-	log contractproviders.ILoggerProvider,
 	userRepo authcontracts.IUserRepository,
 	otpRepo authcontracts.IOneTimePasswordRepository,
 	hashProvider contractproviders.IHashProvider,
@@ -200,7 +199,6 @@ func NewAuthenticateOTPUseCase(
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
-		log:          log,
 		userRepo:     userRepo,
 		otpRepo:      otpRepo,
 		jwtProvider:  jwtProvider,

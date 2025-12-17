@@ -24,7 +24,6 @@ func TestGetResetPasswordSendEmailUseCase_Execute_Success(t *testing.T) {
 	assert := assert.New(t)
 
 	ctx := &app_context.AppContext{Context: context.Background()}
-	testLogger := new(providersmocks.MockLoggerProvider)
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
@@ -58,7 +57,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_Success(t *testing.T) {
 		mockEmailProvider,
 	)
 
-	uc := NewGetResetPasswordSendEmailUseCase(testLogger)
+	uc := NewGetResetPasswordSendEmailUseCase()
 
 	result := uc.Execute(ctx, locales.EN_US, true)
 
@@ -75,7 +74,6 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing
 	assert := assert.New(t)
 
 	ctx := &app_context.AppContext{Context: context.Background()}
-	testLogger := new(providersmocks.MockLoggerProvider)
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
@@ -115,7 +113,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing
 		mockEmailProvider,
 	)
 
-	uc := NewGetResetPasswordSendEmailUseCase(testLogger)
+	uc := NewGetResetPasswordSendEmailUseCase()
 
 	result := uc.Execute(ctx, locales.EN_US, true)
 
@@ -130,7 +128,6 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorSendingEmail(t *testing.T
 	assert := assert.New(t)
 
 	ctx := &app_context.AppContext{Context: context.Background()}
-	testLogger := new(providersmocks.MockLoggerProvider)
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
@@ -171,7 +168,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorSendingEmail(t *testing.T
 		mockEmailProvider,
 	)
 
-	uc := NewGetResetPasswordSendEmailUseCase(testLogger)
+	uc := NewGetResetPasswordSendEmailUseCase()
 
 	result := uc.Execute(ctx, locales.EN_US, true)
 
@@ -186,8 +183,7 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorSendingEmail(t *testing.T
 func TestGetResetPasswordSendEmailUseCase_buildEmailData(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	uc := NewGetResetPasswordSendEmailUseCase(testLogger)
+	uc := NewGetResetPasswordSendEmailUseCase()
 
 	userStatus := models.UserStatusActive
 	testUser := models.User{

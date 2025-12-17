@@ -21,14 +21,12 @@ func TestAuthenticateOTPUseCase_Valid(t *testing.T) {
 	assert := assert.New(t)
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(authmocks.MockUserRepository)
 	testOTPRepository := new(authmocks.MockOneTimePasswordRepository)
 	testJWTProvider := new(authmocks.MockJWTProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	authOTPUseCase := NewAuthenticateOTPUseCase(
-		testLogger,
 		testUserRepository,
 		testOTPRepository,
 		testHashProvider,
@@ -77,14 +75,12 @@ func TestAuthenticateOTPUseCase_InvalidOTP(t *testing.T) {
 	assert := assert.New(t)
 	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testUserRepository := new(authmocks.MockUserRepository)
 	testOTPRepository := new(authmocks.MockOneTimePasswordRepository)
 	testJWTProvider := new(authmocks.MockJWTProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	authOTPUseCase := NewAuthenticateOTPUseCase(
-		testLogger,
 		testUserRepository,
 		testOTPRepository,
 		testHashProvider,
