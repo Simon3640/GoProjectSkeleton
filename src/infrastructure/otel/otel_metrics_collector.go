@@ -1,4 +1,4 @@
-package main
+package otel
 
 import (
 	"context"

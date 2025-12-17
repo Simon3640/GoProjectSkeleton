@@ -1,11 +1,9 @@
 package main
 
 import (
-	"os"
-
+	api "github.com/simon3640/goprojectskeleton/gin"
 	routes "github.com/simon3640/goprojectskeleton/gin/routes"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
-	"github.com/simon3640/goprojectskeleton/src/infrastructure"
 	providers "github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 
 	"github.com/gin-contrib/cors"
@@ -14,11 +12,7 @@ import (
 )
 
 func main() {
-	providers.Logger.Info("Initializing infraestructure...")
-	if err := infrastructure.Initialize(); err != nil {
-		providers.Logger.Error("Error initializing infrastructure", err.ToError())
-		os.Exit(1)
-	}
+	api.Initialize()
 	providers.Logger.Info("Infraestructure initialized")
 	providers.Logger.Info("Starting server...")
 	providers.Logger.Info("App Name: " + settings.AppSettingsInstance.AppName)
