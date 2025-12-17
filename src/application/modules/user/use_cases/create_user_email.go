@@ -47,7 +47,7 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx *app_context.AppContext,
 	}
 
 	result.SetData(
-		status.Success,
+		status.Created,
 		input,
 		uc.AppMessages.Get(
 			uc.Locale,
