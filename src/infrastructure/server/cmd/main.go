@@ -48,6 +48,8 @@ func loadGinApp(app *graceful.Graceful) {
 	app.NoMethod(func(c *gin.Context) {
 		c.JSON(405, gin.H{"message": "Method Not Allowed"})
 	})
+	// Configurar componentes de observabilidad en las rutas
+	routes.SetObservabilityComponents(providers.ObservabilityComponents)
 	routes.Router(app.Group("/api"))
 }
 

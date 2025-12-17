@@ -1,4 +1,4 @@
-package providers
+package noop
 
 import (
 	"context"
@@ -7,11 +7,18 @@ import (
 	"log/slog"
 	"os"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsobservability "github.com/simon3640/goprojectskeleton/src/application/contracts/observability"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 )
 
-type LoggerProvider struct {
+var _ contractsobservability.Logger = (*NoOpLogger)(nil)
+
+// NewNoOpLogger creates a new NoOpLogger
+func NewNoOpLogger() *NoOpLogger {
+	return &NoOpLogger{}
+}
+
+type NoOpLogger struct {
 	enableLog bool
 	debugLog  bool
 	logger    *slog.Logger
@@ -54,49 +61,43 @@ func (h LogHandler) Handle(ctx context.Context, record slog.Record) error {
 	return nil
 }
 
-func (lp *LoggerProvider) Setup(enableLog bool, debugLog bool) {
+func (lp *NoOpLogger) Setup(enableLog bool, debugLog bool) {
 	lp.enableLog = enableLog
 	lp.debugLog = debugLog
 	lp.logger = slog.New(LogHandler{})
 }
 
-var _ contractsProviders.ILoggerProvider = (*LoggerProvider)(nil)
-
-func NewLoggerProvider() *LoggerProvider {
-	return &LoggerProvider{}
-}
-
-func (lp *LoggerProvider) Error(message string, err error) {
+func (lp *NoOpLogger) Error(message string, err error) {
 	if lp.enableLog {
 		lp.logger.Error(fmt.Sprintf("Error: %s, %s", message, err))
 	}
 }
 
-func (lp *LoggerProvider) Panic(message string, err error) {
+func (lp *NoOpLogger) Panic(message string, err error) {
 	if lp.enableLog {
 		log.Panicf("%s", fmt.Sprintf("Panic: %s, %s", message, err))
 	}
 }
 
-func (lp *LoggerProvider) ErrorMsg(message string) {
+func (lp *NoOpLogger) ErrorMsg(message string) {
 	if lp.enableLog {
 		lp.logger.Error(message)
 	}
 }
 
-func (lp *LoggerProvider) Info(message string) {
+func (lp *NoOpLogger) Info(message string) {
 	if lp.enableLog {
 		lp.logger.Info(message)
 	}
 }
 
-func (lp *LoggerProvider) Warning(message string) {
+func (lp *NoOpLogger) Warning(message string) {
 	if lp.enableLog {
 		lp.logger.Warn(message)
 	}
 }
 
-func (lp *LoggerProvider) Debug(message string, data any) {
+func (lp *NoOpLogger) Debug(message string, data any) {
 	if lp.enableLog && lp.debugLog {
 		if data != nil {
 			lp.logger.Debug(fmt.Sprintf("%s: %v", message, data))
@@ -107,12 +108,18 @@ func (lp *LoggerProvider) Debug(message string, data any) {
 }
 
 // formatMessageWithTrace formatea el mensaje incluyendo trace_id y span_id si están disponibles
-func (lp *LoggerProvider) formatMessageWithTrace(message string, appCtx *app_context.AppContext) string {
-	if appCtx == nil || !appCtx.HasTrace() {
+func (lp *NoOpLogger) formatMessageWithTrace(message string, appCtx interface{}) string {
+	var appCtxTyped *app_context.AppContext
+	if appCtx != nil {
+		if typed, ok := appCtx.(*app_context.AppContext); ok {
+			appCtxTyped = typed
+		}
+	}
+	if appCtxTyped == nil || !appCtxTyped.HasTrace() {
 		return message
 	}
 
-	traceCtx := appCtx.TraceContext()
+	traceCtx := appCtxTyped.TraceContext()
 	if traceCtx == nil || !traceCtx.IsValid() {
 		return message
 	}
@@ -121,7 +128,7 @@ func (lp *LoggerProvider) formatMessageWithTrace(message string, appCtx *app_con
 }
 
 // ErrorWithContext registra un error con contexto de trace
-func (lp *LoggerProvider) ErrorWithContext(message string, err error, appCtx *app_context.AppContext) {
+func (lp *NoOpLogger) ErrorWithContext(message string, err error, appCtx interface{}) {
 	if lp.enableLog {
 		formattedMsg := lp.formatMessageWithTrace(fmt.Sprintf("Error: %s, %s", message, err), appCtx)
 		lp.logger.Error(formattedMsg)
@@ -129,7 +136,7 @@ func (lp *LoggerProvider) ErrorWithContext(message string, err error, appCtx *ap
 }
 
 // InfoWithContext registra un mensaje info con contexto de trace
-func (lp *LoggerProvider) InfoWithContext(message string, appCtx *app_context.AppContext) {
+func (lp *NoOpLogger) InfoWithContext(message string, appCtx interface{}) {
 	if lp.enableLog {
 		formattedMsg := lp.formatMessageWithTrace(message, appCtx)
 		lp.logger.Info(formattedMsg)
@@ -137,7 +144,7 @@ func (lp *LoggerProvider) InfoWithContext(message string, appCtx *app_context.Ap
 }
 
 // WarningWithContext registra un warning con contexto de trace
-func (lp *LoggerProvider) WarningWithContext(message string, appCtx *app_context.AppContext) {
+func (lp *NoOpLogger) WarningWithContext(message string, appCtx interface{}) {
 	if lp.enableLog {
 		formattedMsg := lp.formatMessageWithTrace(message, appCtx)
 		lp.logger.Warn(formattedMsg)
@@ -145,7 +152,7 @@ func (lp *LoggerProvider) WarningWithContext(message string, appCtx *app_context
 }
 
 // DebugWithContext registra un debug con contexto de trace
-func (lp *LoggerProvider) DebugWithContext(message string, data any, appCtx *app_context.AppContext) {
+func (lp *NoOpLogger) DebugWithContext(message string, data any, appCtx interface{}) {
 	if lp.enableLog && lp.debugLog {
 		formattedMsg := lp.formatMessageWithTrace(message, appCtx)
 		if data != nil {
@@ -156,9 +163,9 @@ func (lp *LoggerProvider) DebugWithContext(message string, data any, appCtx *app
 	}
 }
 
-var Logger *LoggerProvider
+var Logger *NoOpLogger
 
 func init() {
-	fmt.Println("LoggerProvider initialized")
-	Logger = NewLoggerProvider()
+	fmt.Println("NoOpLogger initialized")
+	Logger = NewNoOpLogger()
 }

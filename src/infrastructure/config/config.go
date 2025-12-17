@@ -68,6 +68,12 @@ type Config struct {
 	// Background Workers
 	BackgroundWorkers  string `env:"BACKGROUND_WORKERS" envDefault:"4"`
 	BackgroundQueueSize string `env:"BACKGROUND_QUEUE_SIZE" envDefault:"100"`
+
+	// Observability
+	ObservabilityEnabled   string `env:"OBSERVABILITY_ENABLED" envDefault:"false"`
+	ObservabilityBackend   string `env:"OBSERVABILITY_BACKEND" envDefault:"noop"`
+	OTLPEndpoint          string `env:"OTLP_ENDPOINT" envDefault:""`
+	ObservabilitySamplingRate string `env:"OBSERVABILITY_SAMPLING_RATE" envDefault:"1.0"`
 }
 
 func (c *Config) ToMap() map[string]string {

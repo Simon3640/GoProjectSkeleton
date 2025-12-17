@@ -6,6 +6,8 @@ import (
 
 	authdtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	authrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/auth"
 	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
@@ -34,12 +36,24 @@ func LoginOTP(ctx handlers.HandlerContext) {
 	userRepository := userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 	otpRepository := authrepositories.NewOneTimePasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
-	ucResult := authusecases.NewAuthenticateOTPUseCase(providers.Logger,
+	uc := authusecases.NewAuthenticateOTPUseCase(providers.Logger,
 		userRepository,
 		otpRepository,
 		providers.HashProviderInstance,
 		providers.JWTProviderInstance,
-	).Execute(ctx.Context, ctx.Locale, otp)
+	)
+
+	ucResult := usecase.InstrumentUseCase(
+		uc,
+		ctx.Context,
+		ctx.Locale,
+		otp,
+		observability.GetObservabilityComponents().Tracer,
+		observability.GetObservabilityComponents().Metrics,
+		observability.GetObservabilityComponents().Clock,
+		"authenticate_otp_use_case",
+	)
+
 	headers := map[handlers.HTTPHeaderTypeEnum]string{
 		handlers.CONTENT_TYPE: string(handlers.APPLICATION_JSON),
 	}
