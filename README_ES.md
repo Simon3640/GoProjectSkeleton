@@ -55,19 +55,20 @@ go run src/infrastructure/server/cmd/main.go
 4. [Escalabilidad y Serverless](#escalabilidad-y-serverless)
 5. [Flujo Completo de Request](#flujo-completo-de-request)
 6. [Ejecución de Tareas en Background](#-ejecución-de-tareas-en-background)
-7. [Virtudes y Beneficios](#virtudes-y-beneficios)
-8. [Estructura del Proyecto - Capa por Capa](#estructura-del-proyecto---capa-por-capa)
-9. [Revisión Exhaustiva por Carpetas](#revisión-exhaustiva-por-carpetas)
-10. [Tecnologías y Dependencias](#tecnologías-y-dependencias)
-11. [Configuración y Setup](#configuración-y-setup)
-12. [Módulos de Negocio](#módulos-de-negocio)
-13. [API y Endpoints](#api-y-endpoints)
-14. [Base de Datos y Persistencia](#base-de-datos-y-persistencia)
-15. [Autenticación y Seguridad](#autenticación-y-seguridad)
-16. [Testing](#testing)
-17. [Docker y Despliegue](#docker-y-despliegue)
-18. [Despliegue con GitHub Actions](#despliegue-con-github-actions)
-19. [Guía de Desarrollo](#guía-de-desarrollo)
+7. [Observabilidad](#-observabilidad)
+8. [Virtudes y Beneficios](#virtudes-y-beneficios)
+9. [Estructura del Proyecto - Capa por Capa](#estructura-del-proyecto---capa-por-capa)
+10. [Revisión Exhaustiva por Carpetas](#revisión-exhaustiva-por-carpetas)
+11. [Tecnologías y Dependencias](#tecnologías-y-dependencias)
+12. [Configuración y Setup](#configuración-y-setup)
+13. [Módulos de Negocio](#módulos-de-negocio)
+14. [API y Endpoints](#api-y-endpoints)
+15. [Base de Datos y Persistencia](#base-de-datos-y-persistencia)
+16. [Autenticación y Seguridad](#autenticación-y-seguridad)
+17. [Testing](#testing)
+18. [Docker y Despliegue](#docker-y-despliegue)
+19. [Despliegue con GitHub Actions](#despliegue-con-github-actions)
+20. [Guía de Desarrollo](#guía-de-desarrollo)
 
 ---
 
@@ -140,6 +141,13 @@ La filosofía central de **GoProjectSkeleton** es que el **dominio** y la **lóg
 - ✅ **Terraform** - Infraestructura como código para AWS y Azure
 - ✅ **Secrets Management** - Integración con AWS Secrets Manager y Azure Key Vault
 - ✅ **Hot Reload** - Desarrollo eficiente con recarga automática
+
+#### 📊 Observabilidad
+- ✅ **OpenTelemetry** - Trazado distribuido e instrumentación de métricas
+- ✅ **Prometheus** - Recolección y almacenamiento de métricas
+- ✅ **Jaeger** - Visualización de trazas distribuidas
+- ✅ **Grafana** - Dashboards y monitoreo en tiempo real
+- ✅ **Logging Estructurado** - Logs contextuales con correlación de trazas
 
 #### ⚡ Rendimiento y Escalabilidad
 - ✅ **Cache con Redis** - Optimización de rendimiento con TTL configurable
@@ -2477,6 +2485,689 @@ func TestMyService(t *testing.T) {
 
 ---
 
+## 📊 Observabilidad
+
+**GoProjectSkeleton** incluye un stack completo de observabilidad con **OpenTelemetry**, **Prometheus**, **Jaeger** y **Grafana**. El sistema proporciona trazado distribuido, recolección de métricas y logging estructurado en todas las capas de la aplicación incluyendo Casos de Uso, DAGs y Servicios en Background.
+
+### Visión General
+
+El sistema de observabilidad sigue estos principios:
+
+1. **Instrumentación Siempre Activa**: Todos los componentes están instrumentados por defecto
+2. **Fallback No-Op**: Cuando la observabilidad está deshabilitada, se usan implementaciones no-op
+3. **Cumplimiento de Arquitectura Limpia**: Los contratos de observabilidad viven en la capa de aplicación
+4. **Propagación Automática de Trazas**: Las trazas se propagan a través de límites de contexto
+
+### Arquitectura de Observabilidad
+
+```mermaid
+graph TB
+    subgraph Application["📱 Aplicación"]
+        UC[Casos de Uso<br/>Spans Automáticos]
+        DAG[DAG Steps<br/>Ejecución Paralela/Secuencial]
+        BG[Servicios Background<br/>Trazas Asíncronas]
+        HTTP[Handlers HTTP<br/>Métricas de Request]
+    end
+
+    subgraph Instrumentation["🔧 Capa de Instrumentación"]
+        Tracer[ITracer<br/>Gestión de Spans]
+        Metrics[IMetricsCollector<br/>Contadores/Histogramas]
+        Logger[ILoggerProvider<br/>Logs Estructurados]
+    end
+
+    subgraph Infrastructure["🏗️ Infraestructura"]
+        OTEL[OpenTelemetry SDK<br/>Exportadores]
+        PROM[Prometheus<br/>Almacenamiento de Métricas]
+        JAEGER[Jaeger<br/>Backend de Trazas]
+    end
+
+    subgraph Visualization["📊 Visualización"]
+        GRAFANA[Grafana<br/>Dashboards]
+        JAEGER_UI[Jaeger UI<br/>Explorador de Trazas]
+        PROM_UI[Prometheus UI<br/>Explorador de Métricas]
+    end
+
+    UC --> Tracer
+    DAG --> Tracer
+    BG --> Tracer
+    HTTP --> Metrics
+
+    Tracer --> OTEL
+    Metrics --> OTEL
+    Logger --> OTEL
+
+    OTEL --> PROM
+    OTEL --> JAEGER
+
+    PROM --> GRAFANA
+    JAEGER --> JAEGER_UI
+    PROM --> PROM_UI
+
+    style UC fill:#e3f2fd
+    style DAG fill:#e3f2fd
+    style BG fill:#e3f2fd
+    style GRAFANA fill:#c8e6c9
+    style JAEGER fill:#fff9c4
+    style PROM fill:#ffcdd2
+```
+
+### Configuración
+
+La observabilidad se configura a través de variables de entorno:
+
+```bash
+# Configuración OpenTelemetry
+OTEL_ENABLED=true                           # Habilitar/deshabilitar observabilidad
+OTEL_SERVICE_NAME=goprojectskeleton         # Nombre del servicio para trazas
+OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317  # Endpoint del colector OTLP
+OTEL_EXPORTER_OTLP_INSECURE=true            # Usar conexión insegura (desarrollo)
+OTEL_TRACES_SAMPLER=always_on               # Estrategia de muestreo de trazas
+OTEL_METRICS_EXPORTER=prometheus            # Exportador de métricas
+OTEL_LOGS_EXPORTER=otlp                     # Exportador de logs
+
+# Configuración de Prometheus
+PROMETHEUS_PORT=9090                        # Puerto del servidor Prometheus
+METRICS_PATH=/metrics                       # Ruta de exposición de métricas
+
+# Configuración del Colector OpenTelemetry
+OTEL_COLLECTOR_HOST=otel-collector          # Host del colector
+OTEL_COLLECTOR_GRPC_PORT=4317               # Puerto gRPC del colector
+OTEL_COLLECTOR_HTTP_PORT=4318               # Puerto HTTP del colector
+```
+
+### Componentes de Observabilidad
+
+#### Interfaz ITracer
+
+El tracer proporciona gestión de spans para trazado distribuido:
+
+```go
+// application/contracts/observability/tracer.go
+type ITracer interface {
+    // StartSpan crea un nuevo span con el nombre dado
+    StartSpan(ctx context.Context, name string, opts ...SpanOption) (context.Context, ISpan)
+
+    // StartSpanWithParent crea un span hijo de un span padre
+    StartSpanWithParent(ctx context.Context, parent ISpan, name string, opts ...SpanOption) (context.Context, ISpan)
+
+    // ExtractSpanContext extrae el contexto del span de los carriers (headers HTTP)
+    ExtractSpanContext(ctx context.Context, carrier map[string]string) context.Context
+
+    // InjectSpanContext inyecta el contexto del span en carriers para propagación
+    InjectSpanContext(ctx context.Context, carrier map[string]string)
+}
+```
+
+#### Interfaz ISpan
+
+Los spans representan operaciones individuales dentro de una traza:
+
+```go
+// application/contracts/observability/span.go
+type ISpan interface {
+    // End completa el span
+    End()
+
+    // SetStatus establece el estado del span (OK, Error)
+    SetStatus(code SpanStatusCode, description string)
+
+    // SetAttributes agrega atributos clave-valor al span
+    SetAttributes(attrs ...SpanAttribute)
+
+    // RecordError registra un error en el span
+    RecordError(err error)
+
+    // AddEvent agrega un evento con timestamp al span
+    AddEvent(name string, attrs ...SpanAttribute)
+
+    // SpanContext retorna el contexto del span para propagación
+    SpanContext() SpanContext
+}
+```
+
+#### Interfaz IMetricsCollector
+
+El recolector de métricas proporciona contadores, gauges e histogramas:
+
+```go
+// application/contracts/observability/metrics_collector.go
+type IMetricsCollector interface {
+    // Counter incrementa un contador
+    Counter(name string, value float64, labels ...MetricLabel)
+
+    // Gauge establece un valor de gauge
+    Gauge(name string, value float64, labels ...MetricLabel)
+
+    // Histogram registra un valor en un histograma
+    Histogram(name string, value float64, labels ...MetricLabel)
+
+    // Timer registra una duración
+    Timer(name string, duration time.Duration, labels ...MetricLabel)
+}
+```
+
+#### Interfaz ILoggerProvider (Mejorado)
+
+El logger soporta logs estructurados con correlación de trazas:
+
+```go
+// application/contracts/providers/logger_provider.go
+type ILoggerProvider interface {
+    // Métodos básicos de logging
+    Info(msg string, fields ...map[string]interface{})
+    Error(msg string, err error, fields ...map[string]interface{})
+    Debug(msg string, fields ...map[string]interface{})
+    Warn(msg string, fields ...map[string]interface{})
+
+    // WithContext crea un logger con contexto de traza
+    WithContext(ctx context.Context) ILoggerProvider
+
+    // WithFields crea un logger con campos predeterminados
+    WithFields(fields map[string]interface{}) ILoggerProvider
+}
+```
+
+### Observabilidad en Casos de Uso
+
+Los Casos de Uso se instrumentan automáticamente con trazado y métricas:
+
+```go
+// application/modules/user/use_cases/create_user.go
+type CreateUserUseCase struct {
+    log         contracts.ILoggerProvider
+    repo        contracts.IUserRepository
+    tracer      observability.ITracer
+    metrics     observability.IMetricsCollector
+}
+
+func (uc *CreateUserUseCase) Execute(
+    ctx context.Context,
+    locale locales.LocaleTypeEnum,
+    input dtos.UserCreate,
+) *usecase.UseCaseResult[models.User] {
+    // Iniciar span para este caso de uso
+    ctx, span := uc.tracer.StartSpan(ctx, "CreateUserUseCase.Execute",
+        observability.WithSpanKind(observability.SpanKindInternal),
+        observability.WithAttributes(
+            observability.String("user.email", input.Email),
+            observability.String("locale", string(locale)),
+        ),
+    )
+    defer span.End()
+
+    result := usecase.NewUseCaseResult[models.User]()
+    startTime := time.Now()
+
+    // Validar entrada
+    uc.validate(ctx, input, result)
+    if result.HasError() {
+        span.SetStatus(observability.SpanStatusError, "validation failed")
+        span.RecordError(fmt.Errorf("validation error: %v", result.Error))
+        uc.metrics.Counter("usecase.create_user.validation_errors", 1,
+            observability.Label("error_code", string(result.StatusCode)),
+        )
+        return result
+    }
+
+    // Crear usuario
+    user, err := uc.repo.Create(input)
+    if err != nil {
+        span.SetStatus(observability.SpanStatusError, err.ErrMsg)
+        span.RecordError(fmt.Errorf(err.ErrMsg))
+        uc.metrics.Counter("usecase.create_user.errors", 1)
+        result.SetError(err.Code, err.Context)
+        return result
+    }
+
+    // Registrar éxito
+    span.SetStatus(observability.SpanStatusOK, "user created")
+    span.SetAttributes(observability.Int64("user.id", int64(user.ID)))
+
+    // Registrar métricas
+    uc.metrics.Counter("usecase.create_user.success", 1)
+    uc.metrics.Timer("usecase.create_user.duration", time.Since(startTime))
+
+    result.SetData(status.Created, *user, "User created successfully")
+    return result
+}
+```
+
+### Observabilidad en DAG
+
+El sistema DAG proporciona instrumentación automática para pasos secuenciales, paralelos y en background:
+
+#### Steps Secuenciales
+
+```go
+// Los steps secuenciales crean spans hijos automáticamente
+dag := use_case.NewDag(
+    appCtx,
+    use_case.NewStep(createUserUC),
+    locale,
+    executor,
+)
+dag = use_case.Then(dag, use_case.NewStep(sendEmailUC))
+
+// Jerarquía de spans resultante:
+// DAG.Execute
+// ├── Step[0]: CreateUserUseCase
+// └── Step[1]: SendEmailUseCase
+```
+
+#### Steps Paralelos
+
+```go
+// Los steps paralelos crean spans hermanos con el mismo padre
+dag := use_case.NewDag(appCtx, use_case.NewStep(mainUC), locale, executor)
+dag = use_case.ThenParallel(dag,
+    use_case.NewStep(notifyUC),
+    use_case.NewStep(analyticsUC),
+    use_case.NewStep(auditUC),
+)
+
+// Jerarquía de spans resultante:
+// DAG.Execute
+// ├── Step[0]: MainUseCase
+// └── Parallel
+//     ├── ParallelStep[0]: NotifyUseCase
+//     ├── ParallelStep[1]: AnalyticsUseCase
+//     └── ParallelStep[2]: AuditUseCase
+```
+
+#### Steps en Background
+
+```go
+// Los steps en background usan span links para mantener la correlación de trazas
+dag = use_case.ThenBackground(
+    dag,
+    use_case.NewStep(sendWelcomeEmailUC),
+    "send-welcome-email",
+)
+
+// Jerarquía de spans resultante:
+// DAG.Execute (completa inmediatamente)
+// ├── Step[0]: CreateUserUseCase
+// └── BackgroundStep: SendWelcomeEmailUseCase
+//     └── [Link al span padre del DAG]
+```
+
+### Observabilidad en Servicios Background
+
+Los servicios en background se instrumentan automáticamente con span links:
+
+```go
+// application/shared/services/background_service.go
+type ObservableBackgroundService[I any] struct {
+    service BackgroundService[I]
+    tracer  observability.ITracer
+    metrics observability.IMetricsCollector
+}
+
+func (s *ObservableBackgroundService[I]) Execute(
+    ctx *app_context.AppContext,
+    locale locales.LocaleTypeEnum,
+    input I,
+) error {
+    // Crear span con link al span padre (si existe)
+    spanCtx, span := s.tracer.StartSpan(ctx.Context(), s.service.Name(),
+        observability.WithSpanKind(observability.SpanKindInternal),
+        observability.WithFollowsFrom(ctx.Context()), // Span link, no hijo
+    )
+    defer span.End()
+
+    startTime := time.Now()
+
+    // Ejecutar el servicio
+    err := s.service.Execute(
+        app_context.WithContext(ctx, spanCtx),
+        locale,
+        input,
+    )
+
+    // Registrar métricas
+    duration := time.Since(startTime)
+    s.metrics.Timer("background_service.duration", duration,
+        observability.Label("service", s.service.Name()),
+    )
+
+    if err != nil {
+        span.SetStatus(observability.SpanStatusError, err.Error())
+        span.RecordError(err)
+        s.metrics.Counter("background_service.errors", 1,
+            observability.Label("service", s.service.Name()),
+        )
+        return err
+    }
+
+    span.SetStatus(observability.SpanStatusOK, "completed")
+    s.metrics.Counter("background_service.success", 1,
+        observability.Label("service", s.service.Name()),
+    )
+
+    return nil
+}
+```
+
+### Instrumentación HTTP
+
+Los handlers HTTP se instrumentan automáticamente para métricas de request:
+
+```go
+// infrastructure/server/middlewares/observability.go
+func ObservabilityMiddleware(metrics observability.IMetricsCollector, tracer observability.ITracer) gin.HandlerFunc {
+    return func(c *gin.Context) {
+        // Extraer contexto de traza de headers entrantes
+        ctx := tracer.ExtractSpanContext(c.Request.Context(), extractHeaders(c))
+
+        // Iniciar span para el request HTTP
+        ctx, span := tracer.StartSpan(ctx, fmt.Sprintf("HTTP %s %s", c.Request.Method, c.FullPath()),
+            observability.WithSpanKind(observability.SpanKindServer),
+            observability.WithAttributes(
+                observability.String("http.method", c.Request.Method),
+                observability.String("http.url", c.Request.URL.String()),
+                observability.String("http.user_agent", c.Request.UserAgent()),
+            ),
+        )
+        defer span.End()
+
+        // Actualizar contexto del request
+        c.Request = c.Request.WithContext(ctx)
+
+        startTime := time.Now()
+
+        // Procesar request
+        c.Next()
+
+        // Registrar métricas
+        duration := time.Since(startTime)
+        statusCode := c.Writer.Status()
+
+        span.SetAttributes(
+            observability.Int("http.status_code", statusCode),
+            observability.Int64("http.response_size", int64(c.Writer.Size())),
+        )
+
+        if statusCode >= 400 {
+            span.SetStatus(observability.SpanStatusError, fmt.Sprintf("HTTP %d", statusCode))
+        } else {
+            span.SetStatus(observability.SpanStatusOK, "")
+        }
+
+        metrics.Histogram("http_request_duration_seconds", duration.Seconds(),
+            observability.Label("method", c.Request.Method),
+            observability.Label("path", c.FullPath()),
+            observability.Label("status", fmt.Sprintf("%d", statusCode)),
+        )
+
+        metrics.Counter("http_requests_total", 1,
+            observability.Label("method", c.Request.Method),
+            observability.Label("path", c.FullPath()),
+            observability.Label("status", fmt.Sprintf("%d", statusCode)),
+        )
+    }
+}
+```
+
+### Stack de Grafana
+
+El proyecto incluye una configuración preconfigurada de Grafana con:
+
+#### Fuentes de Datos
+
+```yaml
+# docker/grafana/provisioning/datasources/datasources.yaml
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+
+  - name: Jaeger
+    type: jaeger
+    access: proxy
+    url: http://jaeger:16686
+```
+
+#### Dashboards Incluidos
+
+1. **Métricas de API** (`api-metrics.json`)
+   - Tasa de requests por endpoint
+   - Latencia de respuesta (p50, p90, p99)
+   - Tasa de errores por código de estado
+   - Volumen de requests por método
+
+2. **Métricas de Casos de Uso** (`usecase-metrics.json`)
+   - Tasa de éxito/error por caso de uso
+   - Duración de ejecución
+   - Errores de validación
+   - Distribución de throughput
+
+3. **Métricas de Background** (`background-metrics.json`)
+   - Tamaño de cola de servicios background
+   - Duración de procesamiento
+   - Tasa de errores
+   - Utilización de workers
+
+4. **Métricas de DAG** (`dag-metrics.json`)
+   - Duración de ejecución del DAG
+   - Tiempo de ejecución de pasos paralelos
+   - Rendimiento de tareas background
+   - Propagación de errores
+
+### Configuración Docker
+
+El stack de observabilidad está incluido en `docker-compose.dev.yml`:
+
+```yaml
+services:
+  # Colector OpenTelemetry
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # gRPC OTLP
+      - "4318:4318"   # HTTP OTLP
+      - "8888:8888"   # Métricas del colector
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  # Jaeger
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "14268:14268" # Collector HTTP
+      - "14250:14250" # Collector gRPC
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+```
+
+### Crear un Caso de Uso con Observabilidad
+
+Aquí tienes una guía completa para crear un caso de uso instrumentado:
+
+```go
+package use_cases
+
+import (
+    "context"
+    "fmt"
+    "time"
+
+    "github.com/simon3640/goprojectskeleton/src/application/contracts/observability"
+    "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+    "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs/dtos"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+    "github.com/simon3640/goprojectskeleton/src/domain/models"
+)
+
+type CreateOrderUseCase struct {
+    log         providers.ILoggerProvider
+    repo        repositories.IOrderRepository
+    tracer      observability.ITracer
+    metrics     observability.IMetricsCollector
+}
+
+func NewCreateOrderUseCase(
+    log providers.ILoggerProvider,
+    repo repositories.IOrderRepository,
+    tracer observability.ITracer,
+    metrics observability.IMetricsCollector,
+) *CreateOrderUseCase {
+    return &CreateOrderUseCase{
+        log:     log,
+        repo:    repo,
+        tracer:  tracer,
+        metrics: metrics,
+    }
+}
+
+func (uc *CreateOrderUseCase) Execute(
+    ctx context.Context,
+    locale locales.LocaleTypeEnum,
+    input dtos.OrderCreate,
+) *use_case.UseCaseResult[models.Order] {
+    // 1. Iniciar span con atributos
+    ctx, span := uc.tracer.StartSpan(ctx, "CreateOrderUseCase.Execute",
+        observability.WithSpanKind(observability.SpanKindInternal),
+        observability.WithAttributes(
+            observability.String("order.customer_id", input.CustomerID),
+            observability.Float64("order.total", input.Total),
+            observability.Int("order.items_count", len(input.Items)),
+        ),
+    )
+    defer span.End()
+
+    result := use_case.NewUseCaseResult[models.Order]()
+    startTime := time.Now()
+
+    // 2. Usar logger con contexto para correlación de trazas
+    log := uc.log.WithContext(ctx)
+    log.Info("Creating new order", map[string]interface{}{
+        "customer_id": input.CustomerID,
+        "items_count": len(input.Items),
+    })
+
+    // 3. Agregar evento para operaciones significativas
+    span.AddEvent("validating_input")
+
+    // 4. Validar entrada
+    if err := input.Validate(); err != nil {
+        span.SetStatus(observability.SpanStatusError, "validation failed")
+        span.RecordError(err)
+        uc.metrics.Counter("usecase.create_order.validation_errors", 1,
+            observability.Label("reason", err.Error()),
+        )
+        result.SetValidationError(err.Error())
+        return result
+    }
+
+    // 5. Agregar evento para llamada al repositorio
+    span.AddEvent("calling_repository")
+
+    // 6. Crear orden (el repositorio también puede crear su propio span hijo)
+    order, repoErr := uc.repo.Create(input)
+    if repoErr != nil {
+        span.SetStatus(observability.SpanStatusError, repoErr.ErrMsg)
+        span.RecordError(fmt.Errorf(repoErr.ErrMsg))
+        uc.metrics.Counter("usecase.create_order.errors", 1,
+            observability.Label("error_type", "repository"),
+        )
+        log.Error("Failed to create order", fmt.Errorf(repoErr.ErrMsg), nil)
+        result.SetError(repoErr.Code, repoErr.Context)
+        return result
+    }
+
+    // 7. Registrar métricas de éxito
+    duration := time.Since(startTime)
+    uc.metrics.Counter("usecase.create_order.success", 1)
+    uc.metrics.Timer("usecase.create_order.duration", duration)
+    uc.metrics.Histogram("order.total_amount", input.Total,
+        observability.Label("currency", input.Currency),
+    )
+
+    // 8. Establecer estado de éxito y agregar atributos del resultado
+    span.SetStatus(observability.SpanStatusOK, "order created")
+    span.SetAttributes(
+        observability.String("order.id", order.ID),
+        observability.String("order.status", order.Status),
+    )
+
+    log.Info("Order created successfully", map[string]interface{}{
+        "order_id": order.ID,
+        "duration_ms": duration.Milliseconds(),
+    })
+
+    result.SetData(status.Created, *order, "Order created successfully")
+    return result
+}
+```
+
+### Implementación No-Op
+
+Cuando la observabilidad está deshabilitada, se usan implementaciones no-op:
+
+```go
+// application/shared/observability/noop/noop_tracer.go
+type NoopTracer struct{}
+
+func (t *NoopTracer) StartSpan(ctx context.Context, name string, opts ...observability.SpanOption) (context.Context, observability.ISpan) {
+    return ctx, &NoopSpan{}
+}
+
+type NoopSpan struct{}
+
+func (s *NoopSpan) End()                                                    {}
+func (s *NoopSpan) SetStatus(code observability.SpanStatusCode, desc string) {}
+func (s *NoopSpan) SetAttributes(attrs ...observability.SpanAttribute)       {}
+func (s *NoopSpan) RecordError(err error)                                   {}
+func (s *NoopSpan) AddEvent(name string, attrs ...observability.SpanAttribute) {}
+```
+
+### Acceder a los Dashboards
+
+Una vez que los servicios estén corriendo:
+
+| Servicio | URL | Descripción |
+|----------|-----|-------------|
+| **Grafana** | `http://localhost:3001` | Dashboards y alertas (admin/admin) |
+| **Jaeger UI** | `http://localhost:16686` | Explorador de trazas |
+| **Prometheus** | `http://localhost:9090` | Consultas de métricas |
+
+### Mejores Prácticas
+
+1. **Siempre propagar contexto**: Pasar `context.Context` a través de todas las capas
+2. **Usar nombres de span significativos**: `{Componente}.{Operación}` (ej: `UserRepository.Create`)
+3. **Agregar atributos relevantes**: Incluir IDs de negocio, estados, conteos
+4. **Registrar errores apropiadamente**: Usar `span.RecordError()` para excepciones
+5. **Usar eventos para hitos**: Agregar eventos para operaciones significativas
+6. **Mantener cardinalidad baja**: Evitar etiquetas de alta cardinalidad en métricas
+7. **Usar muestreo**: Configurar muestreo apropiado para producción
+
+---
+
 ## Virtudes y Beneficios
 
 ### 1. Arquitectura Sólida y Escalable
@@ -2585,6 +3276,23 @@ func TestMyService(t *testing.T) {
 - **Optimizaciones**: Cache, pooling, etc.
 - **Serverless ready**: Fácil migración a serverless
 
+### 11. Observabilidad
+
+#### ✅ Trazado Distribuido
+- **OpenTelemetry**: Instrumentación estándar de la industria
+- **Jaeger**: Visualización y análisis de trazas
+- **Propagación de contexto**: Trazas a través de límites de servicios
+
+#### ✅ Métricas
+- **Prometheus**: Recolección y almacenamiento de métricas
+- **Grafana**: Dashboards y alertas
+- **Métricas personalizadas**: Métricas de casos de uso y negocio
+
+#### ✅ Logging
+- **Logging estructurado**: Logs en formato JSON
+- **Correlación de trazas**: Logs conectados a trazas
+- **Niveles configurables**: Info, Debug, Error, Warn
+
 ### Beneficios para Iniciar un Proyecto
 
 1. **Ahorro de Tiempo**
@@ -2628,6 +3336,8 @@ func TestMyService(t *testing.T) {
 | **Tests** | 20+ archivos de test |
 | **Templates** | 6+ templates HTML |
 | **Idiomas Soportados** | 2 (Español, Inglés) |
+| **Componentes Observabilidad** | 4 (OpenTelemetry, Prometheus, Jaeger, Grafana) |
+| **Dashboards Grafana** | 4 dashboards preconfigurados |
 
 ## Estructura del Proyecto - Capa por Capa
 
@@ -2655,7 +3365,10 @@ GoProjectSkeleton/
 │   ├── docker-compose.dev.yml
 │   ├── docker-compose.test.yml
 │   ├── docker-compose.e2e.yml
-│   └── db/                  # Configuración de base de datos
+│   ├── db/                  # Configuración de base de datos
+│   ├── grafana/             # Dashboards y datasources de Grafana
+│   ├── otel/                # Configuración del colector OpenTelemetry
+│   └── prometheus/          # Configuración de Prometheus
 ├── tests/                   # 🧪 Tests del proyecto
 │   ├── integration/         # Tests de integración
 │   └── e2e/                 # Tests end-to-end (Bruno)
@@ -2920,6 +3633,25 @@ Interfaces de proveedores externos:
   - `Render()`
 
 - **`status_provider.go`**: Interfaz para estado del sistema
+
+##### `/src/application/contracts/observability/`
+
+Interfaces de observabilidad:
+
+- **`tracer.go`**: Interfaz para trazado distribuido
+  - `StartSpan()`, `StartSpanWithParent()`, `ExtractSpanContext()`, `InjectSpanContext()`
+
+- **`span.go`**: Interfaz para spans individuales
+  - `End()`, `SetStatus()`, `SetAttributes()`, `RecordError()`, `AddEvent()`
+
+- **`metrics_collector.go`**: Interfaz para métricas
+  - `Counter()`, `Gauge()`, `Histogram()`, `Timer()`
+
+- **`logger.go`**: Interfaz extendida para logging con trazas
+  - `WithContext()`, `WithFields()`
+
+- **`clock.go`**: Interfaz para abstracción de tiempo
+  - `Now()`, `Since()`
 
 ##### `/src/application/contracts/repositories/`
 
@@ -3252,6 +3984,35 @@ Implementaciones de proveedores.
 
 - **`status_provider.go`**: Implementación de estado
 
+#### `/src/infrastructure/otel/`
+
+Implementación de OpenTelemetry para observabilidad.
+
+- **`otel_init.go`**: Inicialización del SDK de OpenTelemetry
+  - Configuración de exportadores (OTLP, Prometheus)
+  - Configuración de muestreo de trazas
+  - Configuración de proveedores de métricas
+
+- **`otel_tracer.go`**: Implementación del tracer con OpenTelemetry
+  - Implementa `ITracer`
+  - Gestión de spans con OpenTelemetry SDK
+  - Propagación de contexto W3C
+
+- **`otel_span.go`**: Implementación de spans con OpenTelemetry
+  - Implementa `ISpan`
+  - Wrapper sobre spans de OpenTelemetry
+  - Conversión de atributos y estados
+
+- **`otel_metrics.go`**: Implementación de métricas con OpenTelemetry
+  - Implementa `IMetricsCollector`
+  - Contadores, histogramas y gauges
+  - Integración con Prometheus
+
+- **`otel_logger.go`**: Logger con correlación de trazas
+  - Implementa `ILoggerProvider` extendido
+  - Inyección automática de trace_id y span_id
+  - Logs estructurados en formato JSON
+
 #### `/src/infrastructure/repositories/`
 
 Implementaciones de repositorios.
@@ -3381,6 +4142,13 @@ Implementación para **Azure Functions**:
 - **`dockerfile.integration`**: Dockerfile de integración
 - **`db/`**: Configuración de base de datos
   - `Dockerfile`, `create.sql`
+- **`grafana/`**: Configuración de Grafana
+  - `provisioning/datasources/`: Configuración de fuentes de datos (Prometheus, Jaeger)
+  - `dashboards/`: Dashboards JSON preconfigurados
+- **`otel/`**: Configuración de OpenTelemetry
+  - `otel-collector-config.yaml`: Configuración del colector OTLP
+- **`prometheus/`**: Configuración de Prometheus
+  - `prometheus.yml`: Configuración de scraping de métricas
 
 ### `/tests/` - Tests
 
@@ -4411,6 +5179,13 @@ graph TB
             Swagger[Swagger Server<br/>Port: 8081<br/>Independent]
         end
 
+        subgraph Observability["📊 Observabilidad"]
+            OTELCollector[OTEL Collector<br/>Port: 4317/4318]
+            Prometheus[(Prometheus<br/>Port: 9090)]
+            Jaeger[Jaeger<br/>Port: 16686]
+            Grafana[Grafana<br/>Port: 3001]
+        end
+
         subgraph DevTools["Herramientas de Desarrollo"]
             Mailpit[Mailpit<br/>Port: 8025<br/>Email Testing]
             RedisCommander[Redis Commander<br/>Port: 18081<br/>Redis UI]
@@ -4420,6 +5195,12 @@ graph TB
     App -->|GORM| PostgreSQL
     App -->|go-redis| Redis
     App -->|SMTP| Mailpit
+    App -->|OTLP| OTELCollector
+
+    OTELCollector --> Prometheus
+    OTELCollector --> Jaeger
+    Prometheus --> Grafana
+    Jaeger --> Grafana
 
     Swagger -.->|Documentation| App
     RedisCommander -->|UI| Redis
@@ -4429,6 +5210,10 @@ graph TB
     style Redis fill:#ffcdd2
     style Mailpit fill:#fff9c4
     style RedisCommander fill:#f3e5f5
+    style OTELCollector fill:#fff9c4
+    style Prometheus fill:#ffcdd2
+    style Jaeger fill:#e3f2fd
+    style Grafana fill:#c8e6c9
 ```
 
 ### Diagrama de Despliegue
@@ -4494,6 +5279,12 @@ El proyecto incluye configuración Docker para desarrollo:
 - **Redis**: Cache y sesiones
 - **Mailpit**: Servidor de email para desarrollo
 - **Redis Commander**: Interfaz web para Redis (puerto 18081)
+
+**Servicios de Observabilidad**:
+- **OTEL Collector**: Colector OpenTelemetry (puertos 4317/4318)
+- **Prometheus**: Almacenamiento de métricas (puerto 9090)
+- **Jaeger**: Backend de trazas distribuidas (puerto 16686)
+- **Grafana**: Dashboards y visualización (puerto 3001)
 
 **Servicios de Testing E2E** (docker-compose.e2e.yml):
 - **Aplicación**: Servidor Go para tests E2E
@@ -5234,6 +6025,7 @@ func TestCreateUser(t *testing.T) {
 - ✅ **Seguridad** - JWT, OTP, hash seguro de contraseñas
 - ✅ **Internacionalización** - Soporte multiidioma
 - ✅ **Optimización** - Cache, tree shaking, connection pooling
+- ✅ **Observabilidad** - OpenTelemetry, Prometheus, Jaeger, Grafana
 
 ### 🚀 Casos de Uso Ideales
 
@@ -5256,12 +6048,18 @@ func TestCreateUser(t *testing.T) {
    go test ./tests/integration/...
    ```
 
-3. **Adaptar a tus Necesidades**
+3. **Explorar Observabilidad**
+   - Acceder a Grafana en `http://localhost:3001` (admin/admin)
+   - Explorar trazas en Jaeger en `http://localhost:16686`
+   - Consultar métricas en Prometheus en `http://localhost:9090`
+   - Revisar dashboards preconfigurados
+
+4. **Adaptar a tus Necesidades**
    - Personalizar modelos de dominio
    - Agregar nuevos módulos de negocio
    - Configurar providers según tus servicios
 
-4. **Desplegar**
+5. **Desplegar**
    - Desarrollo: Docker Compose
    - Producción: Monolito tradicional o Serverless
    - Cloud: AWS Lambda o Azure Functions

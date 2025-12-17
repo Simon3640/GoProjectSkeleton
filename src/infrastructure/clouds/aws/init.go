@@ -2,6 +2,7 @@
 package aws
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
@@ -10,12 +11,16 @@ import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	settings "github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/config"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/otel"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
@@ -49,6 +54,23 @@ func InitializeBase() *application_errors.ApplicationError {
 		settings.AppSettingsInstance.EnableLog,
 		settings.AppSettingsInstance.DebugLog,
 	)
+
+	if settings.AppSettingsInstance.ObservabilityEnabled && settings.AppSettingsInstance.ObservabilityBackend == "opentelemetry" {
+		providers.Logger.Info("Initializing OpenTelemetry...")
+		otel.InitializeOtelSDK(otel.OtelConfig{
+			ServiceName:    settings.AppSettingsInstance.AppName,
+			ServiceVersion: settings.AppSettingsInstance.AppVersion,
+			OTLPEndpoint:   settings.AppSettingsInstance.OTLPEndpoint,
+			Environment:    settings.AppSettingsInstance.AppEnv,
+		})
+
+		observability.ObservabilityComponentsInstance = otel.NewOtelObservabilityComponents(otel.OtelConfig{
+			ServiceName:    settings.AppSettingsInstance.AppName,
+			ServiceVersion: settings.AppSettingsInstance.AppVersion,
+			OTLPEndpoint:   settings.AppSettingsInstance.OTLPEndpoint,
+			Environment:    settings.AppSettingsInstance.AppEnv,
+		})
+	}
 
 	initializedBase = true
 	log.Println("Base infrastructure initialized successfully")
@@ -228,6 +250,17 @@ func InitializeEmail() *application_errors.ApplicationError {
 	return nil
 }
 
+func InitializeBackGroundExecutor() *application_errors.ApplicationError {
+	ctx := context.Background()
+	workers.InitializeBackgroundExecutor(
+		ctx,
+		settings.AppSettingsInstance.BackgroundWorkers,
+		settings.AppSettingsInstance.BackgroundQueueSize,
+	)
+	services.InitializeBackgroundServiceFactory()
+	return nil
+}
+
 // InitializeInfrastructure initializes all infrastructure components.
 // This is kept for backward compatibility but should be replaced with
 // specific initialization functions for better tree-shaking.
@@ -274,6 +307,9 @@ func InitializeForAuthLogin() *application_errors.ApplicationError {
 	if err := InitializeEmail(); err != nil {
 		return err
 	}
+	if err := InitializeBackGroundExecutor(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -316,6 +352,9 @@ func InitializeForAuthPasswordReset() *application_errors.ApplicationError {
 	if err := InitializeEmail(); err != nil {
 		return err
 	}
+	if err := InitializeBackGroundExecutor(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -328,16 +367,19 @@ func InitializeForUser() *application_errors.ApplicationError {
 	if err := InitializeDatabase(); err != nil {
 		return err
 	}
+	if err := InitializeJWT(); err != nil {
+		return err
+	}
+	if err := InitializeBackGroundExecutor(); err != nil {
+		return err
+	}
 	return nil
 }
 
 // InitializeForUserWithCache initializes infrastructure for user handlers that need cache.
 // Requires: Base, Database, Cache.
 func InitializeForUserWithCache() *application_errors.ApplicationError {
-	if err := InitializeBase(); err != nil {
-		return err
-	}
-	if err := InitializeDatabase(); err != nil {
+	if err := InitializeForUser(); err != nil {
 		return err
 	}
 	if err := InitializeCache(); err != nil {
@@ -349,13 +391,13 @@ func InitializeForUserWithCache() *application_errors.ApplicationError {
 // InitializeForUserWithEmail initializes infrastructure for user handlers that need email.
 // Requires: Base, Database, Email.
 func InitializeForUserWithEmail() *application_errors.ApplicationError {
-	if err := InitializeBase(); err != nil {
-		return err
-	}
-	if err := InitializeDatabase(); err != nil {
+	if err := InitializeForUser(); err != nil {
 		return err
 	}
 	if err := InitializeEmail(); err != nil {
+		return err
+	}
+	if err := InitializeBackGroundExecutor(); err != nil {
 		return err
 	}
 	return nil
@@ -364,10 +406,7 @@ func InitializeForUserWithEmail() *application_errors.ApplicationError {
 // InitializeForPassword initializes infrastructure for password handlers.
 // Requires: Base, Database.
 func InitializeForPassword() *application_errors.ApplicationError {
-	if err := InitializeBase(); err != nil {
-		return err
-	}
-	if err := InitializeDatabase(); err != nil {
+	if err := InitializeForUser(); err != nil {
 		return err
 	}
 	return nil
@@ -376,13 +415,13 @@ func InitializeForPassword() *application_errors.ApplicationError {
 // InitializeForPasswordWithEmail initializes infrastructure for password handlers that need email.
 // Requires: Base, Database, Email.
 func InitializeForPasswordWithEmail() *application_errors.ApplicationError {
-	if err := InitializeBase(); err != nil {
-		return err
-	}
-	if err := InitializeDatabase(); err != nil {
+	if err := InitializeForUser(); err != nil {
 		return err
 	}
 	if err := InitializeEmail(); err != nil {
+		return err
+	}
+	if err := InitializeBackGroundExecutor(); err != nil {
 		return err
 	}
 	return nil
