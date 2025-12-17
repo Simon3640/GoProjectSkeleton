@@ -6,30 +6,13 @@ import (
 	passwordhandlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/password"
 	statushandlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/status"
 	userhandlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/user"
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/observability"
 
 	"github.com/gin-gonic/gin"
 )
 
-var observabilityComponents *observability.ObservabilityComponents
-
-// SetObservabilityComponents establece los componentes de observabilidad para las rutas
-func SetObservabilityComponents(components *observability.ObservabilityComponents) {
-	observabilityComponents = components
-}
-
 func Router(r *gin.RouterGroup) {
-	// Ruta de status con observabilidad
-	if observabilityComponents != nil && observabilityComponents.Tracer != nil {
-		r.GET("/status", wrapHandlerWithObservability(
-			statushandlers.GetHealthCheck,
-			observabilityComponents.Tracer,
-			observabilityComponents.Propagator,
-		))
-	} else {
-		r.GET("/status", wrapHandler(statushandlers.GetHealthCheck))
-	}
 
+	r.GET("/status", wrapHandler(statushandlers.GetHealthCheck))
 	private := r.Group("/")
 	private.Use(middlewares.AuthMiddleware())
 	// User routes
