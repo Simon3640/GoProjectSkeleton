@@ -18,6 +18,7 @@ type BackgroundExecutor struct {
 	tasks        chan BackgroundTask
 	workers      int
 	wg           sync.WaitGroup
+	pendingWg    sync.WaitGroup // Tracks pending tasks (not workers) for WaitForPendingTasks
 	startOnce    sync.Once
 	stopOnce     sync.Once
 	shutdown     chan struct{}
@@ -64,6 +65,7 @@ func (b *BackgroundExecutor) Start() {
 						}
 						// execute with panic recovery
 						func() {
+							defer b.pendingWg.Done() // Mark task as completed
 							defer func() {
 								if r := recover(); r != nil {
 									log.Printf("panic recovered in background worker %d: %v\n%s", workerID, r, debug.Stack())
@@ -90,15 +92,35 @@ func (b *BackgroundExecutor) Submit(task BackgroundTask) error {
 		// start lazily
 		b.Start()
 	}
+
+	// Check if context is done before attempting to submit
 	select {
 	case <-b.parentCtx.Done():
 		return b.parentCtx.Err()
+	default:
+	}
+
+	// Increment pending counter BEFORE enqueueing
+	b.pendingWg.Add(1)
+
+	select {
 	case b.tasks <- task:
 		return nil
 	default:
-		// queue full — decide policy. Here we return an error.
+		// queue full — revert the counter and return error
+		b.pendingWg.Done()
 		return errors.New("background queue full")
 	}
+}
+
+// WaitForPendingTasks waits for all currently submitted tasks to complete.
+// Unlike Wait() or Stop(), this method does NOT stop the executor - workers
+// remain alive and can process new tasks after this returns.
+// This is useful for Lambda environments where you need to ensure all tasks
+// finish before the response is returned, while keeping the executor alive
+// for subsequent invocations (container reuse).
+func (b *BackgroundExecutor) WaitForPendingTasks() {
+	b.pendingWg.Wait()
 }
 
 // Wait waits until all currently queued tasks are finished.
