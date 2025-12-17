@@ -1,6 +1,7 @@
 package authusecases
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -109,6 +110,7 @@ func (uc *AuthUserUseCase) validate(input string, result *usecase.UseCaseResult[
 		validationErrors = append(validationErrors, uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.AUTHORIZATION_REQUIRED))
 	}
 	// regex for JWT token validation
+	observability.GetObservabilityComponents().Logger.WarningWithContext(fmt.Sprintf("Validating JWT token: %s", input), uc.AppContext)
 	jwtRegex := `^[A-Za-z0-9-_=]+\.([A-Za-z0-9-_=]+\.?)*$`
 	if !regexp.MustCompile(jwtRegex).MatchString(input) {
 		validationErrors = append(validationErrors, uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.INVALID_JWT_TOKEN))
