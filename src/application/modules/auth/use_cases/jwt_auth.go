@@ -2,6 +2,7 @@
 package authusecases
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -168,7 +169,13 @@ func (uc *AuthenticateUseCase) validatePassword(result *usecase.UseCaseResult[dt
 		if uc.cacheProvider != nil {
 			uc.incrementFailedAttempts(email)
 		}
-		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error validating password", verifyErr.ToError(), uc.AppContext)
+		var err error
+		if verifyErr != nil {
+			err = verifyErr.ToError()
+		} else {
+			err = errors.New("password validation failed: invalid password")
+		}
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error validating password", err, uc.AppContext)
 		result.SetError(
 			status.NotFound,
 			uc.AppMessages.Get(
