@@ -1,0 +1,31 @@
+meta {
+  name: DeleteUserWithoutAuth
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseURL}}/user/{{userToDeleteId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Status code is 401 (Unauthorized)", function () {
+      expect(res.getStatus()).to.equal(401);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

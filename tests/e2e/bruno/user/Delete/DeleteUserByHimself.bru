@@ -1,0 +1,57 @@
+meta {
+  name: DeleteUserByHimself
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseURL}}/user/{{normalUserId}}
+  body: none
+  auth: apikey
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{userToken}}
+  placement: header
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  const response = res.getBody();
+
+  if (!response) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  test("Response contains data property", function () {
+      expect(response.data).to.exist;
+  });
+
+  test("Data should be true", function () {
+      expect(response.data).to.equal(true);
+  });
+
+  test("Response contains details", function () {
+      expect(response.details).to.exist;
+      expect(response.details).to.be.a('string');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
