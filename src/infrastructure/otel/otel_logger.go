@@ -58,7 +58,6 @@ func (l *OtelLogger) logEvent(ctx context.Context, level string, message string,
 			}
 		}
 	}
-
 	// If there is a valid span, add the event
 	if span.SpanContext().IsValid() {
 		otelAttrs := []attribute.KeyValue{
@@ -76,10 +75,16 @@ func (l *OtelLogger) logEvent(ctx context.Context, level string, message string,
 		eventName := fmt.Sprintf("log.%s", level)
 		span.AddEvent(eventName, trace.WithAttributes(otelAttrs...))
 	}
-
-	// Write to stdout if enabled
 	if l.fallbackToStdout {
-		l.writeToStdout(level, message)
+		var formattedMessage = message
+		appCtx := ctx.Value("app_context")
+		if appCtx != nil {
+
+			if appCtxTyped, ok := appCtx.(*app_context.AppContext); ok && appCtxTyped != nil {
+				formattedMessage = l.formatMessageWithTrace(message, appCtxTyped)
+			}
+		}
+		l.writeToStdout(level, formattedMessage)
 	}
 }
 
@@ -271,4 +276,24 @@ func (l *OtelLogger) createContextFromAppContext(appCtx interface{}) context.Con
 		return ctx
 	}
 	return context.Background()
+}
+
+// formatMessageWithTrace formatea el mensaje incluyendo trace_id y span_id si están disponibles
+func (lp *OtelLogger) formatMessageWithTrace(message string, appCtx interface{}) string {
+	var appCtxTyped *app_context.AppContext
+	if appCtx != nil {
+		if typed, ok := appCtx.(*app_context.AppContext); ok {
+			appCtxTyped = typed
+		}
+	}
+	if appCtxTyped == nil || !appCtxTyped.HasTrace() {
+		return message
+	}
+
+	traceCtx := appCtxTyped.TraceContext()
+	if traceCtx == nil || !traceCtx.IsValid() {
+		return message
+	}
+
+	return fmt.Sprintf("[trace_id=%s span_id=%s] %s", traceCtx.TraceID(), traceCtx.SpanID(), message)
 }
