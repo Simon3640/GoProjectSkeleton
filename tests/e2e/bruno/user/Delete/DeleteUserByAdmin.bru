@@ -1,0 +1,57 @@
+meta {
+  name: DeleteUserByAdmin
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{baseURL}}/user/{{userToDeleteId}}
+  body: none
+  auth: apikey
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{adminToken}}
+  placement: header
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  // Note: According to the current guard implementation (UserGetItSelf),
+  // even admins can only delete themselves. This test verifies the current behavior.
+  // If admins should be able to delete other users, the guard needs to be updated.
+
+  test("Status code is 401 (Unauthorized) - Admin cannot delete other users with current guards", function () {
+      expect(res.getStatus()).to.equal(401);
+  });
+
+  const response = res.getBody();
+
+  if (!response) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  test("Response contains error details", function () {
+      expect(response.details).to.exist;
+  });
+
+  test("Error details indicates unauthorized access", function () {
+      expect(response.details).to.be.a('string');
+      expect(response.details.length).to.be.greaterThan(0);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
