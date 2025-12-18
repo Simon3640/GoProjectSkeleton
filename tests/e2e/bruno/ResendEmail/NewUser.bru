@@ -20,11 +20,11 @@ auth:bearer {
 
 body:json {
   {
-    "email": "resendtest@example.com",
+    "email": "{{resendEmail}}",
     "name": "Resend Email Test User",
     "otpLogin": false,
     "password": "{{strongPassword}}",
-    "phone": "+16548548488",
+    "phone": "{{resendPhone}}",
     "role_id": 2
   }
 }
@@ -45,9 +45,6 @@ script:post-response {
       expect(response.data.id).to.exist;
       expect(response.data.id).to.be.a('number');
   });
-
-  // Store email for resend request
-  bru.setEnvVar("resendEmailUserEmail", response.data.email);
 }
 
 settings {
