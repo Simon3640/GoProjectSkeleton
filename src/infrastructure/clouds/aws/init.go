@@ -11,7 +11,7 @@ import (
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	"github.com/simon3640/goprojectskeleton/src/application/shared/observability/noop"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
@@ -20,6 +20,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/config"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
+	"github.com/simon3640/goprojectskeleton/src/infrastructure/otel"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
@@ -53,10 +54,23 @@ func InitializeBase() *application_errors.ApplicationError {
 		settings.AppSettingsInstance.EnableLog,
 		settings.AppSettingsInstance.DebugLog,
 	)
-	noop.Logger.Setup(
-		settings.AppSettingsInstance.EnableLog,
-		settings.AppSettingsInstance.DebugLog,
-	)
+
+	if settings.AppSettingsInstance.ObservabilityEnabled && settings.AppSettingsInstance.ObservabilityBackend == "opentelemetry" {
+		providers.Logger.Info("Initializing OpenTelemetry...")
+		otel.InitializeOtelSDK(otel.OtelConfig{
+			ServiceName:    settings.AppSettingsInstance.AppName,
+			ServiceVersion: settings.AppSettingsInstance.AppVersion,
+			OTLPEndpoint:   settings.AppSettingsInstance.OTLPEndpoint,
+			Environment:    settings.AppSettingsInstance.AppEnv,
+		})
+
+		observability.ObservabilityComponentsInstance = otel.NewOtelObservabilityComponents(otel.OtelConfig{
+			ServiceName:    settings.AppSettingsInstance.AppName,
+			ServiceVersion: settings.AppSettingsInstance.AppVersion,
+			OTLPEndpoint:   settings.AppSettingsInstance.OTLPEndpoint,
+			Environment:    settings.AppSettingsInstance.AppEnv,
+		})
+	}
 
 	initializedBase = true
 	log.Println("Base infrastructure initialized successfully")
