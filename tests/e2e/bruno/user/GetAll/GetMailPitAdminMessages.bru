@@ -1,7 +1,7 @@
 meta {
   name: GetMailPitAdminMessages
   type: http
-  seq: 0.4
+  seq: 1.4
 }
 
 get {
@@ -12,6 +12,11 @@ get {
 
 params:query {
   limit: 1
+}
+
+script:pre-request {
+  // Wait for mail
+  bru.sleep(1000)
 }
 
 script:post-response {
@@ -27,4 +32,5 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

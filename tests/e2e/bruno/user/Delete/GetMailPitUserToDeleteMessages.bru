@@ -1,7 +1,7 @@
 meta {
   name: GetMailPitUserToDeleteMessages
   type: http
-  seq: 1.1
+  seq: 2.1
 }
 
 get {
@@ -12,6 +12,11 @@ get {
 
 params:query {
   limit: 1
+}
+
+script:pre-request {
+  // Wait for Mail
+  bru.sleep(1000)
 }
 
 script:post-response {
@@ -26,4 +31,5 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
