@@ -55,19 +55,20 @@ go run src/infrastructure/server/cmd/main.go
 4. [Scalability and Serverless](#scalability-and-serverless)
 5. [Complete Request Flow](#complete-request-flow)
 6. [Background Task Execution](#-background-task-execution)
-7. [Virtues and Benefits](#virtues-and-benefits)
-8. [Project Structure - Layer by Layer](#project-structure---layer-by-layer)
-9. [Exhaustive Review by Folders](#exhaustive-review-by-folders)
-10. [Technologies and Dependencies](#technologies-and-dependencies)
-11. [Configuration and Setup](#configuration-and-setup)
-12. [Business Modules](#business-modules)
-13. [API and Endpoints](#api-and-endpoints)
-14. [Database and Persistence](#database-and-persistence)
-15. [Authentication and Security](#authentication-and-security)
-16. [Testing](#testing)
-17. [Docker and Deployment](#docker-and-deployment)
-18. [GitHub Actions Deployment](#github-actions-deployment)
-19. [Development Guide](#development-guide)
+7. [Observability](#-observability)
+8. [Virtues and Benefits](#virtues-and-benefits)
+9. [Project Structure - Layer by Layer](#project-structure---layer-by-layer)
+10. [Exhaustive Review by Folders](#exhaustive-review-by-folders)
+11. [Technologies and Dependencies](#technologies-and-dependencies)
+12. [Configuration and Setup](#configuration-and-setup)
+13. [Business Modules](#business-modules)
+14. [API and Endpoints](#api-and-endpoints)
+15. [Database and Persistence](#database-and-persistence)
+16. [Authentication and Security](#authentication-and-security)
+17. [Testing](#testing)
+18. [Docker and Deployment](#docker-and-deployment)
+19. [GitHub Actions Deployment](#github-actions-deployment)
+20. [Development Guide](#development-guide)
 
 ---
 
@@ -140,6 +141,14 @@ The core philosophy of **GoProjectSkeleton** is that the **domain** and **applic
 - ✅ **Terraform** - Infrastructure as code for AWS and Azure and in the future for GCP
 - ✅ **Secrets Management** - Integration with AWS Secrets Manager and Azure Key Vault
 - ✅ **Hot Reload** - Efficient development with automatic reloading
+
+#### 📊 Observability
+- ✅ **OpenTelemetry Integration** - Distributed tracing and metrics collection
+- ✅ **Prometheus Metrics** - Business metrics for Use Cases, DAGs, and Background Services
+- ✅ **Jaeger Tracing** - Trace visualization with parent-child span relationships
+- ✅ **Grafana Dashboards** - Pre-configured dashboards for monitoring
+- ✅ **No-Op Fallback** - Safe disabling with no-op implementations
+- ✅ **Automatic Instrumentation** - Built-in instrumentation for DAGs and Background Services
 
 #### ⚡ Performance and Scalability
 - ✅ **Redis Cache** - Performance optimization with configurable TTL
@@ -2478,6 +2487,851 @@ func TestMyService(t *testing.T) {
 
 ---
 
+## 📊 Observability
+
+**GoProjectSkeleton** includes a complete observability stack with **OpenTelemetry**, **Prometheus**, **Jaeger**, and **Grafana**. The system provides distributed tracing, metrics collection, and structured logging across all application layers including Use Cases, DAGs, and Background Services.
+
+### Overview
+
+The observability system follows these principles:
+
+1. **Always-On Instrumentation**: All components are instrumented by default
+2. **No-Op Fallback**: When observability is disabled, no-op implementations are used
+3. **Clean Architecture Compliance**: Observability contracts live in the application layer
+4. **Automatic Trace Propagation**: Context flows automatically through the call stack
+
+### Observability Architecture
+
+```mermaid
+graph TB
+    subgraph Application["🎯 Application"]
+        UseCase[Use Cases]
+        DAG[DAG Steps]
+        Background[Background Services]
+        Handlers[HTTP Handlers]
+    end
+
+    subgraph ObsComponents["📊 Observability Components"]
+        Tracer[Tracer]
+        Metrics[Metrics Collector]
+        Logger[Logger]
+        Clock[Clock]
+    end
+
+    subgraph Infrastructure["🔧 Infrastructure"]
+        OtelSDK[OpenTelemetry SDK]
+        OtelCollector[OTEL Collector]
+    end
+
+    subgraph Backends["☁️ Backends"]
+        Jaeger[Jaeger<br/>Traces]
+        Prometheus[Prometheus<br/>Metrics]
+        Grafana[Grafana<br/>Dashboards]
+    end
+
+    UseCase --> Tracer
+    UseCase --> Metrics
+    DAG --> Tracer
+    DAG --> Metrics
+    Background --> Tracer
+    Background --> Metrics
+    Handlers --> Logger
+
+    Tracer --> OtelSDK
+    Metrics --> OtelSDK
+    Logger --> OtelSDK
+
+    OtelSDK --> OtelCollector
+    OtelCollector --> Jaeger
+    OtelCollector --> Prometheus
+    Prometheus --> Grafana
+    Jaeger --> Grafana
+
+    style Tracer fill:#e3f2fd
+    style Metrics fill:#fff9c4
+    style Jaeger fill:#ff9800
+    style Prometheus fill:#e91e63
+    style Grafana fill:#4caf50
+```
+
+### Configuration
+
+Configure observability through environment variables:
+
+```bash
+# Observability Settings
+OBSERVABILITY_ENABLED=true
+OBSERVABILITY_BACKEND=opentelemetry
+OTLP_ENDPOINT=http://otel-collector:4318
+OBSERVABILITY_SAMPLING_RATE=1.0
+```
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `OBSERVABILITY_ENABLED` | Enable/disable observability | `false` |
+| `OBSERVABILITY_BACKEND` | Backend type (`opentelemetry`) | `opentelemetry` |
+| `OTLP_ENDPOINT` | OTLP collector endpoint | `http://localhost:4318` |
+| `OBSERVABILITY_SAMPLING_RATE` | Trace sampling rate (0.0-1.0) | `1.0` |
+
+### Observability Components
+
+The system provides four core components accessible via `ObservabilityComponents`:
+
+```go
+// Access observability components anywhere in the application
+components := observability.GetObservabilityComponents()
+
+tracer := components.Tracer      // Distributed tracing
+metrics := components.Metrics    // Metrics collection
+logger := components.Logger      // Structured logging
+clock := components.Clock        // Time abstraction
+```
+
+#### Tracer Interface
+
+```go
+// Tracer creates spans from a TraceContextCarrier (typically AppContext)
+type Tracer interface {
+    StartSpan(
+        carrier TraceContextCarrier,
+        name string,
+        opts ...SpanOption,
+    ) Span
+}
+
+// Span represents an instrumented operation
+type Span interface {
+    SetAttribute(key string, value interface{})
+    SetStatus(status SpanStatus, description string)
+    End()
+    UpdateAppContext(appCtx interface{})
+}
+```
+
+#### Metrics Collector Interface
+
+```go
+// MetricsCollector records basic metrics
+type MetricsCollector interface {
+    RecordLatency(operation string, duration time.Duration, tags map[string]string)
+    IncrementCounter(name string, tags map[string]string)
+}
+```
+
+#### Logger Interface
+
+```go
+// Logger with context support for trace correlation
+type Logger interface {
+    Error(message string, err error)
+    Info(message string)
+    Warning(message string)
+    Debug(message string, data any)
+    // Context-aware methods for trace correlation
+    ErrorWithContext(message string, err error, appCtx interface{})
+    InfoWithContext(message string, appCtx interface{})
+    WarningWithContext(message string, appCtx interface{})
+    DebugWithContext(message string, data any, appCtx interface{})
+}
+```
+
+### Use Case Observability
+
+Use Cases are automatically instrumented with the `InstrumentUseCase` helper:
+
+```go
+// Manual instrumentation of a use case
+func InstrumentUseCase[Input any, Output any](
+    uc BaseUseCase[Input, Output],
+    appCtx *app_context.AppContext,
+    locale locales.LocaleTypeEnum,
+    input Input,
+    tracer contractsobservability.Tracer,
+    metrics contractsobservability.MetricsCollector,
+    clock contractsobservability.Clock,
+    useCaseName string,
+) *UseCaseResult[Output] {
+    // Create span for the use case
+    span := tracer.StartSpan(appCtx, "usecase."+useCaseName)
+    defer span.End()
+
+    // Update AppContext with the TraceContext of the span
+    span.UpdateAppContext(appCtx)
+
+    // Measure latency
+    start := clock.Now()
+    result := uc.Execute(appCtx, locale, input)
+    duration := clock.Now().Sub(start)
+
+    // Register metrics
+    tags := map[string]string{
+        "usecase": useCaseName,
+    }
+    metrics.RecordLatency("usecase.execute", duration, tags)
+
+    // Mark span with status according to result
+    if result != nil && result.HasError() {
+        span.SetStatus(contractsobservability.SpanStatusError, result.GetError().Error())
+        tags["status"] = "error"
+        metrics.IncrementCounter("usecase.error", tags)
+    } else {
+        span.SetStatus(contractsobservability.SpanStatusOK, "")
+        tags["status"] = "success"
+        metrics.IncrementCounter("usecase.success", tags)
+    }
+
+    return result
+}
+```
+
+#### Collected Use Case Metrics
+
+| Metric | Type | Description | Tags |
+|--------|------|-------------|------|
+| `usecase.execute.duration` | Histogram | Execution time in ms | `usecase`, `operation` |
+| `usecase.success` | Counter | Successful executions | `usecase`, `status` |
+| `usecase.error` | Counter | Failed executions | `usecase`, `status`, `status_code` |
+
+### DAG Observability
+
+DAGs (Directed Acyclic Graphs) include built-in observability for both synchronous and background steps.
+
+#### Synchronous DAG Steps
+
+When using `Then()` to chain steps, each step is automatically instrumented:
+
+```go
+// DAG step with automatic instrumentation
+dag := use_case.NewDag(
+    appCtx,
+    use_case.NewStep(createUserUC),
+    locale,
+    executor,
+)
+
+// Each Then() step creates a span: "dag.step.execute.{name}"
+dag = use_case.Then(dag, use_case.NewStep(sendEmailUC), "send-email")
+```
+
+**Instrumentation in Then():**
+
+```go
+func Then[I any, O any, P any](d *DAG[I, O], next DagStep[O, P], name string) *DAG[I, P] {
+    run := func(ctx *app_context.AppContext, input I) *UseCaseResult[P] {
+        tracer := observability.GetObservabilityComponents().Tracer
+        clock := observability.GetObservabilityComponents().Clock
+        metrics := observability.GetObservabilityComponents().Metrics
+
+        // Create span for this DAG step
+        span := tracer.StartSpan(ctx, "dag.step.execute."+name)
+        defer span.End()
+        span.UpdateAppContext(ctx)
+
+        // Measure latency
+        start := clock.Now()
+        r1 := d.run(ctx, input)
+        duration := clock.Now().Sub(start)
+
+        // Record metrics
+        tags := map[string]string{"dag_step": name}
+        metrics.RecordLatency("dag.step.execute."+name, duration, tags)
+
+        if r1.HasError() {
+            span.SetStatus(contractsobservability.SpanStatusError, r1.GetError().Error())
+            tags["status"] = "error"
+            metrics.IncrementCounter("dag.step.error."+name, tags)
+            // Propagate error...
+        }
+        return next.uc.Execute(ctx, d.locale, *r1.Data)
+    }
+    // ...
+}
+```
+
+#### Background DAG Steps
+
+Background steps use `WithFollowsFrom` to link traces across async boundaries:
+
+```go
+// Background step with trace correlation
+dag = use_case.ThenBackground(dag, use_case.NewStep(notificationUC), "send-notification")
+```
+
+**Instrumentation in ThenBackground():**
+
+```go
+func ThenBackground[I any, O any, P any](d *DAG[I, O], next DagStep[O, P], name string) *DAG[I, O] {
+    // Capture parent trace context before async execution
+    parentTraceCtx := d.ctx.TraceContext()
+
+    entr := backgroundEntry[O]{
+        name: name,
+        fn: func(ctx *app_context.AppContext, out O) {
+            var span contractsobservability.Span
+
+            // Create span with follows_from relation for background correlation
+            if parentTraceCtx != nil && parentTraceCtx.IsValid() {
+                span = tracer.StartSpan(ctx, "background."+name,
+                    observability.WithFollowsFrom(parentTraceCtx))
+            } else {
+                span = tracer.StartSpan(ctx, "background."+name)
+            }
+            defer span.End()
+            span.UpdateAppContext(ctx)
+
+            // Measure execution
+            start := clock.Now()
+            res := next.uc.Execute(ctx, d.locale, out)
+            duration := clock.Now().Sub(start)
+
+            // Record metrics
+            tags := map[string]string{"background_task": name}
+            metrics.RecordLatency("background.execute."+name, duration, tags)
+
+            if res != nil && res.HasError() {
+                span.SetStatus(contractsobservability.SpanStatusError, res.GetError().Error())
+                metrics.IncrementCounter("background.error."+name, tags)
+            } else {
+                span.SetStatus(contractsobservability.SpanStatusOK, "")
+                metrics.IncrementCounter("background.success."+name, tags)
+            }
+        },
+    }
+    // ...
+}
+```
+
+#### DAG Execute Instrumentation
+
+The main `Execute()` method also creates a root span:
+
+```go
+func (d *DAG[I, O]) Execute(input I) *UseCaseResult[O] {
+    tracer := observability.GetObservabilityComponents().Tracer
+    clock := observability.GetObservabilityComponents().Clock
+    metrics := observability.GetObservabilityComponents().Metrics
+
+    // Root span for entire DAG execution
+    span := tracer.StartSpan(d.ctx, "dag.execute")
+    defer span.End()
+    span.UpdateAppContext(d.ctx)
+
+    start := clock.Now()
+    res := d.run(d.ctx, input)
+    duration := clock.Now().Sub(start)
+
+    // Record DAG-level metrics
+    tags := map[string]string{}
+    metrics.RecordLatency("dag.execute", duration, tags)
+
+    if res != nil && res.HasError() {
+        span.SetStatus(contractsobservability.SpanStatusError, res.GetError().Error())
+        metrics.IncrementCounter("dag.error", tags)
+    } else {
+        span.SetStatus(contractsobservability.SpanStatusOK, "")
+        metrics.IncrementCounter("dag.success", tags)
+    }
+    // ...
+}
+```
+
+#### Collected DAG Metrics
+
+| Metric | Type | Description | Tags |
+|--------|------|-------------|------|
+| `dag.execute.duration` | Histogram | Total DAG execution time | - |
+| `dag.step.execute.{name}.duration` | Histogram | Step execution time | `dag_step` |
+| `dag.success` | Counter | Successful DAG executions | `status` |
+| `dag.error` | Counter | Failed DAG executions | `status` |
+| `dag.step.error.{name}` | Counter | Failed step executions | `dag_step`, `status` |
+| `background.execute.{name}.duration` | Histogram | Background task time | `background_task` |
+| `background.success.{name}` | Counter | Successful background tasks | `background_task`, `status` |
+| `background.error.{name}` | Counter | Failed background tasks | `background_task`, `status` |
+
+### Background Service Observability
+
+Background Services are automatically instrumented with trace propagation:
+
+```go
+// Execute a background service with automatic instrumentation
+err := services.ExecuteService(
+    factory,
+    emailService,
+    appCtx,
+    locale,
+    input,
+)
+```
+
+**Internal instrumentation:**
+
+```go
+func ExecuteService[Input any](
+    factory *BackgroundServiceFactory,
+    service BackgroundService[Input],
+    appCtx *app_context.AppContext,
+    locale locales.LocaleTypeEnum,
+    input Input,
+) error {
+    tracer := observability.GetObservabilityComponents().Tracer
+    clock := observability.GetObservabilityComponents().Clock
+    metrics := observability.GetObservabilityComponents().Metrics
+
+    serviceName := service.Name()
+    parentTraceCtx := appCtx.TraceContext()
+
+    return factory.executor.Submit(func(_ context.Context) {
+        // Create span with follows_from for trace correlation
+        var span contractsobservability.Span
+        if parentTraceCtx != nil && parentTraceCtx.IsValid() {
+            span = tracer.StartSpan(appCtx, "background."+serviceName,
+                observability.WithFollowsFrom(parentTraceCtx))
+        } else {
+            span = tracer.StartSpan(appCtx, "background."+serviceName)
+        }
+        defer span.End()
+        span.UpdateAppContext(appCtx)
+
+        // Execute and measure
+        start := clock.Now()
+        err := service.Execute(appCtx, locale, input)
+        duration := clock.Now().Sub(start)
+
+        // Record metrics
+        tags := map[string]string{"background_service": serviceName}
+        metrics.RecordLatency("background.service.execute", duration, tags)
+
+        if err != nil {
+            span.SetStatus(contractsobservability.SpanStatusError, err.Error())
+            tags["status"] = "error"
+            metrics.IncrementCounter("background.service.error", tags)
+        } else {
+            span.SetStatus(contractsobservability.SpanStatusOK, "")
+            tags["status"] = "success"
+            metrics.IncrementCounter("background.service.success", tags)
+        }
+    })
+}
+```
+
+#### Collected Background Service Metrics
+
+| Metric | Type | Description | Tags |
+|--------|------|-------------|------|
+| `background.service.execute.duration` | Histogram | Service execution time | `background_service` |
+| `background.service.success` | Counter | Successful service executions | `background_service`, `status` |
+| `background.service.error` | Counter | Failed service executions | `background_service`, `status` |
+
+### OpenTelemetry Stack
+
+The development environment includes a complete observability stack:
+
+#### Docker Services
+
+```yaml
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8889:8889"   # Prometheus metrics endpoint
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"  # Jaeger UI
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+```
+
+#### OTEL Collector Configuration
+
+```yaml
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  batch:
+
+exporters:
+  debug:
+    verbosity: detailed
+  otlp/jaeger:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlp/jaeger]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, prometheus]
+```
+
+### Grafana Dashboards
+
+The project includes pre-configured Grafana dashboards with panels for:
+
+#### Use Cases Panel
+- **Latency (p50/p95)**: Track percentile latencies by use case
+- **Success/Error Rate**: Monitor success and error counts
+
+#### DAG Execution Panel
+- **DAG Latency**: Overall DAG execution time
+- **DAG Error Rate**: Percentage of failed DAGs
+- **Step Latency**: Individual step execution times
+
+#### Background Tasks Panel
+- **Service Latency**: Background service execution times
+- **Success/Error Counts**: Track background task outcomes
+
+#### Summary Stats
+- **Total Use Cases (24h)**: Daily use case count
+- **Total DAGs (24h)**: Daily DAG execution count
+- **Total Background (24h)**: Daily background task count
+- **Error Rate**: Current error percentage
+
+**Access Grafana:** `http://localhost:3000` (admin/admin)
+
+### Access Observability UIs
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| **Grafana** | `http://localhost:3000` | Dashboards and visualization |
+| **Jaeger** | `http://localhost:16686` | Distributed tracing UI |
+| **Prometheus** | `http://localhost:9090` | Metrics queries |
+
+### Creating a Use Case with Observability
+
+Here's a complete example of creating an instrumented use case:
+
+#### Step 1: Define the Use Case
+
+```go
+// application/modules/user/use_cases/create_user_with_observability.go
+package usecases_user
+
+import (
+    contractsobservability "github.com/simon3640/goprojectskeleton/src/application/contracts/observability"
+    "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+    app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs/dtos"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/observability"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/status"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+    "github.com/simon3640/goprojectskeleton/src/domain/models"
+)
+
+type CreateUserObservableUseCase struct {
+    repo repositories.IUserRepository
+}
+
+func NewCreateUserObservableUseCase(
+    repo repositories.IUserRepository,
+) *CreateUserObservableUseCase {
+    return &CreateUserObservableUseCase{
+        repo: repo,
+    }
+}
+
+func (uc *CreateUserObservableUseCase) Execute(
+    appCtx *app_context.AppContext,
+    locale locales.LocaleTypeEnum,
+    input dtos.UserCreate,
+) *use_case.UseCaseResult[models.User] {
+    // Get observability components
+    components := observability.GetObservabilityComponents()
+    tracer := components.Tracer
+    metrics := components.Metrics
+    clock := components.Clock
+    logger := components.Logger
+
+    // Create span for this use case
+    span := tracer.StartSpan(appCtx, "usecase.create_user_observable")
+    defer span.End()
+    span.UpdateAppContext(appCtx)
+
+    // Add attributes for better tracing
+    span.SetAttribute("user.email", input.Email)
+    span.SetAttribute("user.role_id", input.RoleID)
+
+    result := use_case.NewUseCaseResult[models.User]()
+
+    // Log start with context (correlates with trace)
+    logger.InfoWithContext("Creating user", appCtx)
+
+    // Measure repository call
+    start := clock.Now()
+    user, err := uc.repo.Create(input)
+    duration := clock.Now().Sub(start)
+
+    // Record repository latency
+    metrics.RecordLatency("repository.user.create", duration, map[string]string{
+        "repository": "user",
+        "operation":  "create",
+    })
+
+    if err != nil {
+        span.SetStatus(contractsobservability.SpanStatusError, err.ErrMsg)
+        span.SetAttribute("error.code", string(err.Code))
+        metrics.IncrementCounter("usecase.create_user.error", map[string]string{
+            "error_code": string(err.Code),
+        })
+        logger.ErrorWithContext("Failed to create user", err.ToError(), appCtx)
+        result.SetError(err.Code, err.ErrMsg)
+        return result
+    }
+
+    // Success
+    span.SetStatus(contractsobservability.SpanStatusOK, "")
+    span.SetAttribute("user.id", user.ID)
+    metrics.IncrementCounter("usecase.create_user.success", nil)
+    logger.InfoWithContext("User created successfully", appCtx)
+
+    result.SetData(status.Created, *user, "User created successfully")
+    return result
+}
+
+// Required interface methods
+func (uc *CreateUserObservableUseCase) SetLocale(locale locales.LocaleTypeEnum) {}
+func (uc *CreateUserObservableUseCase) SetAppContext(appContext *app_context.AppContext) {}
+```
+
+#### Step 2: Use in a DAG with Background Tasks
+
+```go
+// Create instrumented DAG
+func CreateUserWithNotifications(ctx HandlerContext) {
+    // Main use cases
+    createUserUC := usecases_user.NewCreateUserObservableUseCase(userRepo)
+
+    // Background use cases
+    sendWelcomeEmailUC := usecases_user.NewSendWelcomeEmailUseCase(emailProvider)
+    notifyAdminsUC := usecases_user.NewNotifyAdminsUseCase(notificationService)
+
+    executor := workers.GetBackgroundExecutor()
+
+    // Build DAG - all steps are automatically instrumented
+    dag := use_case.NewDag(
+        ctx.AppContext,
+        use_case.NewStep(createUserUC),
+        ctx.Locale,
+        executor,
+    )
+
+    // Add background steps with trace correlation
+    dag = use_case.ThenBackground(dag, use_case.NewStep(sendWelcomeEmailUC), "welcome-email")
+    dag = use_case.ThenBackground(dag, use_case.NewStep(notifyAdminsUC), "notify-admins")
+
+    // Execute - creates traces:
+    // 1. dag.execute (root span)
+    // 2. usecase.create_user_observable (child span)
+    // 3. background.welcome-email (follows_from span)
+    // 4. background.notify-admins (follows_from span)
+    result := dag.Execute(userCreate)
+
+    NewRequestResolver[models.User]().ResolveDTO(ctx.ResponseWriter, result, headers)
+}
+```
+
+#### Step 3: View in Jaeger
+
+The trace in Jaeger will show:
+
+```
+dag.execute (50ms)
+├── usecase.create_user_observable (30ms)
+│   └── repository.user.create (attribute only)
+├── background.welcome-email (follows_from, 100ms)
+└── background.notify-admins (follows_from, 50ms)
+```
+
+### No-Op Implementations
+
+When observability is disabled, no-op implementations are used automatically:
+
+```go
+// Default initialization with no-op components
+func init() {
+    ObservabilityComponentsInstance = NewDefaultObservabilityComponents()
+}
+
+// NewDefaultObservabilityComponents creates no-op components
+func NewDefaultObservabilityComponents() *ObservabilityComponents {
+    return &ObservabilityComponents{
+        Tracer:     noop.NewNoOpTracer(),
+        Propagator: noop.NewNoOpTracePropagator(),
+        Metrics:    noop.NewNoOpMetricsCollector(),
+        Clock:      noop.NewNoOpClock(),
+        Logger:     noop.Logger,
+    }
+}
+```
+
+**No-Op Tracer behavior:**
+
+- Creates spans that only log to stdout
+- No external network calls
+- Safe for production when observability is disabled
+
+```go
+// NoOpTracer logs operations but doesn't export
+func (n *NoOpTracer) StartSpan(
+    carrier contractsobservability.TraceContextCarrier,
+    name string,
+    opts ...contractsobservability.SpanOption,
+) contractsobservability.Span {
+    span := &NoOpSpan{name: name, started: true}
+    log.Printf("[TRACE] Starting span: %s", name)
+    return span
+}
+```
+
+### Trace Context Propagation
+
+The system automatically propagates trace context through:
+
+1. **AppContext**: Carries trace context across sync calls
+2. **WithFollowsFrom**: Links async spans to parent traces
+3. **HTTP Headers**: Propagates traces across services
+
+```go
+// Span option for background task correlation
+func WithFollowsFrom(parentTraceContext contractsobservability.TraceContext) contractsobservability.SpanOption {
+    return func(s contractsobservability.Span) {
+        s.SetAttribute("follows_from.trace_id", parentTraceContext.TraceID())
+        s.SetAttribute("follows_from.span_id", parentTraceContext.SpanID())
+    }
+}
+```
+
+### Best Practices
+
+#### 1. Always Use Components from ObservabilityComponents
+
+```go
+// ✅ Correct: Use centralized components
+components := observability.GetObservabilityComponents()
+span := components.Tracer.StartSpan(appCtx, "operation")
+
+// ❌ Incorrect: Don't create tracers directly
+tracer := otel.NewOtelTracer("service")
+```
+
+#### 2. Use Context-Aware Logging
+
+```go
+// ✅ Correct: Log with context for trace correlation
+logger.InfoWithContext("Processing request", appCtx)
+
+// ❌ Incorrect: Loses trace correlation
+logger.Info("Processing request")
+```
+
+#### 3. Name Spans Consistently
+
+```go
+// ✅ Good naming conventions
+"usecase.create_user"
+"dag.step.execute.send_email"
+"background.notification"
+"repository.user.create"
+
+// ❌ Avoid generic names
+"execute"
+"process"
+"handle"
+```
+
+#### 4. Add Meaningful Attributes
+
+```go
+// ✅ Add context for debugging
+span.SetAttribute("user.id", user.ID)
+span.SetAttribute("user.email", user.Email)
+span.SetAttribute("request.id", requestID)
+span.SetAttribute("error.code", errorCode)
+
+// ❌ Don't add sensitive data
+span.SetAttribute("password", password) // Never do this!
+```
+
+#### 5. Handle Errors Properly
+
+```go
+// ✅ Set error status and record metrics
+if err != nil {
+    span.SetStatus(contractsobservability.SpanStatusError, err.Error())
+    metrics.IncrementCounter("operation.error", tags)
+}
+
+// ✅ Always end spans
+defer span.End()
+```
+
+### Observability Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Handler
+    participant DAG
+    participant UseCase
+    participant Background
+    participant OtelCollector
+    participant Jaeger
+    participant Prometheus
+
+    Client->>Handler: HTTP Request
+    Handler->>DAG: Execute(input)
+
+    Note over DAG: Creates span: dag.execute
+    DAG->>UseCase: Execute step
+
+    Note over UseCase: Creates span: usecase.{name}
+    UseCase->>UseCase: Business logic
+    UseCase-->>DAG: Result
+
+    Note over DAG: Schedules background
+    DAG->>Background: Submit async task
+    DAG-->>Handler: Result
+    Handler-->>Client: HTTP Response
+
+    Note over Background: Creates span with follows_from
+    Background->>Background: Execute async
+
+    Note over DAG,Background: Send telemetry
+    DAG->>OtelCollector: Traces & Metrics
+    Background->>OtelCollector: Traces & Metrics
+
+    OtelCollector->>Jaeger: Export traces
+    OtelCollector->>Prometheus: Export metrics
+```
+
+---
+
 ## Virtues and Benefits
 
 ### 1. Solid and Scalable Architecture
@@ -2629,6 +3483,9 @@ func TestMyService(t *testing.T) {
 | **Tests** | 20+ test files |
 | **Templates** | 6+ HTML templates |
 | **Supported Languages** | 2 (Spanish, English) |
+| **Observability Components** | 4 (Tracer, Metrics, Logger, Clock) |
+| **Grafana Dashboards** | 1 pre-configured dashboard |
+| **Observability Backends** | 3 (OpenTelemetry, Prometheus, Jaeger) |
 
 ## Project Structure - Layer by Layer
 
@@ -5235,6 +6092,7 @@ func TestCreateUser(t *testing.T) {
 - ✅ **Security** - JWT, OTP, secure password hashing
 - ✅ **Internationalization** - Multi-language support
 - ✅ **Optimization** - Cache, tree shaking, connection pooling
+- ✅ **Observability** - OpenTelemetry, Prometheus, Jaeger, Grafana integration
 
 ### 🚀 Ideal Use Cases
 
@@ -5257,12 +6115,17 @@ func TestCreateUser(t *testing.T) {
    go test ./tests/integration/...
    ```
 
-3. **Adapt to Your Needs**
+3. **Explore Observability**
+   - Access Grafana at `http://localhost:3000` (admin/admin)
+   - View traces in Jaeger at `http://localhost:16686`
+   - Query metrics in Prometheus at `http://localhost:9090`
+
+4. **Adapt to Your Needs**
    - Customize domain models
    - Add new business modules
    - Configure providers according to your services
 
-4. **Deploy**
+5. **Deploy**
    - Development: Docker Compose
    - Production: Traditional monolith or Serverless
    - Cloud: AWS Lambda or Azure Functions

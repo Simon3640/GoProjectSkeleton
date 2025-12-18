@@ -11,7 +11,11 @@ import (
 	authusecases "github.com/simon3640/goprojectskeleton/src/application/modules/auth/use_cases"
 	appcontext "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
+	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
@@ -29,11 +33,20 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			locale = "en-US"
 		}
 
-		ucResult := authusecases.NewAuthUserUseCase(
-			providers.Logger,
+		uc := authusecases.NewAuthUserUseCase(
 			userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
-		).Execute(r.Context(), locales.LocaleTypeEnum(locale), token)
+		)
+		ucResult := usecase.InstrumentUseCase(
+			uc,
+			&appcontext.AppContext{Context: r.Context()},
+			locales.LocaleTypeEnum(locale),
+			token,
+			observability.GetObservabilityComponents().Tracer,
+			observability.GetObservabilityComponents().Metrics,
+			observability.GetObservabilityComponents().Clock,
+			"auth_user_use_case",
+		)
 
 		if ucResult.HasError() {
 			w.Header().Set("Content-Type", "application/json")
@@ -159,11 +172,20 @@ func LambdaAuthMiddleware(event interface{}) (context.Context, *aws.LambdaRespon
 
 	ctx := context.Background()
 
-	ucResult := authusecases.NewAuthUserUseCase(
-		providers.Logger,
+	uc := authusecases.NewAuthUserUseCase(
 		userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		providers.JWTProviderInstance,
-	).Execute(ctx, locales.LocaleTypeEnum(locale), token)
+	)
+	ucResult := usecase.InstrumentUseCase(
+		uc,
+		&appcontext.AppContext{Context: ctx},
+		locales.LocaleTypeEnum(locale),
+		token,
+		observability.GetObservabilityComponents().Tracer,
+		observability.GetObservabilityComponents().Metrics,
+		observability.GetObservabilityComponents().Clock,
+		"auth_user_use_case",
+	)
 
 	if ucResult.HasError() {
 		statusMapping := getStatusMapping()
@@ -224,10 +246,16 @@ func HandleLambdaEventWithAuth(
 	// Convert event to handler context
 	handlerCtx := adapter.ToHandlerContext(event, responseWriter, params)
 
+	appContext := appcontext.AppContext{Context: authCtx}
+	user := authCtx.Value(appcontext.UserKey)
+	if user, ok := user.(models.UserWithRole); ok {
+		appContext.AddUserToContext(&user)
+	}
+
 	// Replace context with authenticated context
 	localeStr := string(handlerCtx.Locale)
 	handlerCtx = handlers.NewHandlerContext(
-		authCtx,
+		&appContext,
 		&localeStr,
 		handlerCtx.Params,
 		handlerCtx.Body,
@@ -237,6 +265,13 @@ func HandleLambdaEventWithAuth(
 
 	// Execute the handler
 	handlerFunc(handlerCtx)
+
+	// Wait for pending background tasks to complete before returning.
+	// This is necessary because Lambda freezes execution immediately after
+	// returning, which would kill any goroutines running in the background.
+	if executor := workers.GetBackgroundExecutor(); executor != nil {
+		executor.WaitForPendingTasks()
+	}
 
 	// Convert response writer to Lambda response
 	return responseWriter.ToLambdaResponse(), nil
@@ -255,17 +290,32 @@ func HandleLambdaEventWithOptionalAuth(
 
 	// Only validate if token is present
 	if token != "" && strings.TrimSpace(token) != "" {
-		ucResult := authusecases.NewAuthUserUseCase(
-			providers.Logger,
+		uc := authusecases.NewAuthUserUseCase(
 			userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 			providers.JWTProviderInstance,
-		).Execute(ctx, locales.LocaleTypeEnum(locale), token)
+		)
+		ucResult := usecase.InstrumentUseCase(
+			uc,
+			&appcontext.AppContext{Context: ctx},
+			locales.LocaleTypeEnum(locale),
+			token,
+			observability.GetObservabilityComponents().Tracer,
+			observability.GetObservabilityComponents().Metrics,
+			observability.GetObservabilityComponents().Clock,
+			"auth_user_use_case",
+		)
 
 		if !ucResult.HasError() {
 			user := ucResult.GetData()
 			ctx = context.WithValue(ctx, appcontext.UserKey, *user)
 		}
 		// If error, continue without auth (don't fail the request)
+	}
+
+	appContext := appcontext.AppContext{Context: ctx}
+	user := ctx.Value(appcontext.UserKey)
+	if user, ok := user.(models.UserWithRole); ok {
+		appContext.AddUserToContext(&user)
 	}
 
 	// Create adapter and response writer
@@ -279,7 +329,7 @@ func HandleLambdaEventWithOptionalAuth(
 	// Replace context with (possibly authenticated) context
 	localeStr := string(handlerCtx.Locale)
 	handlerCtx = handlers.NewHandlerContext(
-		ctx,
+		&appcontext.AppContext{Context: ctx},
 		&localeStr,
 		handlerCtx.Params,
 		handlerCtx.Body,
@@ -289,6 +339,13 @@ func HandleLambdaEventWithOptionalAuth(
 
 	// Execute the handler
 	handlerFunc(handlerCtx)
+
+	// Wait for pending background tasks to complete before returning.
+	// This is necessary because Lambda freezes execution immediately after
+	// returning, which would kill any goroutines running in the background.
+	if executor := workers.GetBackgroundExecutor(); executor != nil {
+		executor.WaitForPendingTasks()
+	}
 
 	// Convert response writer to Lambda response
 	return responseWriter.ToLambdaResponse(), nil
