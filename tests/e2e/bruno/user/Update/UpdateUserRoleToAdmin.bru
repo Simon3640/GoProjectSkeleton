@@ -1,0 +1,59 @@
+meta {
+  name: UpdateUserRoleToAdmin
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseURL}}/user/{{userToUpdateId}}
+  body: json
+  auth: apikey
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{userToUpdateToken}}
+  placement: header
+}
+
+body:json {
+  {
+    "role_id": 1
+  }
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Status code is 400 (Bad Request)", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+
+  const response = res.getBody();
+
+  if (!response) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  test("Response contains error details", function () {
+      expect(response.details).to.exist;
+  });
+
+  test("Error details indicates admin role is not allowed", function () {
+      expect(response.details).to.be.a('string');
+      expect(response.details.toLowerCase()).to.include("admin");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

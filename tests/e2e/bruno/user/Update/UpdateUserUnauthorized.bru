@@ -1,0 +1,59 @@
+meta {
+  name: UpdateUserUnauthorized
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseURL}}/user/{{userToUpdateId}}
+  body: json
+  auth: apikey
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{userToken}}
+  placement: header
+}
+
+body:json {
+  {
+    "name": "Updated By Other User"
+  }
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Status code is 401 (Unauthorized)", function () {
+      expect(res.getStatus()).to.equal(401);
+  });
+
+  const response = res.getBody();
+
+  if (!response) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  test("Response contains error details", function () {
+      expect(response.details).to.exist;
+  });
+
+  test("Error details indicates unauthorized access", function () {
+      expect(response.details).to.be.a('string');
+      expect(response.details.length).to.be.greaterThan(0);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
