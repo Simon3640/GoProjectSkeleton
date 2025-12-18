@@ -51,7 +51,7 @@ func (uc *ActivateUserUseCase) Execute(ctx *app_context.AppContext,
 	}
 
 	result.SetData(
-		status.Success,
+		status.Updated,
 		true,
 		uc.AppMessages.Get(
 			uc.Locale,

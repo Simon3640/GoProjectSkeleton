@@ -1,0 +1,46 @@
+meta {
+  name: CreateUserForRateLimitReset
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseURL}}/user-password
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:bearer {
+  token:
+}
+
+body:json {
+  {
+    "email": "{{rateLimitEmail2}}",
+    "name": "Rate Limit Reset Test User",
+    "otpLogin": false,
+    "password": "{{strongPassword}}",
+    "phone": "{{rateLimitPhone2}}",
+    "role_id": 2
+  }
+}
+
+script:post-response {
+  const response = res.getBody();
+
+  test("Status code is 201", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+
+  bru.setEnvVar("rateLimitResetUserEmail", response.data.email);
+  bru.setEnvVar("rateLimitResetUserId", response.data.id);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

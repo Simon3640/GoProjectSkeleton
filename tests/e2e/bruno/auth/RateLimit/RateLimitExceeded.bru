@@ -1,0 +1,46 @@
+meta {
+  name: RateLimitExceeded
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseURL}}/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+body:json {
+  {
+    "email": "{{rateLimitEmail}}",
+    "password": "wrongPassword6"
+  }
+}
+
+script:post-response {
+  test("Status code is 429 (Too Many Requests)", function () {
+      expect(res.getStatus()).to.equal(429);
+  });
+
+  test("Response contains rate limit error message", function () {
+      const response = res.getBody();
+      expect(response).to.have.property('details');
+      expect(response.details).to.be.a('string');
+  });
+
+  test("Response indicates max attempts exceeded", function () {
+      const response = res.getBody();
+      const details = response.details.toLowerCase();
+      const hasRateLimitMessage = details.includes('intento') || details.includes('demasiado') || details.includes('más tarde');
+      expect(hasRateLimitMessage, 'Rate limit message should be present').to.be.true;
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

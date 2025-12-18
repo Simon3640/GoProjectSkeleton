@@ -1,0 +1,58 @@
+meta {
+  name: CreateUserWithAdminRole
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseURL}}/user-password
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+body:json {
+  {
+    "email": "adminattempt@test.goprojectskeleton.com",
+    "name": "Admin Attempt User",
+    "otpLogin": false,
+    "password": "{{strongPassword}}",
+    "phone": "777666555",
+    "role_id": 1
+  }
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Status code is 400 (Bad Request)", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+
+  const response = res.getBody();
+
+  if (!response) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  test("Response contains error details", function () {
+      expect(response.details).to.exist;
+  });
+
+  test("Error details indicates admin role is not allowed", function () {
+      expect(response.details).to.be.a('string');
+      expect(response.details.toLowerCase()).to.include("admin");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

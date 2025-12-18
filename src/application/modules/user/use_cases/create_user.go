@@ -42,7 +42,7 @@ func (uc *CreateUserUseCase) Execute(ctx *app_context.AppContext,
 	}
 
 	result.SetData(
-		status.Success,
+		status.Created,
 		*res,
 		uc.AppMessages.Get(
 			uc.Locale,
