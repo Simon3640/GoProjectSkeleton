@@ -89,7 +89,7 @@ func TestCreateUserSendEmailUseCase_Execute_Success(t *testing.T) {
 	assert.Equal(testUser.ID, result.Data.ID)
 	assert.Equal(testUser.Email, result.Data.Email)
 	assert.Equal(testUser.Name, result.Data.Name)
-	assert.Equal(status.Success, result.StatusCode)
+	assert.Equal(status.Created, result.StatusCode)
 }
 
 func TestCreateUserSendEmailUseCase_Execute_OneTimeTokenError(t *testing.T) {

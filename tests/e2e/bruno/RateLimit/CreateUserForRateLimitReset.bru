@@ -32,8 +32,8 @@ body:json {
 script:post-response {
   const response = res.getBody();
 
-  test("Status code is 200", function () {
-      expect(res.getStatus()).to.equal(200);
+  test("Status code is 201", function () {
+      expect(res.getStatus()).to.equal(201);
   });
 
   bru.setEnvVar("rateLimitResetUserEmail", response.data.email);

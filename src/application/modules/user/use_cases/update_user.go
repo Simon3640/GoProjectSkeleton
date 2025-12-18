@@ -51,7 +51,7 @@ func (uc *UpdateUserUseCase) updateUser(input userdtos.UserUpdate, result *useca
 		result.SetError(err.Code, uc.AppMessages.Get(uc.Locale, err.Context))
 	}
 	result.SetData(
-		status.Success,
+		status.Updated,
 		*res,
 		uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.USER_WAS_CREATED))
 }
