@@ -17,6 +17,9 @@ func (m *MockOneTimeTokenRepository) GetByTokenHash(tokenHash []byte) (*models.O
 	if errorArg != nil {
 		return nil, errorArg.(*application_errors.ApplicationError)
 	}
+	if args.Get(0) == nil {
+		return nil, nil
+	}
 	return args.Get(0).(*models.OneTimeToken), nil
 }
 

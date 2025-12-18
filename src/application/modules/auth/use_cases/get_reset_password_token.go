@@ -1,28 +1,32 @@
 package authusecases
 
 import (
-	"context"
-
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// GetResetPasswordTokenUseCase is the use case for generating a reset password token
 type GetResetPasswordTokenUseCase struct {
-	usecase.BaseUseCaseValidation[string, dtos.OneTimeTokenUser]
-	log contractsProviders.ILoggerProvider
+	usecase.BaseUseCaseValidation[string, bool]
 
-	tokenRepo contracts_repositories.IOneTimeTokenRepository
-	userRepo  contracts_repositories.IUserRepository
+	tokenRepo contractrepositories.IOneTimeTokenRepository
+	userRepo  authcontracts.IUserRepository
 
-	hashProvider contractsProviders.IHashProvider
+	hashProvider contractproviders.IHashProvider
 }
 
+var _ usecase.BaseUseCase[string, bool] = (*GetResetPasswordTokenUseCase)(nil)
+
+// SetLocale sets the locale for the use case
 func (uc *GetResetPasswordTokenUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	if locale != "" {
 		uc.Locale = locale
@@ -30,19 +34,42 @@ func (uc *GetResetPasswordTokenUseCase) SetLocale(locale locales.LocaleTypeEnum)
 }
 
 // Execute generates a reset password token for the user identified by email or phone
-func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
+func (uc *GetResetPasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input string,
-) *usecase.UseCaseResult[dtos.OneTimeTokenUser] {
-	result := usecase.NewUseCaseResult[dtos.OneTimeTokenUser]()
+) *usecase.UseCaseResult[bool] {
+	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}
-	user, err := uc.userRepo.GetByEmailOrPhone(input)
+
+	user := uc.getUser(result, input)
+	if result.HasError() {
+		return result
+	}
+
+	token, hash := uc.generateToken(result)
+	if result.HasError() {
+		return result
+	}
+
+	uc.createToken(result, user.ID, hash)
+	if result.HasError() {
+		return result
+	}
+
+	uc.setSuccessResult(result, user, token)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("Reset password token created successfully", uc.AppContext)
+	return result
+}
+
+func (uc *GetResetPasswordTokenUseCase) getUser(result *usecase.UseCaseResult[bool], emailOrPhone string) *models.User {
+	user, err := uc.userRepo.GetByEmailOrPhone(emailOrPhone)
 	if err != nil {
-		uc.log.Error("Error getting user by email or phone", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user by email or phone", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -50,12 +77,15 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return nil
 	}
+	return user
+}
 
+func (uc *GetResetPasswordTokenUseCase) generateToken(result *usecase.UseCaseResult[bool]) (string, []byte) {
 	token, hash, err := uc.hashProvider.OneTimeToken()
 	if err != nil {
-		uc.log.Error("Error generating one time token", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error generating one time token", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -63,13 +93,16 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return "", nil
 	}
+	return token, hash
+}
 
-	tokenCreate := dtos.NewOneTimeTokenCreate(user.ID, models.OneTimeTokenPurposePasswordReset, hash)
-	_, err = uc.tokenRepo.Create(*tokenCreate)
+func (uc *GetResetPasswordTokenUseCase) createToken(result *usecase.UseCaseResult[bool], userID uint, hash []byte) {
+	tokenCreate := dtos.NewOneTimeTokenCreate(userID, models.OneTimeTokenPurposePasswordReset, hash)
+	_, err := uc.tokenRepo.Create(*tokenCreate)
 	if err != nil {
-		uc.log.Error("Error creating one time token", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error creating one time token", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -77,44 +110,33 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx context.Context,
 				err.Context,
 			),
 		)
-		return result
+		return
 	}
+}
 
+func (uc *GetResetPasswordTokenUseCase) setSuccessResult(result *usecase.UseCaseResult[bool], user *models.User, token string) {
+	oneTimeToken := dtos.OneTimeTokenUser{User: *user, Token: token}
+	uc.AppContext.AddOneTimeTokenToContext(oneTimeToken)
 	result.SetData(
 		status.Success,
-		dtos.OneTimeTokenUser{
-			User:  *user,
-			Token: token,
-		},
+		true,
 		uc.AppMessages.Get(
 			uc.Locale,
 			messages.MessageKeysInstance.PASSWORD_TOKEN_CREATED,
 		),
 	)
-
-	return result
-}
-
-func (uc *GetResetPasswordTokenUseCase) Validate(
-	ctx context.Context,
-	input string,
-	result *usecase.UseCaseResult[dtos.OneTimeTokenUser],
-) {
-	// Skip input validation as it's just a string (email or phone)
 }
 
 func NewGetResetPasswordTokenUseCase(
-	log contractsProviders.ILoggerProvider,
-	tokenRepo contracts_repositories.IOneTimeTokenRepository,
-	userRepo contracts_repositories.IUserRepository,
-	hashProvider contractsProviders.IHashProvider,
+	tokenRepo contractrepositories.IOneTimeTokenRepository,
+	userRepo authcontracts.IUserRepository,
+	hashProvider contractproviders.IHashProvider,
 ) *GetResetPasswordTokenUseCase {
 	return &GetResetPasswordTokenUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, dtos.OneTimeTokenUser]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, bool]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},
-		log:          log,
 		tokenRepo:    tokenRepo,
 		userRepo:     userRepo,
 		hashProvider: hashProvider,

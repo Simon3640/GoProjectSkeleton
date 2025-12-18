@@ -3,14 +3,14 @@ package providers
 import (
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractstatus "github.com/simon3640/goprojectskeleton/src/application/modules/status/contracts"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 type ApiStatusProvider struct{}
 
-var _ contractsProviders.IApiStatusProvider = (*ApiStatusProvider)(nil)
+var _ contractstatus.IApiStatusProvider = (*ApiStatusProvider)(nil)
 
 func (asp *ApiStatusProvider) Get(date time.Time) models.Status {
 	return models.Status{

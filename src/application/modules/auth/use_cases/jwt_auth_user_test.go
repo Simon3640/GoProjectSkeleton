@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
+	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
-	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
 	"github.com/stretchr/testify/assert"
@@ -20,18 +20,16 @@ import (
 func TestAuthUserCase(t *testing.T) {
 	asswert := assert.New(t)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testUserRepository := new(authmocks.MockUserRepository)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
-		testLogger,
 		testUserRepository,
 		testJWTProvider,
 	)
 
 	validToken := "validToken.123"
-	claimsReturn := contractsProviders.JWTCLaims{
+	claimsReturn := authcontracts.JWTCLaims{
 		"sub": "1",
 		"typ": "access",
 		"exp": float64(time.Now().Add(1 * time.Hour).Unix()),
@@ -40,7 +38,7 @@ func TestAuthUserCase(t *testing.T) {
 	testJWTProvider.On("ParseTokenAndValidate", validToken).Return(claimsReturn, nil)
 	testUserRepository.On("GetUserWithRole", uint(1)).Return(&dtomocks.UserWithRole, nil)
 
-	result := authUserUseCase.Execute(context.Background(), locales.EN_US, validToken)
+	result := authUserUseCase.Execute(&app_context.AppContext{Context: context.Background()}, locales.EN_US, validToken)
 
 	asswert.NotNil(result)
 	asswert.True(result.IsSuccess())
@@ -56,19 +54,17 @@ func TestAuthUserCase(t *testing.T) {
 func TestAuthUserCase_InvalidToken(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testUserRepository := new(authmocks.MockUserRepository)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
-		testLogger,
 		testUserRepository,
 		testJWTProvider,
 	)
 
 	invalidToken := "invalidToken"
 
-	result := authUserUseCase.Execute(context.Background(), locales.EN_US, invalidToken)
+	result := authUserUseCase.Execute(&app_context.AppContext{Context: context.Background()}, locales.EN_US, invalidToken)
 
 	assert.NotNil(result)
 	assert.True(result.HasError())
@@ -79,18 +75,16 @@ func TestAuthUserCase_InvalidToken(t *testing.T) {
 func TestAuthUserCase_ExpiredToken(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testUserRepository := new(authmocks.MockUserRepository)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
-		testLogger,
 		testUserRepository,
 		testJWTProvider,
 	)
 
 	expiredToken := "expiredToken.123"
-	claimsReturn := contractsProviders.JWTCLaims{
+	claimsReturn := authcontracts.JWTCLaims{
 		"sub": "1",
 		"typ": "access",
 		"exp": float64(time.Now().Add(-1 * time.Hour).Unix()),
@@ -98,7 +92,7 @@ func TestAuthUserCase_ExpiredToken(t *testing.T) {
 
 	testJWTProvider.On("ParseTokenAndValidate", expiredToken).Return(claimsReturn, nil)
 
-	result := authUserUseCase.Execute(context.Background(), locales.EN_US, expiredToken)
+	result := authUserUseCase.Execute(&app_context.AppContext{Context: context.Background()}, locales.EN_US, expiredToken)
 
 	assert.NotNil(result)
 	assert.True(result.HasError())
@@ -109,18 +103,16 @@ func TestAuthUserCase_ExpiredToken(t *testing.T) {
 func TestAuthUserCase_NoAccessToken(t *testing.T) {
 	assert := assert.New(t)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testUserRepository := new(authmocks.MockUserRepository)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 
 	authUserUseCase := NewAuthUserUseCase(
-		testLogger,
 		testUserRepository,
 		testJWTProvider,
 	)
 
 	noAccessToken := "noAccessToken.123"
-	claimsReturn := contractsProviders.JWTCLaims{
+	claimsReturn := authcontracts.JWTCLaims{
 		"sub": "1",
 		"typ": "refresh",
 		"exp": float64(time.Now().Add(1 * time.Hour).Unix()),
@@ -128,7 +120,7 @@ func TestAuthUserCase_NoAccessToken(t *testing.T) {
 
 	testJWTProvider.On("ParseTokenAndValidate", noAccessToken).Return(claimsReturn, nil)
 
-	result := authUserUseCase.Execute(context.Background(), locales.EN_US, noAccessToken)
+	result := authUserUseCase.Execute(&app_context.AppContext{Context: context.Background()}, locales.EN_US, noAccessToken)
 
 	assert.NotNil(result)
 	assert.True(result.HasError())

@@ -1,13 +1,15 @@
+// Package defaults contains the default values for the user module
 package defaults
 
 import (
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 var userStatusActive = models.UserStatusActive
 
-var AdminUser = dtos.UserCreate{
+// AdminUser is the admin user
+var AdminUser = userdtos.UserCreate{
 	UserBase: models.UserBase{
 		Name:   "Admin",
 		Email:  "admin@goprojectskeleton.com",
@@ -17,6 +19,7 @@ var AdminUser = dtos.UserCreate{
 	},
 }
 
-var DefaultUsers = []dtos.UserCreate{
+// DefaultUsers is the default users
+var DefaultUsers = []userdtos.UserCreate{
 	AdminUser,
 }

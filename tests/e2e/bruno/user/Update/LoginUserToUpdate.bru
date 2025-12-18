@@ -1,0 +1,49 @@
+meta {
+  name: LoginUserToUpdate
+  type: http
+  seq: 1.4
+}
+
+post {
+  url: {{baseURL}}/auth/login
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~:
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:bearer {
+  token:
+}
+
+body:json {
+  {
+    "email": "{{userToUpdateEmail}}",
+    "password": "{{strongPassword}}"
+  }
+}
+
+script:post-response {
+  const response = res.getBody()
+
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Access Token is present", function () {
+      expect(response.data.accessToken).to.not.be.null;
+  });
+
+  bru.setEnvVar("userToUpdateToken", response.data.accessToken);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,40 @@
+meta {
+  name: GetMailPitWelcomeEmail
+  type: http
+  seq: 1.1
+}
+
+get {
+  url: http://{{mailhogHost}}:8025/api/v1/messages?limit=1
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: 1
+}
+
+script:pre-request {
+  // Wait for email to be sent
+  bru.sleep(2000)
+}
+
+script:post-response {
+  const response = res.getBody();
+
+  test("status code", function(){
+      expect(res.getStatus()).to.equal(200);
+  })
+
+  test("Email message exists", function () {
+      expect(response.messages).to.exist;
+      expect(response.messages.length).to.be.greaterThan(0);
+  });
+
+  bru.setEnvVar("lastMessageID", response.messages[0].ID);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

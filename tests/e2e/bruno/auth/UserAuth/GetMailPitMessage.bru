@@ -1,0 +1,38 @@
+meta {
+  name: GetMailPitMessage
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://{{mailhogHost}}:8025/api/v1/messages?limit=1
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: 1
+}
+
+script:pre-request {
+  // Wait for mail
+  bru.sleep(1000)
+}
+
+script:post-response {
+  // Get last message
+
+  const response = res.getBody();
+
+  test("status code", function(){
+      expect(res.getStatus()).to.equal(200);
+  })
+
+  // Get token to activate user
+  bru.setEnvVar("lastMessageID", response.messages[0].ID)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

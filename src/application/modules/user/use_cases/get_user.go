@@ -2,12 +2,11 @@
 package userusecases
 
 import (
-	"context"
-
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
@@ -15,8 +14,7 @@ import (
 
 type GetUserUseCase struct {
 	usecase.BaseUseCaseValidation[uint, models.User]
-	log  contractsProviders.ILoggerProvider
-	repo contracts_repositories.IUserRepository
+	repo usercontracts.IUserRepository
 }
 
 func (uc *GetUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
@@ -25,24 +23,30 @@ func (uc *GetUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 	}
 }
 
-func (uc *GetUserUseCase) Execute(ctx context.Context,
+func (uc *GetUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input uint,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
-	uc.Validate(ctx, input, result)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}
-	uc.GetUser(ctx, result, input)
+	res := uc.getUser(result, input)
+	if result.HasError() {
+		return result
+	}
+	result.SetData(status.Success, *res, "")
+	observability.GetObservabilityComponents().Logger.InfoWithContext("User retrieved successfully", uc.AppContext)
 	return result
 }
 
-func (uc *GetUserUseCase) GetUser(ctx context.Context, result *usecase.UseCaseResult[models.User], id uint) {
+func (uc *GetUserUseCase) getUser(result *usecase.UseCaseResult[models.User], id uint) *models.User {
 	res, err := uc.repo.GetByID(id)
 	if err != nil {
-		uc.log.Error("Error getting user by ID", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user by ID", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
 			uc.AppMessages.Get(
@@ -50,25 +54,18 @@ func (uc *GetUserUseCase) GetUser(ctx context.Context, result *usecase.UseCaseRe
 				err.Context,
 			),
 		)
-		return
 	}
-	result.SetData(
-		status.Success,
-		*res,
-		"",
-	)
+	return res
 }
 
 func NewGetUserUseCase(
-	log contractsProviders.ILoggerProvider,
-	repo contracts_repositories.IUserRepository,
+	repo usercontracts.IUserRepository,
 ) *GetUserUseCase {
 	return &GetUserUseCase{
 		BaseUseCaseValidation: usecase.BaseUseCaseValidation[uint, models.User]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(guards.RoleGuard("admin", "user"), guards.UserGetItSelf),
 		},
-		log:  log,
 		repo: repo,
 	}
 }

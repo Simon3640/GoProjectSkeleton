@@ -2,257 +2,273 @@
 package authusecases
 
 import (
-	"context"
+	"errors"
 	"fmt"
-	"regexp"
-	"strings"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
-	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
+	authservices "github.com/simon3640/goprojectskeleton/src/application/modules/auth/services"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
-	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
-	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
+	services "github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
 // AuthenticateUseCase is the use case for the authentication of a user
 type AuthenticateUseCase struct {
-	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
-	locale      locales.LocaleTypeEnum
+	usecase.BaseUseCaseValidation[dtos.UserCredentials, dtos.Token]
 
-	pass     contracts_repositories.IPasswordRepository
-	userRepo contracts_repositories.IUserRepository
-	otpRepo  contracts_repositories.IOneTimePasswordRepository
+	pass     authcontracts.IPasswordRepository
+	userRepo authcontracts.IUserRepository
+	otpRepo  authcontracts.IOneTimePasswordRepository
 
-	jwtProvider   contractsProviders.IJWTProvider
-	hashProvider  contractsProviders.IHashProvider
-	cacheProvider contractsProviders.ICacheProvider
+	jwtProvider   authcontracts.IJWTProvider
+	hashProvider  contractproviders.IHashProvider
+	cacheProvider contractproviders.ICacheProvider
 }
 
 var _ usecase.BaseUseCase[dtos.UserCredentials, dtos.Token] = (*AuthenticateUseCase)(nil)
 
-// SetLocale set the locale for the use case
-func (uc *AuthenticateUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
-
 // Execute execute the use case
-func (uc *AuthenticateUseCase) Execute(ctx context.Context,
+// - Check the rate limit: if the user has exceeded the login failed attempts limit, set the error and return the result
+// - Get the password: get the password from the database
+// - Get the user: get the user from the database
+// - Validate the password: validate the password
+// - Generate the tokens: generate the tokens
+// - Set the success result: set the success result
+// - Send the OTP email in background: send the OTP email in background
+// - Return the result: return the result
+func (uc *AuthenticateUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input dtos.UserCredentials,
 ) *usecase.UseCaseResult[dtos.Token] {
 	result := usecase.NewUseCaseResult[dtos.Token]()
 	uc.SetLocale(locale)
-	validation, msg := uc.validate(input)
-
-	if !validation {
-		result.SetError(
-			status.InvalidInput,
-			strings.Join(msg, "\n"),
-		)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
+	if result.HasError() {
 		return result
 	}
 
-	// Check rate limiting before attempting authentication
-	if uc.cacheProvider != nil {
-		exceeded, err := uc.checkRateLimit(input.Email)
-		if err != nil {
-			uc.log.Error("Error checking rate limit, continuing with authentication", err.ToError())
-		} else if exceeded {
-			result.SetError(
-				status.TooManyRequests,
-				uc.appMessages.Get(
-					uc.locale,
-					messages.MessageKeysInstance.LoginMaxAttemptsExceeded,
-				),
-			)
-			return result
-		}
-	}
-
-	// Get password from repository
-	password, err := uc.pass.GetActivePassword(input.Email)
-
-	if err != nil {
-		// Increment failed attempts counter
-		if uc.cacheProvider != nil {
-			uc.incrementFailedAttempts(input.Email)
-		}
-		result.SetError(
-			status.NotFound,
-			uc.appMessages.Get(
-				uc.locale,
-				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
-			),
-		)
+	uc.checkRateLimitAndSetError(result, input.Email)
+	if result.HasError() {
 		return result
 	}
 
-	// Get user with role from repository
-	user, err := uc.userRepo.GetUserWithRole(password.UserID)
-
-	if err != nil {
-		// Increment failed attempts counter
-		if uc.cacheProvider != nil {
-			uc.incrementFailedAttempts(input.Email)
-		}
-		result.SetError(
-			status.NotFound,
-			uc.appMessages.Get(
-				uc.locale,
-				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
-			),
-		)
+	password := uc.getPassword(result, input.Email)
+	if result.HasError() {
 		return result
 	}
 
-	// Validate password
-	valid, verifyErr := uc.hashProvider.VerifyPassword(password.Hash, input.Password)
-	if !valid || verifyErr != nil {
-		// Increment failed attempts counter
-		if uc.cacheProvider != nil {
-			uc.incrementFailedAttempts(input.Email)
-		}
-		result.SetError(
-			status.NotFound,
-			uc.appMessages.Get(
-				uc.locale,
-				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
-			),
-		)
+	user := uc.getUser(result, password.UserID, input.Email)
+	if result.HasError() {
 		return result
 	}
 
-	// Clear failed attempts counter on successful authentication
-	if uc.cacheProvider != nil {
-		uc.clearFailedAttempts(input.Email)
+	uc.validatePassword(result, password.Hash, input.Password, input.Email)
+	if result.HasError() {
+		return result
 	}
 
-	// OTP Login
+	uc.clearFailedAttempts(input.Email)
+
 	if user.OTPLogin {
-		otp, err := services.CreateOneTimePasswordService(user.ID, models.OneTimePasswordLogin, uc.hashProvider, uc.otpRepo)
-		otpEmailData := email_models.OneTimePasswordEmailData{
-			Name:              user.Name,
-			OTPCode:           otp,
-			ExpirationMinutes: int(settings.AppSettingsInstance.OneTimeTokenPasswordTTL),
-			AppName:           settings.AppSettingsInstance.AppName,
-			SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
-		}
-
-		if err := email_service.OneTimePasswordEmailServiceInstance.SendWithTemplate(
-			otpEmailData,
-			user.Email,
-			uc.locale,
-			templates.TemplateKeysInstance.OTPEmail,
-			email_service.SubjectKeysInstance.OTPEmail,
-		); err != nil {
-			uc.log.Error("Error sending email", err.ToError())
-			result.SetError(
-				err.Code,
-				uc.appMessages.Get(
-					uc.locale,
-					err.Context,
-				),
-			)
-			return result
-		}
-
-		if err != nil {
-			uc.log.Error("Error creating OTP", err.ToError())
-			result.SetError(
-				status.Conflict,
-				uc.appMessages.Get(
-					uc.locale,
-					messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
-				),
-			)
-			return result
-		}
-
+		// OTP login: send OTP email in background
+		uc.sendOTPEmailInBackground(ctx, user, locale)
 		result.SetSuccess(true)
-		result.SetDetails(uc.appMessages.Get(
-			uc.locale,
+		result.SetDetails(uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.OTP_LOGIN_ENABLED,
 		))
 		return result
 	}
 
-	claims := contractsProviders.JWTCLaims{
+	token := uc.generateTokens(ctx, result, password.UserIDString(), user)
+	if result.HasError() {
+		return result
+	}
+
+	uc.setSuccessResult(result, token)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("Authentication successful", uc.AppContext)
+	return result
+}
+
+func (uc *AuthenticateUseCase) checkRateLimitAndSetError(result *usecase.UseCaseResult[dtos.Token], email string) {
+	if uc.cacheProvider == nil {
+		return
+	}
+
+	exceeded, err := uc.checkRateLimit(email)
+	if err != nil {
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error checking rate limit, continuing with authentication", err.ToError(), uc.AppContext)
+		return
+	}
+
+	if exceeded {
+		observability.GetObservabilityComponents().Logger.WarningWithContext("Rate limit exceeded, continuing with authentication", uc.AppContext)
+		result.SetError(
+			status.TooManyRequests,
+			uc.AppMessages.Get(
+				uc.Locale,
+				messages.MessageKeysInstance.LoginMaxAttemptsExceeded,
+			),
+		)
+		return
+	}
+}
+
+func (uc *AuthenticateUseCase) getPassword(result *usecase.UseCaseResult[dtos.Token], email string) *models.Password {
+	password, err := uc.pass.GetActivePassword(email)
+	if err != nil {
+		if uc.cacheProvider != nil {
+			uc.incrementFailedAttempts(email)
+		}
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting password", err.ToError(), uc.AppContext)
+		result.SetError(
+			status.NotFound,
+			uc.AppMessages.Get(
+				uc.Locale,
+				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
+			),
+		)
+		return nil
+	}
+	return password
+}
+
+func (uc *AuthenticateUseCase) getUser(result *usecase.UseCaseResult[dtos.Token], userID uint, email string) *models.UserWithRole {
+	user, err := uc.userRepo.GetUserWithRole(userID)
+	if err != nil {
+		if uc.cacheProvider != nil {
+			uc.incrementFailedAttempts(email)
+		}
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user", err.ToError(), uc.AppContext)
+		result.SetError(
+			status.NotFound,
+			uc.AppMessages.Get(
+				uc.Locale,
+				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
+			),
+		)
+		return nil
+	}
+	return user
+}
+
+func (uc *AuthenticateUseCase) validatePassword(result *usecase.UseCaseResult[dtos.Token], passwordHash string, inputPassword string, email string) {
+	valid, verifyErr := uc.hashProvider.VerifyPassword(passwordHash, inputPassword)
+	if !valid || verifyErr != nil {
+		if uc.cacheProvider != nil {
+			uc.incrementFailedAttempts(email)
+		}
+		var err error
+		if verifyErr != nil {
+			err = verifyErr.ToError()
+		} else {
+			err = errors.New("password validation failed: invalid password")
+		}
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error validating password", err, uc.AppContext)
+		result.SetError(
+			status.NotFound,
+			uc.AppMessages.Get(
+				uc.Locale,
+				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
+			),
+		)
+		return
+	}
+}
+
+func (uc *AuthenticateUseCase) generateTokens(ctx *app_context.AppContext, result *usecase.UseCaseResult[dtos.Token], userIDString string, user *models.UserWithRole) dtos.Token {
+	claims := authcontracts.JWTCLaims{
 		"role": user.GetRoleKey(),
 	}
 
-	// Generate JWT tokens
-	access, exp, err := uc.jwtProvider.GenerateAccessToken(ctx, password.UserIDString(), claims)
-
+	access, exp, err := uc.jwtProvider.GenerateAccessToken(ctx, userIDString, claims)
 	if err != nil {
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error generating access token", err.ToError(), uc.AppContext)
 		result.SetError(
 			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
+		return dtos.Token{}
 	}
-	refresh, expRefresh, err := uc.jwtProvider.GenerateRefreshToken(ctx, password.UserIDString())
+
+	refresh, expRefresh, err := uc.jwtProvider.GenerateRefreshToken(ctx, userIDString)
 	if err != nil {
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error generating refresh token", err.ToError(), uc.AppContext)
 		result.SetError(
 			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
+		return dtos.Token{}
 	}
 
-	// Response
-
-	token := dtos.Token{
+	return dtos.Token{
 		AccessToken:           access,
 		RefreshToken:          refresh,
 		TokenType:             "Bearer",
 		AccessTokenExpiresAt:  exp,
 		RefreshTokenExpiresAt: expRefresh,
 	}
+}
 
+func (uc *AuthenticateUseCase) setSuccessResult(result *usecase.UseCaseResult[dtos.Token], token dtos.Token) {
 	result.SetData(
 		status.Success,
 		token,
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.AUTHORIZATION_GENERATED,
 		),
 	)
-	return result
 }
 
-func (uc *AuthenticateUseCase) validate(input dtos.UserCredentials) (bool, []string) {
-	// Validate the input data
-	var validationErrors []string
-	if input.Email == "" {
-		validationErrors = append(validationErrors, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.SOME_PARAMETERS_ARE_MISSING))
-	}
-	// regex for email validation
-	if !regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`).MatchString(input.Email) {
-		validationErrors = append(validationErrors, uc.appMessages.Get(uc.locale, messages.MessageKeysInstance.INVALID_EMAIL))
+// sendOTPEmailInBackground sends an OTP email to the user in the background
+func (uc *AuthenticateUseCase) sendOTPEmailInBackground(
+	ctx *app_context.AppContext,
+	user *models.UserWithRole,
+	locale locales.LocaleTypeEnum,
+) {
+	// Create the background service
+	observability.GetObservabilityComponents().Logger.InfoWithContext("Creating OTP email background service", ctx)
+	sendOTPService := authservices.NewSendOTPEmailBackgroundService(
+		observability.GetObservabilityComponents(),
+		uc.otpRepo,
+		uc.hashProvider,
+	)
+
+	// Prepare the input
+	input := authservices.SendOTPEmailInput{
+		UserID:   user.ID,
+		Email:    user.Email,
+		UserName: user.Name,
 	}
 
-	return len(validationErrors) == 0, validationErrors
+	// Execute the service in background (fire-and-forget)
+	if err := services.ExecuteBackgroundService(sendOTPService, ctx, locale, input); err != nil {
+		// Log error but don't fail the authentication
+		// The service will log its own errors internally
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error submitting OTP email service to background executor", err, ctx)
+	}
 }
 
 // checkRateLimit verify if the user has exceeded the login failed attempts limit
-func (uc *AuthenticateUseCase) checkRateLimit(email string) (bool, *application_errors.ApplicationError) {
+func (uc *AuthenticateUseCase) checkRateLimit(email string) (bool, *applicationerrors.ApplicationError) {
 	if uc.cacheProvider == nil {
 		return false, nil
 	}
@@ -263,22 +279,13 @@ func (uc *AuthenticateUseCase) checkRateLimit(email string) (bool, *application_
 	}
 
 	key := uc.getRateLimitKey(email)
-	var attempts int
-
-	exists, err := uc.cacheProvider.Get(key, &attempts)
+	attempts, err := uc.cacheProvider.GetInt64(key)
 	if err != nil {
-		uc.log.Error("Error checking rate limit", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting failed attempts", err.ToError(), uc.AppContext)
 		return false, err
 	}
 
-	if !exists {
-		return false, nil
-	}
-
-	// Log for debugging
-	uc.log.Info(fmt.Sprintf("Rate limit check: email=%s, attempts=%d, maxAttempts=%d", email, attempts, maxAttempts))
-
-	return attempts >= maxAttempts, nil
+	return attempts >= int64(maxAttempts), nil
 }
 
 // incrementFailedAttempts increment the failed attempts counter for an email
@@ -288,31 +295,10 @@ func (uc *AuthenticateUseCase) incrementFailedAttempts(email string) {
 	}
 
 	key := uc.getRateLimitKey(email)
-	var attempts int
-
-	exists, err := uc.cacheProvider.Get(key, &attempts)
+	_, err := uc.cacheProvider.Increment(key, time.Duration(settings.AppSettingsInstance.LoginAttemptsWindowMinutes)*time.Minute)
 	if err != nil {
-		uc.log.Error("Error getting failed attempts", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error incrementing failed attempts", err.ToError(), uc.AppContext)
 		return
-	}
-
-	if !exists {
-		attempts = 0
-	}
-
-	attempts++
-
-	windowMinutes := settings.AppSettingsInstance.LoginAttemptsWindowMinutes
-	if windowMinutes <= 0 {
-		windowMinutes = 15 // Default to 15 minutes
-	}
-
-	ttl := time.Duration(windowMinutes) * time.Minute
-	if err := uc.cacheProvider.Set(key, attempts, ttl); err != nil {
-		uc.log.Error("Error setting failed attempts", err.ToError())
-	} else {
-		// Log for debugging
-		uc.log.Info(fmt.Sprintf("Incremented failed attempts: email=%s, attempts=%d, maxAttempts=%d", email, attempts, settings.AppSettingsInstance.LoginMaxAttempts))
 	}
 }
 
@@ -324,7 +310,7 @@ func (uc *AuthenticateUseCase) clearFailedAttempts(email string) {
 
 	key := uc.getRateLimitKey(email)
 	if err := uc.cacheProvider.Delete(key); err != nil {
-		uc.log.Error("Error clearing failed attempts", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error clearing failed attempts", err.ToError(), uc.AppContext)
 	}
 }
 
@@ -334,17 +320,18 @@ func (uc *AuthenticateUseCase) getRateLimitKey(email string) string {
 }
 
 func NewAuthenticateUseCase(
-	log contractsProviders.ILoggerProvider,
-	pass contracts_repositories.IPasswordRepository,
-	userRepo contracts_repositories.IUserRepository,
-	otpRepo contracts_repositories.IOneTimePasswordRepository,
-	hashProvider contractsProviders.IHashProvider,
-	jwtProvider contractsProviders.IJWTProvider,
-	cacheProvider contractsProviders.ICacheProvider,
+	pass authcontracts.IPasswordRepository,
+	userRepo authcontracts.IUserRepository,
+	otpRepo authcontracts.IOneTimePasswordRepository,
+	hashProvider contractproviders.IHashProvider,
+	jwtProvider authcontracts.IJWTProvider,
+	cacheProvider contractproviders.ICacheProvider,
 ) *AuthenticateUseCase {
 	return &AuthenticateUseCase{
-		appMessages:   locales.NewLocale(locales.EN_US),
-		log:           log,
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[dtos.UserCredentials, dtos.Token]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
 		pass:          pass,
 		userRepo:      userRepo,
 		otpRepo:       otpRepo,

@@ -10,6 +10,7 @@ services:
       - ../dev.env
     depends_on:
       - db
+      - otel-collector
     security_opt:
       - seccomp:unconfined
     volumes:
@@ -35,6 +36,7 @@ services:
       - ../src/infrastructure/handlers:/app/handlers
       - ../src/domain/models:/app/models
       - ../src/application/shared/DTOs:/app/DTOs
+      - ../src/application/modules:/app/modules
       - ../src/infrastructure/docs/swagger:/app/swagger
       - ../.air.swagger.toml:/app/.air.swagger.toml
     networks:
@@ -87,6 +89,66 @@ services:
     networks:
       - goprojectskeleton
 
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8889:8889"   # Prometheus metrics endpoint
+    depends_on:
+      - jaeger
+      - prometheus
+    networks:
+      - goprojectskeleton
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"  # UI de Jaeger
+    expose:
+      - "4317"         # OTLP gRPC (solo interno)
+      - "4318"         # OTLP HTTP (solo interno)
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - goprojectskeleton
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - goprojectskeleton
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - jaeger
+    networks:
+      - goprojectskeleton
+
 networks:
   goprojectskeleton:
     external: false
@@ -96,4 +158,6 @@ volumes:
     external: false
   # Reload purposes
   goprojectskeleton-swagger-data:
+    external: false
+  grafana-data:
     external: false

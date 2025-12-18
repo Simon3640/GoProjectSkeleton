@@ -224,12 +224,6 @@ variable "mail_from" {
   default     = "noreply@goprojectskeleton.com"
 }
 
-variable "s3_templates_policy_arn" {
-  description = "ARN of S3 templates read policy"
-  type        = string
-}
-
-
 # VPC variables (AWS specific)
 variable "vpc_cidr" {
   description = "VPC CIDR block"
@@ -241,4 +235,29 @@ variable "availability_zones" {
   description = "Availability zones for multi-AZ deployment"
   type        = list(string)
   default     = []
+}
+
+# Observability variables
+variable "observability_enabled" {
+  description = "Enable observability"
+  type        = bool
+  default     = true
+}
+
+variable "observability_backend" {
+  description = "Observability backend"
+  type        = string
+  default     = "opentelemetry"
+}
+
+variable "otlp_endpoint" {
+  description = "OTLP endpoint"
+  type        = string
+  default     = "http://localhost:4318"
+}
+
+variable "observability_sampling_rate" {
+  description = "Observability sampling rate"
+  type        = number
+  default     = 0.1
 }

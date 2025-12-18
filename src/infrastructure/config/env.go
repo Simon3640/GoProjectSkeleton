@@ -47,8 +47,6 @@ func (e *EnvConfigLoader) Load() (*Config, error) {
 			return nil, err
 		}
 	}
-
-	log.Println("Configuration loaded successfully")
 	return cfg, nil
 }
 

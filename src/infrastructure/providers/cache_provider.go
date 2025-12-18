@@ -114,4 +114,71 @@ func (r *RedisCacheProvider) Flush() *application_errors.ApplicationError {
 	return nil
 }
 
+// Increment atomically increments the value of a key by 1. If the key does not exist, creates it with the value 1 and sets the TTL.
+// returns the incremented value and an error if any
+func (r *RedisCacheProvider) Increment(key string, ttl time.Duration) (int64, *application_errors.ApplicationError) {
+	ctx := context.Background()
+
+	// Lua script: increment key by 1 if new values == 1, set TTL if new values == 1
+	script := `
+		local val = redis.call("INCR", KEYS[1])
+		if val == 1 then
+			redis.call("PEXPIRE", KEYS[1], ARGV[1])
+		end
+		return val
+	`
+	ttlMilis := int64(ttl / time.Millisecond)
+	result, err := r.client.Eval(ctx, script, []string{key}, ttlMilis).Int64()
+	if err != nil {
+		return 0, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			err.Error(),
+		)
+	}
+	return result, nil
+}
+
+// IncrementBy atomically increments the value of a key by a given amount
+// returns the incremented value and an error if any
+func (r *RedisCacheProvider) IncrementBy(key string, increment int64, ttl time.Duration) (int64, *application_errors.ApplicationError) {
+	ctx := context.Background()
+
+	// Lua script: increment key by given amount, set TTL if key was just created (value equals increment)
+	script := `
+		local val = redis.call("INCRBY", KEYS[1], ARGV[1])
+		if val == tonumber(ARGV[1]) then
+			redis.call("PEXPIRE", KEYS[1], ARGV[2])
+		end
+		return val
+	`
+	ttlMillis := int64(ttl / time.Millisecond)
+	result, err := r.client.Eval(ctx, script, []string{key}, increment, ttlMillis).Int64()
+	if err != nil {
+		return 0, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			err.Error(),
+		)
+	}
+	return result, nil
+}
+
+// GetInt64 gets the value of a key as an int64
+// returns the value and an error if any
+func (r *RedisCacheProvider) GetInt64(key string) (int64, *application_errors.ApplicationError) {
+	ctx := context.Background()
+	data, err := r.client.Get(ctx, key).Int64()
+	if err == redis.Nil {
+		return 0, nil
+	} else if err != nil {
+		return 0, application_errors.NewApplicationError(
+			status.ProviderError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			err.Error(),
+		)
+	}
+	return data, nil
+}
+
 var CacheProviderInstance contractsProviders.ICacheProvider

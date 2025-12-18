@@ -1,16 +1,15 @@
-package usecases_password
+package passwordusecases
 
 import (
-	"context"
 	"testing"
 	"time"
 
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
+	passwordmocks "github.com/simon3640/goprojectskeleton/src/application/modules/password/mocks"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
 	"github.com/stretchr/testify/assert"
@@ -19,12 +18,9 @@ import (
 func TestCreatePasswordUseCase(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-
 	actor := dtomocks.UserWithRole
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	testPasswordRepository := new(repositoriesmocks.MockPasswordRepository)
+	testPasswordRepository := new(passwordmocks.MockPasswordRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testPassword := dtos.PasswordCreateNoHash{
 		UserID:           actor.ID,
@@ -33,7 +29,7 @@ func TestCreatePasswordUseCase(t *testing.T) {
 		IsActive:         true,
 	}
 
-	contextWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+	ctxWithUser := app_context.NewContextWithUser(&actor)
 
 	testPasswordCreate := dtos.NewPasswordCreate(
 		testPassword.UserID,
@@ -54,9 +50,9 @@ func TestCreatePasswordUseCase(t *testing.T) {
 
 	testHashProvider.On("HashPassword", testPassword.NoHashedPassword).Return("HashedPassword123!", nil)
 
-	uc := NewCreatePasswordUseCase(testLogger, testPasswordRepository, testHashProvider, false)
+	uc := NewCreatePasswordUseCase(testPasswordRepository, testHashProvider)
 
-	result := uc.Execute(contextWithUser, locales.EN_US, testPassword)
+	result := uc.Execute(ctxWithUser, locales.EN_US, testPassword)
 
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())

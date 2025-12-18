@@ -5,7 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 )
 
 // HTTPAdapter converts HTTP requests to handler contexts.
@@ -34,6 +36,11 @@ func (a *HTTPAdapter) ToHandlerContext(
 			query = castedQP
 		}
 	}
+	var appContext *app_context.AppContext
+	user := r.Context().Value(app_context.UserKey)
+	if user, ok := user.(models.UserWithRole); ok {
+		appContext = app_context.NewContextWithUser(&user)
+	}
 	// If not in context, parse from URL
 	if query == nil && r.URL.Query() != nil {
 		query = parseQueryParams(r.URL.Query())
@@ -42,7 +49,7 @@ func (a *HTTPAdapter) ToHandlerContext(
 	body := r.Body
 
 	return handlers.NewHandlerContext(
-		r.Context(),
+		appContext,
 		&locale,
 		params,
 		&body,

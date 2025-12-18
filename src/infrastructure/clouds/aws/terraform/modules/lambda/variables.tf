@@ -246,3 +246,35 @@ variable "extra_environment_variables" {
   type        = map(string)
   default     = {}
 }
+
+# Observability variables
+variable "observability_enabled" {
+  description = "Enable observability"
+  type        = bool
+  default     = true
+}
+
+variable "observability_backend" {
+  description = "Observability backend"
+  type        = string
+  default     = "opentelemetry"
+}
+
+variable "otlp_endpoint" {
+  description = "OTLP endpoint"
+  type        = string
+  default     = "http://localhost:4318"
+}
+
+variable "observability_sampling_rate" {
+  description = "Observability sampling rate"
+  type        = number
+  default     = 0.1
+}
+
+# ADOT Layer ARN
+variable "adot_layer_arn" {
+  description = "ARN of the AWS Distro for OpenTelemetry (ADOT) Lambda Layer. If empty, uses the default public layer for the current region."
+  type        = string
+  default     = ""
+}

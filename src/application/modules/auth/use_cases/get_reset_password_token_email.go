@@ -1,82 +1,116 @@
 package authusecases
 
 import (
-	"context"
-
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
-	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
+	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 )
 
+// GetResetPasswordSendEmailUseCase is the use case for sending a reset password email
 type GetResetPasswordSendEmailUseCase struct {
-	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
-	locale      locales.LocaleTypeEnum
+	usecase.BaseUseCaseValidation[bool, bool]
 }
 
-var _ usecase.BaseUseCase[dtos.OneTimeTokenUser, bool] = (*GetResetPasswordSendEmailUseCase)(nil)
-
-func (uc *GetResetPasswordSendEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
-
-func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx context.Context,
+// Execute sends a reset password email to the user
+func (uc *GetResetPasswordSendEmailUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
-	input dtos.OneTimeTokenUser,
+	input bool,
 ) *usecase.UseCaseResult[bool] {
 	result := usecase.NewUseCaseResult[bool]()
 	uc.SetLocale(locale)
+	uc.SetAppContext(ctx)
+	uc.Validate(input, result)
+	if result.HasError() {
+		return result
+	}
 
-	newUserEmailData := email_models.ResetPasswordEmailData{
+	emailData := uc.buildEmailData(*ctx.OneTimeToken)
+
+	uc.sendResetPasswordEmail(result, emailData, ctx.OneTimeToken.User.Email, locale)
+	if result.HasError() {
+		return result
+	}
+
+	uc.setSuccessResult(result)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("Reset password email sent successfully", ctx)
+	return result
+}
+
+func (uc *GetResetPasswordSendEmailUseCase) buildEmailData(input shareddtos.OneTimeTokenUser) emailmodels.ResetPasswordEmailData {
+	return emailmodels.ResetPasswordEmailData{
 		Name:              input.User.Name,
 		ResetLink:         input.BuildURL(settings.AppSettingsInstance.FrontendResetPasswordURL),
 		ExpirationMinutes: settings.AppSettingsInstance.OneTimeTokenPasswordTTL,
 		AppName:           settings.AppSettingsInstance.AppName,
 		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
+}
 
-	if err := email_service.ResetPasswordEmailServiceInstance.SendWithTemplate(
-		newUserEmailData,
-		input.User.Email,
+func (uc *GetResetPasswordSendEmailUseCase) sendResetPasswordEmail(
+	result *usecase.UseCaseResult[bool],
+	emailData emailmodels.ResetPasswordEmailData,
+	userEmail string,
+	locale locales.LocaleTypeEnum,
+) {
+	if err := emailservice.ResetPasswordEmailServiceInstance.SendWithTemplate(
+		emailData,
+		userEmail,
 		locale,
 		templates.TemplateKeysInstance.PasswordResetEmail,
-		email_service.SubjectKeysInstance.PasswordResetEmail,
+		emailservice.SubjectKeysInstance.PasswordResetEmail,
 	); err != nil {
-		uc.log.Error("Error sending email", err.ToError())
+		observability.GetObservabilityComponents().Logger.Error("Error sending email", err.ToError())
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
-		return result
 	}
+}
+
+func (uc *GetResetPasswordSendEmailUseCase) setSuccessResult(result *usecase.UseCaseResult[bool]) {
 	result.SetData(
 		status.Success,
 		true,
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.RESET_PASSWORD_EMAIL_SENT_SUCCESSFULLY,
 		),
 	)
-	return result
 }
 
-func NewGetResetPasswordSendEmailUseCase(
-	log contractsProviders.ILoggerProvider,
-) *GetResetPasswordSendEmailUseCase {
+func (uc *GetResetPasswordSendEmailUseCase) Validate(
+	input bool,
+	result *usecase.UseCaseResult[bool],
+) {
+	if uc.AppContext.OneTimeToken == nil || !input || uc.AppContext.OneTimeToken.User.Email == "" {
+		observability.GetObservabilityComponents().Logger.WarningWithContext("Invalid data", uc.AppContext)
+		result.SetError(
+			status.InvalidInput,
+			uc.AppMessages.Get(
+				uc.Locale,
+				messages.MessageKeysInstance.INVALID_DATA,
+			),
+		)
+	}
+}
+
+// NewGetResetPasswordSendEmailUseCase creates a new GetResetPasswordSendEmailUseCase
+func NewGetResetPasswordSendEmailUseCase() *GetResetPasswordSendEmailUseCase {
 	return &GetResetPasswordSendEmailUseCase{
-		appMessages: locales.NewLocale(locales.EN_US),
-		log:         log,
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[bool, bool]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
 	}
 }

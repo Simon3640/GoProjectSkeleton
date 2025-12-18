@@ -1,0 +1,36 @@
+meta {
+  name: FailedLoginAfterSuccessfulLogin
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{baseURL}}/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+body:json {
+  {
+    "email": "{{rateLimitEmail2}}",
+    "password": "wrongPassword3"
+  }
+}
+
+script:post-response {
+  test("Status code is 404 (Counter was reset)", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+
+  // Si el contador se reseteó correctamente, este intento fallido
+  // debe ser el primero después del login exitoso, no el tercero
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

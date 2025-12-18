@@ -1,4 +1,4 @@
-module goprojectskeleton/swagger-server
+module github.com/simon3640/goprojectskeleton/swagger-server
 
 go 1.25
 

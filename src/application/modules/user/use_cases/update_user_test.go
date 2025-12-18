@@ -1,16 +1,14 @@
 package userusecases
 
 import (
-	"context"
 	"testing"
 	"time"
 
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
-	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
@@ -20,15 +18,12 @@ import (
 func TestUpdateUserUseCase(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-
 	actor := dtomocks.UserWithRole
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+	ctxWithUser := app_context.NewContextWithUser(&actor)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	name := "Update"
-	testUser := dtos.UserUpdate{
+	testUser := userdtos.UserUpdate{
 		UserUpdateBase: models.UserUpdateBase{Name: &name},
 		ID:             actor.ID,
 	}
@@ -46,7 +41,7 @@ func TestUpdateUserUseCase(t *testing.T) {
 		},
 	}, nil)
 
-	uc := NewUpdateUserUseCase(testLogger, testUserRepository)
+	uc := NewUpdateUserUseCase(testUserRepository)
 
 	result := uc.Execute(ctxWithUser, locales.EN_US, testUser)
 
@@ -59,22 +54,19 @@ func TestUpdateUserUseCase(t *testing.T) {
 func TestUpdateUserUseCase_DifferentUser(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
-
 	actor := dtomocks.UserWithRole
-	ctxWithUser := context.WithValue(ctx, app_context.UserKey, actor)
+	ctxWithUser := app_context.NewContextWithUser(&actor)
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	name := "Update"
-	testUser := dtos.UserUpdate{
+	testUser := userdtos.UserUpdate{
 		UserUpdateBase: models.UserUpdateBase{Name: &name},
 		ID:             actor.ID + 1,
 	}
 
 	testUserRepository.On("Update", testUser.ID, testUser).Return(nil)
 
-	uc := NewUpdateUserUseCase(testLogger, testUserRepository)
+	uc := NewUpdateUserUseCase(testUserRepository)
 
 	result := uc.Execute(ctxWithUser, locales.EN_US, testUser)
 

@@ -1,7 +1,7 @@
 package defaults
 
 import (
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/password/dtos"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 

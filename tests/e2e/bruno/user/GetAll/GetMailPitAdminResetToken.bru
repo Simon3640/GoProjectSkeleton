@@ -1,0 +1,33 @@
+meta {
+  name: GetMailPitAdminResetToken
+  type: http
+  seq: 1.5
+}
+
+get {
+  url: http://{{mailhogHost}}:8025/api/v1/message/{{lastMessageID}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  const response = res.getBody();
+
+  test("Response status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  let match = response.Text.match(/token=([A-Za-z0-9\-_]+)/);
+  console.log(match);
+
+  if (match && match[1]) {
+      bru.setEnvVar("adminPasswordResetToken", match[1]);
+      console.log("Admin password reset token extracted:", match[1]);
+  } else {
+      console.warn("Token not found in response Text.");
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
@@ -17,14 +19,13 @@ import (
 
 func TestGetResetPasswordTokenUseCase(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
 	testMockHashProvider := new(providersmocks.MockHashProvider)
 	testOneTimeTokenRepo := new(repositoriesmocks.MockOneTimeTokenRepository)
-	testUserRepo := new(repositoriesmocks.MockUserRepository)
+	testUserRepo := new(authmocks.MockUserRepository)
 
-	uc := NewGetResetPasswordTokenUseCase(testLogger,
+	uc := NewGetResetPasswordTokenUseCase(
 		testOneTimeTokenRepo,
 		testUserRepo,
 		testMockHashProvider,
@@ -73,6 +74,6 @@ func TestGetResetPasswordTokenUseCase(t *testing.T) {
 
 	assert.NotNil(result)
 	assert.True(result.IsSuccess())
-	assert.Equal(token, result.Data.Token)
+	assert.Equal(true, *result.Data)
 
 }

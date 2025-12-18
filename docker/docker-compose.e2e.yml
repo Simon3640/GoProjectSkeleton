@@ -72,7 +72,7 @@ services:
       api:
         condition: service_healthy
     working_dir: /etc/bruno
-    command: ["run", "--env=dev"]
+    command: ["run", "--env=dev", "--reporter-html=reports/reports.html"]
 
 networks:
   goprojectskeleton-e2e-tests:

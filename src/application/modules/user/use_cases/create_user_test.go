@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
-	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
 
@@ -19,10 +19,9 @@ import (
 func TestCreateUserUseCase(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	testUser := dtomocks.UserCreate
 	userStatus := models.UserStatusPending
 	testUserRepository.On("Create", testUser).Return(&models.User{
@@ -40,7 +39,7 @@ func TestCreateUserUseCase(t *testing.T) {
 		},
 	}, nil)
 
-	uc := NewCreateUserUseCase(testLogger, testUserRepository)
+	uc := NewCreateUserUseCase(testUserRepository)
 
 	result := uc.Execute(ctx, locales.EN_US, testUser)
 
@@ -52,12 +51,11 @@ func TestCreateUserUseCase(t *testing.T) {
 func TestCreateUserUseCase_InvalidInput(t *testing.T) {
 	assert := assert.New(t)
 
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
+	testUserRepository := new(usermocks.MockUserRepository)
 	userStatus := models.UserStatusPending
-	testUserInvalidRoleID := dtos.UserCreate{
+	testUserInvalidRoleID := userdtos.UserCreate{
 		UserBase: models.UserBase{Name: "Test",
 			Email:  "invalid@gmail.com",
 			Phone:  "1234567890",
@@ -66,7 +64,7 @@ func TestCreateUserUseCase_InvalidInput(t *testing.T) {
 		},
 	}
 
-	uc := NewCreateUserUseCase(testLogger, testUserRepository)
+	uc := NewCreateUserUseCase(testUserRepository)
 
 	result := uc.Execute(ctx, locales.EN_US, testUserInvalidRoleID)
 

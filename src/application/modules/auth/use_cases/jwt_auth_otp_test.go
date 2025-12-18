@@ -6,10 +6,11 @@ import (
 	"testing"
 	"time"
 
+	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 
 	"github.com/stretchr/testify/assert"
@@ -18,16 +19,14 @@ import (
 
 func TestAuthenticateOTPUseCase_Valid(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
-	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testUserRepository := new(authmocks.MockUserRepository)
+	testOTPRepository := new(authmocks.MockOneTimePasswordRepository)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	authOTPUseCase := NewAuthenticateOTPUseCase(
-		testLogger,
 		testUserRepository,
 		testOTPRepository,
 		testHashProvider,
@@ -35,35 +34,35 @@ func TestAuthenticateOTPUseCase_Valid(t *testing.T) {
 	)
 
 	// Mocking Methods
-	testHashProvider.On("HashOneTimeToken", "validOTP").Return(dtomocks.OneTimePassword.Hash)
+	testHashProvider.On("HashOneTimeToken", "validOTP").Return(authmocks.OneTimePassword.Hash)
 
 	testOTPRepository.On(
-		"GetByPasswordHash", dtomocks.OneTimePassword.Hash,
-	).Return(&dtomocks.OneTimePassword, nil)
+		"GetByPasswordHash", authmocks.OneTimePassword.Hash,
+	).Return(&authmocks.OneTimePassword, nil)
 
 	testUserRepository.On(
 		"GetUserWithRole",
-		dtomocks.OneTimePassword.UserID,
+		authmocks.OneTimePassword.UserID,
 	).Return(&dtomocks.UserWithRole, nil)
 
 	testJWTProvider.On(
 		"GenerateAccessToken",
 		ctx,
-		strconv.FormatUint(uint64(dtomocks.OneTimePassword.UserID), 10),
+		strconv.FormatUint(uint64(authmocks.OneTimePassword.UserID), 10),
 		mock.Anything,
 	).Return("newAccessToken", time.Now().Add(1*time.Hour), nil)
 
 	testJWTProvider.On(
 		"GenerateRefreshToken",
 		ctx,
-		strconv.FormatUint(uint64(dtomocks.OneTimePassword.UserID), 10),
+		strconv.FormatUint(uint64(authmocks.OneTimePassword.UserID), 10),
 	).Return("newRefreshToken", time.Now().Add(24*time.Hour), nil)
 
 	testOTPRepository.On(
 		"Update",
 		mock.Anything,
-		mock.AnythingOfType("dtos.OneTimePasswordUpdate"),
-	).Return(&dtomocks.OneTimePassword, nil)
+		mock.AnythingOfType("authdtos.OneTimePasswordUpdate"),
+	).Return(&authmocks.OneTimePassword, nil)
 
 	result := authOTPUseCase.Execute(ctx, locales.EN_US, "validOTP")
 
@@ -74,16 +73,14 @@ func TestAuthenticateOTPUseCase_Valid(t *testing.T) {
 
 func TestAuthenticateOTPUseCase_InvalidOTP(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	testUserRepository := new(repositoriesmocks.MockUserRepository)
-	testOTPRepository := new(repositoriesmocks.MockOneTimePasswordRepository)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testUserRepository := new(authmocks.MockUserRepository)
+	testOTPRepository := new(authmocks.MockOneTimePasswordRepository)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
 	authOTPUseCase := NewAuthenticateOTPUseCase(
-		testLogger,
 		testUserRepository,
 		testOTPRepository,
 		testHashProvider,
@@ -91,11 +88,11 @@ func TestAuthenticateOTPUseCase_InvalidOTP(t *testing.T) {
 	)
 
 	// Mocking Methods
-	testHashProvider.On("HashOneTimeToken", "invalidOTP").Return(dtomocks.ExpiredOneTimePassword.Hash)
+	testHashProvider.On("HashOneTimeToken", "invalidOTP").Return(authmocks.ExpiredOneTimePassword.Hash)
 
 	testOTPRepository.On(
-		"GetByPasswordHash", dtomocks.ExpiredOneTimePassword.Hash,
-	).Return(&dtomocks.ExpiredOneTimePassword, nil)
+		"GetByPasswordHash", authmocks.ExpiredOneTimePassword.Hash,
+	).Return(&authmocks.ExpiredOneTimePassword, nil)
 
 	result := authOTPUseCase.Execute(ctx, locales.EN_US, "invalidOTP")
 

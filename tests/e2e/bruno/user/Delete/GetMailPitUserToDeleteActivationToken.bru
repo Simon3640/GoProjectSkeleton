@@ -1,0 +1,32 @@
+meta {
+  name: GetMailPitUserToDeleteActivationToken
+  type: http
+  seq: 2.2
+}
+
+get {
+  url: http://{{mailhogHost}}:8025/api/v1/message/{{lastMessageID}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  const response = res.getBody();
+
+  test("Response status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  let match = response.Text.match(/token=([A-Za-z0-9\-_]+)/);
+
+  if (match && match[1]) {
+      bru.setEnvVar("userToDeleteActivateToken", match[1]);
+  } else {
+      console.warn("Token not found in response Text.");
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

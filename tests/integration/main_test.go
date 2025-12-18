@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	infrastructure "github.com/simon3640/goprojectskeleton/src/infrastructure"
-	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 

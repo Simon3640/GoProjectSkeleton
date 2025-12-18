@@ -47,4 +47,7 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+reports/
 bin/
+
+aws.bru

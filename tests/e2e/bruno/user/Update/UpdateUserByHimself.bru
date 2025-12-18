@@ -1,0 +1,63 @@
+meta {
+  name: UpdateUserByHimself
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseURL}}/user/{{userToUpdateId}}
+  body: json
+  auth: apikey
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{userToUpdateToken}}
+  placement: header
+}
+
+body:json {
+  {
+    "name": "Updated Name By Self"
+  }
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  const response = res.getBody();
+
+  if (!response) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  test("Response contains data property", function () {
+      expect(response.data).to.exist;
+  });
+
+  test("User name should be updated", function () {
+      expect(response.data.name).to.equal("Updated Name By Self");
+  });
+
+  test("Response contains details", function () {
+      expect(response.details).to.exist;
+      expect(response.details).to.be.a('string');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

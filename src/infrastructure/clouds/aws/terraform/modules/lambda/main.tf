@@ -2,6 +2,18 @@
 # Equivalent to Azure Function App module
 # Creates a Lambda function with API Gateway integration, IAM roles, and CloudWatch logging
 
+data "aws_region" "current" {}
+
+# AWS Distro for OpenTelemetry (ADOT) Lambda Layer ARN
+# Public layer published by AWS (account 901920570463)
+# See: https://aws-otel.github.io/docs/getting-started/lambda/lambda-go
+# Layer versions: https://github.com/aws-observability/aws-otel-lambda/releases
+locals {
+  # ADOT Collector layer for amd64 architecture (compatible with provided.al2)
+  # Format: arn:aws:lambda:<region>:901920570463:layer:<layer-name>:<version>
+  adot_layer_arn = var.adot_layer_arn != "" ? var.adot_layer_arn : "arn:aws:lambda:${data.aws_region.current.name}:901920570463:layer:aws-otel-collector-amd64-ver-0-102-1:1"
+}
+
 # Create a dummy zip file for Lambda deployment
 # This is a placeholder - actual code should be deployed separately
 data "archive_file" "lambda_zip" {
@@ -63,6 +75,36 @@ resource "aws_iam_role_policy_attachment" "lambda_s3_templates" {
   policy_arn = var.s3_templates_policy_arn
 }
 
+# Attach X-Ray write policy for ADOT traces export
+resource "aws_iam_role_policy_attachment" "lambda_xray" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
+}
+
+# Inline policy for CloudWatch Metrics (ADOT metrics export)
+resource "aws_iam_role_policy" "lambda_cloudwatch_metrics" {
+  name = "${var.name_prefix}-${var.function_name}-cloudwatch-metrics"
+  role = aws_iam_role.lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cloudwatch:PutMetricData"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "cloudwatch:namespace" = "${var.project_name}/${var.environment}"
+          }
+        }
+      }
+    ]
+  })
+}
+
 # CloudWatch Log Group for Lambda
 # Equivalent to Azure Application Insights
 resource "aws_cloudwatch_log_group" "lambda" {
@@ -87,11 +129,31 @@ resource "aws_lambda_function" "main" {
   timeout     = 30
   memory_size = 512
 
+  # ADOT Lambda Extension Layer
+  # Enables OpenTelemetry collection without modifying application code
+  layers = [local.adot_layer_arn]
+
   # Environment variables
   # Equivalent to Azure Function App app_settings
   environment {
     variables = merge(
       {
+        # OpenTelemetry / ADOT Configuration
+        # Wrapper script that initializes ADOT collector before the Lambda handler
+        AWS_LAMBDA_EXEC_WRAPPER = "/opt/otel-instrument"
+        # Service identification for traces and metrics
+        OTEL_SERVICE_NAME = "${var.project_name}-${var.function_name}"
+        # Resource attributes for service context
+        OTEL_RESOURCE_ATTRIBUTES = "service.version=${var.app_version},deployment.environment=${var.environment}"
+        # Export traces to AWS X-Ray via ADOT
+        OTEL_TRACES_EXPORTER = "awsxray"
+        # Export metrics to CloudWatch via ADOT
+        OTEL_METRICS_EXPORTER = "awscloudwatch"
+        # OTLP endpoint (ADOT collector listens locally)
+        OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
+        # Propagators for distributed tracing context
+        OTEL_PROPAGATORS = "tracecontext,baggage,xray"
+
         # Application
         APP_NAME          = var.project_name
         APP_ENV           = var.environment
@@ -142,6 +204,12 @@ resource "aws_lambda_function" "main" {
         MAIL_PORT     = tostring(var.mail_port)
         MAIL_FROM     = var.mail_from
         MAIL_PASSWORD = var.mail_password_secret_arn
+
+        # Observability
+        OBSERVABILITY_ENABLED       = tostring(var.observability_enabled)
+        OBSERVABILITY_BACKEND       = var.observability_backend
+        OTLP_ENDPOINT               = var.otlp_endpoint
+        OBSERVABILITY_SAMPLING_RATE = tostring(var.observability_sampling_rate)
       },
       var.extra_environment_variables
     )
@@ -179,6 +247,8 @@ resource "aws_lambda_function" "main" {
   depends_on = [
     aws_iam_role_policy_attachment.lambda_basic,
     aws_iam_role_policy_attachment.lambda_secrets,
+    aws_iam_role_policy_attachment.lambda_xray,
+    aws_iam_role_policy.lambda_cloudwatch_metrics,
     aws_cloudwatch_log_group.lambda
   ]
 }

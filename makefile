@@ -34,6 +34,11 @@ test-unit: ## Run unit tests
 	@echo "$(CYAN)🧪 Running unit tests...$(NC)"
 	$(GO) test ./src/... -v -cover
 
+test-unit-report: ## Run unit tests and generate report
+	@echo "$(CYAN)🧪 Running unit tests...$(NC)"
+	$(GO) test ./src/... -v -cover -coverprofile=coverage.out
+	go tool cover -html=coverage.out -o coverage.html
+
 test-integration: ## Run integration tests with Docker
 	@echo "$(CYAN)🧪 Running integration tests...$(NC)"
 	$(DOCKER_COMPOSE) -f docker/docker-compose.test.yml up --abort-on-container-exit --exit-code-from goprojectskeleton-integration-tests --build

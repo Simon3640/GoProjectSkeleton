@@ -1,9 +1,9 @@
 package main
 
 import (
+	api "github.com/simon3640/goprojectskeleton/gin"
 	routes "github.com/simon3640/goprojectskeleton/gin/routes"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
-	"github.com/simon3640/goprojectskeleton/src/infrastructure"
 	providers "github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 
 	"github.com/gin-contrib/cors"
@@ -12,8 +12,7 @@ import (
 )
 
 func main() {
-	providers.Logger.Info("Initializing infraestructure...")
-	infrastructure.Initialize()
+	api.Initialize()
 	providers.Logger.Info("Infraestructure initialized")
 	providers.Logger.Info("Starting server...")
 	providers.Logger.Info("App Name: " + settings.AppSettingsInstance.AppName)
@@ -31,7 +30,7 @@ func main() {
 
 func loadGinApp(app *graceful.Graceful) {
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
+		AllowOrigins:     settings.AppSettingsInstance.AllowOrigins,
 		AllowMethods:     []string{"*"},
 		AllowHeaders:     []string{"*"},
 		ExposeHeaders:    []string{"content-disposition", " content-description"},

@@ -5,9 +5,10 @@ import (
 	"testing"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
+	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
-	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -15,16 +16,15 @@ import (
 
 func TestAuthenticationRefreshUseCase(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
+	ctx := &app_context.AppContext{Context: context.Background()}
 
-	testLogger := new(providersmocks.MockLoggerProvider)
-	testJWTProvider := new(providersmocks.MockJWTProvider)
+	testJWTProvider := new(authmocks.MockJWTProvider)
 
-	uc := NewAuthenticationRefreshUseCase(testLogger, testJWTProvider)
+	uc := NewAuthenticationRefreshUseCase(testJWTProvider)
 
 	// Valid Token Refresh
 	validToken := "validAccessToken.123"
-	claimsReturn := contractsProviders.JWTCLaims{
+	claimsReturn := authcontracts.JWTCLaims{
 		"sub": "1",
 		"typ": "refresh",
 		"exp": float64(time.Now().Add(1 * time.Hour).Unix()),
