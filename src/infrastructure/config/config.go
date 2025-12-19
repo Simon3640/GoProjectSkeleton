@@ -2,11 +2,12 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 
-	logger "github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 )
 
 // Loader defines the interface for loading configuration from various sources.
@@ -25,6 +26,7 @@ type Config struct {
 	EnableLog       string `env:"ENABLE_LOG" envDefault:"true"`
 	DebugLog        string `env:"DEBUG_LOG" envDefault:"true"`
 	TemplatesPath   string `env:"TEMPLATES_PATH" envDefault:"src/application/shared/templates/"`
+	AllowOrigins    string `env:"ALLOW_ORIGINS" envDefault:"*"`
 
 	// Database
 	DBHost     string `env:"DB_HOST" envDefault:"goprojectskeleton"`
@@ -62,6 +64,16 @@ type Config struct {
 	MailPassword     string `env:"MAIL_PASSWORD" envDefault:"password"`
 	MailFrom         string `env:"MAIL_FROM" envDefault:"noreply@example.com"`
 	MailAuthRequired string `env:"MAIL_AUTH_REQUIRED" envDefault:"true"`
+
+	// Background Workers
+	BackgroundWorkers  string `env:"BACKGROUND_WORKERS" envDefault:"4"`
+	BackgroundQueueSize string `env:"BACKGROUND_QUEUE_SIZE" envDefault:"100"`
+
+	// Observability
+	ObservabilityEnabled   string `env:"OBSERVABILITY_ENABLED" envDefault:"false"`
+	ObservabilityBackend   string `env:"OBSERVABILITY_BACKEND" envDefault:"noop"`
+	OTLPEndpoint          string `env:"OTLP_ENDPOINT" envDefault:""`
+	ObservabilitySamplingRate string `env:"OBSERVABILITY_SAMPLING_RATE" envDefault:"1.0"`
 }
 
 func (c *Config) ToMap() map[string]string {
@@ -81,18 +93,19 @@ func (c *Config) ToMap() map[string]string {
 }
 
 // NewConfig creates a new configuration instance using the specified loader.
-func NewConfig(loader Loader) *Config {
+func NewConfig(loader Loader) (*Config, *application_errors.ApplicationError) {
 	if loader == nil {
 		loader = NewEnvConfigLoader()
 	}
 	config, err := loader.Load()
 	if err != nil {
-		fmt.Println("Error loading configuration")
-		logger.Logger.Panic("Error loading configuration", err)
-		// Si el logger no está habilitado, hacer panic explícitamente
-		panic(fmt.Sprintf("Error loading configuration: %v", err))
+		return nil, application_errors.NewApplicationError(
+			status.ConfigurationInitializationError,
+			messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
+			err.Error(),
+		)
 	}
-	return config
+	return config, nil
 }
 
 var ConfigInstance *Config

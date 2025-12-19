@@ -4,155 +4,189 @@ import (
 	"context"
 	"time"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	contractproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
+	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+	"github.com/simon3640/goprojectskeleton/src/domain/models"
 )
 
+// AuthenticateOTPUseCase is the use case for authenticating a user with an OTP
 type AuthenticateOTPUseCase struct {
-	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
-	locale      locales.LocaleTypeEnum
+	usecase.BaseUseCaseValidation[string, dtos.Token]
 
-	userRepo contracts_repositories.IUserRepository
-	otpRepo  contracts_repositories.IOneTimePasswordRepository
+	userRepo authcontracts.IUserRepository
+	otpRepo  authcontracts.IOneTimePasswordRepository
 
-	jwtProvider  contractsProviders.IJWTProvider
-	hashProvider contractsProviders.IHashProvider
+	jwtProvider  authcontracts.IJWTProvider
+	hashProvider contractproviders.IHashProvider
 }
 
 var _ usecase.BaseUseCase[string, dtos.Token] = (*AuthenticateOTPUseCase)(nil)
 
-func (uc *AuthenticateOTPUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
-
-func (uc *AuthenticateOTPUseCase) Execute(ctx context.Context,
+// Execute authenticates a user with an OTP
+func (uc *AuthenticateOTPUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input string,
 ) *usecase.UseCaseResult[dtos.Token] {
 	result := usecase.NewUseCaseResult[dtos.Token]()
 	uc.SetLocale(locale)
+	uc.SetAppContext(ctx)
 	uc.Validate(input, result)
 	if result.HasError() {
 		return result
 	}
 
-	// Get hash from input
-	hash := uc.hashProvider.HashOneTimeToken(input)
+	oneTimePassword := uc.validateAndGetOTP(result, input)
+	if result.HasError() {
+		return result
+	}
+
+	user := uc.getUser(result, oneTimePassword.UserID)
+	if result.HasError() {
+		return result
+	}
+
+	token := uc.generateTokens(ctx, result, user)
+	if result.HasError() {
+		return result
+	}
+
+	uc.markOTPAsUsed(result, oneTimePassword.ID)
+	if result.HasError() {
+		return result
+	}
+
+	uc.setSuccessResult(result, token)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("OTP authenticated successfully", uc.AppContext)
+	return result
+}
+
+func (uc *AuthenticateOTPUseCase) validateAndGetOTP(result *usecase.UseCaseResult[dtos.Token], otp string) *models.OneTimePassword {
+	hash := uc.hashProvider.HashOneTimeToken(otp)
 	oneTimePassword, err := uc.otpRepo.GetByPasswordHash(hash)
 
 	if err != nil {
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting one time password by hash", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
-		return result
+		return nil
 	}
+
 	if oneTimePassword == nil || oneTimePassword.IsUsed || oneTimePassword.Expires.Before(time.Now()) {
+		observability.GetObservabilityComponents().Logger.WarningWithContext("One time password is not valid or has incorrect purpose", uc.AppContext)
 		result.SetError(
 			status.Unauthorized,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_OTP,
 			),
 		)
-		return result
+		return nil
 	}
 
-	// Get user with role from repository
-	user, err := uc.userRepo.GetUserWithRole(oneTimePassword.UserID)
+	return oneTimePassword
+}
 
+func (uc *AuthenticateOTPUseCase) getUser(result *usecase.UseCaseResult[dtos.Token], userID uint) *models.UserWithRole {
+	user, err := uc.userRepo.GetUserWithRole(userID)
 	if err != nil {
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user by ID", err.ToError(), uc.AppContext)
 		result.SetError(
 			status.NotFound,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_USER_OR_PASSWORD,
 			),
 		)
-		return result
+		return nil
 	}
+	return user
+}
 
-	claims := contractsProviders.JWTCLaims{
+func (uc *AuthenticateOTPUseCase) generateTokens(ctx context.Context, result *usecase.UseCaseResult[dtos.Token], user *models.UserWithRole) dtos.Token {
+	claims := authcontracts.JWTCLaims{
 		"role": user.GetRoleKey(),
 	}
 
-	// Generate JWT tokens
 	access, exp, err := uc.jwtProvider.GenerateAccessToken(ctx, user.GetUserIDString(), claims)
-
 	if err != nil {
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error generating access token", err.ToError(), uc.AppContext)
 		result.SetError(
 			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
+		return dtos.Token{}
 	}
+
 	refresh, expRefresh, err := uc.jwtProvider.GenerateRefreshToken(ctx, user.GetUserIDString())
 	if err != nil {
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error generating refresh token", err.ToError(), uc.AppContext)
 		result.SetError(
 			status.Conflict,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 			),
 		)
+		return dtos.Token{}
 	}
 
-	// Response
-
-	token := dtos.Token{
+	return dtos.Token{
 		AccessToken:           access,
 		RefreshToken:          refresh,
 		TokenType:             "Bearer",
 		AccessTokenExpiresAt:  exp,
 		RefreshTokenExpiresAt: expRefresh,
 	}
+}
 
-	// Mark OTP as used
-	_, err = uc.otpRepo.Update(oneTimePassword.ID,
-		dtos.OneTimePasswordUpdate{IsUsed: true, ID: oneTimePassword.ID})
+func (uc *AuthenticateOTPUseCase) markOTPAsUsed(result *usecase.UseCaseResult[dtos.Token], otpID uint) {
+	_, err := uc.otpRepo.Update(otpID,
+		dtos.OneTimePasswordUpdate{IsUsed: true, ID: otpID})
 	if err != nil {
-		uc.log.Error("Error updating one time password as used", err.ToError())
+		observability.GetObservabilityComponents().Logger.Error("Error updating one time password as used", err.ToError())
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
-		return result
+		return
 	}
+}
 
+func (uc *AuthenticateOTPUseCase) setSuccessResult(result *usecase.UseCaseResult[dtos.Token], token dtos.Token) {
 	result.SetData(
 		status.Success,
 		token,
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.AUTHORIZATION_GENERATED,
 		),
 	)
-
-	return result
 }
 
 func (uc *AuthenticateOTPUseCase) Validate(input string, result *usecase.UseCaseResult[dtos.Token]) {
 	if input == "" {
 		result.SetError(
 			status.InvalidInput,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				messages.MessageKeysInstance.INVALID_DATA,
 			),
 		)
@@ -161,15 +195,16 @@ func (uc *AuthenticateOTPUseCase) Validate(input string, result *usecase.UseCase
 }
 
 func NewAuthenticateOTPUseCase(
-	log contractsProviders.ILoggerProvider,
-	userRepo contracts_repositories.IUserRepository,
-	otpRepo contracts_repositories.IOneTimePasswordRepository,
-	hashProvider contractsProviders.IHashProvider,
-	jwtProvider contractsProviders.IJWTProvider,
+	userRepo authcontracts.IUserRepository,
+	otpRepo authcontracts.IOneTimePasswordRepository,
+	hashProvider contractproviders.IHashProvider,
+	jwtProvider authcontracts.IJWTProvider,
 ) *AuthenticateOTPUseCase {
 	return &AuthenticateOTPUseCase{
-		appMessages:  locales.NewLocale(locales.EN_US),
-		log:          log,
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, dtos.Token]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
 		userRepo:     userRepo,
 		otpRepo:      otpRepo,
 		jwtProvider:  jwtProvider,

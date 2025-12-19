@@ -1,0 +1,91 @@
+meta {
+  name: GetAllUsers
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseURL}}/user
+  body: none
+  auth: apikey
+}
+
+params:query {
+  page: 1
+  page_size: 10
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{adminToken}}
+  placement: header
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  const response = res.getBody();
+
+  if (!response) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  test("Response contains data property", function () {
+      expect(response.data).to.exist;
+  });
+
+  test("Response contains records array", function () {
+      expect(response.data.records).to.be.an('array');
+  });
+
+  test("Response contains meta property", function () {
+      expect(response.data.meta).to.exist;
+  });
+
+  test("Meta contains total count", function () {
+      expect(response.data.meta.total).to.exist;
+      expect(response.data.meta.total).to.be.a('number');
+  });
+
+  test("Meta contains cached flag", function () {
+      expect(response.data.meta.cached).to.exist;
+      expect(response.data.meta.cached).to.be.a('boolean');
+  });
+
+  test("First call should not be cached", function () {
+      expect(response.data.meta.cached).to.equal(false);
+  });
+
+  test("Records should contain user properties", function () {
+      if (response.data.records.length > 0) {
+          const user = response.data.records[0];
+          expect(user).to.have.property("id");
+          expect(user).to.have.property("name");
+          expect(user).to.have.property("email");
+          expect(user).to.have.property("phone");
+          expect(user).to.have.property("status");
+          expect(user).to.have.property("role_id");
+      }
+  });
+
+  // Store total for cache verification
+  bru.setEnvVar("usersTotal", response.data.meta.total);
+  bru.setEnvVar("usersCount", response.data.records.length);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

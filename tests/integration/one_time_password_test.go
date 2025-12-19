@@ -3,25 +3,27 @@ package integrationtest
 import (
 	"testing"
 
+	authmocks "github.com/simon3640/goprojectskeleton/src/application/modules/auth/mocks"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
-	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
+	authrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/auth"
+	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestOneTimePasswordGetByPasswordHash(t *testing.T) {
 	assert := assert.New(t)
-	oneTimePasswordRepository := repositories.NewOneTimePasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
-	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	oneTimePasswordRepository := authrepositories.NewOneTimePasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	userRepository := userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	// Create user to link the one-time token
 	userCreated, _ := userRepository.Create(dtomocks.UserCreate)
 
 	defer userRepository.Delete(userCreated.ID)
 
-	oneTimePasswordCreate := dtomocks.OneTimePasswordCreate
+	oneTimePasswordCreate := authmocks.OneTimePasswordCreate
 	oneTimePasswordCreate.UserID = userCreated.ID
 
 	// Create one-time token to test GetByPasswordHash

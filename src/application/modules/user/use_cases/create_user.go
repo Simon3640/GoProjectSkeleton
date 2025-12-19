@@ -1,14 +1,14 @@
 package userusecases
 
 import (
-	"context"
 	"strings"
 
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
-	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/domain/models"
@@ -16,64 +16,58 @@ import (
 
 // CreateUserUseCase is a use case that creates a user
 type CreateUserUseCase struct {
-	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
-	repo        contracts_repositories.IUserRepository
-	locale      locales.LocaleTypeEnum
+	usecase.BaseUseCaseValidation[userdtos.UserCreate, models.User]
+	repo usercontracts.IUserRepository
 }
 
-var _ usecase.BaseUseCase[dtos.UserCreate, models.User] = (*CreateUserUseCase)(nil)
-
-// SetLocale sets the locale for the use case
-func (uc *CreateUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
+var _ usecase.BaseUseCase[userdtos.UserCreate, models.User] = (*CreateUserUseCase)(nil)
 
 // Execute executes the use case
-func (uc *CreateUserUseCase) Execute(ctx context.Context,
+func (uc *CreateUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
-	input dtos.UserCreate,
+	input userdtos.UserCreate,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
+	uc.SetAppContext(ctx)
 	uc.validate(input, result)
 
 	if result.HasError() {
 		return result
 	}
 
-	res, err := uc.repo.Create(input)
-
-	if err != nil {
-		uc.log.Error("Error creating user", err.ToError())
-		result.SetError(
-			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
-				err.Context,
-			),
-		)
+	res := uc.createUser(input, result)
+	if result.HasError() {
 		return result
 	}
+
 	result.SetData(
-		status.Success,
+		status.Created,
 		*res,
-		uc.appMessages.Get(
-			uc.locale,
+		uc.AppMessages.Get(
+			uc.Locale,
 			messages.MessageKeysInstance.USER_WAS_CREATED,
 		),
 	)
 	return result
 }
 
+func (uc *CreateUserUseCase) createUser(input userdtos.UserCreate, result *usecase.UseCaseResult[models.User]) *models.User {
+	res, err := uc.repo.Create(input)
+	if err != nil {
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error creating user", err.ToError(), uc.AppContext)
+		result.SetError(err.Code, uc.AppMessages.Get(uc.Locale, err.Context))
+	}
+	return res
+}
+
 func (uc *CreateUserUseCase) validate(
-	input dtos.UserCreate,
+	input userdtos.UserCreate,
 	result *usecase.UseCaseResult[models.User]) {
 	msgs := input.Validate()
 
 	if len(msgs) > 0 {
+		observability.GetObservabilityComponents().Logger.WarningWithContext("Invalid input", uc.AppContext)
 		result.SetError(
 			status.InvalidInput,
 			strings.Join(msgs, "\n"),
@@ -83,12 +77,13 @@ func (uc *CreateUserUseCase) validate(
 
 // NewCreateUserUseCase creates a new create user use case
 func NewCreateUserUseCase(
-	log contractsProviders.ILoggerProvider,
-	repo contracts_repositories.IUserRepository,
+	repo usercontracts.IUserRepository,
 ) *CreateUserUseCase {
 	return &CreateUserUseCase{
-		appMessages: locales.NewLocale(locales.EN_US),
-		log:         log,
-		repo:        repo,
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[userdtos.UserCreate, models.User]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
+		repo: repo,
 	}
 }

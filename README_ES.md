@@ -54,18 +54,21 @@ go run src/infrastructure/server/cmd/main.go
 3. [Arquitectura del Proyecto](#arquitectura-del-proyecto)
 4. [Escalabilidad y Serverless](#escalabilidad-y-serverless)
 5. [Flujo Completo de Request](#flujo-completo-de-request)
-6. [Virtudes y Beneficios](#virtudes-y-beneficios)
-7. [Estructura del Proyecto - Capa por Capa](#estructura-del-proyecto---capa-por-capa)
-8. [Revisión Exhaustiva por Carpetas](#revisión-exhaustiva-por-carpetas)
-9. [Tecnologías y Dependencias](#tecnologías-y-dependencias)
-10. [Configuración y Setup](#configuración-y-setup)
-11. [Módulos de Negocio](#módulos-de-negocio)
-12. [API y Endpoints](#api-y-endpoints)
-13. [Base de Datos y Persistencia](#base-de-datos-y-persistencia)
-14. [Autenticación y Seguridad](#autenticación-y-seguridad)
-15. [Testing](#testing)
-16. [Docker y Despliegue](#docker-y-despliegue)
-17. [Guía de Desarrollo](#guía-de-desarrollo)
+6. [Ejecución de Tareas en Background](#-ejecución-de-tareas-en-background)
+7. [Observabilidad](#-observabilidad)
+8. [Virtudes y Beneficios](#virtudes-y-beneficios)
+9. [Estructura del Proyecto - Capa por Capa](#estructura-del-proyecto---capa-por-capa)
+10. [Revisión Exhaustiva por Carpetas](#revisión-exhaustiva-por-carpetas)
+11. [Tecnologías y Dependencias](#tecnologías-y-dependencias)
+12. [Configuración y Setup](#configuración-y-setup)
+13. [Módulos de Negocio](#módulos-de-negocio)
+14. [API y Endpoints](#api-y-endpoints)
+15. [Base de Datos y Persistencia](#base-de-datos-y-persistencia)
+16. [Autenticación y Seguridad](#autenticación-y-seguridad)
+17. [Testing](#testing)
+18. [Docker y Despliegue](#docker-y-despliegue)
+19. [Despliegue con GitHub Actions](#despliegue-con-github-actions)
+20. [Guía de Desarrollo](#guía-de-desarrollo)
 
 ---
 
@@ -138,6 +141,13 @@ La filosofía central de **GoProjectSkeleton** es que el **dominio** y la **lóg
 - ✅ **Terraform** - Infraestructura como código para AWS y Azure
 - ✅ **Secrets Management** - Integración con AWS Secrets Manager y Azure Key Vault
 - ✅ **Hot Reload** - Desarrollo eficiente con recarga automática
+
+#### 📊 Observabilidad
+- ✅ **OpenTelemetry** - Trazado distribuido e instrumentación de métricas
+- ✅ **Prometheus** - Recolección y almacenamiento de métricas
+- ✅ **Jaeger** - Visualización de trazas distribuidas
+- ✅ **Grafana** - Dashboards y monitoreo en tiempo real
+- ✅ **Logging Estructurado** - Logs contextuales con correlación de trazas
 
 #### ⚡ Rendimiento y Escalabilidad
 - ✅ **Cache con Redis** - Optimización de rendimiento con TTL configurable
@@ -1736,6 +1746,1428 @@ El DAG ejecuta:
 
 ---
 
+## ⚡ Ejecución de Tareas en Background
+
+**GoProjectSkeleton** proporciona tres mecanismos principales para ejecutar tareas en background, cada uno diseñado para diferentes casos de uso. Esta sección explica cada opción, cuándo usarla y cómo implementarla.
+
+### Visión General
+
+El proyecto ofrece tres niveles de abstracción para ejecución en background:
+
+1. **BackgroundExecutor (Workers)** - Pool de workers de bajo nivel para tareas genéricas
+2. **BackgroundService** - Abstracción de alto nivel para servicios de negocio
+3. **DAG con ThenBackground** - Ejecución de casos de uso en background después de operaciones exitosas
+
+```mermaid
+graph TB
+    subgraph Niveles["Niveles de Abstracción"]
+        Low[BackgroundExecutor<br/>Bajo Nivel<br/>Pool de Workers]
+        Mid[BackgroundService<br/>Nivel Medio<br/>Servicios de Negocio]
+        High[DAG ThenBackground<br/>Alto Nivel<br/>Casos de Uso]
+    end
+
+    Low -->|Usado por| Mid
+    Mid -->|Usado por| High
+    Low -->|Directo| DirectUse[Uso Directo<br/>Tareas Genéricas]
+
+    style Low fill:#ffcdd2
+    style Mid fill:#fff9c4
+    style High fill:#c8e6c9
+```
+
+### 1. BackgroundExecutor (Workers)
+
+**BackgroundExecutor** es un pool de workers configurable que ejecuta tareas genéricas en background. Es la capa más baja de abstracción y proporciona control total sobre la ejecución.
+
+#### Características
+
+- ✅ **Pool de Workers Configurable**: Número de workers y tamaño de cola personalizables
+- ✅ **Gestión de Contexto**: Soporte para cancelación mediante context
+- ✅ **Recuperación de Panics**: Los panics en tareas no crashean la aplicación
+- ✅ **Thread-Safe**: Seguro para uso concurrente
+- ✅ **Singleton Pattern**: Instancia única global disponible
+
+#### Inicialización
+
+El executor se inicializa durante el arranque de la aplicación:
+
+```go
+// En infrastructure/container.go
+ctx := context.Background()
+workers.InitializeBackgroundExecutor(
+    ctx,
+    settings.AppSettingsInstance.BackgroundWorkers,  // Número de workers (default: 4)
+    settings.AppSettingsInstance.BackgroundQueueSize, // Tamaño de cola (default: 100)
+)
+
+// Obtener la instancia singleton
+executor := workers.GetBackgroundExecutor()
+```
+
+#### Uso Básico
+
+```go
+import (
+    "context"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/workers"
+)
+
+// Obtener el executor
+executor := workers.GetBackgroundExecutor()
+
+// Enviar una tarea
+err := executor.Submit(func(ctx context.Context) {
+    // Tu lógica aquí
+    // Esta función se ejecutará en un worker del pool
+    doSomething()
+})
+
+if err != nil {
+    // Manejar error (ej: cola llena)
+    log.Printf("Error al enviar tarea: %v", err)
+}
+```
+
+#### Ejemplo Completo: Procesamiento de Imágenes
+
+```go
+type ImageProcessor struct {
+    executor *workers.BackgroundExecutor
+}
+
+func NewImageProcessor() *ImageProcessor {
+    return &ImageProcessor{
+        executor: workers.GetBackgroundExecutor(),
+    }
+}
+
+func (p *ImageProcessor) ProcessImageAsync(imagePath string) error {
+    return p.executor.Submit(func(ctx context.Context) {
+        // Verificar cancelación
+        select {
+        case <-ctx.Done():
+            log.Printf("Procesamiento cancelado: %s", imagePath)
+            return
+        default:
+        }
+
+        // Procesar imagen
+        if err := processImage(imagePath); err != nil {
+            log.Printf("Error procesando imagen %s: %v", imagePath, err)
+            return
+        }
+
+        // Notificar completado
+        log.Printf("Imagen procesada: %s", imagePath)
+    })
+}
+
+func processImage(path string) error {
+    // Lógica de procesamiento
+    return nil
+}
+```
+
+#### Control de Ciclo de Vida
+
+```go
+executor := workers.GetBackgroundExecutor()
+
+// Iniciar workers (se hace automáticamente al hacer Submit, pero puedes hacerlo manualmente)
+executor.Start()
+
+// Esperar a que todas las tareas en cola se completen
+executor.Wait()
+
+// Detener el executor (cancela contexto y cierra workers)
+executor.Stop()
+```
+
+#### Configuración Recomendada
+
+| Escenario | Workers | Queue Size | Razón |
+|-----------|---------|------------|-------|
+| **Desarrollo** | 2-4 | 50-100 | Recursos limitados |
+| **Producción Ligera** | 4-8 | 100-200 | Carga moderada |
+| **Producción Media** | 8-16 | 200-500 | Carga media |
+| **Producción Alta** | 16-32 | 500-1000 | Alta concurrencia |
+
+### 2. BackgroundService
+
+**BackgroundService** es una abstracción de alto nivel diseñada para ejecutar servicios de negocio en background. Proporciona una interfaz tipada y estructurada para servicios que necesitan contexto de aplicación.
+
+#### Características
+
+- ✅ **Interfaz Tipada**: Servicios con tipos de entrada específicos
+- ✅ **Contexto de Aplicación**: Acceso a AppContext y Locale
+- ✅ **Factory Pattern**: Gestión centralizada de ejecución
+- ✅ **Fire-and-Forget**: Ejecución asíncrona sin bloquear
+- ✅ **Fallback Automático**: Si no hay executor, usa goroutine simple
+
+#### Definir un BackgroundService
+
+```go
+import (
+    app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/services"
+)
+
+// Definir el servicio
+type SendWelcomeEmailService struct {
+    emailProvider contracts.IEmailProvider
+}
+
+func NewSendWelcomeEmailService(emailProvider contracts.IEmailProvider) *SendWelcomeEmailService {
+    return &SendWelcomeEmailService{
+        emailProvider: emailProvider,
+    }
+}
+
+// Implementar la interfaz BackgroundService
+func (s *SendWelcomeEmailService) Execute(
+    ctx *app_context.AppContext,
+    locale locales.LocaleTypeEnum,
+    input UserEmailData,
+) error {
+    // Lógica del servicio
+    email := renderWelcomeEmail(input, locale)
+    return s.emailProvider.SendEmail(email)
+}
+
+func (s *SendWelcomeEmailService) Name() string {
+    return "SendWelcomeEmailService"
+}
+
+// Tipo de entrada del servicio
+type UserEmailData struct {
+    UserID  uint
+    Email   string
+    Name    string
+}
+```
+
+#### Ejecutar un BackgroundService
+
+```go
+import (
+    "github.com/simon3640/goprojectskeleton/src/application/shared/services"
+)
+
+// Obtener el factory singleton (inicializado en container.go)
+factory := services.GetBackgroundServiceFactory()
+
+// Crear el servicio
+emailService := NewSendWelcomeEmailService(emailProvider)
+
+// Ejecutar en background
+input := UserEmailData{
+    UserID: user.ID,
+    Email: user.Email,
+    Name:  user.Name,
+}
+
+err := services.ExecuteService(
+    factory,
+    emailService,
+    appCtx,
+    locale,
+    input,
+)
+
+if err != nil {
+    // Error al encolar (ej: cola llena)
+    log.Printf("Error al encolar servicio: %v", err)
+}
+```
+
+#### Ejemplo Completo: Servicio de Notificaciones
+
+```go
+// Servicio de notificaciones
+type NotificationService struct {
+    emailProvider contracts.IEmailProvider
+    cacheProvider contracts.ICacheProvider
+}
+
+func NewNotificationService(
+    emailProvider contracts.IEmailProvider,
+    cacheProvider contracts.ICacheProvider,
+) *NotificationService {
+    return &NotificationService{
+        emailProvider: emailProvider,
+        cacheProvider: cacheProvider,
+    }
+}
+
+type NotificationInput struct {
+    UserID    uint
+    Type      string // "welcome", "password_reset", etc.
+    Data      map[string]interface{}
+}
+
+func (s *NotificationService) Execute(
+    ctx *app_context.AppContext,
+    locale locales.LocaleTypeEnum,
+    input NotificationInput,
+) error {
+    // 1. Verificar si el usuario tiene notificaciones deshabilitadas
+    key := fmt.Sprintf("user:%d:notifications:disabled", input.UserID)
+    disabled, _ := s.cacheProvider.Exists(key)
+    if disabled {
+        return nil // Usuario deshabilitó notificaciones
+    }
+
+    // 2. Renderizar template según tipo
+    var template string
+    switch input.Type {
+    case "welcome":
+        template = renderWelcomeEmail(input.Data, locale)
+    case "password_reset":
+        template = renderPasswordResetEmail(input.Data, locale)
+    default:
+        return fmt.Errorf("tipo de notificación desconocido: %s", input.Type)
+    }
+
+    // 3. Enviar email
+    return s.emailProvider.SendEmail(template)
+}
+
+func (s *NotificationService) Name() string {
+    return "NotificationService"
+}
+
+// Uso en un handler
+func CreateUserHandler(ctx HandlerContext) {
+    // ... crear usuario ...
+
+    // Enviar notificación en background
+    notificationService := NewNotificationService(emailProvider, cacheProvider)
+    input := NotificationInput{
+        UserID: user.ID,
+        Type:   "welcome",
+        Data: map[string]interface{}{
+            "name": user.Name,
+            "email": user.Email,
+        },
+    }
+
+    services.ExecuteService(
+        services.GetBackgroundServiceFactory(),
+        notificationService,
+        ctx.AppContext,
+        ctx.Locale,
+        input,
+    )
+}
+```
+
+### 3. DAG con ThenBackground
+
+**ThenBackground** permite ejecutar casos de uso en background después de que un DAG se ejecute exitosamente. Es ideal para tareas que deben ejecutarse después de operaciones principales pero no deben bloquear la respuesta.
+
+#### Características
+
+- ✅ **Integración con DAG**: Se ejecuta automáticamente después de éxito
+- ✅ **Fire-and-Forget**: No bloquea la respuesta principal
+- ✅ **Múltiples Background Steps**: Puedes agregar múltiples tareas en background
+- ✅ **Respeto de Contexto**: Las tareas pueden ser canceladas
+- ✅ **Manejo de Errores**: Los errores se registran pero no afectan el resultado principal
+
+#### Uso Básico
+
+```go
+import (
+    "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+)
+
+// Crear DAG principal
+dag := use_case.NewDag(
+    appCtx,
+    use_case.NewStep(createUserUseCase),
+    locale,
+    executor, // BackgroundExecutor opcional
+)
+
+// Agregar paso en background
+dag = use_case.ThenBackground(
+    dag,
+    use_case.NewStep(sendWelcomeEmailUseCase),
+    "send-welcome-email", // Nombre para logging
+)
+
+// Ejecutar DAG
+result := dag.Execute(userCreate)
+// El email se enviará en background si la creación fue exitosa
+```
+
+#### Ejemplo Completo: Crear Usuario con Tareas en Background
+
+```go
+func CreateUserWithBackgroundTasks(ctx HandlerContext) {
+    // 1. Casos de uso principales (síncronos)
+    createUserUC := usecases_user.NewCreateUserAndPasswordUseCase(...)
+    activateUserUC := usecases_user.NewActivateUserUseCase(...)
+
+    // 2. Casos de uso en background
+    sendWelcomeEmailUC := usecases_user.NewCreateUserSendEmailUseCase(...)
+    sendNotificationUC := usecases_user.NewSendUserNotificationUseCase(...)
+    updateAnalyticsUC := usecases_user.NewUpdateUserAnalyticsUseCase(...)
+
+    // 3. Obtener executor (opcional, si es nil usa goroutines)
+    executor := workers.GetBackgroundExecutor()
+
+    // 4. Construir DAG
+    dag := use_case.NewDag(
+        ctx.AppContext,
+        use_case.NewStep(createUserUC),
+        ctx.Locale,
+        executor,
+    )
+
+    // 5. Agregar paso síncrono
+    dag = use_case.Then(dag, use_case.NewStep(activateUserUC))
+
+    // 6. Agregar pasos en background (se ejecutan solo si todo fue exitoso)
+    dag = use_case.ThenBackground(
+        dag,
+        use_case.NewStep(sendWelcomeEmailUC),
+        "send-welcome-email",
+    )
+    dag = use_case.ThenBackground(
+        dag,
+        use_case.NewStep(sendNotificationUC),
+        "send-notification",
+    )
+    dag = use_case.ThenBackground(
+        dag,
+        use_case.NewStep(updateAnalyticsUC),
+        "update-analytics",
+    )
+
+    // 7. Ejecutar DAG
+    result := dag.Execute(userCreate)
+
+    // 8. Resolver respuesta (las tareas en background se ejecutan asíncronamente)
+    NewRequestResolver[models.User]().ResolveDTO(
+        ctx.ResponseWriter,
+        result,
+        headers,
+    )
+}
+```
+
+#### Flujo de Ejecución
+
+```mermaid
+sequenceDiagram
+    participant Handler as Handler
+    participant DAG as DAG
+    participant UC1 as CreateUser<br/>(Síncrono)
+    participant UC2 as ActivateUser<br/>(Síncrono)
+    participant BG1 as SendEmail<br/>(Background)
+    participant BG2 as Notification<br/>(Background)
+
+    Handler->>DAG: Execute(input)
+    DAG->>UC1: Execute(input)
+    UC1-->>DAG: Success[User]
+    DAG->>UC2: Execute(User)
+    UC2-->>DAG: Success[User]
+    DAG-->>Handler: Return Result[User]
+
+    Note over Handler: Respuesta enviada al cliente
+
+    par Tareas en Background
+        DAG->>BG1: Execute(User) [Async]
+        DAG->>BG2: Execute(User) [Async]
+    end
+
+    BG1-->>DAG: (Fire-and-forget)
+    BG2-->>DAG: (Fire-and-forget)
+```
+
+#### Ejecutar y Esperar Background Tasks
+
+Si necesitas esperar a que las tareas en background se completen (útil en tests o operaciones críticas):
+
+```go
+// Ejecutar y esperar con timeout
+result := dag.ExecuteWithBackground(input, 30*time.Second)
+
+// O esperar indefinidamente
+result := dag.ExecuteWithBackground(input, 0)
+```
+
+### Comparación y Guía de Selección
+
+#### Tabla Comparativa
+
+| Característica | BackgroundExecutor | BackgroundService | DAG ThenBackground |
+|----------------|-------------------|-------------------|---------------------|
+| **Nivel de Abstracción** | Bajo | Medio | Alto |
+| **Tipado** | Genérico (`func(ctx)`) | Tipado (`BackgroundService[Input]`) | Tipado (Use Cases) |
+| **Contexto** | `context.Context` | `AppContext` + `Locale` | `AppContext` + `Locale` |
+| **Integración con DAG** | No | No | Sí |
+| **Casos de Uso** | Tareas genéricas | Servicios de negocio | Casos de uso después de DAG |
+| **Control de Flujo** | Manual | Manual | Automático (después de éxito) |
+| **Manejo de Errores** | Manual | Logging automático | Logging automático |
+
+#### Cuándo Usar Cada Opción
+
+##### Usa BackgroundExecutor cuando:
+
+- ✅ Necesitas ejecutar tareas genéricas sin estructura de negocio
+- ✅ Requieres control total sobre la ejecución
+- ✅ Las tareas no están relacionadas con casos de uso
+- ✅ Ejemplos: procesamiento de archivos, limpieza de cache, sincronización de datos
+
+```go
+// Ejemplo: Limpieza periódica de cache
+executor.Submit(func(ctx context.Context) {
+    cleanExpiredCacheEntries()
+})
+```
+
+##### Usa BackgroundService cuando:
+
+- ✅ Tienes un servicio de negocio bien definido
+- ✅ Necesitas contexto de aplicación (AppContext, Locale)
+- ✅ El servicio tiene entrada tipada
+- ✅ Quieres reutilizar el servicio en múltiples lugares
+- ✅ Ejemplos: envío de emails, notificaciones, reportes
+
+```go
+// Ejemplo: Servicio de reportes
+reportService := NewGenerateReportService(...)
+services.ExecuteService(factory, reportService, appCtx, locale, reportInput)
+```
+
+##### Usa DAG ThenBackground cuando:
+
+- ✅ Necesitas ejecutar casos de uso después de una operación exitosa
+- ✅ Las tareas están relacionadas con el flujo principal
+- ✅ Quieres que se ejecuten automáticamente solo si el DAG fue exitoso
+- ✅ Necesitas múltiples tareas en background relacionadas
+- ✅ Ejemplos: enviar emails después de crear usuario, actualizar analytics después de transacción
+
+```go
+// Ejemplo: Flujo completo con background
+dag = Then(dag, NewStep(mainUseCase))
+dag = ThenBackground(dag, NewStep(emailUseCase), "email")
+dag = ThenBackground(dag, NewStep(analyticsUseCase), "analytics")
+```
+
+### Ejemplos Prácticos Completos
+
+#### Ejemplo 1: Sistema de Notificaciones Completo
+
+```go
+// 1. Definir servicio de notificaciones
+type UserNotificationService struct {
+    emailProvider contracts.IEmailProvider
+    logger        contracts.ILoggerProvider
+}
+
+type NotificationData struct {
+    UserID  uint
+    Type    string
+    Subject string
+    Body    string
+}
+
+func (s *UserNotificationService) Execute(
+    ctx *app_context.AppContext,
+    locale locales.LocaleTypeEnum,
+    input NotificationData,
+) error {
+    s.logger.Info("Enviando notificación", map[string]interface{}{
+        "user_id": input.UserID,
+        "type":    input.Type,
+    })
+
+    email := &Email{
+        To:      getUserEmail(input.UserID),
+        Subject: input.Subject,
+        Body:    input.Body,
+    }
+
+    return s.emailProvider.SendEmail(email)
+}
+
+func (s *UserNotificationService) Name() string {
+    return "UserNotificationService"
+}
+
+// 2. Usar en un handler
+func UpdateUserHandler(ctx HandlerContext) {
+    // ... actualizar usuario ...
+
+    // Enviar notificación en background
+    notificationService := NewUserNotificationService(emailProvider, logger)
+    notificationData := NotificationData{
+        UserID:  user.ID,
+        Type:    "profile_updated",
+        Subject: "Tu perfil ha sido actualizado",
+        Body:    renderNotificationBody(user, ctx.Locale),
+    }
+
+    services.ExecuteService(
+        services.GetBackgroundServiceFactory(),
+        notificationService,
+        ctx.AppContext,
+        ctx.Locale,
+        notificationData,
+    )
+}
+```
+
+#### Ejemplo 2: Procesamiento Asíncrono de Archivos
+
+```go
+// Usando BackgroundExecutor directamente
+type FileProcessor struct {
+    executor *workers.BackgroundExecutor
+}
+
+func (p *FileProcessor) ProcessFileAsync(filePath string) error {
+    executor := workers.GetBackgroundExecutor()
+
+    return executor.Submit(func(ctx context.Context) {
+        // Verificar cancelación
+        select {
+        case <-ctx.Done():
+            log.Printf("Procesamiento cancelado: %s", filePath)
+            return
+        default:
+        }
+
+        // Procesar archivo
+        if err := processFile(filePath); err != nil {
+            log.Printf("Error procesando archivo %s: %v", filePath, err)
+            return
+        }
+
+        // Actualizar estado
+        updateFileStatus(filePath, "processed")
+    })
+}
+```
+
+#### Ejemplo 3: DAG Completo con Múltiples Background Tasks
+
+```go
+func CompleteUserRegistration(ctx HandlerContext) {
+    // Casos de uso principales
+    createUserUC := usecases_user.NewCreateUserAndPasswordUseCase(...)
+    createProfileUC := usecases_user.NewCreateUserProfileUseCase(...)
+
+    // Casos de uso en background
+    sendWelcomeEmailUC := usecases_user.NewSendWelcomeEmailUseCase(...)
+    sendVerificationEmailUC := usecases_user.NewSendVerificationEmailUseCase(...)
+    createUserAnalyticsUC := usecases_user.NewCreateUserAnalyticsUseCase(...)
+    notifyAdminsUC := usecases_user.NewNotifyAdminsNewUserUseCase(...)
+
+    executor := workers.GetBackgroundExecutor()
+
+    // Construir DAG
+    dag := use_case.NewDag(
+        ctx.AppContext,
+        use_case.NewStep(createUserUC),
+        ctx.Locale,
+        executor,
+    )
+
+    // Paso síncrono
+    dag = use_case.Then(dag, use_case.NewStep(createProfileUC))
+
+    // Múltiples tareas en background
+    dag = use_case.ThenBackground(dag, use_case.NewStep(sendWelcomeEmailUC), "welcome-email")
+    dag = use_case.ThenBackground(dag, use_case.NewStep(sendVerificationEmailUC), "verification-email")
+    dag = use_case.ThenBackground(dag, use_case.NewStep(createUserAnalyticsUC), "analytics")
+    dag = use_case.ThenBackground(dag, use_case.NewStep(notifyAdminsUC), "admin-notification")
+
+    // Ejecutar
+    result := dag.Execute(userRegistrationInput)
+
+    // Responder inmediatamente (las tareas en background se ejecutan asíncronamente)
+    NewRequestResolver[models.User]().ResolveDTO(ctx.ResponseWriter, result, headers)
+}
+```
+
+### Mejores Prácticas
+
+#### 1. Selección de Mecanismo
+
+- **Usa el nivel más alto posible**: DAG ThenBackground > BackgroundService > BackgroundExecutor
+- **Mantén la consistencia**: Si ya usas DAG, usa ThenBackground para tareas relacionadas
+- **Separa responsabilidades**: BackgroundExecutor para infraestructura, BackgroundService para negocio
+
+#### 2. Manejo de Errores
+
+```go
+// ✅ Correcto: Logging en background service
+func (s *MyService) Execute(ctx *app_context.AppContext, locale locales.LocaleTypeEnum, input Input) error {
+    if err := doSomething(); err != nil {
+        // Log pero no propagues el error (fire-and-forget)
+        s.logger.Error("Error en background service", err)
+        return err // Se loguea pero no afecta al caller
+    }
+    return nil
+}
+
+// ❌ Incorrecto: Panic en background
+func (s *MyService) Execute(...) error {
+    if err := doSomething(); err != nil {
+        panic(err) // No hacer panic, usar logging
+    }
+}
+```
+
+#### 3. Gestión de Contexto
+
+```go
+// ✅ Correcto: Respetar cancelación
+func (s *MyService) Execute(ctx *app_context.AppContext, locale locales.LocaleTypeEnum, input Input) error {
+    // Verificar cancelación antes de operaciones largas
+    select {
+    case <-ctx.Done():
+        return ctx.Err()
+    default:
+    }
+
+    // Operación que puede tardar
+    return longRunningOperation()
+}
+```
+
+#### 4. Configuración de Workers
+
+```go
+// En settings o configuración
+BackgroundWorkers: 8,      // Ajustar según carga
+BackgroundQueueSize: 200,  // Ajustar según picos de tráfico
+```
+
+#### 5. Testing
+
+```go
+// En tests, puedes usar un executor pequeño
+func TestMyService(t *testing.T) {
+    ctx := context.Background()
+    executor := workers.NewBackgroundExecutor(ctx, 2, 10)
+    executor.Start()
+    defer executor.Stop()
+
+    factory := services.NewBackgroundServiceFactory(
+        services.NewBackgroundExecutorAdapter(executor),
+    )
+
+    // Test tu servicio
+    service := NewMyService(...)
+    err := services.ExecuteService(factory, service, appCtx, locale, input)
+    assert.NoError(t, err)
+
+    // Esperar a que se complete
+    executor.Wait()
+}
+```
+
+### Resumen
+
+| Necesidad | Solución Recomendada | Razón |
+|-----------|---------------------|-------|
+| Tarea genérica simple | `BackgroundExecutor` | Control directo, sin abstracciones |
+| Servicio de negocio reutilizable | `BackgroundService` | Tipado, contexto de aplicación |
+| Tarea después de DAG exitoso | `DAG ThenBackground` | Integración automática, flujo claro |
+| Múltiples tareas relacionadas | `DAG ThenBackground` | Agregar múltiples pasos fácilmente |
+| Procesamiento de archivos | `BackgroundExecutor` | Tareas de infraestructura |
+| Envío de emails/notificaciones | `BackgroundService` | Servicios de negocio bien definidos |
+
+---
+
+## 📊 Observabilidad
+
+**GoProjectSkeleton** incluye un stack completo de observabilidad con **OpenTelemetry**, **Prometheus**, **Jaeger** y **Grafana**. El sistema proporciona trazado distribuido, recolección de métricas y logging estructurado en todas las capas de la aplicación incluyendo Casos de Uso, DAGs y Servicios en Background.
+
+### Visión General
+
+El sistema de observabilidad sigue estos principios:
+
+1. **Instrumentación Siempre Activa**: Todos los componentes están instrumentados por defecto
+2. **Fallback No-Op**: Cuando la observabilidad está deshabilitada, se usan implementaciones no-op
+3. **Cumplimiento de Arquitectura Limpia**: Los contratos de observabilidad viven en la capa de aplicación
+4. **Propagación Automática de Trazas**: Las trazas se propagan a través de límites de contexto
+
+### Arquitectura de Observabilidad
+
+```mermaid
+graph TB
+    subgraph Application["📱 Aplicación"]
+        UC[Casos de Uso<br/>Spans Automáticos]
+        DAG[DAG Steps<br/>Ejecución Paralela/Secuencial]
+        BG[Servicios Background<br/>Trazas Asíncronas]
+        HTTP[Handlers HTTP<br/>Métricas de Request]
+    end
+
+    subgraph Instrumentation["🔧 Capa de Instrumentación"]
+        Tracer[ITracer<br/>Gestión de Spans]
+        Metrics[IMetricsCollector<br/>Contadores/Histogramas]
+        Logger[ILoggerProvider<br/>Logs Estructurados]
+    end
+
+    subgraph Infrastructure["🏗️ Infraestructura"]
+        OTEL[OpenTelemetry SDK<br/>Exportadores]
+        PROM[Prometheus<br/>Almacenamiento de Métricas]
+        JAEGER[Jaeger<br/>Backend de Trazas]
+    end
+
+    subgraph Visualization["📊 Visualización"]
+        GRAFANA[Grafana<br/>Dashboards]
+        JAEGER_UI[Jaeger UI<br/>Explorador de Trazas]
+        PROM_UI[Prometheus UI<br/>Explorador de Métricas]
+    end
+
+    UC --> Tracer
+    DAG --> Tracer
+    BG --> Tracer
+    HTTP --> Metrics
+
+    Tracer --> OTEL
+    Metrics --> OTEL
+    Logger --> OTEL
+
+    OTEL --> PROM
+    OTEL --> JAEGER
+
+    PROM --> GRAFANA
+    JAEGER --> JAEGER_UI
+    PROM --> PROM_UI
+
+    style UC fill:#e3f2fd
+    style DAG fill:#e3f2fd
+    style BG fill:#e3f2fd
+    style GRAFANA fill:#c8e6c9
+    style JAEGER fill:#fff9c4
+    style PROM fill:#ffcdd2
+```
+
+### Configuración
+
+La observabilidad se configura a través de variables de entorno:
+
+```bash
+# Configuración OpenTelemetry
+OTEL_ENABLED=true                           # Habilitar/deshabilitar observabilidad
+OTEL_SERVICE_NAME=goprojectskeleton         # Nombre del servicio para trazas
+OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317  # Endpoint del colector OTLP
+OTEL_EXPORTER_OTLP_INSECURE=true            # Usar conexión insegura (desarrollo)
+OTEL_TRACES_SAMPLER=always_on               # Estrategia de muestreo de trazas
+OTEL_METRICS_EXPORTER=prometheus            # Exportador de métricas
+OTEL_LOGS_EXPORTER=otlp                     # Exportador de logs
+
+# Configuración de Prometheus
+PROMETHEUS_PORT=9090                        # Puerto del servidor Prometheus
+METRICS_PATH=/metrics                       # Ruta de exposición de métricas
+
+# Configuración del Colector OpenTelemetry
+OTEL_COLLECTOR_HOST=otel-collector          # Host del colector
+OTEL_COLLECTOR_GRPC_PORT=4317               # Puerto gRPC del colector
+OTEL_COLLECTOR_HTTP_PORT=4318               # Puerto HTTP del colector
+```
+
+### Componentes de Observabilidad
+
+#### Interfaz ITracer
+
+El tracer proporciona gestión de spans para trazado distribuido:
+
+```go
+// application/contracts/observability/tracer.go
+type ITracer interface {
+    // StartSpan crea un nuevo span con el nombre dado
+    StartSpan(ctx context.Context, name string, opts ...SpanOption) (context.Context, ISpan)
+
+    // StartSpanWithParent crea un span hijo de un span padre
+    StartSpanWithParent(ctx context.Context, parent ISpan, name string, opts ...SpanOption) (context.Context, ISpan)
+
+    // ExtractSpanContext extrae el contexto del span de los carriers (headers HTTP)
+    ExtractSpanContext(ctx context.Context, carrier map[string]string) context.Context
+
+    // InjectSpanContext inyecta el contexto del span en carriers para propagación
+    InjectSpanContext(ctx context.Context, carrier map[string]string)
+}
+```
+
+#### Interfaz ISpan
+
+Los spans representan operaciones individuales dentro de una traza:
+
+```go
+// application/contracts/observability/span.go
+type ISpan interface {
+    // End completa el span
+    End()
+
+    // SetStatus establece el estado del span (OK, Error)
+    SetStatus(code SpanStatusCode, description string)
+
+    // SetAttributes agrega atributos clave-valor al span
+    SetAttributes(attrs ...SpanAttribute)
+
+    // RecordError registra un error en el span
+    RecordError(err error)
+
+    // AddEvent agrega un evento con timestamp al span
+    AddEvent(name string, attrs ...SpanAttribute)
+
+    // SpanContext retorna el contexto del span para propagación
+    SpanContext() SpanContext
+}
+```
+
+#### Interfaz IMetricsCollector
+
+El recolector de métricas proporciona contadores, gauges e histogramas:
+
+```go
+// application/contracts/observability/metrics_collector.go
+type IMetricsCollector interface {
+    // Counter incrementa un contador
+    Counter(name string, value float64, labels ...MetricLabel)
+
+    // Gauge establece un valor de gauge
+    Gauge(name string, value float64, labels ...MetricLabel)
+
+    // Histogram registra un valor en un histograma
+    Histogram(name string, value float64, labels ...MetricLabel)
+
+    // Timer registra una duración
+    Timer(name string, duration time.Duration, labels ...MetricLabel)
+}
+```
+
+#### Interfaz ILoggerProvider (Mejorado)
+
+El logger soporta logs estructurados con correlación de trazas:
+
+```go
+// application/contracts/providers/logger_provider.go
+type ILoggerProvider interface {
+    // Métodos básicos de logging
+    Info(msg string, fields ...map[string]interface{})
+    Error(msg string, err error, fields ...map[string]interface{})
+    Debug(msg string, fields ...map[string]interface{})
+    Warn(msg string, fields ...map[string]interface{})
+
+    // WithContext crea un logger con contexto de traza
+    WithContext(ctx context.Context) ILoggerProvider
+
+    // WithFields crea un logger con campos predeterminados
+    WithFields(fields map[string]interface{}) ILoggerProvider
+}
+```
+
+### Observabilidad en Casos de Uso
+
+Los Casos de Uso se instrumentan automáticamente con trazado y métricas:
+
+```go
+// application/modules/user/use_cases/create_user.go
+type CreateUserUseCase struct {
+    log         contracts.ILoggerProvider
+    repo        contracts.IUserRepository
+    tracer      observability.ITracer
+    metrics     observability.IMetricsCollector
+}
+
+func (uc *CreateUserUseCase) Execute(
+    ctx context.Context,
+    locale locales.LocaleTypeEnum,
+    input dtos.UserCreate,
+) *usecase.UseCaseResult[models.User] {
+    // Iniciar span para este caso de uso
+    ctx, span := uc.tracer.StartSpan(ctx, "CreateUserUseCase.Execute",
+        observability.WithSpanKind(observability.SpanKindInternal),
+        observability.WithAttributes(
+            observability.String("user.email", input.Email),
+            observability.String("locale", string(locale)),
+        ),
+    )
+    defer span.End()
+
+    result := usecase.NewUseCaseResult[models.User]()
+    startTime := time.Now()
+
+    // Validar entrada
+    uc.validate(ctx, input, result)
+    if result.HasError() {
+        span.SetStatus(observability.SpanStatusError, "validation failed")
+        span.RecordError(fmt.Errorf("validation error: %v", result.Error))
+        uc.metrics.Counter("usecase.create_user.validation_errors", 1,
+            observability.Label("error_code", string(result.StatusCode)),
+        )
+        return result
+    }
+
+    // Crear usuario
+    user, err := uc.repo.Create(input)
+    if err != nil {
+        span.SetStatus(observability.SpanStatusError, err.ErrMsg)
+        span.RecordError(fmt.Errorf(err.ErrMsg))
+        uc.metrics.Counter("usecase.create_user.errors", 1)
+        result.SetError(err.Code, err.Context)
+        return result
+    }
+
+    // Registrar éxito
+    span.SetStatus(observability.SpanStatusOK, "user created")
+    span.SetAttributes(observability.Int64("user.id", int64(user.ID)))
+
+    // Registrar métricas
+    uc.metrics.Counter("usecase.create_user.success", 1)
+    uc.metrics.Timer("usecase.create_user.duration", time.Since(startTime))
+
+    result.SetData(status.Created, *user, "User created successfully")
+    return result
+}
+```
+
+### Observabilidad en DAG
+
+El sistema DAG proporciona instrumentación automática para pasos secuenciales, paralelos y en background:
+
+#### Steps Secuenciales
+
+```go
+// Los steps secuenciales crean spans hijos automáticamente
+dag := use_case.NewDag(
+    appCtx,
+    use_case.NewStep(createUserUC),
+    locale,
+    executor,
+)
+dag = use_case.Then(dag, use_case.NewStep(sendEmailUC))
+
+// Jerarquía de spans resultante:
+// DAG.Execute
+// ├── Step[0]: CreateUserUseCase
+// └── Step[1]: SendEmailUseCase
+```
+
+#### Steps Paralelos
+
+```go
+// Los steps paralelos crean spans hermanos con el mismo padre
+dag := use_case.NewDag(appCtx, use_case.NewStep(mainUC), locale, executor)
+dag = use_case.ThenParallel(dag,
+    use_case.NewStep(notifyUC),
+    use_case.NewStep(analyticsUC),
+    use_case.NewStep(auditUC),
+)
+
+// Jerarquía de spans resultante:
+// DAG.Execute
+// ├── Step[0]: MainUseCase
+// └── Parallel
+//     ├── ParallelStep[0]: NotifyUseCase
+//     ├── ParallelStep[1]: AnalyticsUseCase
+//     └── ParallelStep[2]: AuditUseCase
+```
+
+#### Steps en Background
+
+```go
+// Los steps en background usan span links para mantener la correlación de trazas
+dag = use_case.ThenBackground(
+    dag,
+    use_case.NewStep(sendWelcomeEmailUC),
+    "send-welcome-email",
+)
+
+// Jerarquía de spans resultante:
+// DAG.Execute (completa inmediatamente)
+// ├── Step[0]: CreateUserUseCase
+// └── BackgroundStep: SendWelcomeEmailUseCase
+//     └── [Link al span padre del DAG]
+```
+
+### Observabilidad en Servicios Background
+
+Los servicios en background se instrumentan automáticamente con span links:
+
+```go
+// application/shared/services/background_service.go
+type ObservableBackgroundService[I any] struct {
+    service BackgroundService[I]
+    tracer  observability.ITracer
+    metrics observability.IMetricsCollector
+}
+
+func (s *ObservableBackgroundService[I]) Execute(
+    ctx *app_context.AppContext,
+    locale locales.LocaleTypeEnum,
+    input I,
+) error {
+    // Crear span con link al span padre (si existe)
+    spanCtx, span := s.tracer.StartSpan(ctx.Context(), s.service.Name(),
+        observability.WithSpanKind(observability.SpanKindInternal),
+        observability.WithFollowsFrom(ctx.Context()), // Span link, no hijo
+    )
+    defer span.End()
+
+    startTime := time.Now()
+
+    // Ejecutar el servicio
+    err := s.service.Execute(
+        app_context.WithContext(ctx, spanCtx),
+        locale,
+        input,
+    )
+
+    // Registrar métricas
+    duration := time.Since(startTime)
+    s.metrics.Timer("background_service.duration", duration,
+        observability.Label("service", s.service.Name()),
+    )
+
+    if err != nil {
+        span.SetStatus(observability.SpanStatusError, err.Error())
+        span.RecordError(err)
+        s.metrics.Counter("background_service.errors", 1,
+            observability.Label("service", s.service.Name()),
+        )
+        return err
+    }
+
+    span.SetStatus(observability.SpanStatusOK, "completed")
+    s.metrics.Counter("background_service.success", 1,
+        observability.Label("service", s.service.Name()),
+    )
+
+    return nil
+}
+```
+
+### Instrumentación HTTP
+
+Los handlers HTTP se instrumentan automáticamente para métricas de request:
+
+```go
+// infrastructure/server/middlewares/observability.go
+func ObservabilityMiddleware(metrics observability.IMetricsCollector, tracer observability.ITracer) gin.HandlerFunc {
+    return func(c *gin.Context) {
+        // Extraer contexto de traza de headers entrantes
+        ctx := tracer.ExtractSpanContext(c.Request.Context(), extractHeaders(c))
+
+        // Iniciar span para el request HTTP
+        ctx, span := tracer.StartSpan(ctx, fmt.Sprintf("HTTP %s %s", c.Request.Method, c.FullPath()),
+            observability.WithSpanKind(observability.SpanKindServer),
+            observability.WithAttributes(
+                observability.String("http.method", c.Request.Method),
+                observability.String("http.url", c.Request.URL.String()),
+                observability.String("http.user_agent", c.Request.UserAgent()),
+            ),
+        )
+        defer span.End()
+
+        // Actualizar contexto del request
+        c.Request = c.Request.WithContext(ctx)
+
+        startTime := time.Now()
+
+        // Procesar request
+        c.Next()
+
+        // Registrar métricas
+        duration := time.Since(startTime)
+        statusCode := c.Writer.Status()
+
+        span.SetAttributes(
+            observability.Int("http.status_code", statusCode),
+            observability.Int64("http.response_size", int64(c.Writer.Size())),
+        )
+
+        if statusCode >= 400 {
+            span.SetStatus(observability.SpanStatusError, fmt.Sprintf("HTTP %d", statusCode))
+        } else {
+            span.SetStatus(observability.SpanStatusOK, "")
+        }
+
+        metrics.Histogram("http_request_duration_seconds", duration.Seconds(),
+            observability.Label("method", c.Request.Method),
+            observability.Label("path", c.FullPath()),
+            observability.Label("status", fmt.Sprintf("%d", statusCode)),
+        )
+
+        metrics.Counter("http_requests_total", 1,
+            observability.Label("method", c.Request.Method),
+            observability.Label("path", c.FullPath()),
+            observability.Label("status", fmt.Sprintf("%d", statusCode)),
+        )
+    }
+}
+```
+
+### Stack de Grafana
+
+El proyecto incluye una configuración preconfigurada de Grafana con:
+
+#### Fuentes de Datos
+
+```yaml
+# docker/grafana/provisioning/datasources/datasources.yaml
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+
+  - name: Jaeger
+    type: jaeger
+    access: proxy
+    url: http://jaeger:16686
+```
+
+#### Dashboards Incluidos
+
+1. **Métricas de API** (`api-metrics.json`)
+   - Tasa de requests por endpoint
+   - Latencia de respuesta (p50, p90, p99)
+   - Tasa de errores por código de estado
+   - Volumen de requests por método
+
+2. **Métricas de Casos de Uso** (`usecase-metrics.json`)
+   - Tasa de éxito/error por caso de uso
+   - Duración de ejecución
+   - Errores de validación
+   - Distribución de throughput
+
+3. **Métricas de Background** (`background-metrics.json`)
+   - Tamaño de cola de servicios background
+   - Duración de procesamiento
+   - Tasa de errores
+   - Utilización de workers
+
+4. **Métricas de DAG** (`dag-metrics.json`)
+   - Duración de ejecución del DAG
+   - Tiempo de ejecución de pasos paralelos
+   - Rendimiento de tareas background
+   - Propagación de errores
+
+### Configuración Docker
+
+El stack de observabilidad está incluido en `docker-compose.dev.yml`:
+
+```yaml
+services:
+  # Colector OpenTelemetry
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # gRPC OTLP
+      - "4318:4318"   # HTTP OTLP
+      - "8888:8888"   # Métricas del colector
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  # Jaeger
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "14268:14268" # Collector HTTP
+      - "14250:14250" # Collector gRPC
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+```
+
+### Crear un Caso de Uso con Observabilidad
+
+Aquí tienes una guía completa para crear un caso de uso instrumentado:
+
+```go
+package use_cases
+
+import (
+    "context"
+    "fmt"
+    "time"
+
+    "github.com/simon3640/goprojectskeleton/src/application/contracts/observability"
+    "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+    "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs/dtos"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/locales"
+    "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
+    "github.com/simon3640/goprojectskeleton/src/domain/models"
+)
+
+type CreateOrderUseCase struct {
+    log         providers.ILoggerProvider
+    repo        repositories.IOrderRepository
+    tracer      observability.ITracer
+    metrics     observability.IMetricsCollector
+}
+
+func NewCreateOrderUseCase(
+    log providers.ILoggerProvider,
+    repo repositories.IOrderRepository,
+    tracer observability.ITracer,
+    metrics observability.IMetricsCollector,
+) *CreateOrderUseCase {
+    return &CreateOrderUseCase{
+        log:     log,
+        repo:    repo,
+        tracer:  tracer,
+        metrics: metrics,
+    }
+}
+
+func (uc *CreateOrderUseCase) Execute(
+    ctx context.Context,
+    locale locales.LocaleTypeEnum,
+    input dtos.OrderCreate,
+) *use_case.UseCaseResult[models.Order] {
+    // 1. Iniciar span con atributos
+    ctx, span := uc.tracer.StartSpan(ctx, "CreateOrderUseCase.Execute",
+        observability.WithSpanKind(observability.SpanKindInternal),
+        observability.WithAttributes(
+            observability.String("order.customer_id", input.CustomerID),
+            observability.Float64("order.total", input.Total),
+            observability.Int("order.items_count", len(input.Items)),
+        ),
+    )
+    defer span.End()
+
+    result := use_case.NewUseCaseResult[models.Order]()
+    startTime := time.Now()
+
+    // 2. Usar logger con contexto para correlación de trazas
+    log := uc.log.WithContext(ctx)
+    log.Info("Creating new order", map[string]interface{}{
+        "customer_id": input.CustomerID,
+        "items_count": len(input.Items),
+    })
+
+    // 3. Agregar evento para operaciones significativas
+    span.AddEvent("validating_input")
+
+    // 4. Validar entrada
+    if err := input.Validate(); err != nil {
+        span.SetStatus(observability.SpanStatusError, "validation failed")
+        span.RecordError(err)
+        uc.metrics.Counter("usecase.create_order.validation_errors", 1,
+            observability.Label("reason", err.Error()),
+        )
+        result.SetValidationError(err.Error())
+        return result
+    }
+
+    // 5. Agregar evento para llamada al repositorio
+    span.AddEvent("calling_repository")
+
+    // 6. Crear orden (el repositorio también puede crear su propio span hijo)
+    order, repoErr := uc.repo.Create(input)
+    if repoErr != nil {
+        span.SetStatus(observability.SpanStatusError, repoErr.ErrMsg)
+        span.RecordError(fmt.Errorf(repoErr.ErrMsg))
+        uc.metrics.Counter("usecase.create_order.errors", 1,
+            observability.Label("error_type", "repository"),
+        )
+        log.Error("Failed to create order", fmt.Errorf(repoErr.ErrMsg), nil)
+        result.SetError(repoErr.Code, repoErr.Context)
+        return result
+    }
+
+    // 7. Registrar métricas de éxito
+    duration := time.Since(startTime)
+    uc.metrics.Counter("usecase.create_order.success", 1)
+    uc.metrics.Timer("usecase.create_order.duration", duration)
+    uc.metrics.Histogram("order.total_amount", input.Total,
+        observability.Label("currency", input.Currency),
+    )
+
+    // 8. Establecer estado de éxito y agregar atributos del resultado
+    span.SetStatus(observability.SpanStatusOK, "order created")
+    span.SetAttributes(
+        observability.String("order.id", order.ID),
+        observability.String("order.status", order.Status),
+    )
+
+    log.Info("Order created successfully", map[string]interface{}{
+        "order_id": order.ID,
+        "duration_ms": duration.Milliseconds(),
+    })
+
+    result.SetData(status.Created, *order, "Order created successfully")
+    return result
+}
+```
+
+### Implementación No-Op
+
+Cuando la observabilidad está deshabilitada, se usan implementaciones no-op:
+
+```go
+// application/shared/observability/noop/noop_tracer.go
+type NoopTracer struct{}
+
+func (t *NoopTracer) StartSpan(ctx context.Context, name string, opts ...observability.SpanOption) (context.Context, observability.ISpan) {
+    return ctx, &NoopSpan{}
+}
+
+type NoopSpan struct{}
+
+func (s *NoopSpan) End()                                                    {}
+func (s *NoopSpan) SetStatus(code observability.SpanStatusCode, desc string) {}
+func (s *NoopSpan) SetAttributes(attrs ...observability.SpanAttribute)       {}
+func (s *NoopSpan) RecordError(err error)                                   {}
+func (s *NoopSpan) AddEvent(name string, attrs ...observability.SpanAttribute) {}
+```
+
+### Acceder a los Dashboards
+
+Una vez que los servicios estén corriendo:
+
+| Servicio | URL | Descripción |
+|----------|-----|-------------|
+| **Grafana** | `http://localhost:3001` | Dashboards y alertas (admin/admin) |
+| **Jaeger UI** | `http://localhost:16686` | Explorador de trazas |
+| **Prometheus** | `http://localhost:9090` | Consultas de métricas |
+
+### Mejores Prácticas
+
+1. **Siempre propagar contexto**: Pasar `context.Context` a través de todas las capas
+2. **Usar nombres de span significativos**: `{Componente}.{Operación}` (ej: `UserRepository.Create`)
+3. **Agregar atributos relevantes**: Incluir IDs de negocio, estados, conteos
+4. **Registrar errores apropiadamente**: Usar `span.RecordError()` para excepciones
+5. **Usar eventos para hitos**: Agregar eventos para operaciones significativas
+6. **Mantener cardinalidad baja**: Evitar etiquetas de alta cardinalidad en métricas
+7. **Usar muestreo**: Configurar muestreo apropiado para producción
+
+---
+
 ## Virtudes y Beneficios
 
 ### 1. Arquitectura Sólida y Escalable
@@ -1844,6 +3276,23 @@ El DAG ejecuta:
 - **Optimizaciones**: Cache, pooling, etc.
 - **Serverless ready**: Fácil migración a serverless
 
+### 11. Observabilidad
+
+#### ✅ Trazado Distribuido
+- **OpenTelemetry**: Instrumentación estándar de la industria
+- **Jaeger**: Visualización y análisis de trazas
+- **Propagación de contexto**: Trazas a través de límites de servicios
+
+#### ✅ Métricas
+- **Prometheus**: Recolección y almacenamiento de métricas
+- **Grafana**: Dashboards y alertas
+- **Métricas personalizadas**: Métricas de casos de uso y negocio
+
+#### ✅ Logging
+- **Logging estructurado**: Logs en formato JSON
+- **Correlación de trazas**: Logs conectados a trazas
+- **Niveles configurables**: Info, Debug, Error, Warn
+
 ### Beneficios para Iniciar un Proyecto
 
 1. **Ahorro de Tiempo**
@@ -1887,6 +3336,8 @@ El DAG ejecuta:
 | **Tests** | 20+ archivos de test |
 | **Templates** | 6+ templates HTML |
 | **Idiomas Soportados** | 2 (Español, Inglés) |
+| **Componentes Observabilidad** | 4 (OpenTelemetry, Prometheus, Jaeger, Grafana) |
+| **Dashboards Grafana** | 4 dashboards preconfigurados |
 
 ## Estructura del Proyecto - Capa por Capa
 
@@ -1914,7 +3365,10 @@ GoProjectSkeleton/
 │   ├── docker-compose.dev.yml
 │   ├── docker-compose.test.yml
 │   ├── docker-compose.e2e.yml
-│   └── db/                  # Configuración de base de datos
+│   ├── db/                  # Configuración de base de datos
+│   ├── grafana/             # Dashboards y datasources de Grafana
+│   ├── otel/                # Configuración del colector OpenTelemetry
+│   └── prometheus/          # Configuración de Prometheus
 ├── tests/                   # 🧪 Tests del proyecto
 │   ├── integration/         # Tests de integración
 │   └── e2e/                 # Tests end-to-end (Bruno)
@@ -2179,6 +3633,25 @@ Interfaces de proveedores externos:
   - `Render()`
 
 - **`status_provider.go`**: Interfaz para estado del sistema
+
+##### `/src/application/contracts/observability/`
+
+Interfaces de observabilidad:
+
+- **`tracer.go`**: Interfaz para trazado distribuido
+  - `StartSpan()`, `StartSpanWithParent()`, `ExtractSpanContext()`, `InjectSpanContext()`
+
+- **`span.go`**: Interfaz para spans individuales
+  - `End()`, `SetStatus()`, `SetAttributes()`, `RecordError()`, `AddEvent()`
+
+- **`metrics_collector.go`**: Interfaz para métricas
+  - `Counter()`, `Gauge()`, `Histogram()`, `Timer()`
+
+- **`logger.go`**: Interfaz extendida para logging con trazas
+  - `WithContext()`, `WithFields()`
+
+- **`clock.go`**: Interfaz para abstracción de tiempo
+  - `Now()`, `Since()`
 
 ##### `/src/application/contracts/repositories/`
 
@@ -2511,6 +3984,35 @@ Implementaciones de proveedores.
 
 - **`status_provider.go`**: Implementación de estado
 
+#### `/src/infrastructure/otel/`
+
+Implementación de OpenTelemetry para observabilidad.
+
+- **`otel_init.go`**: Inicialización del SDK de OpenTelemetry
+  - Configuración de exportadores (OTLP, Prometheus)
+  - Configuración de muestreo de trazas
+  - Configuración de proveedores de métricas
+
+- **`otel_tracer.go`**: Implementación del tracer con OpenTelemetry
+  - Implementa `ITracer`
+  - Gestión de spans con OpenTelemetry SDK
+  - Propagación de contexto W3C
+
+- **`otel_span.go`**: Implementación de spans con OpenTelemetry
+  - Implementa `ISpan`
+  - Wrapper sobre spans de OpenTelemetry
+  - Conversión de atributos y estados
+
+- **`otel_metrics.go`**: Implementación de métricas con OpenTelemetry
+  - Implementa `IMetricsCollector`
+  - Contadores, histogramas y gauges
+  - Integración con Prometheus
+
+- **`otel_logger.go`**: Logger con correlación de trazas
+  - Implementa `ILoggerProvider` extendido
+  - Inyección automática de trace_id y span_id
+  - Logs estructurados en formato JSON
+
 #### `/src/infrastructure/repositories/`
 
 Implementaciones de repositorios.
@@ -2640,6 +4142,13 @@ Implementación para **Azure Functions**:
 - **`dockerfile.integration`**: Dockerfile de integración
 - **`db/`**: Configuración de base de datos
   - `Dockerfile`, `create.sql`
+- **`grafana/`**: Configuración de Grafana
+  - `provisioning/datasources/`: Configuración de fuentes de datos (Prometheus, Jaeger)
+  - `dashboards/`: Dashboards JSON preconfigurados
+- **`otel/`**: Configuración de OpenTelemetry
+  - `otel-collector-config.yaml`: Configuración del colector OTLP
+- **`prometheus/`**: Configuración de Prometheus
+  - `prometheus.yml`: Configuración de scraping de métricas
 
 ### `/tests/` - Tests
 
@@ -3670,6 +5179,13 @@ graph TB
             Swagger[Swagger Server<br/>Port: 8081<br/>Independent]
         end
 
+        subgraph Observability["📊 Observabilidad"]
+            OTELCollector[OTEL Collector<br/>Port: 4317/4318]
+            Prometheus[(Prometheus<br/>Port: 9090)]
+            Jaeger[Jaeger<br/>Port: 16686]
+            Grafana[Grafana<br/>Port: 3001]
+        end
+
         subgraph DevTools["Herramientas de Desarrollo"]
             Mailpit[Mailpit<br/>Port: 8025<br/>Email Testing]
             RedisCommander[Redis Commander<br/>Port: 18081<br/>Redis UI]
@@ -3679,6 +5195,12 @@ graph TB
     App -->|GORM| PostgreSQL
     App -->|go-redis| Redis
     App -->|SMTP| Mailpit
+    App -->|OTLP| OTELCollector
+
+    OTELCollector --> Prometheus
+    OTELCollector --> Jaeger
+    Prometheus --> Grafana
+    Jaeger --> Grafana
 
     Swagger -.->|Documentation| App
     RedisCommander -->|UI| Redis
@@ -3688,6 +5210,10 @@ graph TB
     style Redis fill:#ffcdd2
     style Mailpit fill:#fff9c4
     style RedisCommander fill:#f3e5f5
+    style OTELCollector fill:#fff9c4
+    style Prometheus fill:#ffcdd2
+    style Jaeger fill:#e3f2fd
+    style Grafana fill:#c8e6c9
 ```
 
 ### Diagrama de Despliegue
@@ -3753,6 +5279,12 @@ El proyecto incluye configuración Docker para desarrollo:
 - **Redis**: Cache y sesiones
 - **Mailpit**: Servidor de email para desarrollo
 - **Redis Commander**: Interfaz web para Redis (puerto 18081)
+
+**Servicios de Observabilidad**:
+- **OTEL Collector**: Colector OpenTelemetry (puertos 4317/4318)
+- **Prometheus**: Almacenamiento de métricas (puerto 9090)
+- **Jaeger**: Backend de trazas distribuidas (puerto 16686)
+- **Grafana**: Dashboards y visualización (puerto 3001)
 
 **Servicios de Testing E2E** (docker-compose.e2e.yml):
 - **Aplicación**: Servidor Go para tests E2E
@@ -3876,6 +5408,358 @@ spec:
 - ✅ **Separación de responsabilidades**: Documentación separada de la lógica de negocio
 - ✅ **Diferentes entornos**: Diferentes versiones de documentación para dev/staging/prod
 - ✅ **CDN y caching**: Servir documentación desde CDN para mejor rendimiento
+
+---
+
+## Despliegue con GitHub Actions
+
+**GoProjectSkeleton** incluye un flujo de trabajo completo de GitHub Actions para el despliegue automatizado a plataformas cloud de AWS y Azure. El flujo de trabajo soporta el aprovisionamiento de infraestructura con Terraform y el despliegue automatizado de funciones.
+
+### Resumen
+
+El flujo de trabajo de despliegue (`deploy.yml`) proporciona:
+
+- ✅ **Soporte multi-cloud**: Desplegar a AWS o Azure
+- ✅ **Gestión de entornos**: Despliegues separados para desarrollo, staging y producción
+- ✅ **Integración con Terraform**: Infraestructura como Código con acciones plan, apply y destroy
+- ✅ **Despliegue automatizado de funciones**: Desplegar Lambda/Functions después de la infraestructura (solo AWS)
+- ✅ **Artefactos de plan**: Subir planes de Terraform para revisión
+- ✅ **Verificaciones de seguridad**: Prevenir destrucción accidental de producción
+
+### Flujo de Despliegue
+
+```mermaid
+graph TB
+    subgraph Trigger["🚀 Activación del Flujo"]
+        Manual[Ejecución Manual<br/>GitHub Actions UI]
+    end
+
+    subgraph Inputs["📋 Entradas del Flujo"]
+        Cloud[Proveedor Cloud<br/>AWS o Azure]
+        Env[Entorno<br/>dev/staging/prod]
+        Action[Acción Terraform<br/>plan/apply/destroy]
+        DeployFunc[Desplegar Funciones<br/>Solo AWS]
+    end
+
+    subgraph Setup["⚙️ Fase de Configuración"]
+        Checkout[Checkout Código]
+        GoSetup[Configurar Go 1.25.5]
+        TfSetup[Instalar Terraform 1.14.1]
+        Creds[Configurar Credenciales Cloud]
+    end
+
+    subgraph Build["🔨 Fase de Construcción"]
+        Deps[Descargar Dependencias]
+        GenAWS[Generar Funciones AWS<br/>si AWS]
+        GenAzure[Generar Funciones Azure<br/>si Azure]
+        Tfvars[Crear terraform.tfvars]
+    end
+
+    subgraph Terraform["🏗️ Fase Terraform"]
+        Init[Terraform Init]
+        Validate[Terraform Validate]
+        Plan[Terraform Plan<br/>si no es destroy]
+        UploadPlan[Subir Artefacto Plan<br/>si acción plan]
+        Apply[Terraform Apply<br/>si acción apply]
+        Destroy[Terraform Destroy<br/>si acción destroy]
+    end
+
+    subgraph Deploy["📦 Fase de Despliegue"]
+        DeployLambda[Desplegar Funciones Lambda<br/>Solo AWS]
+        Output[Terraform Output]
+    end
+
+    Manual --> Cloud
+    Manual --> Env
+    Manual --> Action
+    Manual --> DeployFunc
+
+    Cloud --> Checkout
+    Env --> Checkout
+    Action --> Checkout
+
+    Checkout --> GoSetup
+    GoSetup --> TfSetup
+    TfSetup --> Creds
+    Creds --> Deps
+
+    Deps --> GenAWS
+    Deps --> GenAzure
+    GenAWS --> Tfvars
+    GenAzure --> Tfvars
+
+    Tfvars --> Init
+    Init --> Validate
+    Validate --> Plan
+    Plan --> UploadPlan
+    Plan --> Apply
+    Apply --> DeployLambda
+    DeployLambda --> Output
+
+    Validate --> Destroy
+    Destroy --> Output
+
+    style Manual fill:#e3f2fd
+    style Cloud fill:#fff9c4
+    style Env fill:#fff9c4
+    style Action fill:#fff9c4
+    style Apply fill:#c8e6c9
+    style Destroy fill:#ffcdd2
+    style DeployLambda fill:#ff9800
+```
+
+### Entradas del Flujo de Trabajo
+
+Al activar el flujo de trabajo manualmente, se te solicitará:
+
+| Entrada | Descripción | Opciones | Por Defecto |
+|---------|-------------|----------|-------------|
+| `cloud` | Proveedor cloud | `aws`, `azure` | Requerido |
+| `environment` | Entorno objetivo | `development`, `staging`, `production` | `development` |
+| `terraform_action` | Operación Terraform | `plan`, `apply`, `destroy` | `apply` |
+| `deploy_functions` | Desplegar funciones después de Terraform (solo AWS) | `true`, `false` | `true` |
+
+### Configuración de Secretos de GitHub
+
+Antes de usar el flujo de trabajo de despliegue, necesitas configurar los Secretos de GitHub. Los secretos son específicos del entorno y pueden configurarse a nivel de repositorio o de entorno.
+
+#### Configuración de Secretos de GitHub
+
+1. **Navegar a Configuración del Repositorio**
+   - Ve a tu repositorio de GitHub
+   - Haz clic en **Settings** → **Secrets and variables** → **Actions**
+
+2. **Crear Secretos de Entorno (Recomendado)**
+   - Haz clic en **Environments** en la barra lateral izquierda
+   - Crea entornos: `development`, `staging`, `production`
+   - Agrega secretos a cada entorno según sea necesario
+
+3. **Crear Secretos de Repositorio (Alternativa)**
+   - Agrega secretos a nivel de repositorio (disponibles para todos los entornos)
+
+#### Secretos Requeridos
+
+##### Secretos AWS
+
+| Nombre del Secreto | Descripción | Ejemplo | Requerido Para |
+|-------------------|-------------|---------|----------------|
+| `AWS_ACCESS_KEY_ID` | ID de clave de acceso AWS | `AKIAIOSFODNN7EXAMPLE` | Despliegues AWS |
+| `AWS_SECRET_ACCESS_KEY` | Clave secreta de acceso AWS | `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` | Despliegues AWS |
+| `AWS_REGION` | Región AWS | `us-east-1` | Despliegues AWS (opcional, por defecto `us-east-1`) |
+| `PROJECT_NAME` | Nombre del proyecto para nombrar recursos | `go-project-skeleton` | Despliegues AWS (opcional, por defecto `go-project-skeleton`) |
+| `TFVARS` | Contenido del archivo de variables de Terraform | Ver abajo | Todos los despliegues AWS |
+
+##### Secretos Azure
+
+| Nombre del Secreto | Descripción | Ejemplo | Requerido Para |
+|-------------------|-------------|---------|----------------|
+| `AZURE_CREDENTIALS` | JSON de entidad de servicio de Azure | Ver abajo | Despliegues Azure |
+| `TFVARS` | Contenido del archivo de variables de Terraform | Ver abajo | Todos los despliegues Azure |
+
+#### Creación de Secretos
+
+##### Claves de Acceso AWS
+
+1. **Crear Usuario IAM** (si no existe):
+   ```bash
+   aws iam create-user --user-name github-actions-deploy
+   ```
+
+2. **Adjuntar Políticas**:
+   ```bash
+   aws iam attach-user-policy \
+     --user-name github-actions-deploy \
+     --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+   ```
+   > **Nota**: Para producción, usa políticas de menor privilegio. Crea políticas personalizadas con solo los permisos necesarios.
+
+3. **Crear Clave de Acceso**:
+   ```bash
+   aws iam create-access-key --user-name github-actions-deploy
+   ```
+
+4. **Agregar a Secretos de GitHub**:
+   - Copia `AccessKeyId` → `AWS_ACCESS_KEY_ID`
+   - Copia `SecretAccessKey` → `AWS_SECRET_ACCESS_KEY`
+
+##### Entidad de Servicio Azure
+
+1. **Crear Entidad de Servicio**:
+   ```bash
+   az ad sp create-for-rbac --name github-actions-deploy \
+     --role contributor \
+     --scopes /subscriptions/{subscription-id} \
+     --sdk-auth
+   ```
+
+2. **Copia la salida JSON** y agrégala al Secreto de GitHub `AZURE_CREDENTIALS`:
+   ```json
+   {
+     "clientId": "xxx",
+     "clientSecret": "xxx",
+     "subscriptionId": "xxx",
+     "tenantId": "xxx",
+     "activeDirectoryEndpointUrl": "https://login.microsoftonline.com",
+     "resourceManagerEndpointUrl": "https://management.azure.com/",
+     "activeDirectoryGraphResourceId": "https://graph.windows.net/",
+     "sqlManagementEndpointUrl": "https://management.core.windows.net:8443/",
+     "galleryEndpointUrl": "https://gallery.azure.com/",
+     "managementEndpointUrl": "https://management.core.windows.net/"
+   }
+   ```
+
+##### Variables de Terraform (TFVARS)
+
+El secreto `TFVARS` contiene el contenido de tu archivo `terraform.tfvars`. Debe incluir todas las variables de Terraform requeridas para tu infraestructura.
+
+**Ejemplo para AWS:**
+```hcl
+# Contenido de terraform.tfvars
+project_name = "go-project-skeleton"
+environment = "development"
+region = "us-east-1"
+db_instance_class = "db.t3.micro"
+lambda_memory_size = 512
+# ... otras variables
+```
+
+**Ejemplo para Azure:**
+```hcl
+# Contenido de terraform.tfvars
+project_name = "go-project-skeleton"
+environment = "development"
+location = "eastus"
+app_service_plan_sku = "B1"
+# ... otras variables
+```
+
+**Para crear el secreto:**
+1. Crea tu archivo `terraform.tfvars` localmente
+2. Copia todo el contenido
+3. Agrega al Secreto de GitHub `TFVARS` (pega todo el contenido)
+
+### Pasos del Flujo de Trabajo
+
+#### 1. Fase de Configuración
+- **Checkout código**: Clona el repositorio
+- **Configurar Go**: Instala Go 1.25.5
+- **Instalar Terraform**: Instala Terraform 1.14.1
+- **Configurar credenciales**: Configura credenciales de AWS o Azure según el cloud seleccionado
+
+#### 2. Fase de Construcción
+- **Descargar dependencias**: Ejecuta `make deps`
+- **Generar funciones**:
+  - AWS: Ejecuta `make build-aws-functions` (si `deploy_functions` es true)
+  - Azure: Ejecuta `make build-azure-functions`
+- **Crear terraform.tfvars**: Crea el archivo desde el secreto `TFVARS`
+
+#### 3. Fase Terraform
+- **Terraform Init**: Inicializa el backend de Terraform
+- **Terraform Validate**: Valida la configuración de Terraform
+- **Terraform Plan**: Crea un plan de ejecución (si la acción no es `destroy`)
+  - Sube artefacto de plan para revisión (si la acción es `plan`)
+- **Terraform Apply**: Aplica cambios de infraestructura (si la acción es `apply`)
+- **Terraform Destroy**: Destruye la infraestructura (si la acción es `destroy`)
+  - **Seguridad**: Destroy falla en producción a menos que se permita explícitamente
+
+#### 4. Fase de Despliegue (Solo AWS)
+- **Desplegar Funciones Lambda**: Ejecuta `make deploy-aws` para desplegar todas las funciones Lambda
+- **Terraform Output**: Muestra las salidas de la infraestructura
+
+### Ejemplos de Uso
+
+#### Planificar Cambios de Infraestructura
+
+1. Ve a la pestaña **Actions** en GitHub
+2. Selecciona el flujo de trabajo **Deploy to Cloud**
+3. Haz clic en **Run workflow**
+4. Completa las entradas:
+   - Cloud: `aws`
+   - Environment: `staging`
+   - Terraform action: `plan`
+   - Deploy functions: `false`
+5. Haz clic en **Run workflow**
+
+**Resultado**: Crea un plan de Terraform y lo sube como artefacto. Revisa el plan antes de aplicar.
+
+#### Desplegar a Staging
+
+1. Ve a la pestaña **Actions**
+2. Selecciona el flujo de trabajo **Deploy to Cloud**
+3. Haz clic en **Run workflow**
+4. Completa las entradas:
+   - Cloud: `aws`
+   - Environment: `staging`
+   - Terraform action: `apply`
+   - Deploy functions: `true`
+5. Haz clic en **Run workflow**
+
+**Resultado**:
+- Aprovisiona infraestructura con Terraform
+- Despliega todas las funciones Lambda
+- Muestra las salidas de la infraestructura
+
+#### Destruir Entorno de Desarrollo
+
+1. Ve a la pestaña **Actions**
+2. Selecciona el flujo de trabajo **Deploy to Cloud**
+3. Haz clic en **Run workflow**
+4. Completa las entradas:
+   - Cloud: `aws`
+   - Environment: `development`
+   - Terraform action: `destroy`
+5. Haz clic en **Run workflow**
+
+**Resultado**: Destruye toda la infraestructura en el entorno de desarrollo.
+
+> **⚠️ Advertencia**: Las operaciones de destrucción en producción fallarán por defecto. El flujo de trabajo usa `continue-on-error: ${{ inputs.environment != 'production' }}` para prevenir la destrucción accidental de producción.
+
+### Protección de Entornos
+
+Los Entornos de GitHub pueden configurarse con reglas de protección:
+
+1. **Revisores Requeridos**: Requerir aprobación antes del despliegue
+2. **Temporizador de Espera**: Agregar un retraso antes del despliegue
+3. **Ramas de Despliegue**: Restringir qué ramas pueden desplegar
+
+**Para configurar:**
+1. Ve a **Settings** → **Environments**
+2. Haz clic en un entorno (ej: `production`)
+3. Agrega reglas de protección según sea necesario
+
+### Mejores Prácticas
+
+1. **Usar Secretos de Entorno**: Almacenar secretos por entorno para mejor seguridad
+2. **Revisar Planes**: Siempre ejecutar `plan` antes de `apply` en producción
+3. **Usar Reglas de Protección**: Habilitar revisores requeridos para producción
+4. **Monitorear Despliegues**: Revisar ejecuciones del flujo de trabajo regularmente
+5. **Rotar Credenciales**: Rotar claves de acceso y secretos regularmente
+6. **Menor Privilegio**: Usar roles/políticas IAM con permisos mínimos requeridos
+7. **Control de Versiones**: Mantener código de Terraform en control de versiones
+8. **Respaldo de Estado**: Asegurar que el estado de Terraform esté respaldado (S3, Azure Storage)
+
+### Solución de Problemas
+
+#### Problemas Comunes
+
+**Problema**: "Credenciales AWS no encontradas"
+- **Solución**: Asegúrate de que `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` estén configurados en Secretos de GitHub
+
+**Problema**: "Terraform plan falla"
+- **Solución**: Verifica que el contenido del secreto `TFVARS` coincida con el formato esperado
+
+**Problema**: "Despliegue de Lambda falla"
+- **Solución**: Asegúrate de que `PROJECT_NAME` y `AWS_REGION` estén configurados correctamente
+
+**Problema**: "Destroy falla en producción"
+- **Solución**: Esto es por diseño. Modifica el flujo de trabajo si se necesita destrucción en producción.
+
+### Ubicación del Archivo del Flujo de Trabajo
+
+El flujo de trabajo de despliegue se encuentra en:
+```
+.github/workflows/deploy.yml
+```
 
 ---
 
@@ -4141,6 +6025,7 @@ func TestCreateUser(t *testing.T) {
 - ✅ **Seguridad** - JWT, OTP, hash seguro de contraseñas
 - ✅ **Internacionalización** - Soporte multiidioma
 - ✅ **Optimización** - Cache, tree shaking, connection pooling
+- ✅ **Observabilidad** - OpenTelemetry, Prometheus, Jaeger, Grafana
 
 ### 🚀 Casos de Uso Ideales
 
@@ -4163,12 +6048,18 @@ func TestCreateUser(t *testing.T) {
    go test ./tests/integration/...
    ```
 
-3. **Adaptar a tus Necesidades**
+3. **Explorar Observabilidad**
+   - Acceder a Grafana en `http://localhost:3001` (admin/admin)
+   - Explorar trazas en Jaeger en `http://localhost:16686`
+   - Consultar métricas en Prometheus en `http://localhost:9090`
+   - Revisar dashboards preconfigurados
+
+4. **Adaptar a tus Necesidades**
    - Personalizar modelos de dominio
    - Agregar nuevos módulos de negocio
    - Configurar providers según tus servicios
 
-4. **Desplegar**
+5. **Desplegar**
    - Desarrollo: Docker Compose
    - Producción: Monolito tradicional o Serverless
    - Cloud: AWS Lambda o Azure Functions

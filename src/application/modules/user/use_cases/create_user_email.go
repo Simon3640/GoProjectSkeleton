@@ -1,15 +1,15 @@
 package userusecases
 
 import (
-	"context"
-
-	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
-	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
+	contractsrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/services"
-	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
-	email_models "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
+	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
+	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
@@ -19,32 +19,48 @@ import (
 
 // CreateUserSendEmailUseCase is a use case that sends an email to a user
 type CreateUserSendEmailUseCase struct {
-	appMessages *locales.Locale
-	log         contractsProviders.ILoggerProvider
-	locale      locales.LocaleTypeEnum
+	usecase.BaseUseCaseValidation[models.User, models.User]
 
-	hashProvider contractsProviders.IHashProvider
+	hashProvider contractsproviders.IHashProvider
 
-	tokenRepo contracts_repositories.IOneTimeTokenRepository
+	tokenRepo contractsrepositories.IOneTimeTokenRepository
 }
 
 var _ usecase.BaseUseCase[models.User, models.User] = (*CreateUserSendEmailUseCase)(nil)
 
-// SetLocale sets the locale for the use case
-func (uc *CreateUserSendEmailUseCase) SetLocale(locale locales.LocaleTypeEnum) {
-	if locale != "" {
-		uc.locale = locale
-	}
-}
-
 // Execute executes the use case
-func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
+func (uc *CreateUserSendEmailUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input models.User,
 ) *usecase.UseCaseResult[models.User] {
 	result := usecase.NewUseCaseResult[models.User]()
 	uc.SetLocale(locale)
+	uc.SetAppContext(ctx)
+	token := uc.createOneTimeToken(input, result)
+	if result.HasError() {
+		return result
+	}
 
+	uc.sendWelcomeEmail(input, *token, result)
+	if result.HasError() {
+		return result
+	}
+
+	result.SetData(
+		status.Created,
+		input,
+		uc.AppMessages.Get(
+			uc.Locale,
+			messages.MessageKeysInstance.USER_WAS_CREATED,
+		),
+	)
+	observability.GetObservabilityComponents().Logger.InfoWithContext("user_created_and_email_sent", uc.AppContext)
+	return result
+}
+
+// createOneTimeToken creates a one time token for the user
+// returns the token if created successfully, otherwise returns nil
+func (uc *CreateUserSendEmailUseCase) createOneTimeToken(input models.User, result *usecase.UseCaseResult[models.User]) *string {
 	token, err := services.CreateOneTimeTokenService(
 		input.ID,
 		models.OneTimeTokenPurposeEmailVerify,
@@ -52,63 +68,57 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx context.Context,
 		uc.tokenRepo,
 	)
 	if err != nil {
-		uc.log.Error("Error creating one time token", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error creating one time token", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
-		return result
+		return nil
 	}
+	return &token
+}
 
-	newUserEmailData := email_models.NewUserEmailData{
+// sendWelcomeEmail sends a welcome email to the user.
+// If sending fails, sets an error in the result.
+func (uc *CreateUserSendEmailUseCase) sendWelcomeEmail(input models.User, token string, result *usecase.UseCaseResult[models.User]) {
+	newUserEmailData := emailmodels.NewUserEmailData{
 		Name:              input.Name,
 		ActivationLink:    settings.AppSettingsInstance.FrontendActivateAccountURL + "?token=" + token,
 		ExpirationMinutes: int(settings.AppSettingsInstance.OneTimeTokenEmailVerifyTTL),
 		AppName:           settings.AppSettingsInstance.AppName,
 		SupportEmail:      settings.AppSettingsInstance.AppSupportEmail,
 	}
-
-	if err := email_service.RegisterUserEmailServiceInstance.SendWithTemplate(
+	if err := emailservice.RegisterUserEmailServiceInstance.SendWithTemplate(
 		newUserEmailData,
 		input.Email,
-		locale,
+		uc.Locale,
 		templates.TemplateKeysInstance.WelcomeEmail,
-		email_service.SubjectKeysInstance.WelcomeEmail,
+		emailservice.SubjectKeysInstance.WelcomeEmail,
 	); err != nil {
-		uc.log.Error("Error sending email", err.ToError())
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error sending email", err.ToError(), uc.AppContext)
 		result.SetError(
 			err.Code,
-			uc.appMessages.Get(
-				uc.locale,
+			uc.AppMessages.Get(
+				uc.Locale,
 				err.Context,
 			),
 		)
-		return result
 	}
-
-	result.SetData(
-		status.Success,
-		input,
-		uc.appMessages.Get(
-			uc.locale,
-			messages.MessageKeysInstance.USER_WAS_CREATED,
-		),
-	)
-	return result
 }
 
 // NewCreateUserSendEmailUseCase creates a new create user send email use case
 func NewCreateUserSendEmailUseCase(
-	log contractsProviders.ILoggerProvider,
-	hashProvider contractsProviders.IHashProvider,
-	tokenRepo contracts_repositories.IOneTimeTokenRepository,
+	hashProvider contractsproviders.IHashProvider,
+	tokenRepo contractsrepositories.IOneTimeTokenRepository,
 ) *CreateUserSendEmailUseCase {
 	return &CreateUserSendEmailUseCase{
-		appMessages:  locales.NewLocale(locales.EN_US),
-		log:          log,
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[models.User, models.User]{
+			AppMessages: locales.NewLocale(locales.EN_US),
+			Guards:      usecase.NewGuards(),
+		},
 		hashProvider: hashProvider,
 		tokenRepo:    tokenRepo,
 	}

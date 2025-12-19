@@ -9,7 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
+	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
+	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 )
 
 // LambdaAdapter converts AWS Lambda API Gateway events to handler contexts.
@@ -166,7 +168,7 @@ func (a *LambdaAdapter) ToHandlerContext(
 	}
 
 	return handlers.NewHandlerContext(
-		ctx,
+		&app_context.AppContext{Context: ctx},
 		&locale,
 		params,
 		&body,
@@ -364,6 +366,13 @@ func HandleLambdaEvent(
 
 	// Execute the handler
 	handlerFunc(handlerCtx)
+
+	// Wait for pending background tasks to complete before returning.
+	// This is necessary because Lambda freezes execution immediately after
+	// returning, which would kill any goroutines running in the background.
+	if executor := workers.GetBackgroundExecutor(); executor != nil {
+		executor.WaitForPendingTasks()
+	}
 
 	// Convert response writer to Lambda response
 	return responseWriter.ToLambdaResponse(), nil

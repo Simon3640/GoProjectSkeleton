@@ -3,9 +3,14 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/simon3640/goprojectskeleton/aws"
-	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers"
+	{{- if .NeedsAuth }}
+	awsauth "github.com/simon3640/goprojectskeleton/aws/auth"
+	{{- end }}
+	{{.HandlerPackage}} "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/{{.HandlerPackagePath}}"
+	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -15,7 +20,10 @@ var initialized bool
 func init() {
 	if !initialized {
 		log.Println("Initializing AWS Infrastructure")
-		aws.InitializeInfrastructure()
+		if err := aws.{{.InitFunction}}(); err != nil {
+			log.Println("Error initializing AWS Infrastructure", err.ToError())
+			os.Exit(1)
+		}
 		initialized = true
 		log.Println("AWS Infrastructure initialized successfully")
 	}
@@ -23,12 +31,12 @@ func init() {
 
 func handler(ctx context.Context, event map[string]interface{}) (aws.LambdaResponse, error) {
 	{{- if .NeedsAuth }}
-	return aws.HandleLambdaEventWithAuth(event, func(hc handlers.HandlerContext) {
-		handlers.{{.HandlerName}}(hc)
+	return awsauth.HandleLambdaEventWithAuth(event, func(hc handlers.HandlerContext) {
+		{{.HandlerPackage}}.{{.HandlerName}}(hc)
 	})
 	{{- else }}
 	return aws.HandleLambdaEvent(event, func(hc handlers.HandlerContext) {
-		handlers.{{.HandlerName}}(hc)
+		{{.HandlerPackage}}.{{.HandlerName}}(hc)
 	})
 	{{- end }}
 }

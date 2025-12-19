@@ -1,23 +1,38 @@
 package infrastructure
 
 import (
+	"context"
+
+	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/observability/noop"
+	services "github.com/simon3640/goprojectskeleton/src/application/shared/services"
 	email_service "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	settings "github.com/simon3640/goprojectskeleton/src/application/shared/settings"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
 	config "github.com/simon3640/goprojectskeleton/src/infrastructure/config"
-	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
+	initdb "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/init_db"
 	providers "github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
 
-func Initialize() {
-	if err := settings.AppSettingsInstance.Initialize(config.NewConfig(nil).ToMap()); err != nil {
-		providers.Logger.Error("Failed to initialize app settings", err)
-		panic("Failed to initialize app settings: " + err.Error())
+// Initialize initializes the infrastructure and returns an application error if it fails
+func Initialize() *application_errors.ApplicationError {
+	config, err := config.NewConfig(nil)
+	if err != nil {
+		return err
+	}
+	if err := settings.AppSettingsInstance.Initialize(config.ToMap()); err != nil {
+		return err
 	}
 	providers.Logger.Setup(
 		settings.AppSettingsInstance.EnableLog,
 		settings.AppSettingsInstance.DebugLog,
 	)
-	database.GoProjectSkeletondb.SetUp(
+	noop.Logger.Setup(
+		settings.AppSettingsInstance.EnableLog,
+		settings.AppSettingsInstance.DebugLog,
+	)
+	if err := database.GoProjectSkeletondb.SetUp(
 		settings.AppSettingsInstance.DBHost,
 		settings.AppSettingsInstance.DBPort,
 		settings.AppSettingsInstance.DBUser,
@@ -25,7 +40,14 @@ func Initialize() {
 		settings.AppSettingsInstance.DBName,
 		&settings.AppSettingsInstance.DBSSL,
 		providers.Logger,
-	)
+	); err != nil {
+		return err
+	}
+
+	// Migrate database
+	if err := initdb.InitMigrate(database.GoProjectSkeletondb.DB, providers.Logger); err != nil {
+		return err
+	}
 
 	// Initialize JWT Provider
 	providers.JWTProviderInstance.Setup(
@@ -67,4 +89,15 @@ func Initialize() {
 		providers.RenderOTPEmailInstance,
 		providers.EmailProviderInstance,
 	)
+
+	// Initialize Background Executor
+	ctx := context.Background()
+	workers.InitializeBackgroundExecutor(
+		ctx,
+		settings.AppSettingsInstance.BackgroundWorkers,
+		settings.AppSettingsInstance.BackgroundQueueSize,
+	)
+
+	services.InitializeBackgroundServiceFactory()
+	return nil
 }

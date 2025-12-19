@@ -1,0 +1,55 @@
+meta {
+  name: NewUser
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseURL}}/user-password
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:bearer {
+  token:
+}
+
+body:json {
+  {
+    "email": "{{userEmail}}",
+    "name": "new user",
+    "otpLogin": false,
+    "password": "{{strongPassword}}",
+    "phone": "{{userPhone}}",
+    "role_id": 2
+  }
+}
+
+script:post-response {
+  const response = res.getBody();
+
+  // Check if the status code is 201
+  test("Status code is 201", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+
+  // Extract and set user ID to environment variable
+  bru.setEnvVar("userId", response.data.id);
+
+  // Validate the user ID exists and is of correct type
+  test("User ID is present and is a number", function () {
+      expect(response.data.id).to.exist;
+      expect(response.data.id).to.be.a('number');
+  });
+
+
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

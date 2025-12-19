@@ -3,34 +3,36 @@ package integrationtest
 import (
 	"testing"
 
+	passwordmocks "github.com/simon3640/goprojectskeleton/src/application/modules/password/mocks"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
-	database "github.com/simon3640/goprojectskeleton/src/infrastructure/database/goprojectskeleton"
+	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
+	passwordrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/password"
+	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
-	"github.com/simon3640/goprojectskeleton/src/infrastructure/repositories"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPasswordCreate(t *testing.T) {
 	assert := assert.New(t)
-	passwordRepository := repositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	passwordRepository := passwordrepositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
-	passwordCreated, appErr := passwordRepository.Create(dtomocks.PasswordCreate)
+	passwordCreated, appErr := passwordRepository.Create(passwordmocks.PasswordCreate)
 
 	assert.Nil(appErr)
 	assert.NotNil(passwordCreated)
-	assert.Equal(dtomocks.PasswordCreate.UserID, passwordCreated.UserID)
-	assert.Equal(dtomocks.PasswordCreate.Hash, passwordCreated.Hash)
-	assert.Equal(dtomocks.PasswordCreate.ExpiresAt, passwordCreated.ExpiresAt)
-	assert.Equal(dtomocks.PasswordCreate.IsActive, passwordCreated.IsActive)
+	assert.Equal(passwordmocks.PasswordCreate.UserID, passwordCreated.UserID)
+	assert.Equal(passwordmocks.PasswordCreate.Hash, passwordCreated.Hash)
+	assert.Equal(passwordmocks.PasswordCreate.ExpiresAt, passwordCreated.ExpiresAt)
+	assert.Equal(passwordmocks.PasswordCreate.IsActive, passwordCreated.IsActive)
 
 	passwordRepository.Delete(passwordCreated.ID)
 }
 
 func TestPasswordGetActivePassword(t *testing.T) {
 	assert := assert.New(t)
-	passwordRepository := repositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
-	userRepository := repositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	passwordRepository := passwordrepositories.NewPasswordRepository(database.GoProjectSkeletondb.DB, providers.Logger)
+	userRepository := userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger)
 
 	// Create user to link the password
 	userCreated, appErr := userRepository.Create(dtomocks.UserCreate)
@@ -39,11 +41,11 @@ func TestPasswordGetActivePassword(t *testing.T) {
 
 	defer userRepository.Delete(userCreated.ID)
 
-	password_create := dtomocks.PasswordCreate
-	password_create.UserID = userCreated.ID
+	passwordCreate := passwordmocks.PasswordCreate
+	passwordCreate.UserID = userCreated.ID
 
 	// Create password to test Get Active Password
-	passwordCreated, appErr := passwordRepository.Create(password_create)
+	passwordCreated, _ := passwordRepository.Create(passwordCreate)
 
 	defer passwordRepository.Delete(passwordCreated.ID)
 
@@ -52,9 +54,9 @@ func TestPasswordGetActivePassword(t *testing.T) {
 
 	assert.Nil(appErr)
 	assert.NotNil(passwordGotten)
-	assert.Equal(password_create.UserID, passwordGotten.UserID)
-	assert.Equal(password_create.Hash, passwordGotten.Hash)
-	assert.Equal(password_create.ExpiresAt, passwordGotten.ExpiresAt)
-	assert.Equal(password_create.IsActive, passwordGotten.IsActive)
+	assert.Equal(passwordCreate.UserID, passwordGotten.UserID)
+	assert.Equal(passwordCreate.Hash, passwordGotten.Hash)
+	assert.Equal(passwordCreate.ExpiresAt, passwordGotten.ExpiresAt)
+	assert.Equal(passwordCreate.IsActive, passwordGotten.IsActive)
 	passwordRepository.Delete(passwordCreated.ID)
 }

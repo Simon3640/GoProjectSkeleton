@@ -1,0 +1,77 @@
+meta {
+  name: CreateUserSuccess
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseURL}}/user-password
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+body:json {
+  {
+    "email": "{{newUserEmail}}",
+    "name": "New Test User",
+    "otpLogin": false,
+    "password": "{{strongPassword}}",
+    "phone": "{{newUserPhone}}",
+    "role_id": 2
+  }
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Status code is 201", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+
+  const response = res.getBody();
+
+  if (!response) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  test("Response contains data property", function () {
+      expect(response.data).to.exist;
+  });
+
+  test("User ID is present and is a number", function () {
+      expect(response.data.id).to.exist;
+      expect(response.data.id).to.be.a('number');
+  });
+
+  test("User email matches input", function () {
+      const newUserEmail = bru.getEnvVar("newUserEmail");
+      expect(response.data.email).to.equal(newUserEmail);
+  });
+
+  test("User name matches input", function () {
+      expect(response.data.name).to.equal("New Test User");
+  });
+
+  test("User role_id is 2 (user, not admin)", function () {
+      expect(response.data.role_id).to.equal(2);
+  });
+
+  test("User status is pending", function () {
+      expect(response.data.status).to.equal("pending");
+  });
+
+  bru.setEnvVar("newUserId", response.data.id);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
