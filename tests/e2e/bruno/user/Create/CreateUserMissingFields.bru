@@ -1,0 +1,64 @@
+meta {
+  name: CreateUserMissingFields
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseURL}}/user-password
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+body:json {
+  {
+    "email": "missingfields@test.goprojectskeleton.com",
+    "name": "",
+    "otpLogin": false,
+    "password": "{{strongPassword}}",
+    "phone": "",
+    "role_id": 0
+  }
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Status code is 400 (Bad Request)", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+
+  const response = res.getBody();
+
+  if (!response) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  test("Response contains error details", function () {
+      expect(response.details).to.exist;
+  });
+
+  test("Error details indicates missing required fields", function () {
+      expect(response.details).to.be.a('string');
+      const detailsLower = response.details.toLowerCase();
+      // Should mention at least one missing field
+      const hasRequiredField = detailsLower.includes("required") ||
+                                detailsLower.includes("name") ||
+                                detailsLower.includes("phone") ||
+                                detailsLower.includes("role");
+      expect(hasRequiredField).to.be.true;
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

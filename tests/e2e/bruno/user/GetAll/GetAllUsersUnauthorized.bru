@@ -1,0 +1,59 @@
+meta {
+  name: GetAllUsersUnauthorized
+  type: http
+  seq: 4.9
+}
+
+get {
+  url: {{baseURL}}/user
+  body: none
+  auth: apikey
+}
+
+params:query {
+  page: 1
+  page_size: 10
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:apikey {
+  key: Authorization
+  value: {{userToken}}
+  placement: header
+}
+
+script:post-response {
+  if (!res) {
+    console.error("Response is undefined");
+    return;
+  }
+
+  test("Status code is 401 (Unauthorized)", function () {
+      expect(res.getStatus()).to.equal(401);
+  });
+
+  const response = res.getBody();
+
+  if (!response) {
+    console.error("Response body is undefined");
+    return;
+  }
+
+  test("Response contains error details", function () {
+      expect(response.details).to.exist;
+  });
+
+  test("Error details indicates unauthorized access", function () {
+      // The details should indicate that the user doesn't have permission
+      expect(response.details).to.be.a('string');
+      expect(response.details.length).to.be.greaterThan(0);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

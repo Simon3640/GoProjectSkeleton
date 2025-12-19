@@ -1,0 +1,50 @@
+meta {
+  name: CreateUserToDelete
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseURL}}/user-password
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: es-ES
+}
+
+auth:bearer {
+  token:
+}
+
+body:json {
+  {
+    "email": "{{userToDeleteEmail}}",
+    "name": "User To Delete",
+    "otpLogin": false,
+    "password": "{{strongPassword}}",
+    "phone": "{{userToDeletePhone}}",
+    "role_id": 2
+  }
+}
+
+script:post-response {
+  const response = res.getBody();
+
+  test("Status code is 201", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+
+  test("User ID is present and is a number", function () {
+      expect(response.data.id).to.exist;
+      expect(response.data.id).to.be.a('number');
+  });
+
+  bru.setEnvVar("userToDeleteId", response.data.id);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
