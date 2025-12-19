@@ -49,4 +49,10 @@ jobs:
           go-version: 1.25.5
 
       - name: Run Unit Tests
-        run: make test-unit
+        run: make test-unit-report
+
+      - name: Upload Unit Tests Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-tests-report
+          path: coverage.html
