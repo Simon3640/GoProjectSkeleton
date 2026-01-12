@@ -4,28 +4,31 @@ import (
 	"time"
 
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 type OneTimeTokenCreate struct {
-	models.OneTimeTokenBase
+	sharedmodels.OneTimeTokenBase
 }
 
-func PurposeTokenToDuration(purpose models.OneTimeTokenPurpose) time.Duration {
+// PurposeTokenToDuration converts a token purpose to its duration
+func PurposeTokenToDuration(purpose sharedmodels.OneTimeTokenPurpose) time.Duration {
 	switch purpose {
-	case models.OneTimeTokenPurposePasswordReset:
+	case sharedmodels.OneTimeTokenPurposePasswordReset:
 		return time.Duration(settings.AppSettingsInstance.OneTimeTokenPasswordTTL) * time.Minute
-	case models.OneTimeTokenPurposeEmailVerify:
+	case sharedmodels.OneTimeTokenPurposeEmailVerify:
 		return time.Duration(settings.AppSettingsInstance.OneTimeTokenEmailVerifyTTL) * time.Minute
 	default:
 		return time.Duration(settings.AppSettingsInstance.OneTimeTokenEmailVerifyTTL) * time.Minute
 	}
 }
 
-func NewOneTimeTokenCreate(userID uint, purpose models.OneTimeTokenPurpose, hash []byte) *OneTimeTokenCreate {
+// NewOneTimeTokenCreate creates a new one-time token create DTO
+func NewOneTimeTokenCreate(userID uint, purpose sharedmodels.OneTimeTokenPurpose, hash []byte) *OneTimeTokenCreate {
 	// TODO: move expiration to another place
 	return &OneTimeTokenCreate{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  userID,
 			Purpose: purpose,
 			Hash:    hash,
@@ -41,7 +44,7 @@ type OneTimeTokenUpdate struct {
 }
 
 type OneTimeTokenUser struct {
-	User  models.User
+	User  usermodels.User
 	Token string `json:"token"`
 }
 

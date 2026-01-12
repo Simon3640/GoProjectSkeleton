@@ -3,12 +3,13 @@ package userdtos
 
 import (
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 // UserCreate is the create structure for a user
 type UserCreate struct {
-	models.UserBase
+	usermodels.UserBase
 }
 
 // Validate validates the user create
@@ -26,7 +27,7 @@ type UserAndPasswordCreate struct {
 // Validate validates the user and password create
 func (u *UserAndPasswordCreate) Validate() []string {
 	errs := u.UserCreate.Validate()
-	if !models.IsValidPassword(u.Password) {
+	if !sharedmodels.IsValidPassword(u.Password) {
 		errs = append(errs, "password is invalid")
 	}
 	return errs
@@ -34,7 +35,7 @@ func (u *UserAndPasswordCreate) Validate() []string {
 
 // UserUpdate is the update structure for a user
 type UserUpdate struct {
-	models.UserUpdateBase
+	usermodels.UserUpdateBase
 	ID uint `json:"id"`
 }
 
@@ -65,14 +66,14 @@ func (r *ResendWelcomeEmailRequest) Validate() []string {
 	if r.Email == "" {
 		errs = append(errs, "email is required")
 	}
-	if !models.IsValidEmail(r.Email) {
+	if !sharedmodels.IsValidEmail(r.Email) {
 		errs = append(errs, "email is invalid")
 	}
 	return errs
 }
 
 // UserMultiResponse is the multiple response for a user
-type UserMultiResponse = shareddtos.MultipleResponse[models.User]
+type UserMultiResponse = shareddtos.MultipleResponse[usermodels.User]
 
 // UserSingleResponse is the single response for a user
-type UserSingleResponse = shareddtos.SingleResponse[models.User]
+type UserSingleResponse = shareddtos.SingleResponse[usermodels.User]

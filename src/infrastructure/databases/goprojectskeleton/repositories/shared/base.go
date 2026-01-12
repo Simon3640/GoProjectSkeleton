@@ -7,7 +7,7 @@ import (
 	contractsproviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	contractsrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
-	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
+	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/shared/utils"
 
 	"gorm.io/gorm"
 )

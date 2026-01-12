@@ -8,7 +8,7 @@ import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	statusmodels "github.com/simon3640/goprojectskeleton/src/domain/status/models"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -23,7 +23,7 @@ func TestStatusUseCase(t *testing.T) {
 	testStatusProvider.On(
 		"Get",
 		testTime,
-	).Return(models.Status{
+	).Return(statusmodels.Status{
 		AppName: "Test",
 		Version: "1.0.0",
 		Status:  "Testing",

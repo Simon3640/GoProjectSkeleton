@@ -9,11 +9,11 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 type GetUserUseCase struct {
-	usecase.BaseUseCaseValidation[uint, models.User]
+	usecase.BaseUseCaseValidation[uint, usermodels.User]
 	repo usercontracts.IUserRepository
 }
 
@@ -26,8 +26,8 @@ func (uc *GetUserUseCase) SetLocale(locale locales.LocaleTypeEnum) {
 func (uc *GetUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input uint,
-) *usecase.UseCaseResult[models.User] {
-	result := usecase.NewUseCaseResult[models.User]()
+) *usecase.UseCaseResult[usermodels.User] {
+	result := usecase.NewUseCaseResult[usermodels.User]()
 	uc.SetLocale(locale)
 	uc.SetAppContext(ctx)
 	uc.Validate(input, result)
@@ -43,7 +43,7 @@ func (uc *GetUserUseCase) Execute(ctx *app_context.AppContext,
 	return result
 }
 
-func (uc *GetUserUseCase) getUser(result *usecase.UseCaseResult[models.User], id uint) *models.User {
+func (uc *GetUserUseCase) getUser(result *usecase.UseCaseResult[usermodels.User], id uint) *usermodels.User {
 	res, err := uc.repo.GetByID(id)
 	if err != nil {
 		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user by ID", err.ToError(), uc.AppContext)
@@ -62,7 +62,7 @@ func NewGetUserUseCase(
 	repo usercontracts.IUserRepository,
 ) *GetUserUseCase {
 	return &GetUserUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[uint, models.User]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[uint, usermodels.User]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(guards.RoleGuard("admin", "user"), guards.UserGetItSelf),
 		},

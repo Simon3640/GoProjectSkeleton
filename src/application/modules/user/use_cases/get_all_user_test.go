@@ -12,8 +12,9 @@ import (
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	appstatus "github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
-	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/shared/utils"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -23,8 +24,8 @@ func TestGetAllUserUseCase_Execute_SuccessFromCache(t *testing.T) {
 	assert := assert.New(t)
 
 	// Create admin user for context
-	adminUser := models.UserWithRole{
-		UserBase: models.UserBase{
+	adminUser := usermodels.UserWithRole{
+		UserBase: usermodels.UserBase{
 			Name:   "Admin User",
 			Email:  "admin@example.com",
 			Phone:  "1234567890",
@@ -41,18 +42,18 @@ func TestGetAllUserUseCase_Execute_SuccessFromCache(t *testing.T) {
 	// Create query payload
 	page := 1
 	pageSize := 10
-	queryPayload := domain_utils.NewQueryPayloadBuilder[models.User](nil, nil, &page, &pageSize)
+	queryPayload := domain_utils.NewQueryPayloadBuilder[usermodels.User](nil, nil, &page, &pageSize)
 
 	// Mock cache - data found
-	testUsers := []models.User{
+	testUsers := []usermodels.User{
 		{
-			UserBase: models.UserBase{
+			UserBase: usermodels.UserBase{
 				Name:   "User 1",
 				Email:  "user1@example.com",
 				Phone:  "1234567890",
 				RoleID: 2,
 			},
-			DBBaseModel: models.DBBaseModel{
+			DBBaseModel: sharedmodels.DBBaseModel{
 				ID:        1,
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
@@ -63,7 +64,7 @@ func TestGetAllUserUseCase_Execute_SuccessFromCache(t *testing.T) {
 
 	cacheKey := "users:" + queryPayload.GetQueryKey()
 	testCacheProvider.On("Get", cacheKey, mock.AnythingOfType("*[]models.User")).Return(true, nil, testUsers).Run(func(args mock.Arguments) {
-		dest := args.Get(1).(*[]models.User)
+		dest := args.Get(1).(*[]usermodels.User)
 		*dest = testUsers
 	})
 	testCacheProvider.On("Get", cacheKey+":total", mock.AnythingOfType("*int64")).Return(true, nil, total).Run(func(args mock.Arguments) {
@@ -91,8 +92,8 @@ func TestGetAllUserUseCase_Execute_SuccessFromRepository(t *testing.T) {
 	assert := assert.New(t)
 
 	// Create admin user for context
-	adminUser := models.UserWithRole{
-		UserBase: models.UserBase{
+	adminUser := usermodels.UserWithRole{
+		UserBase: usermodels.UserBase{
 			Name:   "Admin User",
 			Email:  "admin@example.com",
 			Phone:  "1234567890",
@@ -109,7 +110,7 @@ func TestGetAllUserUseCase_Execute_SuccessFromRepository(t *testing.T) {
 	// Create query payload
 	page := 1
 	pageSize := 10
-	queryPayload := domain_utils.NewQueryPayloadBuilder[models.User](nil, nil, &page, &pageSize)
+	queryPayload := domain_utils.NewQueryPayloadBuilder[usermodels.User](nil, nil, &page, &pageSize)
 
 	// Mock cache - not found
 	cacheKey := "users:" + queryPayload.GetQueryKey()
@@ -117,15 +118,15 @@ func TestGetAllUserUseCase_Execute_SuccessFromRepository(t *testing.T) {
 	testCacheProvider.On("Get", cacheKey+":total", mock.AnythingOfType("*int64")).Return(false, nil)
 
 	// Mock repository
-	testUsers := []models.User{
+	testUsers := []usermodels.User{
 		{
-			UserBase: models.UserBase{
+			UserBase: usermodels.UserBase{
 				Name:   "User 1",
 				Email:  "user1@example.com",
 				Phone:  "1234567890",
 				RoleID: 2,
 			},
-			DBBaseModel: models.DBBaseModel{
+			DBBaseModel: sharedmodels.DBBaseModel{
 				ID:        1,
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
@@ -158,8 +159,8 @@ func TestGetAllUserUseCase_Execute_SuccessFromRepository(t *testing.T) {
 func TestGetAllUserUseCase_Execute_RepositoryError(t *testing.T) {
 	assert := assert.New(t)
 	// Create admin user for context
-	adminUser := models.UserWithRole{
-		UserBase: models.UserBase{
+	adminUser := usermodels.UserWithRole{
+		UserBase: usermodels.UserBase{
 			Name:   "Admin User",
 			Email:  "admin@example.com",
 			Phone:  "1234567890",
@@ -176,7 +177,7 @@ func TestGetAllUserUseCase_Execute_RepositoryError(t *testing.T) {
 	// Create query payload
 	page := 1
 	pageSize := 10
-	queryPayload := domain_utils.NewQueryPayloadBuilder[models.User](nil, nil, &page, &pageSize)
+	queryPayload := domain_utils.NewQueryPayloadBuilder[usermodels.User](nil, nil, &page, &pageSize)
 
 	// Mock cache - not found
 	cacheKey := "users:" + queryPayload.GetQueryKey()
@@ -208,8 +209,8 @@ func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 	assert := assert.New(t)
 
 	// Create admin user for context
-	adminUser := models.UserWithRole{
-		UserBase: models.UserBase{
+	adminUser := usermodels.UserWithRole{
+		UserBase: usermodels.UserBase{
 			Name:   "Admin User",
 			Email:  "admin@example.com",
 			Phone:  "1234567890",
@@ -226,7 +227,7 @@ func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 	// Create query payload
 	page := 1
 	pageSize := 10
-	queryPayload := domain_utils.NewQueryPayloadBuilder[models.User](nil, nil, &page, &pageSize)
+	queryPayload := domain_utils.NewQueryPayloadBuilder[usermodels.User](nil, nil, &page, &pageSize)
 
 	// Mock cache - error getting cache (should not fail, just log)
 	cacheKey := "users:" + queryPayload.GetQueryKey()
@@ -238,15 +239,15 @@ func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 	testCacheProvider.On("Get", cacheKey, mock.AnythingOfType("*[]models.User")).Return(false, appErr)
 
 	// Mock repository
-	testUsers := []models.User{
+	testUsers := []usermodels.User{
 		{
-			UserBase: models.UserBase{
+			UserBase: usermodels.UserBase{
 				Name:   "User 1",
 				Email:  "user1@example.com",
 				Phone:  "1234567890",
 				RoleID: 2,
 			},
-			DBBaseModel: models.DBBaseModel{
+			DBBaseModel: sharedmodels.DBBaseModel{
 				ID:        1,
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
@@ -278,8 +279,8 @@ func TestGetAllUserUseCase_Execute_CacheSetError(t *testing.T) {
 	assert := assert.New(t)
 
 	// Create admin user for context
-	adminUser := models.UserWithRole{
-		UserBase: models.UserBase{
+	adminUser := usermodels.UserWithRole{
+		UserBase: usermodels.UserBase{
 			Name:   "Admin User",
 			Email:  "admin@example.com",
 			Phone:  "1234567890",
@@ -296,7 +297,7 @@ func TestGetAllUserUseCase_Execute_CacheSetError(t *testing.T) {
 	// Create query payload
 	page := 1
 	pageSize := 10
-	queryPayload := domain_utils.NewQueryPayloadBuilder[models.User](nil, nil, &page, &pageSize)
+	queryPayload := domain_utils.NewQueryPayloadBuilder[usermodels.User](nil, nil, &page, &pageSize)
 
 	// Mock cache - not found
 	cacheKey := "users:" + queryPayload.GetQueryKey()
@@ -304,15 +305,15 @@ func TestGetAllUserUseCase_Execute_CacheSetError(t *testing.T) {
 	testCacheProvider.On("Get", cacheKey+":total", mock.AnythingOfType("*int64")).Return(false, nil)
 
 	// Mock repository
-	testUsers := []models.User{
+	testUsers := []usermodels.User{
 		{
-			UserBase: models.UserBase{
+			UserBase: usermodels.UserBase{
 				Name:   "User 1",
 				Email:  "user1@example.com",
 				Phone:  "1234567890",
 				RoleID: 2,
 			},
-			DBBaseModel: models.DBBaseModel{
+			DBBaseModel: sharedmodels.DBBaseModel{
 				ID:        1,
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
@@ -349,8 +350,8 @@ func TestGetAllUserUseCase_Execute_Unauthorized(t *testing.T) {
 	assert := assert.New(t)
 
 	// Create non-admin user for context
-	regularUser := models.UserWithRole{
-		UserBase: models.UserBase{
+	regularUser := usermodels.UserWithRole{
+		UserBase: usermodels.UserBase{
 			Name:   "Regular User",
 			Email:  "user@example.com",
 			Phone:  "1234567890",
@@ -367,7 +368,7 @@ func TestGetAllUserUseCase_Execute_Unauthorized(t *testing.T) {
 	// Create query payload
 	page := 1
 	pageSize := 10
-	queryPayload := domain_utils.NewQueryPayloadBuilder[models.User](nil, nil, &page, &pageSize)
+	queryPayload := domain_utils.NewQueryPayloadBuilder[usermodels.User](nil, nil, &page, &pageSize)
 
 	uc := NewGetAllUserUseCase(
 		testUserRepository,
@@ -386,8 +387,8 @@ func TestGetAllUserUseCase_Execute_InvalidInput(t *testing.T) {
 	assert := assert.New(t)
 
 	// Create admin user for context
-	adminUser := models.UserWithRole{
-		UserBase: models.UserBase{
+	adminUser := usermodels.UserWithRole{
+		UserBase: usermodels.UserBase{
 			Name:   "Admin User",
 			Email:  "admin@example.com",
 			Phone:  "1234567890",
@@ -402,7 +403,7 @@ func TestGetAllUserUseCase_Execute_InvalidInput(t *testing.T) {
 	testCacheProvider := new(providersmocks.MockCacheProvider)
 
 	// Create invalid query payload (page = 0, which will be validated)
-	queryPayload := domain_utils.QueryPayloadBuilder[models.User]{
+	queryPayload := domain_utils.QueryPayloadBuilder[usermodels.User]{
 		Pagination: domain_utils.Pagination{
 			Page:     0, // Invalid
 			PageSize: 10,

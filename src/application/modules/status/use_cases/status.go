@@ -10,19 +10,19 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	status "github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	models "github.com/simon3640/goprojectskeleton/src/domain/models"
+	statusmodels "github.com/simon3640/goprojectskeleton/src/domain/status/models"
 )
 
 type GetStatusUseCase struct {
-	usecase.BaseUseCaseValidation[time.Time, models.Status]
+	usecase.BaseUseCaseValidation[time.Time, statusmodels.Status]
 	apiStatusProvider statuscontracts.IApiStatusProvider
 }
 
 func (uc *GetStatusUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input time.Time,
-) *usecase.UseCaseResult[models.Status] {
-	result := usecase.NewUseCaseResult[models.Status]()
+) *usecase.UseCaseResult[statusmodels.Status] {
+	result := usecase.NewUseCaseResult[statusmodels.Status]()
 	uc.SetLocale(locale)
 	uc.SetAppContext(ctx)
 
@@ -40,7 +40,7 @@ func NewGetStatusUseCase(
 	apiStatusProvider statuscontracts.IApiStatusProvider,
 ) *GetStatusUseCase {
 	return &GetStatusUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[time.Time, models.Status]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[time.Time, statusmodels.Status]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},

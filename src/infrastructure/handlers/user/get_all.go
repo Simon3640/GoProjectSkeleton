@@ -5,8 +5,8 @@ import (
 	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
-	domainutils "github.com/simon3640/goprojectskeleton/src/domain/utils"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
+	domainutils "github.com/simon3640/goprojectskeleton/src/domain/shared/utils"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
@@ -33,7 +33,7 @@ import (
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Router /api/user [get]
 func GetAllUser(ctx handlers.HandlerContext) {
-	queryParams := domainutils.NewQueryPayloadBuilder[models.User](ctx.Query.Sorts, ctx.Query.Filters, ctx.Query.Page, ctx.Query.PageSize)
+	queryParams := domainutils.NewQueryPayloadBuilder[usermodels.User](ctx.Query.Sorts, ctx.Query.Filters, ctx.Query.Page, ctx.Query.PageSize)
 	uc := userusecases.NewGetAllUserUseCase(
 		userrepositories.NewUserRepository(database.GoProjectSkeletondb.DB, providers.Logger),
 		providers.CacheProviderInstance,

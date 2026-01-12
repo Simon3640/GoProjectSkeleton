@@ -6,7 +6,7 @@ import (
 	contractsrepositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
 	dbmodels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
 	reposhared "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/shared"
 
@@ -15,13 +15,13 @@ import (
 
 // OneTimeTokenRepository is the repository for the one time token model
 type OneTimeTokenRepository struct {
-	reposhared.RepositoryBase[dtos.OneTimeTokenCreate, dtos.OneTimeTokenUpdate, models.OneTimeToken, dbmodels.OneTimeToken]
+	reposhared.RepositoryBase[dtos.OneTimeTokenCreate, dtos.OneTimeTokenUpdate, sharedmodels.OneTimeToken, dbmodels.OneTimeToken]
 }
 
 var _ contractsrepositories.IOneTimeTokenRepository = (*OneTimeTokenRepository)(nil)
 
 // GetByTokenHash retrieves a one time token by its hash
-func (or *OneTimeTokenRepository) GetByTokenHash(tokenHash []byte) (*models.OneTimeToken, *applicationerrors.ApplicationError) {
+func (or *OneTimeTokenRepository) GetByTokenHash(tokenHash []byte) (*sharedmodels.OneTimeToken, *applicationerrors.ApplicationError) {
 	var ormModel dbmodels.OneTimeToken
 
 	if err := or.DB.Where("hash = ?", tokenHash).First(&ormModel).Error; err != nil {
@@ -34,7 +34,7 @@ func (or *OneTimeTokenRepository) GetByTokenHash(tokenHash []byte) (*models.OneT
 // OneTimeTokenConverter is the converter for the one time token model
 type OneTimeTokenConverter struct{}
 
-var _ reposhared.ModelConverter[dtos.OneTimeTokenCreate, dtos.OneTimeTokenUpdate, models.OneTimeToken, dbmodels.OneTimeToken] = (*OneTimeTokenConverter)(nil)
+var _ reposhared.ModelConverter[dtos.OneTimeTokenCreate, dtos.OneTimeTokenUpdate, sharedmodels.OneTimeToken, dbmodels.OneTimeToken] = (*OneTimeTokenConverter)(nil)
 
 // ToGormCreate converts a one time token create model to a one time token gorm model
 func (uc *OneTimeTokenConverter) ToGormCreate(model dtos.OneTimeTokenCreate) *dbmodels.OneTimeToken {
@@ -48,16 +48,16 @@ func (uc *OneTimeTokenConverter) ToGormCreate(model dtos.OneTimeTokenCreate) *db
 }
 
 // ToDomain converts a one time token gorm model to a one time token domain model
-func (uc *OneTimeTokenConverter) ToDomain(ormModel *dbmodels.OneTimeToken) *models.OneTimeToken {
-	return &models.OneTimeToken{
-		DBBaseModel: models.DBBaseModel{
+func (uc *OneTimeTokenConverter) ToDomain(ormModel *dbmodels.OneTimeToken) *sharedmodels.OneTimeToken {
+	return &sharedmodels.OneTimeToken{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        ormModel.ID,
 			CreatedAt: ormModel.CreatedAt,
 			UpdatedAt: ormModel.UpdatedAt,
 			DeletedAt: ormModel.DeletedAt.Time,
 		},
-		OneTimeTokenBase: models.OneTimeTokenBase{
-			Purpose: models.OneTimeTokenPurpose(ormModel.Purpose),
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
+			Purpose: sharedmodels.OneTimeTokenPurpose(ormModel.Purpose),
 			Hash:    ormModel.Hash,
 			UserID:  ormModel.UserID,
 			Expires: ormModel.Expires,
@@ -81,7 +81,7 @@ func NewOneTimeTokenRepository(db *gorm.DB, logger contractsproviders.ILoggerPro
 		RepositoryBase: reposhared.RepositoryBase[
 			dtos.OneTimeTokenCreate,
 			dtos.OneTimeTokenUpdate,
-			models.OneTimeToken,
+			sharedmodels.OneTimeToken,
 			dbmodels.OneTimeToken,
 		]{
 			DB:             db,

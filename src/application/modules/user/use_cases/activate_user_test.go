@@ -12,7 +12,8 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -30,10 +31,10 @@ func TestActivateUserUseCase(t *testing.T) {
 
 	hash := "hashed_token"
 	tokenHash := []byte(hex.EncodeToString([]byte(hash)))
-	oneTimeToken := models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	oneTimeToken := sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  1,
-			Purpose: models.OneTimeTokenPurposeEmailVerify,
+			Purpose: sharedmodels.OneTimeTokenPurposeEmailVerify,
 			Hash:    []byte(hash),
 			IsUsed:  false,
 			Expires: time.Now().Add(1 * time.Hour),
@@ -42,19 +43,19 @@ func TestActivateUserUseCase(t *testing.T) {
 
 	testHashProvider.On("HashOneTimeToken", "valid_token").Return(tokenHash)
 	testOneTimeTokenRepository.On("GetByTokenHash", tokenHash).Return(&oneTimeToken, nil)
-	userStatusActive := models.UserStatusActive
+	userStatusActive := usermodels.UserStatusActive
 	testUserRepository.On(
 		"Update",
 		oneTimeToken.UserID,
 		mock.AnythingOfType("userdtos.UserUpdate"),
-	).Return(&models.User{
-		UserBase: models.UserBase{
+	).Return(&usermodels.User{
+		UserBase: usermodels.UserBase{
 			Name:   "Test User",
 			Email:  "test@mail.com",
 			Status: &userStatusActive,
 			RoleID: 2,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),

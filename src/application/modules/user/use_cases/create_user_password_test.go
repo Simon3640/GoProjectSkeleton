@@ -13,7 +13,8 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	appstatus "github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -26,8 +27,8 @@ func TestCreateUserAndPassword(t *testing.T) {
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
-	status := models.UserStatusPending
-	userBase := models.UserBase{
+	status := usermodels.UserStatusPending
+	userBase := usermodels.UserBase{
 		Name:   "Test User",
 		Email:  "test@example.com",
 		Phone:  "1234567890",
@@ -45,9 +46,9 @@ func TestCreateUserAndPassword(t *testing.T) {
 	testUserAndPasswordHash := testUserAndPassword
 	testUserAndPasswordHash.Password = "hashed_password"
 
-	testUserRepository.On("CreateWithPassword", testUserAndPasswordHash).Return(&models.User{
+	testUserRepository.On("CreateWithPassword", testUserAndPasswordHash).Return(&usermodels.User{
 		UserBase: userBase,
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -80,8 +81,8 @@ func TestCreateUserAndPassword_InvalidPassword(t *testing.T) {
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
-	status := models.UserStatusPending
-	userBase := models.UserBase{
+	status := usermodels.UserStatusPending
+	userBase := usermodels.UserBase{
 		Name:   "Test User",
 		Email:  "test@example.com",
 		Phone:  "1234567890",
@@ -119,8 +120,8 @@ func TestCreateUserAndPassword_InvalidEmail(t *testing.T) {
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
-	status := models.UserStatusPending
-	userBase := models.UserBase{
+	status := usermodels.UserStatusPending
+	userBase := usermodels.UserBase{
 		Name:   "Test User",
 		Email:  "invalid-email", // Invalid email
 		Phone:  "1234567890",
@@ -158,8 +159,8 @@ func TestCreateUserAndPassword_InvalidRoleID(t *testing.T) {
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
-	status := models.UserStatusPending
-	userBase := models.UserBase{
+	status := usermodels.UserStatusPending
+	userBase := usermodels.UserBase{
 		Name:   "Test User",
 		Email:  "test@example.com",
 		Phone:  "1234567890",
@@ -197,8 +198,8 @@ func TestCreateUserAndPassword_HashPasswordError(t *testing.T) {
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
-	status := models.UserStatusPending
-	userBase := models.UserBase{
+	status := usermodels.UserStatusPending
+	userBase := usermodels.UserBase{
 		Name:   "Test User",
 		Email:  "test@example.com",
 		Phone:  "1234567890",
@@ -244,8 +245,8 @@ func TestCreateUserAndPassword_RepositoryError(t *testing.T) {
 	testUserRepository := new(usermocks.MockUserRepository)
 	testHashProvider := new(providersmocks.MockHashProvider)
 
-	status := models.UserStatusPending
-	userBase := models.UserBase{
+	status := usermodels.UserStatusPending
+	userBase := usermodels.UserBase{
 		Name:   "Test User",
 		Email:  "test@example.com",
 		Phone:  "1234567890",
@@ -272,7 +273,7 @@ func TestCreateUserAndPassword_RepositoryError(t *testing.T) {
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Failed to create user",
 	)
-	var nilUser *models.User
+	var nilUser *usermodels.User
 	testUserRepository.On("CreateWithPassword", testUserAndPasswordHash).Return(nilUser, appErr)
 
 	// Create the use case

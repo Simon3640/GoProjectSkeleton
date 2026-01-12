@@ -3,10 +3,10 @@ package contracts_repositories
 import (
 	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
 )
 
 type IOneTimeTokenRepository interface {
-	IRepositoryBase[dtos.OneTimeTokenCreate, dtos.OneTimeTokenUpdate, models.OneTimeToken, models.OneTimeToken]
-	GetByTokenHash(tokenHash []byte) (*models.OneTimeToken, *application_errors.ApplicationError)
+	IRepositoryBase[dtos.OneTimeTokenCreate, dtos.OneTimeTokenUpdate, sharedmodels.OneTimeToken, sharedmodels.OneTimeToken]
+	GetByTokenHash(tokenHash []byte) (*sharedmodels.OneTimeToken, *application_errors.ApplicationError)
 }

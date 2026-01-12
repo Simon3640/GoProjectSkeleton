@@ -5,7 +5,7 @@ import (
 
 	contractsobservability "github.com/simon3640/goprojectskeleton/src/application/contracts/observability"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	"github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 // Ensure AppContext implements TraceContextCarrier interface

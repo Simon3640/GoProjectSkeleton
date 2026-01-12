@@ -7,7 +7,7 @@ import (
 	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
@@ -22,7 +22,7 @@ import (
 // @Produce json
 // @Param id path int true "ID del usuario"
 // @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
-// @Success 200 {object} models.User "Usuario"
+// @Success 200 {object} usermodels.User "Usuario"
 // @Failure 404 {object} map[string]string "Usuario no encontrado"
 // @Router /api/user/{id} [get]
 // @Security Bearer
@@ -49,5 +49,5 @@ func GetUser(ctx handlers.HandlerContext) {
 	headers := map[handlers.HTTPHeaderTypeEnum]string{
 		handlers.CONTENT_TYPE: string(handlers.APPLICATION_JSON),
 	}
-	handlers.NewRequestResolver[models.User]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
+	handlers.NewRequestResolver[usermodels.User]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }

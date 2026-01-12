@@ -19,7 +19,8 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	passwordmodels "github.com/simon3640/goprojectskeleton/src/domain/password/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 // AuthenticateUseCase is the use case for the authentication of a user
@@ -125,7 +126,7 @@ func (uc *AuthenticateUseCase) checkRateLimitAndSetError(result *usecase.UseCase
 	}
 }
 
-func (uc *AuthenticateUseCase) getPassword(result *usecase.UseCaseResult[dtos.Token], email string) *models.Password {
+func (uc *AuthenticateUseCase) getPassword(result *usecase.UseCaseResult[dtos.Token], email string) *passwordmodels.Password {
 	password, err := uc.pass.GetActivePassword(email)
 	if err != nil {
 		if uc.cacheProvider != nil {
@@ -144,7 +145,7 @@ func (uc *AuthenticateUseCase) getPassword(result *usecase.UseCaseResult[dtos.To
 	return password
 }
 
-func (uc *AuthenticateUseCase) getUser(result *usecase.UseCaseResult[dtos.Token], userID uint, email string) *models.UserWithRole {
+func (uc *AuthenticateUseCase) getUser(result *usecase.UseCaseResult[dtos.Token], userID uint, email string) *usermodels.UserWithRole {
 	user, err := uc.userRepo.GetUserWithRole(userID)
 	if err != nil {
 		if uc.cacheProvider != nil {
@@ -187,7 +188,7 @@ func (uc *AuthenticateUseCase) validatePassword(result *usecase.UseCaseResult[dt
 	}
 }
 
-func (uc *AuthenticateUseCase) generateTokens(ctx *app_context.AppContext, result *usecase.UseCaseResult[dtos.Token], userIDString string, user *models.UserWithRole) dtos.Token {
+func (uc *AuthenticateUseCase) generateTokens(ctx *app_context.AppContext, result *usecase.UseCaseResult[dtos.Token], userIDString string, user *usermodels.UserWithRole) dtos.Token {
 	claims := authcontracts.JWTCLaims{
 		"role": user.GetRoleKey(),
 	}
@@ -241,7 +242,7 @@ func (uc *AuthenticateUseCase) setSuccessResult(result *usecase.UseCaseResult[dt
 // sendOTPEmailInBackground sends an OTP email to the user in the background
 func (uc *AuthenticateUseCase) sendOTPEmailInBackground(
 	ctx *app_context.AppContext,
-	user *models.UserWithRole,
+	user *usermodels.UserWithRole,
 	locale locales.LocaleTypeEnum,
 ) {
 	// Create the background service

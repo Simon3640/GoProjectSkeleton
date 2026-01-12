@@ -6,12 +6,12 @@ import (
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/modules/auth/dtos"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
 )
 
 func CreateOneTimePasswordService(
 	userID uint,
-	purpose models.OneTimePasswordPurpose,
+	purpose sharedmodels.OneTimePasswordPurpose,
 	hashProvider contractsProviders.IHashProvider,
 	passwordRepository authcontracts.IOneTimePasswordRepository,
 ) (string, *applicationerrors.ApplicationError) {

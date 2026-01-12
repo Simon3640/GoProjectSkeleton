@@ -10,7 +10,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	passwordmodels "github.com/simon3640/goprojectskeleton/src/domain/password/models"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -38,8 +38,8 @@ func TestCreatePasswordUseCase(t *testing.T) {
 		testPassword.IsActive,
 	)
 
-	testPasswordRepository.On("Create", testPasswordCreate).Return(&models.Password{
-		PasswordBase: models.PasswordBase{
+	testPasswordRepository.On("Create", testPasswordCreate).Return(&passwordmodels.Password{
+		PasswordBase: passwordmodels.PasswordBase{
 			UserID:    1,
 			Hash:      "HashedPassword123!",
 			ExpiresAt: &time.Time{},

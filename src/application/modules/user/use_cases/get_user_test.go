@@ -9,7 +9,8 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,13 +23,13 @@ func TestGetUserUseCase(t *testing.T) {
 
 	testUserRepository := new(usermocks.MockUserRepository)
 	var testId = actor.ID
-	userStatus := models.UserStatusActive
-	testUserRepository.On("GetByID", testId).Return(&models.User{
-		UserBase: models.UserBase{Name: "Test",
+	userStatus := usermodels.UserStatusActive
+	testUserRepository.On("GetByID", testId).Return(&usermodels.User{
+		UserBase: usermodels.UserBase{Name: "Test",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
 			Status: &userStatus},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -54,13 +55,13 @@ func TestGetUserUseCase_DifferentUser(t *testing.T) {
 
 	testUserRepository := new(usermocks.MockUserRepository)
 	var testId = actor.ID + 1 // Different user ID
-	userStatus := models.UserStatusActive
-	testUserRepository.On("GetByID", testId).Return(&models.User{
-		UserBase: models.UserBase{Name: "Test",
+	userStatus := usermodels.UserStatusActive
+	testUserRepository.On("GetByID", testId).Return(&usermodels.User{
+		UserBase: usermodels.UserBase{Name: "Test",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
 			Status: &userStatus},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        2,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),

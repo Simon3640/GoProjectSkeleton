@@ -11,7 +11,8 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	dtomocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/dtos"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -23,15 +24,15 @@ func TestCreateUserUseCase(t *testing.T) {
 
 	testUserRepository := new(usermocks.MockUserRepository)
 	testUser := dtomocks.UserCreate
-	userStatus := models.UserStatusPending
-	testUserRepository.On("Create", testUser).Return(&models.User{
-		UserBase: models.UserBase{Name: "Test",
+	userStatus := usermodels.UserStatusPending
+	testUserRepository.On("Create", testUser).Return(&usermodels.User{
+		UserBase: usermodels.UserBase{Name: "Test",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
 			Status: &userStatus,
 			RoleID: 2,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -54,9 +55,9 @@ func TestCreateUserUseCase_InvalidInput(t *testing.T) {
 	ctx := &app_context.AppContext{Context: context.Background()}
 
 	testUserRepository := new(usermocks.MockUserRepository)
-	userStatus := models.UserStatusPending
+	userStatus := usermodels.UserStatusPending
 	testUserInvalidRoleID := userdtos.UserCreate{
-		UserBase: models.UserBase{Name: "Test",
+		UserBase: usermodels.UserBase{Name: "Test",
 			Email:  "invalid@gmail.com",
 			Phone:  "1234567890",
 			Status: &userStatus,

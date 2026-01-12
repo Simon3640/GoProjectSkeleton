@@ -8,7 +8,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	workers "github.com/simon3640/goprojectskeleton/src/application/shared/workers"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 // NewCreateUserPipe creates a new create user pipe.
@@ -19,7 +19,7 @@ func NewCreateUserPipe(
 	locale locales.LocaleTypeEnum,
 	createUserPasswordUC *userusecases.CreateUserAndPasswordUseCase,
 	createUserSendEmailUseCase *userusecases.CreateUserSendEmailUseCase,
-) *usecase.DAG[userdtos.UserAndPasswordCreate, models.User] {
+) *usecase.DAG[userdtos.UserAndPasswordCreate, usermodels.User] {
 	dag := usecase.NewDag(ctx, usecase.NewStep(createUserPasswordUC), locale, workers.GetBackgroundExecutor())
 	// The email is sent in background, the response is returned immediately
 	return usecase.ThenBackground(dag, usecase.NewStep(createUserSendEmailUseCase), "create-user-send-email")

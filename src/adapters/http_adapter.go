@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 )
 
@@ -38,7 +38,7 @@ func (a *HTTPAdapter) ToHandlerContext(
 	}
 	var appContext *app_context.AppContext
 	user := r.Context().Value(app_context.UserKey)
-	if user, ok := user.(models.UserWithRole); ok {
+	if user, ok := user.(usermodels.UserWithRole); ok {
 		appContext = app_context.NewContextWithUser(&user)
 	}
 	// If not in context, parse from URL
