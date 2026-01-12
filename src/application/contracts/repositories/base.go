@@ -2,7 +2,7 @@ package contracts_repositories
 
 import (
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
-	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
+	sharedutils "github.com/simon3640/goprojectskeleton/src/domain/shared/utils"
 )
 
 type IRepositoryBase[CreateDomainModel any, UpdateDomainModel any, DomainModel any, DBModel any] interface {
@@ -11,5 +11,5 @@ type IRepositoryBase[CreateDomainModel any, UpdateDomainModel any, DomainModel a
 	Update(id uint, entity UpdateDomainModel) (*DomainModel, *application_errors.ApplicationError)
 	Delete(id uint) *application_errors.ApplicationError
 	SoftDelete(id uint) *application_errors.ApplicationError
-	GetAll(payload *domain_utils.QueryPayloadBuilder[DomainModel], skip int, limit int) ([]DomainModel, int64, *application_errors.ApplicationError)
+	GetAll(payload *sharedutils.QueryPayloadBuilder[DomainModel], skip int, limit int) ([]DomainModel, int64, *application_errors.ApplicationError)
 }

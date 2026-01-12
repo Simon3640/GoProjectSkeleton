@@ -9,7 +9,7 @@ import (
 	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
@@ -25,7 +25,7 @@ import (
 // @Param id path int true "ID del usuario"
 // @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Param request body userdtos.UserUpdate true "Datos del usuario"
-// @Success 200 {object} models.User "Usuario actualizado"
+// @Success 200 {object} usermodels.User "Usuario actualizado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user/{id} [patch]
 // @Security Bearer
@@ -59,5 +59,5 @@ func UpdateUser(ctx handlers.HandlerContext) {
 	headers := map[handlers.HTTPHeaderTypeEnum]string{
 		handlers.CONTENT_TYPE: string(handlers.APPLICATION_JSON),
 	}
-	handlers.NewRequestResolver[models.User]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
+	handlers.NewRequestResolver[usermodels.User]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }

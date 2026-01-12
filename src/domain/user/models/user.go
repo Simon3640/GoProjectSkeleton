@@ -1,6 +1,11 @@
+// Package models contains the user models
 package models
 
-import "strconv"
+import (
+	"strconv"
+
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+)
 
 // UserStatus is the status of a user
 // It can be:
@@ -60,7 +65,7 @@ func (u UserBase) Validate() []string {
 		errs = append(errs, "role_id is required")
 	}
 	// regex for email validation
-	if !IsValidEmail(u.Email) {
+	if !sharedmodels.IsValidEmail(u.Email) {
 		errs = append(errs, "email is invalid")
 	}
 
@@ -91,7 +96,7 @@ type UserUpdateBase struct {
 // Validate validates the user update base
 func (u *UserUpdateBase) Validate() []string {
 	var errs []string
-	if u.Email != nil && !IsValidEmail(*u.Email) {
+	if u.Email != nil && !sharedmodels.IsValidEmail(*u.Email) {
 		errs = append(errs, "email is invalid")
 	}
 	if u.RoleID != nil && *u.RoleID == 1 { // TODO: replace with constant
@@ -134,7 +139,7 @@ func (u *UserWithRole) GetUserIDString() string {
 
 type User struct {
 	UserBase
-	DBBaseModel
+	sharedmodels.DBBaseModel
 }
 
 func (u User) GetUserID() uint {
@@ -143,5 +148,5 @@ func (u User) GetUserID() uint {
 
 type UserInDB struct {
 	UserBase
-	DBBaseModel
+	sharedmodels.DBBaseModel
 }

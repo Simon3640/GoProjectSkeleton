@@ -5,12 +5,12 @@ import (
 	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	dtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
 )
 
 func CreateOneTimeTokenService(
 	userID uint,
-	purpose models.OneTimeTokenPurpose,
+	purpose sharedmodels.OneTimeTokenPurpose,
 	hashProvider contractsProviders.IHashProvider,
 	tokenRepository contracts_repositories.IOneTimeTokenRepository,
 ) (string, *application_errors.ApplicationError) {

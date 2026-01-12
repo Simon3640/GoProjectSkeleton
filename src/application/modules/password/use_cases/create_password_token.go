@@ -16,7 +16,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
 )
 
 // CreatePasswordTokenUseCase is the use case for creating a password token
@@ -69,7 +69,7 @@ func (uc *CreatePasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 	return result
 }
 
-func (uc *CreatePasswordTokenUseCase) getToken(result *usecase.UseCaseResult[bool], token string) *models.OneTimeToken {
+func (uc *CreatePasswordTokenUseCase) getToken(result *usecase.UseCaseResult[bool], token string) *sharedmodels.OneTimeToken {
 	hash := uc.hashProvider.HashOneTimeToken(token)
 	oneTimeToken, err := uc.oneTimetokenRepo.GetByTokenHash(hash)
 	if err != nil {
@@ -85,7 +85,7 @@ func (uc *CreatePasswordTokenUseCase) getToken(result *usecase.UseCaseResult[boo
 	}
 
 	if oneTimeToken == nil || oneTimeToken.IsUsed || oneTimeToken.Expires.Before(time.Now()) ||
-		oneTimeToken.Purpose != models.OneTimeTokenPurposePasswordReset {
+		oneTimeToken.Purpose != sharedmodels.OneTimeTokenPurposePasswordReset {
 		observability.GetObservabilityComponents().Logger.WarningWithContext("One time token is not valid or has incorrect purpose", uc.AppContext)
 		result.SetError(
 			status.Conflict,
@@ -100,7 +100,7 @@ func (uc *CreatePasswordTokenUseCase) getToken(result *usecase.UseCaseResult[boo
 	return oneTimeToken
 }
 
-func (uc *CreatePasswordTokenUseCase) createPassword(result *usecase.UseCaseResult[bool], oneTimeToken *models.OneTimeToken, noHashedPassword string) {
+func (uc *CreatePasswordTokenUseCase) createPassword(result *usecase.UseCaseResult[bool], oneTimeToken *sharedmodels.OneTimeToken, noHashedPassword string) {
 	passwordCreateNoHash := dtos.PasswordCreateNoHash{
 		UserID:           oneTimeToken.UserID,
 		NoHashedPassword: noHashedPassword,

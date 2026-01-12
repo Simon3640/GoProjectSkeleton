@@ -3,7 +3,7 @@ package repositoriesmocks
 import (
 	contracts_repositories "github.com/simon3640/goprojectskeleton/src/application/contracts/repositories"
 	application_errors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
-	domain_utils "github.com/simon3640/goprojectskeleton/src/domain/utils"
+	sharedutils "github.com/simon3640/goprojectskeleton/src/domain/shared/utils"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -59,7 +59,8 @@ func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, D
 	return nil
 }
 
-func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) GetAll(payload *domain_utils.QueryPayloadBuilder[DomainModel], skip int, limit int) ([]DomainModel, int64, *application_errors.ApplicationError) {
+// GetAll retrieves all entities matching the query payload
+func (m *MockRepositoryBase[CreateDomainModel, UpdateDomainModel, DomainModel, DBModel]) GetAll(payload *sharedutils.QueryPayloadBuilder[DomainModel], skip int, limit int) ([]DomainModel, int64, *application_errors.ApplicationError) {
 	args := m.Called(payload, skip, limit)
 	errorArg := args.Get(2)
 	if errorArg != nil {

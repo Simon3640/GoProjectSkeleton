@@ -11,7 +11,8 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -32,13 +33,13 @@ func TestGetResetPasswordTokenUseCase(t *testing.T) {
 	)
 
 	// mock models
-	userStatus := models.UserStatusActive
-	user := models.User{
-		UserBase: models.UserBase{Name: "Test",
+	userStatus := usermodels.UserStatusActive
+	user := usermodels.User{
+		UserBase: usermodels.UserBase{Name: "Test",
 			Email:  "test@testing.com",
 			Phone:  "1234567890",
 			Status: &userStatus},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -49,15 +50,15 @@ func TestGetResetPasswordTokenUseCase(t *testing.T) {
 	token := "validResetPasswordToken.123"
 	tokenHash := []byte(hex.EncodeToString([]byte(token)))
 
-	oneTimeToken := models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	oneTimeToken := sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  user.ID,
-			Purpose: models.OneTimeTokenPurposePasswordReset,
+			Purpose: sharedmodels.OneTimeTokenPurposePasswordReset,
 			Hash:    tokenHash,
 			IsUsed:  false,
 			Expires: time.Now().Add(1 * time.Hour),
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),

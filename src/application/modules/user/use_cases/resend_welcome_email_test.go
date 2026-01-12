@@ -15,7 +15,8 @@ import (
 	emailservices "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -34,16 +35,16 @@ func TestResendWelcomeEmailUseCase_Execute_Success(t *testing.T) {
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
 	email := "test@example.com"
-	userStatus := models.UserStatusPending
-	testUser := &models.User{
-		UserBase: models.UserBase{
+	userStatus := usermodels.UserStatusPending
+	testUser := &usermodels.User{
+		UserBase: usermodels.UserBase{
 			Name:   "Test User",
 			Email:  email,
 			Phone:  "1234567890",
 			Status: &userStatus,
 			RoleID: 2,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -55,15 +56,15 @@ func TestResendWelcomeEmailUseCase_Execute_Success(t *testing.T) {
 
 	// Mock CreateOneTimeToken
 	testHashProvider.On("OneTimeToken").Return("test-token", []byte("hash"), nil)
-	testTokenRepository.On("Create", mock.Anything).Return(&models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	testTokenRepository.On("Create", mock.Anything).Return(&sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  1,
-			Purpose: models.OneTimeTokenPurposeEmailVerify,
+			Purpose: sharedmodels.OneTimeTokenPurposeEmailVerify,
 			Hash:    []byte("hash"),
 			IsUsed:  false,
 			Expires: time.Now().Add(24 * time.Hour),
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID: 1,
 		},
 	}, nil)
@@ -130,16 +131,16 @@ func TestResendWelcomeEmailUseCase_Execute_UserAlreadyVerified(t *testing.T) {
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
 	email := "test@example.com"
-	userStatus := models.UserStatusActive
-	testUser := &models.User{
-		UserBase: models.UserBase{
+	userStatus := usermodels.UserStatusActive
+	testUser := &usermodels.User{
+		UserBase: usermodels.UserBase{
 			Name:   "Test User",
 			Email:  email,
 			Phone:  "1234567890",
 			Status: &userStatus,
 			RoleID: 2,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),

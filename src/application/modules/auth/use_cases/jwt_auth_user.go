@@ -13,25 +13,25 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 // AuthUserUseCase is the use case for authenticating a user with a JWT token
 type AuthUserUseCase struct {
-	usecase.BaseUseCaseValidation[string, models.UserWithRole]
+	usecase.BaseUseCaseValidation[string, usermodels.UserWithRole]
 
 	userRepository authcontracts.IUserRepository
 
 	jwtProvider authcontracts.IJWTProvider
 }
 
-var _ usecase.BaseUseCase[string, models.UserWithRole] = (*AuthUserUseCase)(nil)
+var _ usecase.BaseUseCase[string, usermodels.UserWithRole] = (*AuthUserUseCase)(nil)
 
 func (uc *AuthUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input string,
-) *usecase.UseCaseResult[models.UserWithRole] {
-	result := usecase.NewUseCaseResult[models.UserWithRole]()
+) *usecase.UseCaseResult[usermodels.UserWithRole] {
+	result := usecase.NewUseCaseResult[usermodels.UserWithRole]()
 	uc.SetLocale(locale)
 	uc.SetAppContext(ctx)
 	uc.validate(input, result)
@@ -59,7 +59,7 @@ func (uc *AuthUserUseCase) Execute(ctx *app_context.AppContext,
 	return result
 }
 
-func (uc *AuthUserUseCase) convertSubjectToID(result *usecase.UseCaseResult[models.UserWithRole], sub *string) uint {
+func (uc *AuthUserUseCase) convertSubjectToID(result *usecase.UseCaseResult[usermodels.UserWithRole], sub *string) uint {
 	subInt, err := strconv.Atoi(*sub)
 	if err != nil {
 		result.SetError(
@@ -74,7 +74,7 @@ func (uc *AuthUserUseCase) convertSubjectToID(result *usecase.UseCaseResult[mode
 	return uint(subInt)
 }
 
-func (uc *AuthUserUseCase) getUser(result *usecase.UseCaseResult[models.UserWithRole], userID uint) *models.UserWithRole {
+func (uc *AuthUserUseCase) getUser(result *usecase.UseCaseResult[usermodels.UserWithRole], userID uint) *usermodels.UserWithRole {
 	user, appError := uc.userRepository.GetUserWithRole(userID)
 	if appError != nil {
 		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user with role", appError.ToError(), uc.AppContext)
@@ -90,7 +90,7 @@ func (uc *AuthUserUseCase) getUser(result *usecase.UseCaseResult[models.UserWith
 	return user
 }
 
-func (uc *AuthUserUseCase) setSuccessResult(result *usecase.UseCaseResult[models.UserWithRole], user *models.UserWithRole) {
+func (uc *AuthUserUseCase) setSuccessResult(result *usecase.UseCaseResult[usermodels.UserWithRole], user *usermodels.UserWithRole) {
 	result.SetData(
 		status.Success,
 		*user,
@@ -101,7 +101,7 @@ func (uc *AuthUserUseCase) setSuccessResult(result *usecase.UseCaseResult[models
 	)
 }
 
-func (uc *AuthUserUseCase) validate(input string, result *usecase.UseCaseResult[models.UserWithRole]) {
+func (uc *AuthUserUseCase) validate(input string, result *usecase.UseCaseResult[usermodels.UserWithRole]) {
 	// Validate the input data
 	var validationErrors []string
 
@@ -120,7 +120,7 @@ func (uc *AuthUserUseCase) validate(input string, result *usecase.UseCaseResult[
 	}
 }
 
-func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *usecase.UseCaseResult[models.UserWithRole]) *string {
+func (uc *AuthUserUseCase) parseTokenAndValidate(tokenString string, result *usecase.UseCaseResult[usermodels.UserWithRole]) *string {
 	claims, err := uc.jwtProvider.ParseTokenAndValidate(tokenString)
 	if err != nil {
 		observability.GetObservabilityComponents().Logger.ErrorWithContext("Failed to parse and validate token", err.ToError(), uc.AppContext)
@@ -180,7 +180,7 @@ func NewAuthUserUseCase(
 	jwtProvider authcontracts.IJWTProvider,
 ) *AuthUserUseCase {
 	return &AuthUserUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, models.UserWithRole]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[string, usermodels.UserWithRole]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},

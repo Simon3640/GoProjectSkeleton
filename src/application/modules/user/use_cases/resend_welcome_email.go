@@ -18,7 +18,8 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 // ResendWelcomeEmailUseCase is a use case that resends the welcome email to the user
@@ -81,7 +82,7 @@ func (uc *ResendWelcomeEmailUseCase) Execute(ctx *app_context.AppContext,
 func (uc *ResendWelcomeEmailUseCase) getByEmailOrPhone(
 	input userdtos.ResendWelcomeEmailRequest,
 	result *usecase.UseCaseResult[bool],
-) *models.User {
+) *usermodels.User {
 	// Search user by email or phone
 	user, err := uc.userRepo.GetByEmailOrPhone(input.Email)
 	if err != nil {
@@ -96,7 +97,7 @@ func (uc *ResendWelcomeEmailUseCase) getByEmailOrPhone(
 		return nil
 	}
 	// Check if user is already verified
-	if *user.Status == models.UserStatusActive {
+	if *user.Status == usermodels.UserStatusActive {
 		result.SetError(
 			status.Conflict,
 			uc.AppMessages.Get(
@@ -112,12 +113,12 @@ func (uc *ResendWelcomeEmailUseCase) getByEmailOrPhone(
 // createOneTimeToken creates a one time token for the user
 // returns the token if created successfully, otherwise returns nil
 func (uc *ResendWelcomeEmailUseCase) createOneTimeToken(
-	user *models.User,
+	user *usermodels.User,
 	result *usecase.UseCaseResult[bool],
 ) *string {
 	token, err := services.CreateOneTimeTokenService(
 		user.ID,
-		models.OneTimeTokenPurposeEmailVerify,
+		sharedmodels.OneTimeTokenPurposeEmailVerify,
 		uc.hashProvider,
 		uc.tokenRepo,
 	)
@@ -137,7 +138,7 @@ func (uc *ResendWelcomeEmailUseCase) createOneTimeToken(
 
 // sendWelcomeEmail sends a welcome email to the user
 func (uc *ResendWelcomeEmailUseCase) sendWelcomeEmail(
-	user models.User,
+	user usermodels.User,
 	token string,
 	result *usecase.UseCaseResult[bool],
 ) {

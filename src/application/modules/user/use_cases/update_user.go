@@ -10,23 +10,23 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 // UpdateUserUseCase is a use case that updates a user
 type UpdateUserUseCase struct {
-	usecase.BaseUseCaseValidation[userdtos.UserUpdate, models.User]
+	usecase.BaseUseCaseValidation[userdtos.UserUpdate, usermodels.User]
 	repo usercontracts.IUserRepository
 }
 
-var _ usecase.BaseUseCase[userdtos.UserUpdate, models.User] = (*UpdateUserUseCase)(nil)
+var _ usecase.BaseUseCase[userdtos.UserUpdate, usermodels.User] = (*UpdateUserUseCase)(nil)
 
 // Execute executes the use case
 func (uc *UpdateUserUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
 	input userdtos.UserUpdate,
-) *usecase.UseCaseResult[models.User] {
-	result := usecase.NewUseCaseResult[models.User]()
+) *usecase.UseCaseResult[usermodels.User] {
+	result := usecase.NewUseCaseResult[usermodels.User]()
 	uc.SetLocale(locale)
 	uc.SetAppContext(ctx)
 	uc.Validate(input, result)
@@ -44,7 +44,7 @@ func (uc *UpdateUserUseCase) Execute(ctx *app_context.AppContext,
 
 // updateUser attempts to update the user.
 // It sets errors in the result if the update fails; success data is set in the Execute method.
-func (uc *UpdateUserUseCase) updateUser(input userdtos.UserUpdate, result *usecase.UseCaseResult[models.User]) {
+func (uc *UpdateUserUseCase) updateUser(input userdtos.UserUpdate, result *usecase.UseCaseResult[usermodels.User]) {
 	res, err := uc.repo.Update(input.ID, input)
 	if err != nil {
 		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error updating user", err.ToError(), uc.AppContext)
@@ -61,7 +61,7 @@ func NewUpdateUserUseCase(
 	repo usercontracts.IUserRepository,
 ) *UpdateUserUseCase {
 	return &UpdateUserUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[userdtos.UserUpdate, models.User]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[userdtos.UserUpdate, usermodels.User]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(guards.RoleGuard("admin", "user"), guards.UserResourceGuard[userdtos.UserUpdate]()),
 		},

@@ -15,7 +15,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
@@ -248,7 +248,7 @@ func HandleLambdaEventWithAuth(
 
 	appContext := appcontext.AppContext{Context: authCtx}
 	user := authCtx.Value(appcontext.UserKey)
-	if user, ok := user.(models.UserWithRole); ok {
+	if user, ok := user.(usermodels.UserWithRole); ok {
 		appContext.AddUserToContext(&user)
 	}
 
@@ -314,7 +314,7 @@ func HandleLambdaEventWithOptionalAuth(
 
 	appContext := appcontext.AppContext{Context: ctx}
 	user := ctx.Value(appcontext.UserKey)
-	if user, ok := user.(models.UserWithRole); ok {
+	if user, ok := user.(usermodels.UserWithRole); ok {
 		appContext.AddUserToContext(&user)
 	}
 

@@ -12,7 +12,7 @@ import (
 	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
 )
 
 // Verify that SendOTPEmailBackgroundService implements BackgroundService interface
@@ -55,7 +55,7 @@ func (s *SendOTPEmailBackgroundService) Execute(
 	// Create OTP
 	otp, err := CreateOneTimePasswordService(
 		input.UserID,
-		models.OneTimePasswordLogin,
+		sharedmodels.OneTimePasswordLogin,
 		s.hashProvider,
 		s.otpRepo,
 	)

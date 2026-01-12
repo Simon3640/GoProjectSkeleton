@@ -2,11 +2,11 @@ package authcontracts
 
 import (
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	passwordmodels "github.com/simon3640/goprojectskeleton/src/domain/password/models"
 )
 
 // IPasswordRepository is the interface for the password repository
 type IPasswordRepository interface {
 	// GetActivePassword gets the active password for a user
-	GetActivePassword(userEmail string) (*models.Password, *applicationerrors.ApplicationError)
+	GetActivePassword(userEmail string) (*passwordmodels.Password, *applicationerrors.ApplicationError)
 }

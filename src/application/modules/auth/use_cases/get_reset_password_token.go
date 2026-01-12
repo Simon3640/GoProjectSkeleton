@@ -11,7 +11,8 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 // GetResetPasswordTokenUseCase is the use case for generating a reset password token
@@ -66,7 +67,7 @@ func (uc *GetResetPasswordTokenUseCase) Execute(ctx *app_context.AppContext,
 	return result
 }
 
-func (uc *GetResetPasswordTokenUseCase) getUser(result *usecase.UseCaseResult[bool], emailOrPhone string) *models.User {
+func (uc *GetResetPasswordTokenUseCase) getUser(result *usecase.UseCaseResult[bool], emailOrPhone string) *usermodels.User {
 	user, err := uc.userRepo.GetByEmailOrPhone(emailOrPhone)
 	if err != nil {
 		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user by email or phone", err.ToError(), uc.AppContext)
@@ -99,7 +100,7 @@ func (uc *GetResetPasswordTokenUseCase) generateToken(result *usecase.UseCaseRes
 }
 
 func (uc *GetResetPasswordTokenUseCase) createToken(result *usecase.UseCaseResult[bool], userID uint, hash []byte) {
-	tokenCreate := dtos.NewOneTimeTokenCreate(userID, models.OneTimeTokenPurposePasswordReset, hash)
+	tokenCreate := dtos.NewOneTimeTokenCreate(userID, sharedmodels.OneTimeTokenPurposePasswordReset, hash)
 	_, err := uc.tokenRepo.Create(*tokenCreate)
 	if err != nil {
 		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error creating one time token", err.ToError(), uc.AppContext)
@@ -114,7 +115,7 @@ func (uc *GetResetPasswordTokenUseCase) createToken(result *usecase.UseCaseResul
 	}
 }
 
-func (uc *GetResetPasswordTokenUseCase) setSuccessResult(result *usecase.UseCaseResult[bool], user *models.User, token string) {
+func (uc *GetResetPasswordTokenUseCase) setSuccessResult(result *usecase.UseCaseResult[bool], user *usermodels.User, token string) {
 	oneTimeToken := dtos.OneTimeTokenUser{User: *user, Token: token}
 	uc.AppContext.AddOneTimeTokenToContext(oneTimeToken)
 	result.SetData(

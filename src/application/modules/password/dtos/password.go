@@ -4,12 +4,13 @@ package passworddtos
 import (
 	"time"
 
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	passwordmodels "github.com/simon3640/goprojectskeleton/src/domain/password/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
 )
 
 // PasswordCreate is the DTO for creating a new password
 type PasswordCreate struct {
-	models.PasswordBase
+	passwordmodels.PasswordBase
 }
 
 // PasswordCreateNoHash is the DTO for creating a new password without a hash
@@ -36,7 +37,7 @@ func (p *PasswordCreate) SetDefaultExpiresAt() {
 // Validate validates the password create no hash
 func (p PasswordCreateNoHash) Validate() []string {
 	var errs []string
-	if !models.IsValidPassword(p.NoHashedPassword) {
+	if !sharedmodels.IsValidPassword(p.NoHashedPassword) {
 		errs = append(errs, "Invalid password")
 	}
 	return errs
@@ -45,7 +46,7 @@ func (p PasswordCreateNoHash) Validate() []string {
 // NewPasswordCreate creates a new password create DTO
 func NewPasswordCreate(userID uint, hash string, expiresAt *time.Time, isActive bool) PasswordCreate {
 	p := PasswordCreate{
-		PasswordBase: models.PasswordBase{
+		PasswordBase: passwordmodels.PasswordBase{
 			UserID:    userID,
 			Hash:      hash,
 			ExpiresAt: expiresAt,
@@ -68,7 +69,7 @@ func (p PasswordTokenCreate) Validate() []string {
 	if p.Token == "" {
 		errs = append(errs, "Token is required")
 	}
-	if !models.IsValidPassword(p.NoHashedPassword) {
+	if !sharedmodels.IsValidPassword(p.NoHashedPassword) {
 		errs = append(errs, "Invalid password")
 	}
 	return errs

@@ -2,7 +2,7 @@ package routes
 
 import (
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 
 	"github.com/gin-gonic/gin"
@@ -25,7 +25,7 @@ func wrapHandler(h func(handlers.HandlerContext)) gin.HandlerFunc {
 		}
 		appContext := app_context.AppContext{Context: c.Request.Context()}
 		user := c.Request.Context().Value(app_context.UserKey)
-		if user, ok := user.(models.UserWithRole); ok {
+		if user, ok := user.(usermodels.UserWithRole); ok {
 			appContext.AddUserToContext(&user)
 		}
 		hContext := handlers.NewHandlerContext(&appContext,

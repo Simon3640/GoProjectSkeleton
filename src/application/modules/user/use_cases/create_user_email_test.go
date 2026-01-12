@@ -14,7 +14,8 @@ import (
 	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -31,16 +32,16 @@ func TestCreateUserSendEmailUseCase_Execute_Success(t *testing.T) {
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.NewUserEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
-	userStatus := models.UserStatusPending
-	testUser := models.User{
-		UserBase: models.UserBase{
+	userStatus := usermodels.UserStatusPending
+	testUser := usermodels.User{
+		UserBase: usermodels.UserBase{
 			Name:   "Test User",
 			Email:  "test@example.com",
 			Phone:  "1234567890",
 			Status: &userStatus,
 			RoleID: 2,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -53,15 +54,15 @@ func TestCreateUserSendEmailUseCase_Execute_Success(t *testing.T) {
 	testHashProvider.On("OneTimeToken").Return(token, tokenHash, nil)
 
 	// Mock Create token repository
-	testTokenRepository.On("Create", mock.AnythingOfType("dtos.OneTimeTokenCreate")).Return(&models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	testTokenRepository.On("Create", mock.AnythingOfType("dtos.OneTimeTokenCreate")).Return(&sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  1,
-			Purpose: models.OneTimeTokenPurposeEmailVerify,
+			Purpose: sharedmodels.OneTimeTokenPurposeEmailVerify,
 			Hash:    tokenHash,
 			IsUsed:  false,
 			Expires: time.Now().Add(24 * time.Hour),
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID: 1,
 		},
 	}, nil)
@@ -100,16 +101,16 @@ func TestCreateUserSendEmailUseCase_Execute_OneTimeTokenError(t *testing.T) {
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
-	userStatus := models.UserStatusPending
-	testUser := models.User{
-		UserBase: models.UserBase{
+	userStatus := usermodels.UserStatusPending
+	testUser := usermodels.User{
+		UserBase: usermodels.UserBase{
 			Name:   "Test User",
 			Email:  "test@example.com",
 			Phone:  "1234567890",
 			Status: &userStatus,
 			RoleID: 2,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -145,16 +146,16 @@ func TestCreateUserSendEmailUseCase_Execute_TokenRepositoryCreateError(t *testin
 	testHashProvider := new(providersmocks.MockHashProvider)
 	testTokenRepository := new(repositoriesmocks.MockOneTimeTokenRepository)
 
-	userStatus := models.UserStatusPending
-	testUser := models.User{
-		UserBase: models.UserBase{
+	userStatus := usermodels.UserStatusPending
+	testUser := usermodels.User{
+		UserBase: usermodels.UserBase{
 			Name:   "Test User",
 			Email:  "test@example.com",
 			Phone:  "1234567890",
 			Status: &userStatus,
 			RoleID: 2,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -172,7 +173,7 @@ func TestCreateUserSendEmailUseCase_Execute_TokenRepositoryCreateError(t *testin
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Failed to create token in repository",
 	)
-	testTokenRepository.On("Create", mock.AnythingOfType("dtos.OneTimeTokenCreate")).Return((*models.OneTimeToken)(nil), appErr)
+	testTokenRepository.On("Create", mock.AnythingOfType("dtos.OneTimeTokenCreate")).Return((*sharedmodels.OneTimeToken)(nil), appErr)
 
 	uc := NewCreateUserSendEmailUseCase(
 		testHashProvider,
@@ -198,16 +199,16 @@ func TestCreateUserSendEmailUseCase_Execute_EmailSendError(t *testing.T) {
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.NewUserEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
-	userStatus := models.UserStatusPending
-	testUser := models.User{
-		UserBase: models.UserBase{
+	userStatus := usermodels.UserStatusPending
+	testUser := usermodels.User{
+		UserBase: usermodels.UserBase{
 			Name:   "Test User",
 			Email:  "test@example.com",
 			Phone:  "1234567890",
 			Status: &userStatus,
 			RoleID: 2,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -220,15 +221,15 @@ func TestCreateUserSendEmailUseCase_Execute_EmailSendError(t *testing.T) {
 	testHashProvider.On("OneTimeToken").Return(token, tokenHash, nil)
 
 	// Mock Create token repository success
-	testTokenRepository.On("Create", mock.AnythingOfType("dtos.OneTimeTokenCreate")).Return(&models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	testTokenRepository.On("Create", mock.AnythingOfType("dtos.OneTimeTokenCreate")).Return(&sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  1,
-			Purpose: models.OneTimeTokenPurposeEmailVerify,
+			Purpose: sharedmodels.OneTimeTokenPurposeEmailVerify,
 			Hash:    tokenHash,
 			IsUsed:  false,
 			Expires: time.Now().Add(24 * time.Hour),
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID: 1,
 		},
 	}, nil)
@@ -271,16 +272,16 @@ func TestCreateUserSendEmailUseCase_Execute_EmailRenderError(t *testing.T) {
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.NewUserEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
-	userStatus := models.UserStatusPending
-	testUser := models.User{
-		UserBase: models.UserBase{
+	userStatus := usermodels.UserStatusPending
+	testUser := usermodels.User{
+		UserBase: usermodels.UserBase{
 			Name:   "Test User",
 			Email:  "test@example.com",
 			Phone:  "1234567890",
 			Status: &userStatus,
 			RoleID: 2,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -293,15 +294,15 @@ func TestCreateUserSendEmailUseCase_Execute_EmailRenderError(t *testing.T) {
 	testHashProvider.On("OneTimeToken").Return(token, tokenHash, nil)
 
 	// Mock Create token repository success
-	testTokenRepository.On("Create", mock.AnythingOfType("dtos.OneTimeTokenCreate")).Return(&models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	testTokenRepository.On("Create", mock.AnythingOfType("dtos.OneTimeTokenCreate")).Return(&sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  1,
-			Purpose: models.OneTimeTokenPurposeEmailVerify,
+			Purpose: sharedmodels.OneTimeTokenPurposeEmailVerify,
 			Hash:    tokenHash,
 			IsUsed:  false,
 			Expires: time.Now().Add(24 * time.Hour),
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID: 1,
 		},
 	}, nil)
