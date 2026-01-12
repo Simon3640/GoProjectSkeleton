@@ -3,7 +3,7 @@ package userrepositories
 import (
 	contractsprovider "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 	dbmodels "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/models"
 	reposhared "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/shared"
 
@@ -12,7 +12,7 @@ import (
 
 // RoleRepository is the repository for the role model
 type RoleRepository struct {
-	reposhared.RepositoryBase[models.RoleCreate, models.RoleUpdate, models.Role, dbmodels.Role]
+	reposhared.RepositoryBase[usermodels.RoleCreate, usermodels.RoleUpdate, usermodels.Role, dbmodels.Role]
 }
 
 var _ usercontracts.IRoleRepository = (*RoleRepository)(nil)
@@ -20,10 +20,10 @@ var _ usercontracts.IRoleRepository = (*RoleRepository)(nil)
 // RoleConverter is the converter for the role model
 type RoleConverter struct{}
 
-var _ reposhared.ModelConverter[models.RoleCreate, models.RoleUpdate, models.Role, dbmodels.Role] = (*RoleConverter)(nil)
+var _ reposhared.ModelConverter[usermodels.RoleCreate, usermodels.RoleUpdate, usermodels.Role, dbmodels.Role] = (*RoleConverter)(nil)
 
 // ToGormCreate converts a role create model to a role gorm model
-func (uc *RoleConverter) ToGormCreate(model models.RoleCreate) *dbmodels.Role {
+func (uc *RoleConverter) ToGormCreate(model usermodels.RoleCreate) *dbmodels.Role {
 	return &dbmodels.Role{
 		Key:      model.Key,
 		IsActive: model.IsActive,
@@ -32,10 +32,10 @@ func (uc *RoleConverter) ToGormCreate(model models.RoleCreate) *dbmodels.Role {
 }
 
 // ToDomain converts a role gorm model to a role domain model
-func (uc *RoleConverter) ToDomain(ormModel *dbmodels.Role) *models.Role {
-	return &models.Role{
+func (uc *RoleConverter) ToDomain(ormModel *dbmodels.Role) *usermodels.Role {
+	return &usermodels.Role{
 		ID: ormModel.ID,
-		RoleBase: models.RoleBase{
+		RoleBase: usermodels.RoleBase{
 			Key:      ormModel.Key,
 			IsActive: ormModel.IsActive,
 			Priority: ormModel.Priority,
@@ -44,7 +44,7 @@ func (uc *RoleConverter) ToDomain(ormModel *dbmodels.Role) *models.Role {
 }
 
 // ToGormUpdate converts a role update model to a role gorm model
-func (uc *RoleConverter) ToGormUpdate(model models.RoleUpdate) *dbmodels.Role {
+func (uc *RoleConverter) ToGormUpdate(model usermodels.RoleUpdate) *dbmodels.Role {
 	Role := &dbmodels.Role{}
 
 	if model.Key != nil {
@@ -67,9 +67,9 @@ func (uc *RoleConverter) ToGormUpdate(model models.RoleUpdate) *dbmodels.Role {
 func NewRoleRepository(db *gorm.DB, logger contractsprovider.ILoggerProvider) *RoleRepository {
 	return &RoleRepository{
 		RepositoryBase: reposhared.RepositoryBase[
-			models.RoleCreate,
-			models.RoleUpdate,
-			models.Role,
+			usermodels.RoleCreate,
+			usermodels.RoleUpdate,
+			usermodels.Role,
 			dbmodels.Role,
 		]{
 			DB:             db,

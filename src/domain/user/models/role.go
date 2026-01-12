@@ -1,5 +1,7 @@
 package models
 
+import sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+
 type RoleBase struct {
 	Key      string `json:"key"`
 	IsActive bool   `json:"status"`
@@ -28,5 +30,5 @@ type Role struct {
 
 type RoleInDB struct {
 	RoleBase
-	DBBaseModel
+	sharedmodels.DBBaseModel
 }

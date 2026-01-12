@@ -8,7 +8,7 @@ import (
 	userusecases "github.com/simon3640/goprojectskeleton/src/application/modules/user/use_cases"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
@@ -24,7 +24,7 @@ import (
 // @Produce json
 // @Param request body userdtos.UserCreate true "Datos del usuario"
 // @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
-// @Success 201 {object} models.User "Usuario creado"
+// @Success 201 {object} usermodels.User "Usuario creado"
 // @Failure 400 {object} map[string]string "Error de validación"
 // @Router /api/user [post]
 func CreateUser(ctx handlers.HandlerContext) {
@@ -52,5 +52,5 @@ func CreateUser(ctx handlers.HandlerContext) {
 	headers := map[handlers.HTTPHeaderTypeEnum]string{
 		handlers.CONTENT_TYPE: string(handlers.APPLICATION_JSON),
 	}
-	handlers.NewRequestResolver[models.User]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
+	handlers.NewRequestResolver[usermodels.User]().ResolveDTO(ctx.ResponseWriter, ucResult, headers)
 }

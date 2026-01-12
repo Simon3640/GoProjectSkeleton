@@ -3,13 +3,13 @@ package dtomocks
 
 import (
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
-var userStatusActive = models.UserStatusActive
+var userStatusActive = usermodels.UserStatusActive
 
 // UserBase is the base model for a user
-var UserBase = models.UserBase{
+var UserBase = usermodels.UserBase{
 	Name:   "Test User",
 	Email:  "testuser@example.com",
 	Phone:  "123",
@@ -29,7 +29,7 @@ var UserAndPasswordCreate = userdtos.UserAndPasswordCreate{
 }
 
 // UserWithRole is the model for a user with a role
-var UserWithRole = models.UserWithRole{
+var UserWithRole = usermodels.UserWithRole{
 	UserBase: UserBase,
 	ID:       1,
 }

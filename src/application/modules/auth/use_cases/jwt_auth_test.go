@@ -17,7 +17,8 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/workers"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	passwordmodels "github.com/simon3640/goprojectskeleton/src/domain/password/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -41,13 +42,13 @@ func TestAuthenticationUseCase(t *testing.T) {
 		Password: "plainPassword",
 	}
 	passwordExpiresAt := time.Now().Add(30 * 24 * time.Hour)
-	passwordBase := models.PasswordBase{
+	passwordBase := passwordmodels.PasswordBase{
 		UserID:    uint(1),
 		ExpiresAt: &passwordExpiresAt,
 		IsActive:  true,
 		Hash:      "hashedPassword123",
 	}
-	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&models.Password{
+	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&passwordmodels.Password{
 		PasswordBase: passwordBase,
 		ID:           uint(1),
 	}, nil)
@@ -93,7 +94,7 @@ func TestAuthenticationUseCase_OTPLoginEnabled(t *testing.T) {
 	}
 
 	passwordExpiresAt := time.Now().Add(30 * 24 * time.Hour)
-	passwordBase := models.PasswordBase{
+	passwordBase := passwordmodels.PasswordBase{
 		UserID:    uint(1),
 		ExpiresAt: &passwordExpiresAt,
 		IsActive:  true,
@@ -104,7 +105,7 @@ func TestAuthenticationUseCase_OTPLoginEnabled(t *testing.T) {
 	userWithOTP := dtomocks.UserWithRole
 	userWithOTP.OTPLogin = true
 
-	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&models.Password{
+	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&passwordmodels.Password{
 		PasswordBase: passwordBase,
 		ID:           uint(1),
 	}, nil)
@@ -165,7 +166,7 @@ func TestAuthenticationUseCase_OTPLoginEnabled_NonBlocking(t *testing.T) {
 	}
 
 	passwordExpiresAt := time.Now().Add(30 * 24 * time.Hour)
-	passwordBase := models.PasswordBase{
+	passwordBase := passwordmodels.PasswordBase{
 		UserID:    uint(1),
 		ExpiresAt: &passwordExpiresAt,
 		IsActive:  true,
@@ -175,7 +176,7 @@ func TestAuthenticationUseCase_OTPLoginEnabled_NonBlocking(t *testing.T) {
 	userWithOTP := dtomocks.UserWithRole
 	userWithOTP.OTPLogin = true
 
-	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&models.Password{
+	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&passwordmodels.Password{
 		PasswordBase: passwordBase,
 		ID:           uint(1),
 	}, nil).Maybe()
@@ -184,7 +185,7 @@ func TestAuthenticationUseCase_OTPLoginEnabled_NonBlocking(t *testing.T) {
 
 	// Mock OTP generation for background service (will be called asynchronously)
 	testHashProvider.On("GenerateOTP").Return("123456", []byte("hashedOTP"), nil).Maybe()
-	testOTPRepository.On("Create", mock.Anything).Return(&models.OneTimePassword{}, nil).Maybe()
+	testOTPRepository.On("Create", mock.Anything).Return(&sharedmodels.OneTimePassword{}, nil).Maybe()
 
 	// Execute multiple times to verify non-blocking behavior
 	var wg sync.WaitGroup
@@ -233,13 +234,13 @@ func TestAuthenticationUseCase_InvalidCredentials(t *testing.T) {
 		Password: "wrongPassword",
 	}
 	passwordExpiresAt := time.Now().Add(30 * 24 * time.Hour)
-	passwordBase := models.PasswordBase{
+	passwordBase := passwordmodels.PasswordBase{
 		UserID:    uint(1),
 		ExpiresAt: &passwordExpiresAt,
 		IsActive:  true,
 		Hash:      "hashedPassword123",
 	}
-	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&models.Password{
+	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&passwordmodels.Password{
 		PasswordBase: passwordBase,
 		ID:           uint(1),
 	}, nil)
@@ -326,13 +327,13 @@ func TestAuthenticationUseCase_RateLimitNotExceeded(t *testing.T) {
 	cacheProvider.On("GetInt64", "login_attempts:user@example.com").Return(int64(attempts), nil)
 
 	passwordExpiresAt := time.Now().Add(30 * 24 * time.Hour)
-	passwordBase := models.PasswordBase{
+	passwordBase := passwordmodels.PasswordBase{
 		UserID:    uint(1),
 		ExpiresAt: &passwordExpiresAt,
 		IsActive:  true,
 		Hash:      "hashedPassword123",
 	}
-	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&models.Password{
+	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&passwordmodels.Password{
 		PasswordBase: passwordBase,
 		ID:           uint(1),
 	}, nil)
@@ -388,13 +389,13 @@ func TestAuthenticationUseCase_IncrementFailedAttempts(t *testing.T) {
 	cacheProvider.On("GetInt64", "login_attempts:user@example.com").Return(int64(existingAttempts), nil)
 
 	passwordExpiresAt := time.Now().Add(30 * 24 * time.Hour)
-	passwordBase := models.PasswordBase{
+	passwordBase := passwordmodels.PasswordBase{
 		UserID:    uint(1),
 		ExpiresAt: &passwordExpiresAt,
 		IsActive:  true,
 		Hash:      "hashedPassword123",
 	}
-	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&models.Password{
+	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&passwordmodels.Password{
 		PasswordBase: passwordBase,
 		ID:           uint(1),
 	}, nil)
@@ -431,13 +432,13 @@ func TestAuthenticationUseCase_RateLimitWithNoCacheProvider(t *testing.T) {
 	}
 
 	passwordExpiresAt := time.Now().Add(30 * 24 * time.Hour)
-	passwordBase := models.PasswordBase{
+	passwordBase := passwordmodels.PasswordBase{
 		UserID:    uint(1),
 		ExpiresAt: &passwordExpiresAt,
 		IsActive:  true,
 		Hash:      "hashedPassword123",
 	}
-	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&models.Password{
+	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&passwordmodels.Password{
 		PasswordBase: passwordBase,
 		ID:           uint(1),
 	}, nil)
@@ -489,13 +490,13 @@ func TestAuthenticationUseCase_IncrementFailedAttemptsWhenNoPreviousAttempts(t *
 	cacheProvider.On("GetInt64", "login_attempts:user@example.com").Return(int64(0), nil)
 
 	passwordExpiresAt := time.Now().Add(30 * 24 * time.Hour)
-	passwordBase := models.PasswordBase{
+	passwordBase := passwordmodels.PasswordBase{
 		UserID:    uint(1),
 		ExpiresAt: &passwordExpiresAt,
 		IsActive:  true,
 		Hash:      "hashedPassword123",
 	}
-	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&models.Password{
+	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&passwordmodels.Password{
 		PasswordBase: passwordBase,
 		ID:           uint(1),
 	}, nil)
@@ -542,13 +543,13 @@ func TestAuthenticationUseCase_RateLimitWithMaxAttemptsZero(t *testing.T) {
 
 	// No debe llamar a Get del cache porque maxAttempts es 0
 	passwordExpiresAt := time.Now().Add(30 * 24 * time.Hour)
-	passwordBase := models.PasswordBase{
+	passwordBase := passwordmodels.PasswordBase{
 		UserID:    uint(1),
 		ExpiresAt: &passwordExpiresAt,
 		IsActive:  true,
 		Hash:      "hashedPassword123",
 	}
-	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&models.Password{
+	testPasswordRepository.On("GetActivePassword", "user@example.com").Return(&passwordmodels.Password{
 		PasswordBase: passwordBase,
 		ID:           uint(1),
 	}, nil)

@@ -9,7 +9,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 	database "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton"
 	userrepositories "github.com/simon3640/goprojectskeleton/src/infrastructure/databases/goprojectskeleton/repositories/user"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
@@ -41,7 +41,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			headers := map[api.HTTPHeaderTypeEnum]string{
 				api.CONTENT_TYPE: string(api.APPLICATION_JSON),
 			}
-			content, statusCode := api.NewRequestResolver[models.UserWithRole]().ResolveDTO(c, uc_result, headers)
+			content, statusCode := api.NewRequestResolver[usermodels.UserWithRole]().ResolveDTO(c, uc_result, headers)
 			c.JSON(statusCode, content)
 			c.Abort()
 			return

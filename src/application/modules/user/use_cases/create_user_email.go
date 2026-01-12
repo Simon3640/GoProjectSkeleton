@@ -14,26 +14,27 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/templates"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 // CreateUserSendEmailUseCase is a use case that sends an email to a user
 type CreateUserSendEmailUseCase struct {
-	usecase.BaseUseCaseValidation[models.User, models.User]
+	usecase.BaseUseCaseValidation[usermodels.User, usermodels.User]
 
 	hashProvider contractsproviders.IHashProvider
 
 	tokenRepo contractsrepositories.IOneTimeTokenRepository
 }
 
-var _ usecase.BaseUseCase[models.User, models.User] = (*CreateUserSendEmailUseCase)(nil)
+var _ usecase.BaseUseCase[usermodels.User, usermodels.User] = (*CreateUserSendEmailUseCase)(nil)
 
 // Execute executes the use case
 func (uc *CreateUserSendEmailUseCase) Execute(ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
-	input models.User,
-) *usecase.UseCaseResult[models.User] {
-	result := usecase.NewUseCaseResult[models.User]()
+	input usermodels.User,
+) *usecase.UseCaseResult[usermodels.User] {
+	result := usecase.NewUseCaseResult[usermodels.User]()
 	uc.SetLocale(locale)
 	uc.SetAppContext(ctx)
 	token := uc.createOneTimeToken(input, result)
@@ -60,10 +61,10 @@ func (uc *CreateUserSendEmailUseCase) Execute(ctx *app_context.AppContext,
 
 // createOneTimeToken creates a one time token for the user
 // returns the token if created successfully, otherwise returns nil
-func (uc *CreateUserSendEmailUseCase) createOneTimeToken(input models.User, result *usecase.UseCaseResult[models.User]) *string {
+func (uc *CreateUserSendEmailUseCase) createOneTimeToken(input usermodels.User, result *usecase.UseCaseResult[usermodels.User]) *string {
 	token, err := services.CreateOneTimeTokenService(
 		input.ID,
-		models.OneTimeTokenPurposeEmailVerify,
+		sharedmodels.OneTimeTokenPurposeEmailVerify,
 		uc.hashProvider,
 		uc.tokenRepo,
 	)
@@ -83,7 +84,7 @@ func (uc *CreateUserSendEmailUseCase) createOneTimeToken(input models.User, resu
 
 // sendWelcomeEmail sends a welcome email to the user.
 // If sending fails, sets an error in the result.
-func (uc *CreateUserSendEmailUseCase) sendWelcomeEmail(input models.User, token string, result *usecase.UseCaseResult[models.User]) {
+func (uc *CreateUserSendEmailUseCase) sendWelcomeEmail(input usermodels.User, token string, result *usecase.UseCaseResult[usermodels.User]) {
 	newUserEmailData := emailmodels.NewUserEmailData{
 		Name:              input.Name,
 		ActivationLink:    settings.AppSettingsInstance.FrontendActivateAccountURL + "?token=" + token,
@@ -115,7 +116,7 @@ func NewCreateUserSendEmailUseCase(
 	tokenRepo contractsrepositories.IOneTimeTokenRepository,
 ) *CreateUserSendEmailUseCase {
 	return &CreateUserSendEmailUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[models.User, models.User]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[usermodels.User, usermodels.User]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(),
 		},

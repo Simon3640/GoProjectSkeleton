@@ -1,6 +1,9 @@
+// Package models contains shared models
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type OneTimeTokenPurpose string
 

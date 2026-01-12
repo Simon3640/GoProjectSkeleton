@@ -3,7 +3,7 @@ package defaults
 
 import (
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	"github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 var userStatusActive = models.UserStatusActive

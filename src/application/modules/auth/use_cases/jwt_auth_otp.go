@@ -13,7 +13,8 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 // AuthenticateOTPUseCase is the use case for authenticating a user with an OTP
@@ -67,7 +68,7 @@ func (uc *AuthenticateOTPUseCase) Execute(ctx *app_context.AppContext,
 	return result
 }
 
-func (uc *AuthenticateOTPUseCase) validateAndGetOTP(result *usecase.UseCaseResult[dtos.Token], otp string) *models.OneTimePassword {
+func (uc *AuthenticateOTPUseCase) validateAndGetOTP(result *usecase.UseCaseResult[dtos.Token], otp string) *sharedmodels.OneTimePassword {
 	hash := uc.hashProvider.HashOneTimeToken(otp)
 	oneTimePassword, err := uc.otpRepo.GetByPasswordHash(hash)
 
@@ -98,7 +99,7 @@ func (uc *AuthenticateOTPUseCase) validateAndGetOTP(result *usecase.UseCaseResul
 	return oneTimePassword
 }
 
-func (uc *AuthenticateOTPUseCase) getUser(result *usecase.UseCaseResult[dtos.Token], userID uint) *models.UserWithRole {
+func (uc *AuthenticateOTPUseCase) getUser(result *usecase.UseCaseResult[dtos.Token], userID uint) *usermodels.UserWithRole {
 	user, err := uc.userRepo.GetUserWithRole(userID)
 	if err != nil {
 		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting user by ID", err.ToError(), uc.AppContext)
@@ -114,7 +115,7 @@ func (uc *AuthenticateOTPUseCase) getUser(result *usecase.UseCaseResult[dtos.Tok
 	return user
 }
 
-func (uc *AuthenticateOTPUseCase) generateTokens(ctx context.Context, result *usecase.UseCaseResult[dtos.Token], user *models.UserWithRole) dtos.Token {
+func (uc *AuthenticateOTPUseCase) generateTokens(ctx context.Context, result *usecase.UseCaseResult[dtos.Token], user *usermodels.UserWithRole) dtos.Token {
 	claims := authcontracts.JWTCLaims{
 		"role": user.GetRoleKey(),
 	}

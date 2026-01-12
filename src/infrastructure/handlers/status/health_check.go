@@ -7,7 +7,7 @@ import (
 	usecases "github.com/simon3640/goprojectskeleton/src/application/modules/status/use_cases"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	statusmodels "github.com/simon3640/goprojectskeleton/src/domain/status/models"
 	handlers "github.com/simon3640/goprojectskeleton/src/infrastructure/handlers/shared"
 	"github.com/simon3640/goprojectskeleton/src/infrastructure/providers"
 )
@@ -15,12 +15,12 @@ import (
 // GetHealthCheck get the status of the API
 // @Summary this endpoint get the status of the API
 // @Description Get status of the API
-// @Schemes models.Status
+// @Schemes statusmodels.Status
 // @Tags Status Check
 // @Accept json
 // @Produce json
 // @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
-// @Success 200 {object} models.Status "Status of the API"
+// @Success 200 {object} statusmodels.Status "Status of the API"
 // @Router /api/status [get]
 func GetHealthCheck(ctx handlers.HandlerContext) {
 	uc := usecases.NewGetStatusUseCase(
@@ -37,7 +37,7 @@ func GetHealthCheck(ctx handlers.HandlerContext) {
 		"get_status_use_case",
 	)
 
-	requestResolver := handlers.NewRequestResolver[models.Status]()
+	requestResolver := handlers.NewRequestResolver[statusmodels.Status]()
 	headers := map[handlers.HTTPHeaderTypeEnum]string{
 		handlers.CONTENT_TYPE: string(handlers.APPLICATION_JSON),
 	}

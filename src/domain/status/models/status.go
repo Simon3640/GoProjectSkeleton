@@ -1,3 +1,4 @@
+// Package models contains the status models
 package models
 
 type Status struct {

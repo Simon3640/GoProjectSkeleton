@@ -5,15 +5,16 @@ import (
 
 	contractstatus "github.com/simon3640/goprojectskeleton/src/application/modules/status/contracts"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	statusmodels "github.com/simon3640/goprojectskeleton/src/domain/status/models"
 )
 
 type ApiStatusProvider struct{}
 
 var _ contractstatus.IApiStatusProvider = (*ApiStatusProvider)(nil)
 
-func (asp *ApiStatusProvider) Get(date time.Time) models.Status {
-	return models.Status{
+// Get returns the API status for the given date
+func (asp *ApiStatusProvider) Get(date time.Time) statusmodels.Status {
+	return statusmodels.Status{
 		AppName: settings.AppSettingsInstance.AppName,
 		Version: settings.AppSettingsInstance.AppVersion,
 		Status:  "OK",

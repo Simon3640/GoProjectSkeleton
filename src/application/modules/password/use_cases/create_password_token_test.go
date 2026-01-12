@@ -16,7 +16,8 @@ import (
 	providersmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/providers"
 	repositoriesmocks "github.com/simon3640/goprojectskeleton/src/application/shared/mocks/repositories"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	passwordmodels "github.com/simon3640/goprojectskeleton/src/domain/password/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -37,15 +38,15 @@ func TestCreatePasswordTokenUseCase_Execute_Success(t *testing.T) {
 	hashedPassword := "HashedNewPassword123!"
 
 	// Create a valid token
-	validToken := &models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	validToken := &sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  userID,
-			Purpose: models.OneTimeTokenPurposePasswordReset,
+			Purpose: sharedmodels.OneTimeTokenPurposePasswordReset,
 			Hash:    tokenHash,
 			IsUsed:  false,
 			Expires: time.Now().Add(1 * time.Hour),
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -67,8 +68,8 @@ func TestCreatePasswordTokenUseCase_Execute_Success(t *testing.T) {
 			pc.Hash == hashedPassword &&
 			pc.IsActive == true &&
 			pc.ExpiresAt != nil
-	})).Return(&models.Password{
-		PasswordBase: models.PasswordBase{
+	})).Return(&passwordmodels.Password{
+		PasswordBase: passwordmodels.PasswordBase{
 			UserID:   userID,
 			Hash:     hashedPassword,
 			IsActive: true,
@@ -77,15 +78,15 @@ func TestCreatePasswordTokenUseCase_Execute_Success(t *testing.T) {
 	}, nil)
 
 	tokenUpdate := shareddtos.OneTimeTokenUpdate{IsUsed: true, ID: validToken.ID}
-	updatedToken := &models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	updatedToken := &sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  userID,
-			Purpose: models.OneTimeTokenPurposePasswordReset,
+			Purpose: sharedmodels.OneTimeTokenPurposePasswordReset,
 			Hash:    tokenHash,
 			IsUsed:  true,
 			Expires: validToken.Expires,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        validToken.ID,
 			CreatedAt: validToken.CreatedAt,
 			UpdatedAt: time.Now(),
@@ -201,15 +202,15 @@ func TestCreatePasswordTokenUseCase_Execute_TokenIsUsed(t *testing.T) {
 	tokenHash := []byte(hex.EncodeToString([]byte("hashed_token")))
 
 	// Create a used token
-	usedToken := &models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	usedToken := &sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  1,
-			Purpose: models.OneTimeTokenPurposePasswordReset,
+			Purpose: sharedmodels.OneTimeTokenPurposePasswordReset,
 			Hash:    tokenHash,
 			IsUsed:  true,
 			Expires: time.Now().Add(1 * time.Hour),
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -253,15 +254,15 @@ func TestCreatePasswordTokenUseCase_Execute_TokenExpired(t *testing.T) {
 	tokenHash := []byte(hex.EncodeToString([]byte("hashed_token")))
 
 	// Create an expired token
-	expiredToken := &models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	expiredToken := &sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  1,
-			Purpose: models.OneTimeTokenPurposePasswordReset,
+			Purpose: sharedmodels.OneTimeTokenPurposePasswordReset,
 			Hash:    tokenHash,
 			IsUsed:  false,
 			Expires: time.Now().Add(-1 * time.Hour),
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -307,15 +308,15 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorCreatingPassword(t *testing.T) 
 	noHashedPassword := "NewPassword123!"
 
 	// Create a valid token
-	validToken := &models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	validToken := &sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  userID,
-			Purpose: models.OneTimeTokenPurposePasswordReset,
+			Purpose: sharedmodels.OneTimeTokenPurposePasswordReset,
 			Hash:    tokenHash,
 			IsUsed:  false,
 			Expires: time.Now().Add(1 * time.Hour),
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -369,15 +370,15 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorMarkingTokenAsUsed(t *testing.T
 	hashedPassword := "HashedNewPassword123!"
 
 	// Create a valid token
-	validToken := &models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	validToken := &sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  userID,
-			Purpose: models.OneTimeTokenPurposePasswordReset,
+			Purpose: sharedmodels.OneTimeTokenPurposePasswordReset,
 			Hash:    tokenHash,
 			IsUsed:  false,
 			Expires: time.Now().Add(1 * time.Hour),
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -405,8 +406,8 @@ func TestCreatePasswordTokenUseCase_Execute_ErrorMarkingTokenAsUsed(t *testing.T
 			pc.Hash == hashedPassword &&
 			pc.IsActive == true &&
 			pc.ExpiresAt != nil
-	})).Return(&models.Password{
-		PasswordBase: models.PasswordBase{
+	})).Return(&passwordmodels.Password{
+		PasswordBase: passwordmodels.PasswordBase{
 			UserID:   userID,
 			Hash:     hashedPassword,
 			IsActive: true,
@@ -448,15 +449,15 @@ func TestCreatePasswordTokenUseCase_Execute_TokenPurposeIsNotPasswordReset(t *te
 	noHashedPassword := "NewPassword123!"
 
 	// Create a valid token
-	validToken := &models.OneTimeToken{
-		OneTimeTokenBase: models.OneTimeTokenBase{
+	validToken := &sharedmodels.OneTimeToken{
+		OneTimeTokenBase: sharedmodels.OneTimeTokenBase{
 			UserID:  userID,
-			Purpose: models.OneTimeTokenPurposeEmailVerify,
+			Purpose: sharedmodels.OneTimeTokenPurposeEmailVerify,
 			Hash:    tokenHash,
 			IsUsed:  false,
 			Expires: time.Now().Add(1 * time.Hour),
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),

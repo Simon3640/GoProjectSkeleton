@@ -14,7 +14,8 @@ import (
 	emailservice "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails"
 	emailmodels "github.com/simon3640/goprojectskeleton/src/application/shared/services/emails/models"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -27,15 +28,15 @@ func TestGetResetPasswordSendEmailUseCase_Execute_Success(t *testing.T) {
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
-	userStatus := models.UserStatusActive
-	testUser := models.User{
-		UserBase: models.UserBase{
+	userStatus := usermodels.UserStatusActive
+	testUser := usermodels.User{
+		UserBase: usermodels.UserBase{
 			Name:   "Test User",
 			Email:  "test@example.com",
 			Phone:  "1234567890",
 			Status: &userStatus,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -77,15 +78,15 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorRenderingEmail(t *testing
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
-	userStatus := models.UserStatusActive
-	testUser := models.User{
-		UserBase: models.UserBase{
+	userStatus := usermodels.UserStatusActive
+	testUser := usermodels.User{
+		UserBase: usermodels.UserBase{
 			Name:   "Test User",
 			Email:  "test@example.com",
 			Phone:  "1234567890",
 			Status: &userStatus,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -131,15 +132,15 @@ func TestGetResetPasswordSendEmailUseCase_Execute_ErrorSendingEmail(t *testing.T
 	mockRenderProvider := new(providersmocks.MockRenderProvider[emailmodels.ResetPasswordEmailData])
 	mockEmailProvider := new(providersmocks.MockEmailProvider)
 
-	userStatus := models.UserStatusActive
-	testUser := models.User{
-		UserBase: models.UserBase{
+	userStatus := usermodels.UserStatusActive
+	testUser := usermodels.User{
+		UserBase: usermodels.UserBase{
 			Name:   "Test User",
 			Email:  "test@example.com",
 			Phone:  "1234567890",
 			Status: &userStatus,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -185,15 +186,15 @@ func TestGetResetPasswordSendEmailUseCase_buildEmailData(t *testing.T) {
 
 	uc := NewGetResetPasswordSendEmailUseCase()
 
-	userStatus := models.UserStatusActive
-	testUser := models.User{
-		UserBase: models.UserBase{
+	userStatus := usermodels.UserStatusActive
+	testUser := usermodels.User{
+		UserBase: usermodels.UserBase{
 			Name:   "Test User",
 			Email:  "test@example.com",
 			Phone:  "1234567890",
 			Status: &userStatus,
 		},
-		DBBaseModel: models.DBBaseModel{
+		DBBaseModel: sharedmodels.DBBaseModel{
 			ID:        1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),

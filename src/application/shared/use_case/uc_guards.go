@@ -2,16 +2,18 @@ package usecase
 
 import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
-type Guard func(user models.UserWithRole, input any) *messages.MessageKeysEnum
+// Guard is a function that validates user access to a resource
+type Guard func(user usermodels.UserWithRole, input any) *messages.MessageKeysEnum
 
 type Guards struct {
 	list  []Guard
-	actor models.UserWithRole
+	actor usermodels.UserWithRole
 }
 
+// Validate validates the input against the guards
 func (g Guards) Validate(input any) *messages.MessageKeysEnum {
 	for _, guard := range g.list {
 		if err := guard(g.actor, input); err != nil {
@@ -21,12 +23,14 @@ func (g Guards) Validate(input any) *messages.MessageKeysEnum {
 	return nil
 }
 
+// NewGuards creates a new Guards instance
 func NewGuards(guards ...Guard) Guards {
 	return Guards{
 		list: guards,
 	}
 }
 
-func (g *Guards) SetActor(actor models.UserWithRole) {
+// SetActor sets the actor for the guards
+func (g *Guards) SetActor(actor usermodels.UserWithRole) {
 	g.actor = actor
 }

@@ -4,7 +4,7 @@ package authmocks
 import (
 	authcontracts "github.com/simon3640/goprojectskeleton/src/application/modules/auth/contracts"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -16,21 +16,21 @@ type MockUserRepository struct {
 var _ authcontracts.IUserRepository = (*MockUserRepository)(nil)
 
 // GetUserWithRole gets a user with their role
-func (m *MockUserRepository) GetUserWithRole(id uint) (*models.UserWithRole, *applicationerrors.ApplicationError) {
+func (m *MockUserRepository) GetUserWithRole(id uint) (*usermodels.UserWithRole, *applicationerrors.ApplicationError) {
 	args := m.Called(id)
 	errorArg := args.Get(1)
 	if errorArg != nil {
-		return args.Get(0).(*models.UserWithRole), errorArg.(*applicationerrors.ApplicationError)
+		return args.Get(0).(*usermodels.UserWithRole), errorArg.(*applicationerrors.ApplicationError)
 	}
-	return args.Get(0).(*models.UserWithRole), nil
+	return args.Get(0).(*usermodels.UserWithRole), nil
 }
 
 // GetByEmailOrPhone gets a user by email or phone
-func (m *MockUserRepository) GetByEmailOrPhone(emailOrPhone string) (*models.User, *applicationerrors.ApplicationError) {
+func (m *MockUserRepository) GetByEmailOrPhone(emailOrPhone string) (*usermodels.User, *applicationerrors.ApplicationError) {
 	args := m.Called(emailOrPhone)
 	errorArg := args.Get(1)
 	if errorArg != nil {
 		return nil, errorArg.(*applicationerrors.ApplicationError)
 	}
-	return args.Get(0).(*models.User), nil
+	return args.Get(0).(*usermodels.User), nil
 }

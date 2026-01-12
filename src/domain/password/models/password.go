@@ -1,8 +1,11 @@
+// Package models contains the password models
 package models
 
 import (
 	"fmt"
 	"time"
+
+	sharedmodels "github.com/simon3640/goprojectskeleton/src/domain/shared/models"
 )
 
 type PasswordBase struct {
@@ -27,5 +30,5 @@ type Password struct {
 
 type PasswordInDB struct {
 	PasswordBase
-	DBBaseModel
+	sharedmodels.DBBaseModel
 }

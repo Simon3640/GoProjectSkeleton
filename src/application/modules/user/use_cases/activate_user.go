@@ -13,7 +13,7 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/observability"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	"github.com/simon3640/goprojectskeleton/src/domain/models"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
 
 // ActivateUserUseCase is a use case that activates a user
@@ -97,7 +97,7 @@ func (uc *ActivateUserUseCase) validateOneTimeToken(input userdtos.UserActivate,
 func (uc *ActivateUserUseCase) updateUser(userID uint, result *usecase.UseCaseResult[bool]) {
 	updateUser := userdtos.UserUpdate{}
 	updateUser.ID = userID
-	userStatus := models.UserStatusActive
+	userStatus := usermodels.UserStatusActive
 	updateUser.Status = &userStatus
 
 	_, err := uc.userRepo.Update(userID, updateUser)
