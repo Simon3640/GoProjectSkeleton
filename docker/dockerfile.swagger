@@ -15,7 +15,7 @@ COPY ./src/infrastructure/handlers ./handlers
 COPY .air.swagger.toml ./.air.swagger.toml
 
 # Copy models and dto to docs module
-COPY ./src/domain/models ./models
+COPY ./src/domain ./domain
 COPY ./src/application/shared/DTOs ./DTOs
 
 RUN go install github.com/swaggo/swag/cmd/swag@latest
