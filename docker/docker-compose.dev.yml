@@ -84,7 +84,7 @@ services:
     environment:
       - REDIS_HOSTS=redis
       - REDIS_HOST=redis
-      - REDIS_PORT=redis:6379
+      - REDIS_PORT=6379
       - REDIS_PASSWORD=secretPassword
     networks:
       - goprojectskeleton

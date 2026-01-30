@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"reflect"
@@ -44,6 +45,7 @@ func (e *EnvConfigLoader) Load() (*Config, error) {
 		}
 
 		if err := e.setFieldValue(fieldValue, envValue); err != nil {
+			fmt.Println("Error setting field ", field.Name, " value: ", err)
 			return nil, err
 		}
 	}

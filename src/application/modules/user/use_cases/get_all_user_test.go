@@ -4,8 +4,10 @@ import (
 	"testing"
 	"time"
 
+	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	usermocks "github.com/simon3640/goprojectskeleton/src/application/modules/user/mocks"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
+	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/locales/messages"
@@ -44,7 +46,7 @@ func TestGetAllUserUseCase_Execute_SuccessFromCache(t *testing.T) {
 	pageSize := 10
 	queryPayload := domain_utils.NewQueryPayloadBuilder[usermodels.User](nil, nil, &page, &pageSize)
 
-	// Mock cache - data found
+	// Mock cache - data found (una sola key con UserMultiResponse completo)
 	testUsers := []usermodels.User{
 		{
 			UserBase: usermodels.UserBase{
@@ -61,15 +63,16 @@ func TestGetAllUserUseCase_Execute_SuccessFromCache(t *testing.T) {
 		},
 	}
 	var total int64 = 1
+	cachedResponse := userdtos.UserMultiResponse{
+		Records: testUsers,
+		Meta:    shareddtos.NewMetaMultiResponse(1, total, false, false, false),
+	}
+	cachedResponse.Meta.BuildLinks("/user", page, pageSize, queryPayload.BuildQueryParamsURL())
 
 	cacheKey := "users:" + queryPayload.GetQueryKey()
-	testCacheProvider.On("Get", cacheKey, mock.AnythingOfType("*[]models.User")).Return(true, nil, testUsers).Run(func(args mock.Arguments) {
-		dest := args.Get(1).(*[]usermodels.User)
-		*dest = testUsers
-	})
-	testCacheProvider.On("Get", cacheKey+":total", mock.AnythingOfType("*int64")).Return(true, nil, total).Run(func(args mock.Arguments) {
-		dest := args.Get(1).(*int64)
-		*dest = total
+	testCacheProvider.On("Get", cacheKey, mock.Anything).Return(true, nil).Run(func(args mock.Arguments) {
+		dest := args.Get(1).(*userdtos.UserMultiResponse)
+		*dest = cachedResponse
 	})
 
 	uc := NewGetAllUserUseCase(
@@ -114,8 +117,7 @@ func TestGetAllUserUseCase_Execute_SuccessFromRepository(t *testing.T) {
 
 	// Mock cache - not found
 	cacheKey := "users:" + queryPayload.GetQueryKey()
-	testCacheProvider.On("Get", cacheKey, mock.AnythingOfType("*[]models.User")).Return(false, nil)
-	testCacheProvider.On("Get", cacheKey+":total", mock.AnythingOfType("*int64")).Return(false, nil)
+	testCacheProvider.On("Get", cacheKey, mock.Anything).Return(false, nil)
 
 	// Mock repository
 	testUsers := []usermodels.User{
@@ -136,9 +138,8 @@ func TestGetAllUserUseCase_Execute_SuccessFromRepository(t *testing.T) {
 	var total int64 = 1
 	testUserRepository.On("GetAll", mock.Anything, 0, 10).Return(testUsers, total, nil)
 
-	// Mock cache set
-	testCacheProvider.On("Set", cacheKey, testUsers, mock.AnythingOfType("time.Duration")).Return(nil)
-	testCacheProvider.On("Set", cacheKey+":total", total, mock.AnythingOfType("time.Duration")).Return(nil)
+	// Mock cache set (una sola key con UserMultiResponse completo)
+	testCacheProvider.On("Set", cacheKey, mock.Anything, mock.AnythingOfType("time.Duration")).Return(nil)
 
 	uc := NewGetAllUserUseCase(
 		testUserRepository,
@@ -181,8 +182,7 @@ func TestGetAllUserUseCase_Execute_RepositoryError(t *testing.T) {
 
 	// Mock cache - not found
 	cacheKey := "users:" + queryPayload.GetQueryKey()
-	testCacheProvider.On("Get", cacheKey, mock.AnythingOfType("*[]models.User")).Return(false, nil)
-	testCacheProvider.On("Get", cacheKey+":total", mock.AnythingOfType("*int64")).Return(false, nil)
+	testCacheProvider.On("Get", cacheKey, mock.Anything).Return(false, nil)
 
 	// Mock repository error
 	appErr := applicationerrors.NewApplicationError(
@@ -229,14 +229,14 @@ func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 	pageSize := 10
 	queryPayload := domain_utils.NewQueryPayloadBuilder[usermodels.User](nil, nil, &page, &pageSize)
 
-	// Mock cache - error getting cache (should not fail, just log)
+	// Mock cache - error getting cache (fallback a repositorio)
 	cacheKey := "users:" + queryPayload.GetQueryKey()
 	appErr := applicationerrors.NewApplicationError(
 		appstatus.InternalError,
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Cache error",
 	)
-	testCacheProvider.On("Get", cacheKey, mock.AnythingOfType("*[]models.User")).Return(false, appErr)
+	testCacheProvider.On("Get", cacheKey, mock.Anything).Return(false, appErr)
 
 	// Mock repository
 	testUsers := []usermodels.User{
@@ -258,8 +258,7 @@ func TestGetAllUserUseCase_Execute_CacheGetError(t *testing.T) {
 	testUserRepository.On("GetAll", mock.Anything, 0, 10).Return(testUsers, total, nil)
 
 	// Mock cache set
-	testCacheProvider.On("Set", cacheKey, testUsers, mock.AnythingOfType("time.Duration")).Return(nil)
-	testCacheProvider.On("Set", cacheKey+":total", total, mock.AnythingOfType("time.Duration")).Return(nil)
+	testCacheProvider.On("Set", cacheKey, mock.Anything, mock.AnythingOfType("time.Duration")).Return(nil)
 
 	uc := NewGetAllUserUseCase(
 		testUserRepository,
@@ -301,8 +300,7 @@ func TestGetAllUserUseCase_Execute_CacheSetError(t *testing.T) {
 
 	// Mock cache - not found
 	cacheKey := "users:" + queryPayload.GetQueryKey()
-	testCacheProvider.On("Get", cacheKey, mock.AnythingOfType("*[]models.User")).Return(false, nil)
-	testCacheProvider.On("Get", cacheKey+":total", mock.AnythingOfType("*int64")).Return(false, nil)
+	testCacheProvider.On("Get", cacheKey, mock.Anything).Return(false, nil)
 
 	// Mock repository
 	testUsers := []usermodels.User{
@@ -329,8 +327,7 @@ func TestGetAllUserUseCase_Execute_CacheSetError(t *testing.T) {
 		messages.MessageKeysInstance.SOMETHING_WENT_WRONG,
 		"Cache set error",
 	)
-	testCacheProvider.On("Set", cacheKey, testUsers, mock.AnythingOfType("time.Duration")).Return(appErr)
-	testCacheProvider.On("Set", cacheKey+":total", total, mock.AnythingOfType("time.Duration")).Return(appErr)
+	testCacheProvider.On("Set", cacheKey, mock.Anything, mock.AnythingOfType("time.Duration")).Return(appErr)
 
 	uc := NewGetAllUserUseCase(
 		testUserRepository,
