@@ -1,12 +1,14 @@
 package userusecases
 
 import (
+	"encoding/json"
 	"time"
 
 	contractsProviders "github.com/simon3640/goprojectskeleton/src/application/contracts/providers"
 	usercontracts "github.com/simon3640/goprojectskeleton/src/application/modules/user/contracts"
 	userdtos "github.com/simon3640/goprojectskeleton/src/application/modules/user/dtos"
 	shareddtos "github.com/simon3640/goprojectskeleton/src/application/shared/DTOs"
+	"github.com/simon3640/goprojectskeleton/src/application/shared/cache"
 	app_context "github.com/simon3640/goprojectskeleton/src/application/shared/context"
 	applicationerrors "github.com/simon3640/goprojectskeleton/src/application/shared/errors"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/guards"
@@ -16,24 +18,32 @@ import (
 	"github.com/simon3640/goprojectskeleton/src/application/shared/settings"
 	"github.com/simon3640/goprojectskeleton/src/application/shared/status"
 	usecase "github.com/simon3640/goprojectskeleton/src/application/shared/use_case"
-	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 	domainutils "github.com/simon3640/goprojectskeleton/src/domain/shared/utils"
+	usermodels "github.com/simon3640/goprojectskeleton/src/domain/user/models"
 )
+
+type inputPayload = domainutils.QueryPayloadBuilder[usermodels.User]
 
 // GetAllUserUseCase is a use case that gets all users
 type GetAllUserUseCase struct {
-	usecase.BaseUseCaseValidation[domainutils.QueryPayloadBuilder[usermodels.User], userdtos.UserMultiResponse]
-	repo  usercontracts.IUserRepository
-	cache contractsProviders.ICacheProvider
+	usecase.BaseUseCaseValidation[inputPayload, userdtos.UserMultiResponse]
+	repo          usercontracts.IUserRepository
+	cacheExecutor *cache.Executor[userdtos.UserMultiResponse, inputPayload]
 }
 
-var _ usecase.BaseUseCase[domainutils.QueryPayloadBuilder[usermodels.User], userdtos.UserMultiResponse] = (*GetAllUserUseCase)(nil)
+var _ usecase.BaseUseCase[inputPayload, userdtos.UserMultiResponse] = (*GetAllUserUseCase)(nil)
 
-// Execute executes the use case
+// Execute ejecuta el caso de uso:
+// - Validate input and guards
+// - Execute the use case
+// - Set the success result
+// - Return the result
+// - If there is an error, set the error result
+// - Return the result
 func (uc *GetAllUserUseCase) Execute(
 	ctx *app_context.AppContext,
 	locale locales.LocaleTypeEnum,
-	input domainutils.QueryPayloadBuilder[usermodels.User],
+	input inputPayload,
 ) *usecase.UseCaseResult[userdtos.UserMultiResponse] {
 	result := usecase.NewUseCaseResult[userdtos.UserMultiResponse]()
 	uc.SetLocale(locale)
@@ -43,36 +53,85 @@ func (uc *GetAllUserUseCase) Execute(
 		return result
 	}
 
-	uc.getUsersFromCache(input, result)
-	if result.Data != nil {
-		return result
-	}
-
-	data, total, err := uc.getUsersFromRepository(input, result)
+	cachePolicy := uc.createCachePolicy()
+	multipleResponse, err := uc.cacheExecutor.Execute(cachePolicy, input, ctx)
 	if err != nil {
-		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting all users from repository", err.ToError(), uc.AppContext)
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting users", err.ToError(), uc.AppContext)
+		result.SetError(err.Code, uc.AppMessages.Get(uc.Locale, err.Context))
 		return result
 	}
+	uc.setSuccessResult(result, *multipleResponse)
 
-	uc.setCache(input, data, total)
-
-	// Build MultiResponse
-	result.SetData(
-		status.Success,
-		uc.buildMultiResponse(data, total, input, false),
-		uc.AppMessages.Get(
-			uc.Locale,
-			messages.MessageKeysInstance.USER_LIST_SUCCESS,
-		),
-	)
 	return result
 }
 
+// createCachePolicy creates the cache policy for the use case
+func (uc *GetAllUserUseCase) createCachePolicy() cache.ICachePolicy[userdtos.UserMultiResponse, inputPayload] {
+	return &getAllUserCachePolicy{uc: uc}
+}
+
+// getAllUserCachePolicy implements cache.ICachePolicy for GetAllUserUseCase
+type getAllUserCachePolicy struct {
+	uc *GetAllUserUseCase
+}
+
+func (p *getAllUserCachePolicy) BuildKey(input inputPayload, _ *app_context.AppContext) string {
+	return "users:" + input.GetQueryKey()
+}
+
+func (p *getAllUserCachePolicy) FetchData(input inputPayload, _ *app_context.AppContext) (userdtos.UserMultiResponse, *applicationerrors.ApplicationError) {
+	data, total, err := p.uc.repo.GetAll(&input, input.Pagination.GetOffset(), input.Pagination.GetLimit())
+	if err != nil {
+		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting all users", err.ToError(), p.uc.AppContext)
+		return userdtos.UserMultiResponse{}, err
+	}
+	return p.uc.buildMultiResponse(data, total, input, false), nil
+}
+
+func (p *getAllUserCachePolicy) Serialize(data userdtos.UserMultiResponse) (any, *applicationerrors.ApplicationError) {
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return nil, applicationerrors.NewApplicationError(status.InternalError, messages.MessageKeysInstance.SOMETHING_WENT_WRONG, err.Error())
+	}
+	return bytes, nil
+}
+
+func (p *getAllUserCachePolicy) Deserialize(data any) (userdtos.UserMultiResponse, *applicationerrors.ApplicationError) {
+	switch v := data.(type) {
+	case userdtos.UserMultiResponse:
+		return v, nil
+	case []byte:
+		var resp userdtos.UserMultiResponse
+		if err := json.Unmarshal(v, &resp); err != nil {
+			return userdtos.UserMultiResponse{}, applicationerrors.NewApplicationError(status.InternalError, messages.MessageKeysInstance.SOMETHING_WENT_WRONG, err.Error())
+		}
+		return resp, nil
+	default:
+		bytes, err := json.Marshal(data)
+		if err != nil {
+			return userdtos.UserMultiResponse{}, applicationerrors.NewApplicationError(status.InternalError, messages.MessageKeysInstance.SOMETHING_WENT_WRONG, err.Error())
+		}
+		var resp userdtos.UserMultiResponse
+		if err := json.Unmarshal(bytes, &resp); err != nil {
+			return userdtos.UserMultiResponse{}, applicationerrors.NewApplicationError(status.InternalError, messages.MessageKeysInstance.SOMETHING_WENT_WRONG, err.Error())
+		}
+		return resp, nil
+	}
+}
+
+func (p *getAllUserCachePolicy) GetTTL() time.Duration {
+	return time.Duration(settings.AppSettingsInstance.RedisTTL) * time.Second
+}
+
+func (p *getAllUserCachePolicy) OnCacheHit(data userdtos.UserMultiResponse) *userdtos.UserMultiResponse {
+	data.Meta.Cached = true
+	return &data
+}
+
 // buildMultiResponse builds the multi response for the users
-// it builds the response with the data, total, meta and links
 func (uc *GetAllUserUseCase) buildMultiResponse(
 	data []usermodels.User, total int64,
-	input domainutils.QueryPayloadBuilder[usermodels.User],
+	input inputPayload,
 	cached bool,
 ) userdtos.UserMultiResponse {
 	var response userdtos.UserMultiResponse
@@ -87,87 +146,28 @@ func (uc *GetAllUserUseCase) buildMultiResponse(
 	return response
 }
 
-// getUsersFromCache gets the users from the cache
-// it checks if the cache is hit and if it is, it sets the result with a complete UserMultiResponse object (including records and meta information such as total)
-func (uc *GetAllUserUseCase) getUsersFromCache(
-	input domainutils.QueryPayloadBuilder[usermodels.User],
+func (uc *GetAllUserUseCase) setSuccessResult(
 	result *usecase.UseCaseResult[userdtos.UserMultiResponse],
+	multipleResponse userdtos.UserMultiResponse,
 ) {
-	// Check Cache
-	cacheKey := uc.cacheKey(input)
-	var data []usermodels.User
-	found, err := uc.cache.Get(cacheKey, &data)
-
-	if err != nil {
-		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting cache for users", err.ToError(), uc.AppContext)
-	}
-
-	if found {
-		var total int64
-		found, err = uc.cache.Get(cacheKey+":total", &total)
-		if err != nil {
-			observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting cache for users total", err.ToError(), uc.AppContext)
-		}
-		observability.GetObservabilityComponents().Logger.DebugWithContext("Cache hit for users", map[string]any{"cacheKey": cacheKey, "total": total}, uc.AppContext)
-		if found {
-			result.SetData(
-				status.Success,
-				uc.buildMultiResponse(data, total, input, true),
-				uc.AppMessages.Get(
-					uc.Locale,
-					messages.MessageKeysInstance.USER_LIST_SUCCESS,
-				),
-			)
-		}
-	}
-}
-
-// cacheKey builds the cache key for the users
-// it builds the key with the input query key
-func (uc *GetAllUserUseCase) cacheKey(input domainutils.QueryPayloadBuilder[usermodels.User]) string {
-	return "users:" + input.GetQueryKey()
-}
-
-// getUsersFromRepository gets the users from the repository
-// it returns the users and total, or sets an error in the result if the repository call fails
-func (uc *GetAllUserUseCase) getUsersFromRepository(
-	input domainutils.QueryPayloadBuilder[usermodels.User],
-	result *usecase.UseCaseResult[userdtos.UserMultiResponse],
-) ([]usermodels.User, int64, *applicationerrors.ApplicationError) {
-	data, total, err := uc.repo.GetAll(&input, input.Pagination.GetOffset(), input.Pagination.GetLimit())
-	if err != nil {
-		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error getting all users", err.ToError(), uc.AppContext)
-		result.SetError(
-			err.Code,
-			uc.AppMessages.Get(uc.Locale, err.Context),
-		)
-		return nil, 0, err
-	}
-	return data, total, nil
-}
-
-// setCache sets the cache for the users
-// it sets the cache for the users with the data and total
-func (uc *GetAllUserUseCase) setCache(input domainutils.QueryPayloadBuilder[usermodels.User], data []usermodels.User, total int64) {
-	if err := uc.cache.Set(uc.cacheKey(input), data, time.Duration(settings.AppSettingsInstance.RedisTTL)*time.Second); err != nil {
-		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error setting cache for users", err.ToError(), uc.AppContext)
-	}
-	if err := uc.cache.Set(uc.cacheKey(input)+":total", total, time.Duration(settings.AppSettingsInstance.RedisTTL)*time.Second); err != nil {
-		observability.GetObservabilityComponents().Logger.ErrorWithContext("Error setting cache for users total", err.ToError(), uc.AppContext)
-	}
+	result.SetData(
+		status.Success,
+		multipleResponse,
+		uc.AppMessages.Get(uc.Locale, messages.MessageKeysInstance.USER_LIST_SUCCESS),
+	)
 }
 
 // NewGetAllUserUseCase creates a new get all user use case
 func NewGetAllUserUseCase(
 	repo usercontracts.IUserRepository,
-	cache contractsProviders.ICacheProvider,
+	cacheProvider contractsProviders.ICacheProvider,
 ) *GetAllUserUseCase {
 	return &GetAllUserUseCase{
-		BaseUseCaseValidation: usecase.BaseUseCaseValidation[domainutils.QueryPayloadBuilder[usermodels.User], userdtos.UserMultiResponse]{
+		BaseUseCaseValidation: usecase.BaseUseCaseValidation[inputPayload, userdtos.UserMultiResponse]{
 			AppMessages: locales.NewLocale(locales.EN_US),
 			Guards:      usecase.NewGuards(guards.RoleGuard("admin")),
 		},
-		repo:  repo,
-		cache: cache,
+		repo:          repo,
+		cacheExecutor: cache.NewExecutor[userdtos.UserMultiResponse, inputPayload](cacheProvider),
 	}
 }
