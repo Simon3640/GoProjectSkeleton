@@ -34,7 +34,7 @@ services:
       - ../src/infrastructure/docs/config:/app/config
       - ../src/infrastructure/docs/main.go:/app/main.go
       - ../src/infrastructure/handlers:/app/handlers
-      - ../src/domain/models:/app/models
+      - ../src/domain:/app/domain
       - ../src/application/shared/DTOs:/app/DTOs
       - ../src/application/modules:/app/modules
       - ../src/infrastructure/docs/swagger:/app/swagger

@@ -1,5 +1,5 @@
 // Package models contains shared models
-package models
+package sharedmodels
 
 import (
 	"time"

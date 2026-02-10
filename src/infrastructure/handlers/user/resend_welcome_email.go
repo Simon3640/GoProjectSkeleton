@@ -21,7 +21,7 @@ import (
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param request body dtos.ResendWelcomeEmailRequest true "Email del usuario"
+// @Param request body userdtos.ResendWelcomeEmailRequest true "Email del usuario"
 // @Param Accept-Language header string false "Locale for response messages" Enums(en-US, es-ES) default(en-US)
 // @Success 200 {object} bool "Correo de bienvenida reenviado"
 // @Failure 400 {object} map[string]string "Error de validación"
