@@ -13,15 +13,16 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Copy and download dependencies from otel collector module
+COPY ./src/infrastructure/otel/go.mod ./src/infrastructure/otel/go.sum ./src/infrastructure/otel/
+WORKDIR /app/src/infrastructure/otel
+RUN go mod download
+
 # Copy and download dependencies from server gin module
 COPY ./src/infrastructure/server/go.mod ./src/infrastructure/server/go.sum ./src/infrastructure/server/
 WORKDIR /app/src/infrastructure/server
 RUN go mod download
 
-# Copy and download dependencies from otel collector module
-COPY ./src/infrastructure/otel/go.mod ./src/infrastructure/otel/go.sum ./src/infrastructure/otel/
-WORKDIR /app/src/infrastructure/otel
-RUN go mod download
 
 # Copy all source code
 WORKDIR /app
